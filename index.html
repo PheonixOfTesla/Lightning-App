@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Lightning Pass - Skip the Line, Capture the Revenue</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #000000;
+            --dark-black: #0a0a0a;
+            --card-black: #111111;
+            --border-dark: #1a1a1a;
+            --lightning-yellow: #ffdd00;
+            --lightning-white: #ffffff;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Background Gradient Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 221, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(157, 78, 221, 0.03) 0%, transparent 50%);
+            animation: pulseGlow 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Starfield */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+            box-shadow: 0 0 2px white;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { 
+                opacity: 0; 
+                transform: scale(0.5); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2); 
+            }
+        }
+
+        /* Lightning Effects */
+        .lightning-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .lightning-bolt {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, 
+                transparent, 
+                var(--lightning-yellow), 
+                var(--electric-purple),
+                transparent);
+            filter: blur(1px);
+            opacity: 0;
+            transform-origin: top;
+        }
+
+        .lightning-bolt.yellow {
+            animation: strikeYellow 8s infinite;
+            left: 15%;
+            height: 200px;
+        }
+
+        .lightning-bolt.purple {
+            animation: strikePurple 8s infinite;
+            animation-delay: 2s;
+            left: 75%;
+            height: 300px;
+            background: linear-gradient(to bottom, 
+                transparent, 
+                var(--electric-purple), 
+                var(--lightning-yellow),
+                transparent);
+        }
+
+        .lightning-bolt.blue {
+            animation: strikeBlue 8s infinite;
+            animation-delay: 4s;
+            left: 45%;
+            height: 250px;
+            background: linear-gradient(to bottom, 
+                transparent, 
+                var(--electric-blue), 
+                var(--electric-purple),
+                transparent);
+        }
+
+        @keyframes strikeYellow {
+            0%, 95%, 100% { 
+                opacity: 0; 
+                transform: translateY(-100vh) scaleY(1);
+            }
+            96% { 
+                opacity: 1; 
+                transform: translateY(0) scaleY(2);
+                filter: blur(0px) drop-shadow(0 0 20px var(--lightning-yellow));
+            }
+            97% {
+                opacity: 0.8;
+                transform: translateY(100vh) scaleY(3);
+            }
+        }
+
+        @keyframes strikePurple {
+            0%, 95%, 100% { 
+                opacity: 0; 
+                transform: translateY(-100vh) scaleY(1);
+            }
+            96% { 
+                opacity: 1; 
+                transform: translateY(0) scaleY(2);
+                filter: blur(0px) drop-shadow(0 0 20px var(--electric-purple));
+            }
+            97% {
+                opacity: 0.8;
+                transform: translateY(100vh) scaleY(3);
+            }
+        }
+
+        @keyframes strikeBlue {
+            0%, 95%, 100% { 
+                opacity: 0; 
+                transform: translateY(-100vh) scaleY(1);
+            }
+            96% { 
+                opacity: 1; 
+                transform: translateY(0) scaleY(2);
+                filter: blur(0px) drop-shadow(0 0 20px var(--electric-blue));
+            }
+            97% {
+                opacity: 0.8;
+                transform: translateY(100vh) scaleY(3);
+            }
+        }
+
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--pure-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loader {
+            font-size: 60px;
+            animation: electricPulse 1s infinite;
+            filter: drop-shadow(0 0 20px var(--lightning-yellow));
+        }
+
+        @keyframes electricPulse {
+            0%, 100% { 
+                color: var(--lightning-yellow);
+                transform: scale(1) rotate(0deg);
+            }
+            25% {
+                color: var(--electric-purple);
+                transform: scale(1.1) rotate(5deg);
+            }
+            50% { 
+                color: var(--electric-blue);
+                transform: scale(1.2) rotate(-5deg);
+            }
+            75% {
+                color: var(--electric-purple);
+                transform: scale(1.1) rotate(5deg);
+            }
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-dark);
+            box-shadow: 0 0 30px rgba(255, 221, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .logo span:first-child {
+            font-size: 2rem;
+            animation: electricPulse 2s infinite;
+            filter: drop-shadow(0 0 15px var(--lightning-yellow));
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
+            transition: width 0.3s;
+            box-shadow: 0 0 10px var(--lightning-yellow);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: var(--lightning-yellow);
+            text-shadow: 0 0 10px rgba(255, 221, 0, 0.5);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            background: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            border-color: var(--electric-blue);
+            color: var(--electric-blue);
+        }
+
+        .btn-primary::before {
+            background: var(--electric-blue);
+        }
+
+        .btn-primary:hover {
+            color: var(--pure-black);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
+        }
+
+        .btn-secondary::before {
+            background: var(--lightning-yellow);
+        }
+
+        .btn-secondary:hover {
+            color: var(--pure-black);
+            box-shadow: 0 0 30px rgba(255, 221, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .btn-success::before {
+            background: var(--neon-green);
+        }
+
+        .btn-success:hover {
+            color: var(--pure-black);
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        .btn-danger::before {
+            background: var(--danger-red);
+        }
+
+        .btn-danger:hover {
+            color: var(--white);
+            box-shadow: 0 0 30px rgba(255, 0, 68, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(157, 78, 221, 0.05) 0%, transparent 70%);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(157, 78, 221, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, 
+                var(--lightning-yellow), 
+                var(--electric-purple), 
+                var(--electric-blue), 
+                var(--lightning-yellow));
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s linear infinite;
+            filter: drop-shadow(0 0 20px rgba(157, 78, 221, 0.5));
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% center; }
+            100% { background-position: 300% center; }
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        /* Venue Cards */
+        .venues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .venue-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .venue-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(157, 78, 221, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .venue-card:hover::before {
+            left: 100%;
+        }
+
+        .venue-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-purple);
+            box-shadow: 0 10px 40px rgba(157, 78, 221, 0.3);
+        }
+
+        .venue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .venue-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .venue-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-low {
+            background: rgba(57, 255, 20, 0.1);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .status-medium {
+            background: rgba(255, 221, 0, 0.1);
+            color: var(--lightning-yellow);
+            border: 1px solid var(--lightning-yellow);
+        }
+
+        .status-high {
+            background: rgba(255, 0, 68, 0.1);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .venue-info {
+            margin-bottom: 1rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+        }
+
+        .venue-price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.5));
+        }
+
+        /* Dashboard Stats */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.3));
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--pure-black);
+            border: 1px solid var(--electric-purple);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(157, 78, 221, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--electric-purple);
+            transform: rotate(90deg);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--electric-purple);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--pure-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--electric-purple);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--card-black);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            display: none;
+            z-index: 3000;
+            border: 1px solid var(--electric-purple);
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
+        }
+
+        .toast.error {
+            border-color: var(--danger-red);
+            box-shadow: 0 0 30px rgba(255, 0, 68, 0.3);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .venues-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--pure-black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--electric-purple), var(--lightning-yellow));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(var(--lightning-yellow), var(--electric-blue));
+        }
+
+        /* Loading animation for buttons */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid var(--white);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spinner 0.6s linear infinite;
+        }
+
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="stars" id="stars"></div>
+    <div class="lightning-container">
+        <div class="lightning-bolt yellow"></div>
+        <div class="lightning-bolt purple"></div>
+        <div class="lightning-bolt blue"></div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loader">⚡</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo" onclick="showView('customer')">
+                <span>⚡</span>
+                <span>Lightning Pass</span>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="#" class="nav-link" onclick="showView('customer')">Browse Venues</a>
+                <a href="#" class="nav-link" onclick="showView('venue')">Venue Dashboard</a>
+                <a href="#" class="nav-link" onclick="showView('admin')">Admin</a>
+                <button class="btn btn-primary" onclick="showLoginModal()"><span>Login</span></button>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Customer View -->
+        <div id="customerView" class="container">
+            <div class="hero">
+                <h1>Skip the Line Tonight</h1>
+                <p>Get instant access to the hottest venues in Miami</p>
+                <button class="btn btn-secondary" style="font-size: 1rem; padding: 1rem 2.5rem;" onclick="scrollToVenues()">
+                    <span>⚡ VIEW LIVE VENUES</span>
+                </button>
+            </div>
+
+            <h2 style="margin-bottom: 2rem; font-size: 2rem;">
+                <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Live Venues Near You
+                </span>
+            </h2>
+            
+            <div class="venues-grid" id="venuesGrid">
+                <!-- Venues will be dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- Venue Dashboard -->
+        <div id="venueView" class="container" style="display: none;">
+            <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Venue Dashboard
+            </h1>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Tonight's Revenue</div>
+                    <div class="stat-value" id="tonightRevenue">$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Passes Sold</div>
+                    <div class="stat-value" id="passesSold">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Current Wait</div>
+                    <div class="stat-value" id="currentWait">0m</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">People in Line</div>
+                    <div class="stat-value" id="inLine">0</div>
+                </div>
+            </div>
+
+            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">⚡ Lightning Controls</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label class="form-label">Current Price ($)</label>
+                        <input type="number" class="form-input" id="currentPrice" value="35" min="10" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Available Passes</label>
+                        <input type="number" class="form-input" id="availablePasses" value="50" min="0" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Wait Time (minutes)</label>
+                        <input type="number" class="form-input" id="waitTime" value="45" min="0" max="180">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="activatePasses()"><span>Activate Passes</span></button>
+                    <button class="btn btn-secondary" onclick="updatePricing()"><span>Update Pricing</span></button>
+                    <button class="btn btn-primary" onclick="sendNotification()"><span>Push to Users</span></button>
+                    <button class="btn btn-danger" onclick="deactivatePasses()"><span>Deactivate</span></button>
+                </div>
+            </div>
+
+            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--electric-purple);">Recent Transactions</h3>
+                <div id="recentTransactions">
+                    <p style="color: rgba(255, 255, 255, 0.5);">No transactions yet tonight</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin View -->
+        <div id="adminView" class="container" style="display: none;">
+            <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                System Admin Panel
+            </h1>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue (24h)</div>
+                    <div class="stat-value">$48,750</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Venues</div>
+                    <div class="stat-value">47</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value">12,847</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Monthly Subscribers</div>
+                    <div class="stat-value">2,341</div>
+                </div>
+            </div>
+
+            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">System Controls</h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="addVenue()"><span>Add New Venue</span></button>
+                    <button class="btn btn-secondary" onclick="viewAnalytics()"><span>Analytics</span></button>
+                    <button class="btn btn-success" onclick="exportData()"><span>Export Data</span></button>
+                    <button class="btn btn-danger" onclick="systemAlert()"><span>Send Alert</span></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Purchase Modal -->
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Purchase Lightning Pass</h2>
+                <button class="close-btn" onclick="closeModal('purchaseModal')">&times;</button>
+            </div>
+            
+            <div id="selectedVenueInfo"></div>
+
+            <form onsubmit="processPurchase(event)">
+                <div class="form-group">
+                    <label class="form-label">Number of Passes</label>
+                    <input type="number" class="form-input" id="numPasses" value="1" min="1" max="10" onchange="updateTotal()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="purchaseEmail" required placeholder="your@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-input" id="purchasePhone" required placeholder="(305) 555-0123">
+                </div>
+
+                <div style="background: rgba(157, 78, 221, 0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Subtotal</span>
+                        <span id="subtotal">$0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Service Fee</span>
+                        <span id="serviceFee">$0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; color: var(--lightning-yellow);">
+                        <span>Total</span>
+                        <span id="total">$0</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-secondary" style="width: 100%; font-size: 1rem;">
+                    <span>⚡ COMPLETE PURCHASE</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Login</h2>
+                <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            
+            <form onsubmit="processLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" required placeholder="demo: venue@demo.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="loginPassword" required placeholder="any password works">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <span>LOGIN</span>
+                </button>
+
+                <div style="text-align: center; margin-top: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.5);">
+                    Demo accounts:<br>
+                    venue@demo.com → Venue Dashboard<br>
+                    admin@lightning.com → Admin Panel
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // State Management
+        const state = {
+            currentView: 'customer',
+            selectedVenue: null,
+            venues: [
+                {
+                    id: 1,
+                    name: 'Electric Paradise',
+                    type: 'Nightclub',
+                    waitTime: 75,
+                    inLine: 187,
+                    price: 45,
+                    status: 'high',
+                    address: '123 Ocean Drive, Miami Beach',
+                    capacity: 500,
+                    trending: true
+                },
+                {
+                    id: 2,
+                    name: 'The Velvet Room',
+                    type: 'Lounge',
+                    waitTime: 35,
+                    inLine: 62,
+                    price: 25,
+                    status: 'medium',
+                    address: '456 Wynwood Ave, Miami',
+                    capacity: 200
+                },
+                {
+                    id: 3,
+                    name: 'Sunset Terrace',
+                    type: 'Rooftop Bar',
+                    waitTime: 20,
+                    inLine: 28,
+                    price: 20,
+                    status: 'low',
+                    address: '789 Brickell Ave, Miami',
+                    capacity: 150
+                },
+                {
+                    id: 4,
+                    name: 'Golden Hour',
+                    type: 'Beach Club',
+                    waitTime: 90,
+                    inLine: 234,
+                    price: 60,
+                    status: 'high',
+                    address: '321 Collins Ave, South Beach',
+                    capacity: 600,
+                    trending: true
+                },
+                {
+                    id: 5,
+                    name: 'The Underground',
+                    type: 'Dance Club',
+                    waitTime: 45,
+                    inLine: 98,
+                    price: 35,
+                    status: 'medium',
+                    address: '654 Downtown Miami',
+                    capacity: 400
+                },
+                {
+                    id: 6,
+                    name: 'Sky Lounge',
+                    type: 'Hotel Bar',
+                    waitTime: 15,
+                    inLine: 18,
+                    price: 15,
+                    status: 'low',
+                    address: '987 Biscayne Blvd, Miami',
+                    capacity: 100
+                }
+            ],
+            transactions: [],
+            user: null,
+            venueStats: {
+                revenue: 0,
+                passesSold: 0,
+                currentWait: 45,
+                inLine: 127
+            }
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 500);
+            }, 1500);
+
+            loadVenues();
+            updateDashboard();
+            
+            // Live updates
+            setInterval(updateLiveData, 5000);
+        });
+
+        // Create starfield
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 150;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                
+                // Random star sizes
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // View Management
+        function showView(view) {
+            state.currentView = view;
+            
+            document.getElementById('customerView').style.display = 'none';
+            document.getElementById('venueView').style.display = 'none';
+            document.getElementById('adminView').style.display = 'none';
+            
+            document.getElementById(view + 'View').style.display = 'block';
+            
+            // Update nav highlighting
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.style.color = 'var(--white)';
+            });
+        }
+
+        // Load Venues
+        function loadVenues() {
+            const grid = document.getElementById('venuesGrid');
+            grid.innerHTML = '';
+            
+            state.venues.forEach((venue, index) => {
+                const card = document.createElement('div');
+                card.className = 'venue-card';
+                card.style.animationDelay = (index * 0.1) + 's';
+                card.innerHTML = `
+                    <div class="venue-header">
+                        <div>
+                            <div class="venue-name">${venue.name}</div>
+                            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.type}</div>
+                        </div>
+                        <span class="venue-status status-${venue.status}">
+                            ${venue.waitTime} MIN
+                        </span>
+                    </div>
+                    <div class="venue-info">
+                        <div class="info-row">
+                            <span>📍 Location</span>
+                            <span>${venue.address.split(',')[1]}</span>
+                        </div>
+                        <div class="info-row">
+                            <span>👥 In Line</span>
+                            <span>${venue.inLine} people</span>
+                        </div>
+                        <div class="info-row">
+                            <span>🏢 Capacity</span>
+                            <span>${venue.capacity} max</span>
+                        </div>
+                    </div>
+                    <div class="venue-price">$${venue.price}</div>
+                    ${venue.trending ? '<div style="color: var(--electric-purple); font-size: 0.75rem; margin-bottom: 1rem;">🔥 TRENDING NOW</div>' : ''}
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue(${venue.id})">
+                        <span>⚡ GET LIGHTNING PASS</span>
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Select Venue
+        function selectVenue(venueId) {
+            state.selectedVenue = state.venues.find(v => v.id === venueId);
+            
+            const info = document.getElementById('selectedVenueInfo');
+            info.innerHTML = `
+                <div style="background: rgba(157, 78, 221, 0.05); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--electric-purple);">${state.selectedVenue.name}</h3>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin: 0.5rem 0;">${state.selectedVenue.address}</p>
+                    <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                        <span>⏱️ Current Wait: ${state.selectedVenue.waitTime} minutes</span>
+                        <span style="color: var(--lightning-yellow); font-weight: bold;">$${state.selectedVenue.price}/pass</span>
+                    </div>
+                </div>
+            `;
+            
+            updateTotal();
+            showModal('purchaseModal');
+        }
+
+        // Update Total
+        function updateTotal() {
+            if (!state.selectedVenue) return;
+            
+            const numPasses = parseInt(document.getElementById('numPasses').value);
+            const subtotal = state.selectedVenue.price * numPasses;
+            const serviceFee = Math.round(subtotal * 0.1);
+            const total = subtotal + serviceFee;
+            
+            document.getElementById('subtotal').textContent = `$${subtotal}`;
+            document.getElementById('serviceFee').textContent = `$${serviceFee}`;
+            document.getElementById('total').textContent = `$${total}`;
+        }
+
+        // Process Purchase
+        function processPurchase(event) {
+            event.preventDefault();
+            
+            const button = event.target.querySelector('button[type="submit"]');
+            button.classList.add('loading');
+            
+            const email = document.getElementById('purchaseEmail').value;
+            const phone = document.getElementById('purchasePhone').value;
+            const numPasses = parseInt(document.getElementById('numPasses').value);
+            
+            showToast('Processing payment...', 'info');
+            
+            setTimeout(() => {
+                // Update stats
+                state.venueStats.passesSold += numPasses;
+                state.venueStats.revenue += state.selectedVenue.price * numPasses * 0.7;
+                updateDashboard();
+                
+                // Add transaction
+                state.transactions.unshift({
+                    id: Date.now(),
+                    venue: state.selectedVenue.name,
+                    email: email,
+                    amount: state.selectedVenue.price * numPasses,
+                    passes: numPasses,
+                    time: new Date().toLocaleTimeString()
+                });
+                
+                button.classList.remove('loading');
+                closeModal('purchaseModal');
+                showToast(`✅ Success! ${numPasses} Lightning Pass(es) sent to ${email}`, 'success');
+                
+                // Reset form
+                document.getElementById('purchaseEmail').value = '';
+                document.getElementById('purchasePhone').value = '';
+                document.getElementById('numPasses').value = '1';
+            }, 2000);
+        }
+
+        // Process Login
+        function processLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            
+            if (email === 'venue@demo.com') {
+                state.user = { type: 'venue', name: 'Electric Paradise' };
+                showView('venue');
+                showToast('⚡ Welcome back! Venue dashboard loaded.', 'success');
+            } else if (email === 'admin@lightning.com') {
+                state.user = { type: 'admin', name: 'System Admin' };
+                showView('admin');
+                showToast('🔐 Admin access granted.', 'success');
+            } else {
+                state.user = { type: 'customer', email: email };
+                showToast('✅ Logged in successfully!', 'success');
+            }
+            
+            closeModal('loginModal');
+        }
+
+        // Venue Dashboard Functions
+        function updateDashboard() {
+            document.getElementById('tonightRevenue').textContent = `$${state.venueStats.revenue.toFixed(0)}`;
+            document.getElementById('passesSold').textContent = state.venueStats.passesSold;
+            document.getElementById('currentWait').textContent = state.venueStats.currentWait + 'm';
+            document.getElementById('inLine').textContent = state.venueStats.inLine;
+            
+            const transactionsDiv = document.getElementById('recentTransactions');
+            if (state.transactions.length > 0) {
+                transactionsDiv.innerHTML = state.transactions.slice(0, 5).map(t => `
+                    <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-dark);">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>${t.passes} pass(es) - ${t.email}</span>
+                            <span style="color: var(--neon-green);">+$${(t.amount * 0.7).toFixed(0)}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-top: 0.25rem;">
+                            ${t.time}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function activatePasses() {
+            showToast('⚡ Lightning Passes activated! Customers can now purchase.', 'success');
+        }
+
+        function deactivatePasses() {
+            showToast('❌ Lightning Passes deactivated.', 'error');
+        }
+
+        function updatePricing() {
+            const newPrice = document.getElementById('currentPrice').value;
+            showToast(`💰 Price updated to $${newPrice}`, 'success');
+        }
+
+        function sendNotification() {
+            showToast('📱 Push notification sent to 2,341 nearby users!', 'success');
+        }
+
+        // Admin Functions
+        function addVenue() {
+            showToast('🏢 Add Venue feature coming soon!', 'info');
+        }
+
+        function viewAnalytics() {
+            showToast('📊 Analytics dashboard coming soon!', 'info');
+        }
+
+        function exportData() {
+            showToast('📥 Exporting data to CSV...', 'success');
+        }
+
+        function systemAlert() {
+            showToast('🚨 System alert sent to all venues!', 'error');
+        }
+
+        // Live Data Updates
+        function updateLiveData() {
+            state.venues.forEach(venue => {
+                // Simulate changes
+                venue.waitTime += Math.floor(Math.random() * 11) - 5;
+                venue.waitTime = Math.max(5, Math.min(120, venue.waitTime));
+                
+                venue.inLine += Math.floor(Math.random() * 21) - 10;
+                venue.inLine = Math.max(0, venue.inLine);
+                
+                // Update status
+                if (venue.waitTime > 60) {
+                    venue.status = 'high';
+                    venue.price = Math.min(100, venue.price + 5);
+                } else if (venue.waitTime > 30) {
+                    venue.status = 'medium';
+                } else {
+                    venue.status = 'low';
+                    venue.price = Math.max(15, venue.price - 5);
+                }
+            });
+            
+            // Update stats
+            state.venueStats.currentWait += Math.floor(Math.random() * 11) - 5;
+            state.venueStats.currentWait = Math.max(5, Math.min(120, state.venueStats.currentWait));
+            
+            state.venueStats.inLine += Math.floor(Math.random() * 21) - 10;
+            state.venueStats.inLine = Math.max(0, state.venueStats.inLine);
+            
+            // Reload views
+            if (state.currentView === 'customer') {
+                loadVenues();
+            } else if (state.currentView === 'venue') {
+                document.getElementById('currentWait').textContent = state.venueStats.currentWait + 'm';
+                document.getElementById('inLine').textContent = state.venueStats.inLine;
+            }
+        }
+
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showLoginModal() {
+            showModal('loginModal');
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Scroll to venues
+        function scrollToVenues() {
+            document.getElementById('venuesGrid').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            if (navLinks.style.display === 'none' || navLinks.style.display === '') {
+                navLinks.style.display = 'flex';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '100%';
+                navLinks.style.left = '0';
+                navLinks.style.right = '0';
+                navLinks.style.background = 'var(--pure-black)';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.padding = '1rem';
+                navLinks.style.borderTop = '1px solid var(--border-dark)';
+            } else {
+                navLinks.style.display = 'none';
+            }
+        }
+
+        // Close modals on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
