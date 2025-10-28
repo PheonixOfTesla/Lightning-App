@@ -1037,10 +1037,10 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // API Configuration - automatically detects environment
+        // API Configuration - Points to Railway backend
         const API_BASE_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000' 
-            : window.location.origin;
+            : 'https://lightning-backend-production.up.railway.app';
 
         // State Management
         const state = {
