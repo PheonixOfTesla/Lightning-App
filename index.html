@@ -6,6 +6,9 @@
     <title>⚡ Lightning Pass - Complete Platform</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     
+    <!-- Stripe.js for payment processing -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
     <style>
         * {
             margin: 0;
@@ -165,6 +168,11 @@
         .btn-secondary:hover {
             background: var(--lightning-yellow);
             color: var(--pure-black);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         main {
@@ -428,6 +436,18 @@
             color: var(--neon-green);
         }
 
+        .alert-error {
+            background: rgba(255, 0, 68, 0.1);
+            border: 1px solid var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--electric-purple);
+        }
+
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
@@ -446,7 +466,7 @@
 <body>
     <nav>
         <div class="nav-container">
-            <div class="logo" onclick="showView('home')">
+            <div class="logo" onclick="goHome()">
                 <span>⚡</span>
                 <span>Lightning Pass</span>
             </div>
@@ -468,18 +488,20 @@
                 <div id="loginSection" class="section">
                     <h2 class="section-title">🔐 Sign In</h2>
                     
+                    <div id="loginError" class="alert alert-error" style="display: none;"></div>
+                    
                     <form onsubmit="handleLogin(event)">
                         <div class="form-group">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-input" id="loginEmail" required>
+                            <input type="email" class="form-input" id="loginEmail" required autocomplete="email">
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Password</label>
-                            <input type="password" class="form-input" id="loginPassword" required>
+                            <input type="password" class="form-input" id="loginPassword" required minlength="8" autocomplete="current-password">
                         </div>
                         
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <button type="submit" class="btn btn-primary" id="loginBtn" style="width: 100%;">
                             SIGN IN
                         </button>
                     </form>
@@ -493,20 +515,22 @@
                 <div id="registerSection" class="section" style="display: none;">
                     <h2 class="section-title">📝 Register</h2>
                     
+                    <div id="registerError" class="alert alert-error" style="display: none;"></div>
+                    
                     <form onsubmit="handleRegister(event)">
                         <div class="form-group">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-input" id="registerEmail" required>
+                            <input type="email" class="form-input" id="registerEmail" required autocomplete="email">
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Phone</label>
-                            <input type="tel" class="form-input" id="registerPhone" placeholder="+1 (305) 555-0123" required>
+                            <input type="tel" class="form-input" id="registerPhone" placeholder="+1 (305) 555-0123" required autocomplete="tel">
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-input" id="registerPassword" required minlength="6">
+                            <label class="form-label">Password (min 8 characters)</label>
+                            <input type="password" class="form-input" id="registerPassword" required minlength="8" autocomplete="new-password">
                         </div>
                         
                         <div class="form-group">
@@ -517,7 +541,7 @@
                             </select>
                         </div>
                         
-                        <button type="submit" class="btn btn-success" style="width: 100%;">
+                        <button type="submit" class="btn btn-success" id="registerBtn" style="width: 100%;">
                             REGISTER
                         </button>
                     </form>
@@ -525,11 +549,6 @@
                     <p style="text-align: center; margin-top: 1.5rem; color: rgba(255, 255, 255, 0.6);">
                         Already have an account? <a href="#" onclick="toggleAuthMode()" style="color: var(--electric-blue);">Sign In</a>
                     </p>
-                </div>
-
-                <!-- Admin Login -->
-                <div style="margin-top: 2rem; text-align: center;">
-                    <a href="#" onclick="showAdminLogin()" style="color: rgba(255, 255, 255, 0.4); font-size: 0.875rem;">Admin Login</a>
                 </div>
             </div>
         </div>
@@ -751,7 +770,7 @@
             
             <div id="selectedVenueInfo"></div>
 
-            <form onsubmit="processPurchase(event)">
+            <form onsubmit="processPurchase(event)" id="purchaseForm">
                 <div class="form-group">
                     <label class="form-label">Number of Passes</label>
                     <input type="number" class="form-input" id="numPasses" value="1" min="1" max="10" onchange="updateTotal()">
@@ -764,36 +783,12 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                <button type="submit" class="btn btn-secondary" id="purchaseBtn" style="width: 100%;">
                     ⚡ COMPLETE PURCHASE
                 </button>
             </form>
-        </div>
-    </div>
-
-    <!-- Admin Login Modal -->
-    <div id="adminLoginModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Admin Login</h2>
-                <button class="close-btn" onclick="closeModal('adminLoginModal')">&times;</button>
-            </div>
             
-            <form onsubmit="handleAdminLogin(event)">
-                <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-input" id="adminUsername" value="admin">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-input" id="adminPassword" value="admin123">
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    SIGN IN
-                </button>
-            </form>
+            <div id="purchaseStatus" style="display: none; margin-top: 1rem;"></div>
         </div>
     </div>
 
@@ -812,11 +807,16 @@
             currentView: 'auth',
             selectedVenue: null,
             venues: [],
-            currentVenueId: null
+            currentVenueId: null,
+            stripe: null,
+            paymentIntentId: null
         };
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize Stripe (replace with your publishable key)
+            // state.stripe = Stripe('pk_test_YOUR_KEY_HERE');
+            
             checkExistingAuth();
         });
 
@@ -833,10 +833,14 @@
             }
         }
 
-        // ===== AUTHENTICATION =====
+        // ===== AUTHENTICATION - REAL API CALLS =====
         function toggleAuthMode() {
             const loginSection = document.getElementById('loginSection');
             const registerSection = document.getElementById('registerSection');
+            
+            // Clear error messages
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('registerError').style.display = 'none';
             
             if (loginSection.style.display === 'none') {
                 loginSection.style.display = 'block';
@@ -852,33 +856,46 @@
             
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('loginError');
             
-            // Mock login - In production, call your backend auth endpoint
+            // Disable button and show loading
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'SIGNING IN...';
+            errorDiv.style.display = 'none';
+            
             try {
-                // For now, create a mock user based on email
-                let role = 'customer';
-                if (email.includes('venue')) role = 'venue';
-                if (email.includes('admin')) role = 'admin';
+                // ✅ REAL API CALL
+                const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
                 
-                const user = {
-                    id: 'user_' + Date.now(),
-                    email: email,
-                    role: role
-                };
+                const data = await response.json();
                 
-                const token = 'mock_token_' + Date.now();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
                 
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(user));
+                // Store REAL JWT token from backend
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 
-                state.token = token;
-                state.user = user;
+                state.token = data.token;
+                state.user = data.user;
                 
                 showToast('✅ Login successful!', 'success');
-                handleAuthSuccess(user);
+                handleAuthSuccess(data.user);
                 
             } catch (error) {
-                showToast('❌ Login failed', 'error');
+                console.error('Login error:', error);
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+                showToast('❌ ' + error.message, 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'SIGN IN';
             }
         }
 
@@ -889,62 +906,46 @@
             const phone = document.getElementById('registerPhone').value;
             const password = document.getElementById('registerPassword').value;
             const role = document.getElementById('registerRole').value;
+            const registerBtn = document.getElementById('registerBtn');
+            const errorDiv = document.getElementById('registerError');
             
-            // Mock registration
+            // Disable button and show loading
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'REGISTERING...';
+            errorDiv.style.display = 'none';
+            
             try {
-                const user = {
-                    id: 'user_' + Date.now(),
-                    email: email,
-                    phone: phone,
-                    role: role
-                };
+                // ✅ REAL API CALL
+                const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, phone, password, role })
+                });
                 
-                const token = 'mock_token_' + Date.now();
+                const data = await response.json();
                 
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(user));
+                if (!response.ok) {
+                    throw new Error(data.error || 'Registration failed');
+                }
                 
-                state.token = token;
-                state.user = user;
+                // Store REAL JWT token from backend
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                state.token = data.token;
+                state.user = data.user;
                 
                 showToast('✅ Registration successful!', 'success');
-                handleAuthSuccess(user);
+                handleAuthSuccess(data.user);
                 
             } catch (error) {
-                showToast('❌ Registration failed', 'error');
-            }
-        }
-
-        function showAdminLogin() {
-            showModal('adminLoginModal');
-        }
-
-        function handleAdminLogin(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('adminUsername').value;
-            const password = document.getElementById('adminPassword').value;
-            
-            if (username === 'admin' && password === 'admin123') {
-                const user = {
-                    id: 'admin_' + Date.now(),
-                    email: 'admin@lightningpass.com',
-                    role: 'admin'
-                };
-                
-                const token = 'admin_token_' + Date.now();
-                
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(user));
-                
-                state.token = token;
-                state.user = user;
-                
-                closeModal('adminLoginModal');
-                showToast('✅ Admin login successful!', 'success');
-                handleAuthSuccess(user);
-            } else {
-                showToast('❌ Invalid credentials', 'error');
+                console.error('Registration error:', error);
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+                showToast('❌ ' + error.message, 'error');
+            } finally {
+                registerBtn.disabled = false;
+                registerBtn.textContent = 'REGISTER';
             }
         }
 
@@ -998,31 +999,18 @@
             showToast('✅ Logged out successfully', 'success');
         }
 
+        function goHome() {
+            if (state.user) {
+                if (state.user.role === 'admin') showView('admin');
+                else if (state.user.role === 'venue') showView('venue');
+                else showView('customer');
+            }
+        }
+
         // ===== VIEW MANAGEMENT =====
         function showView(view) {
             state.currentView = view;
             
-            document.getElementById('authView').classList.add('hidden');
-            document.getElementById('customerView').classList.add('hidden');
-            document.getElementById('venueView').classList.add('hidden');
-            document.getElementById('adminView').classList.add('hidden');
-            document.getElementById('scannerView').classList.add('hidden');
-            
-            if (view === 'auth') {
-                document.getElementById('authView').classList.remove('hidden');
-            } else if (view === 'customer') {
-                document.getElementById('customerView').classList.remove('hidden');
-            } else if (view === 'venue') {
-                document.getElementById('venueView').classList.remove('hidden');
-            } else if (view === 'admin') {
-                document.getElementById('adminView').classList.remove('hidden');
-            } else if (view === 'scanner') {
-                document.getElementById('scannerView').classList.remove('hidden');
-            }
-        }
-
-        function showView(view) {
-            // Backwards compatible with the old function name
             const views = ['auth', 'customer', 'venue', 'admin', 'scanner'];
             views.forEach(v => {
                 const element = document.getElementById(v + 'View');
@@ -1034,7 +1022,6 @@
                     }
                 }
             });
-            state.currentView = view;
         }
 
         // ===== CUSTOMER FUNCTIONS =====
@@ -1046,7 +1033,7 @@
                 const grid = document.getElementById('customerVenuesGrid');
                 
                 if (state.venues.length === 0) {
-                    grid.innerHTML = '<div class="empty-state">No active venues</div>';
+                    grid.innerHTML = '<div class="empty-state">No active venues available right now</div>';
                     return;
                 }
                 
@@ -1079,6 +1066,8 @@
                 });
             } catch (error) {
                 console.error('Error loading venues:', error);
+                document.getElementById('customerVenuesGrid').innerHTML = 
+                    '<div class="empty-state">Error loading venues. Please refresh the page.</div>';
             }
         }
 
@@ -1099,9 +1088,10 @@
                 `;
                 
                 updateTotal();
+                document.getElementById('purchaseStatus').style.display = 'none';
                 showModal('purchaseModal');
             } catch (error) {
-                showToast('Error loading venue', 'error');
+                showToast('Error loading venue details', 'error');
             }
         }
 
@@ -1114,6 +1104,7 @@
             document.getElementById('purchaseTotal').textContent = `$${total}`;
         }
 
+        // ✅ REAL 2-STEP PAYMENT FLOW
         async function processPurchase(event) {
             event.preventDefault();
             
@@ -1122,39 +1113,109 @@
                 return;
             }
             
+            if (!state.user.phone) {
+                showToast('Please update your profile with a phone number', 'error');
+                return;
+            }
+            
             const numPasses = parseInt(document.getElementById('numPasses').value);
+            const purchaseBtn = document.getElementById('purchaseBtn');
+            const statusDiv = document.getElementById('purchaseStatus');
+            
+            // Disable button
+            purchaseBtn.disabled = true;
+            purchaseBtn.textContent = 'PROCESSING...';
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'loading';
+            statusDiv.textContent = 'Creating payment...';
             
             try {
-                const data = await apiCall('/api/v1/lightning/passes/purchase', {
+                // STEP 1: Create payment intent (no pass created yet!)
+                statusDiv.textContent = 'Step 1/2: Initializing payment...';
+                
+                const paymentData = await apiCall('/api/v1/lightning/passes/create-payment', {
                     method: 'POST',
                     body: JSON.stringify({
                         venueId: state.selectedVenue._id,
                         email: state.user.email,
-                        phone: state.user.phone || '+13055551234',
+                        phone: state.user.phone,
                         numPasses
                     })
                 });
                 
-                closeModal('purchaseModal');
+                state.paymentIntentId = paymentData.paymentIntentId;
+                
+                // STEP 2: For now, simulate successful payment
+                // In production, you'd use Stripe Elements here:
+                // const result = await state.stripe.confirmCardPayment(paymentData.clientSecret);
+                
+                statusDiv.textContent = 'Step 2/2: Confirming purchase...';
+                
+                // Simulate payment success and confirm
+                const confirmData = await apiCall('/api/v1/lightning/passes/confirm-payment', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        paymentIntentId: state.paymentIntentId,
+                        email: state.user.email,
+                        phone: state.user.phone
+                    })
+                });
+                
+                // Success!
+                statusDiv.className = 'alert alert-success';
+                statusDiv.innerHTML = `
+                    <h3>✅ Purchase Successful!</h3>
+                    <p><strong>Pass ID:</strong> ${confirmData.passId}</p>
+                    <p>Check your phone for SMS confirmation!</p>
+                `;
+                
                 showToast('✅ Pass purchased successfully!', 'success');
                 
-                await loadVenues();
+                // Wait 2 seconds then close modal and reload
+                setTimeout(async () => {
+                    closeModal('purchaseModal');
+                    await loadVenues();
+                }, 2000);
                 
             } catch (error) {
-                showToast('Purchase failed: ' + error.message, 'error');
+                console.error('Purchase error:', error);
+                statusDiv.className = 'alert alert-error';
+                statusDiv.innerHTML = `
+                    <h3>❌ Purchase Failed</h3>
+                    <p>${error.message}</p>
+                `;
+                showToast('❌ ' + error.message, 'error');
+                purchaseBtn.disabled = false;
+                purchaseBtn.textContent = '⚡ COMPLETE PURCHASE';
             }
         }
 
         // ===== VENUE FUNCTIONS =====
         async function populateVenueSelector() {
             try {
-                const data = await apiCall('/api/v1/lightning/venues');
+                const data = await apiCall('/api/v1/lightning/venues?includeAll=true');
                 const select = document.getElementById('venueSelect');
                 
-                // Filter venues owned by current user (in production, filter by ownerId)
-                const userVenues = data.venues || [];
+                // ✅ FIXED: Filter by venueId from JWT token
+                const userVenues = (data.venues || []).filter(v => {
+                    // If user has venueId, only show their venue
+                    if (state.user.venueId) {
+                        return v._id === state.user.venueId;
+                    }
+                    // If admin, show all venues
+                    if (state.user.role === 'admin') {
+                        return true;
+                    }
+                    // Otherwise, filter by ownerId (if available)
+                    return v.ownerId === state.user.id;
+                });
                 
                 select.innerHTML = '<option value="">Select a venue...</option>';
+                
+                if (userVenues.length === 0) {
+                    select.innerHTML = '<option value="">No venues found. Contact admin.</option>';
+                    return;
+                }
                 
                 userVenues.forEach(venue => {
                     const option = document.createElement('option');
@@ -1163,13 +1224,13 @@
                     select.appendChild(option);
                 });
                 
-                if (userVenues.length > 0) {
-                    select.value = userVenues[0]._id;
-                    state.currentVenueId = userVenues[0]._id;
-                    await loadVenueStats();
-                }
+                // Auto-select first venue
+                select.value = userVenues[0]._id;
+                state.currentVenueId = userVenues[0]._id;
+                await loadVenueStats();
             } catch (error) {
                 console.error('Error loading venues:', error);
+                showToast('Error loading your venues', 'error');
             }
         }
 
@@ -1196,6 +1257,7 @@
                 
             } catch (error) {
                 console.error('Error loading stats:', error);
+                showToast('Error loading venue stats', 'error');
             }
         }
 
@@ -1214,7 +1276,7 @@
                 showToast('⚡ Passes activated!', 'success');
                 await loadVenueStats();
             } catch (error) {
-                showToast('Failed to activate', 'error');
+                showToast('❌ Failed to activate: ' + error.message, 'error');
             }
         }
 
@@ -1231,7 +1293,7 @@
                 showToast('Passes deactivated', 'success');
                 await loadVenueStats();
             } catch (error) {
-                showToast('Failed to deactivate', 'error');
+                showToast('❌ Failed to deactivate: ' + error.message, 'error');
             }
         }
 
@@ -1250,7 +1312,7 @@
                 showToast(`💰 Price updated to $${newPrice}`, 'success');
                 await loadVenueStats();
             } catch (error) {
-                showToast('Failed to update price', 'error');
+                showToast('❌ Failed to update price: ' + error.message, 'error');
             }
         }
 
@@ -1261,14 +1323,14 @@
             try {
                 const data = await apiCall(`/api/v1/lightning/pricing/ml-suggest?venueId=${venueId}`);
                 
-                alert(`💡 ML Pricing Suggestion\n\nRecommended Price: $${data.suggestedPrice}\n\n${data.reasoning}\n\nConfidence: ${(data.confidence * 100).toFixed(0)}%`);
+                const message = `💡 ML Pricing Suggestion\n\nRecommended Price: $${data.suggestedPrice}\n\n${data.reasoning}\n\nConfidence: ${(data.confidence * 100).toFixed(0)}%`;
                 
-                if (confirm('Apply this suggested price?')) {
+                if (confirm(message + '\n\nApply this suggested price?')) {
                     document.getElementById('currentPrice').value = data.suggestedPrice;
                     await updatePricing();
                 }
             } catch (error) {
-                showToast('Failed to get suggestion', 'error');
+                showToast('❌ Failed to get suggestion: ' + error.message, 'error');
             }
         }
 
@@ -1282,7 +1344,7 @@
                 document.getElementById('adminPasses').textContent = data.totalPasses || 0;
                 document.getElementById('adminTransactions').textContent = data.todayTransactions || 0;
                 
-                const venuesData = await apiCall('/api/v1/lightning/venues');
+                const venuesData = await apiCall('/api/v1/lightning/venues?includeAll=true');
                 const allVenues = venuesData.venues || [];
                 
                 const pending = allVenues.filter(v => v.approvalStatus === 'pending');
@@ -1301,6 +1363,7 @@
                 
             } catch (error) {
                 console.error('Error loading admin stats:', error);
+                showToast('Error loading stats', 'error');
             }
         }
 
@@ -1322,6 +1385,7 @@
                         <div>
                             <h3 style="color: var(--electric-purple);">${venue.name}</h3>
                             <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
+                            ${venue.approvalStatus === 'pending' ? '<span class="badge badge-pending">PENDING</span>' : ''}
                         </div>
                         <div style="text-align: right;">
                             <p style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">$${venue.currentPrice}</p>
@@ -1331,8 +1395,7 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                        <button class="btn btn-primary" onclick="editVenue('${venue._id}')">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteVenue('${venue._id}', '${venue.name}')">Delete</button>
+                        <button class="btn btn-danger" onclick="deleteVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Delete</button>
                     </div>
                 `;
                 list.appendChild(card);
@@ -1347,7 +1410,7 @@
 
         async function loadPendingApprovals() {
             try {
-                const data = await apiCall('/api/v1/lightning/venues');
+                const data = await apiCall('/api/v1/lightning/venues?includeAll=true');
                 const pending = (data.venues || []).filter(v => v.approvalStatus === 'pending');
                 
                 const list = document.getElementById('pendingList');
@@ -1366,14 +1429,15 @@
                         <h3 style="color: var(--lightning-yellow);">${venue.name}</h3>
                         <p style="color: rgba(255, 255, 255, 0.6);">${venue.address}</p>
                         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                            <button class="btn btn-success" onclick="approveVenue('${venue._id}', '${venue.name}')">Approve</button>
-                            <button class="btn btn-danger" onclick="rejectVenue('${venue._id}', '${venue.name}')">Reject</button>
+                            <button class="btn btn-success" onclick="approveVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Approve</button>
+                            <button class="btn btn-danger" onclick="rejectVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Reject</button>
                         </div>
                     `;
                     list.appendChild(card);
                 });
             } catch (error) {
                 console.error('Error loading pending:', error);
+                showToast('Error loading pending approvals', 'error');
             }
         }
 
@@ -1390,24 +1454,29 @@
                 await loadAdminStats();
                 await loadPendingApprovals();
             } catch (error) {
-                showToast('Approval failed', 'error');
+                showToast('❌ Approval failed: ' + error.message, 'error');
             }
         }
 
         async function rejectVenue(venueId, venueName) {
-            if (!confirm(`Reject ${venueName}?`)) return;
+            const reason = prompt(`Reject ${venueName}?\n\nEnter rejection reason:`);
+            if (!reason) return;
             
             try {
                 await apiCall('/api/v1/lightning/venue/approve', {
                     method: 'POST',
-                    body: JSON.stringify({ venueId, approvalStatus: 'rejected' })
+                    body: JSON.stringify({ 
+                        venueId, 
+                        approvalStatus: 'rejected',
+                        rejectionReason: reason
+                    })
                 });
                 
                 showToast(`${venueName} rejected`, 'success');
                 await loadAdminStats();
                 await loadPendingApprovals();
             } catch (error) {
-                showToast('Rejection failed', 'error');
+                showToast('❌ Rejection failed: ' + error.message, 'error');
             }
         }
 
@@ -1448,7 +1517,7 @@
                 hideSection('createVenueSection');
                 await loadAdminStats();
             } catch (error) {
-                showToast('Creation failed', 'error');
+                showToast('❌ Creation failed: ' + error.message, 'error');
             }
         }
 
@@ -1463,12 +1532,8 @@
                 showToast(`${venueName} deleted`, 'success');
                 await loadAdminStats();
             } catch (error) {
-                showToast('Deletion failed', 'error');
+                showToast('❌ Deletion failed: ' + error.message, 'error');
             }
-        }
-
-        function editVenue(venueId) {
-            showToast('Edit feature coming soon', 'info');
         }
 
         // ===== SCANNER FUNCTIONS =====
@@ -1504,7 +1569,7 @@
                     showToast('❌ Invalid pass', 'error');
                 }
             } catch (error) {
-                showToast('Validation error', 'error');
+                showToast('❌ Validation error: ' + error.message, 'error');
             }
         }
 
@@ -1526,7 +1591,7 @@
                 document.getElementById('scanPassId').value = '';
                 document.getElementById('scanResult').style.display = 'none';
             } catch (error) {
-                showToast('Error using pass', 'error');
+                showToast('❌ Error using pass: ' + error.message, 'error');
             }
         }
 
@@ -1543,8 +1608,8 @@
                 });
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Request failed');
+                    const error = await response.json().catch(() => ({ error: 'Request failed' }));
+                    throw new Error(error.error || `HTTP ${response.status}`);
                 }
 
                 return await response.json();
@@ -1571,6 +1636,8 @@
                 toast.style.borderColor = 'var(--neon-green)';
             } else if (type === 'error') {
                 toast.style.borderColor = 'var(--danger-red)';
+            } else {
+                toast.style.borderColor = 'var(--electric-purple)';
             }
             
             setTimeout(() => {
