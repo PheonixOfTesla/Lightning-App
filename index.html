@@ -37,7 +37,6 @@
             min-height: 100vh;
         }
 
-        /* Background Gradient Animation */
         body::before {
             content: '';
             position: fixed;
@@ -59,7 +58,6 @@
             50% { opacity: 1; }
         }
 
-        /* Starfield */
         .stars {
             position: fixed;
             top: 0;
@@ -81,17 +79,10 @@
         }
 
         @keyframes twinkle {
-            0%, 100% { 
-                opacity: 0; 
-                transform: scale(0.5); 
-            }
-            50% { 
-                opacity: 1; 
-                transform: scale(1.2); 
-            }
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
         }
 
-        /* Lightning Effects */
         .lightning-container {
             position: fixed;
             top: 0;
@@ -105,11 +96,7 @@
         .lightning-bolt {
             position: absolute;
             width: 2px;
-            background: linear-gradient(to bottom, 
-                transparent, 
-                var(--lightning-yellow), 
-                var(--electric-purple),
-                transparent);
+            background: linear-gradient(to bottom, transparent, var(--lightning-yellow), var(--electric-purple), transparent);
             filter: blur(1px);
             opacity: 0;
             transform-origin: top;
@@ -126,11 +113,7 @@
             animation-delay: 2s;
             left: 75%;
             height: 300px;
-            background: linear-gradient(to bottom, 
-                transparent, 
-                var(--electric-purple), 
-                var(--lightning-yellow),
-                transparent);
+            background: linear-gradient(to bottom, transparent, var(--electric-purple), var(--lightning-yellow), transparent);
         }
 
         .lightning-bolt.blue {
@@ -138,62 +121,27 @@
             animation-delay: 4s;
             left: 45%;
             height: 250px;
-            background: linear-gradient(to bottom, 
-                transparent, 
-                var(--electric-blue), 
-                var(--electric-purple),
-                transparent);
+            background: linear-gradient(to bottom, transparent, var(--electric-blue), var(--electric-purple), transparent);
         }
 
         @keyframes strikeYellow {
-            0%, 95%, 100% { 
-                opacity: 0; 
-                transform: translateY(-100vh) scaleY(1);
-            }
-            96% { 
-                opacity: 1; 
-                transform: translateY(0) scaleY(2);
-                filter: blur(0px) drop-shadow(0 0 20px var(--lightning-yellow));
-            }
-            97% {
-                opacity: 0.8;
-                transform: translateY(100vh) scaleY(3);
-            }
+            0%, 95%, 100% { opacity: 0; transform: translateY(-100vh) scaleY(1); }
+            96% { opacity: 1; transform: translateY(0) scaleY(2); filter: blur(0px) drop-shadow(0 0 20px var(--lightning-yellow)); }
+            97% { opacity: 0.8; transform: translateY(100vh) scaleY(3); }
         }
 
         @keyframes strikePurple {
-            0%, 95%, 100% { 
-                opacity: 0; 
-                transform: translateY(-100vh) scaleY(1);
-            }
-            96% { 
-                opacity: 1; 
-                transform: translateY(0) scaleY(2);
-                filter: blur(0px) drop-shadow(0 0 20px var(--electric-purple));
-            }
-            97% {
-                opacity: 0.8;
-                transform: translateY(100vh) scaleY(3);
-            }
+            0%, 95%, 100% { opacity: 0; transform: translateY(-100vh) scaleY(1); }
+            96% { opacity: 1; transform: translateY(0) scaleY(2); filter: blur(0px) drop-shadow(0 0 20px var(--electric-purple)); }
+            97% { opacity: 0.8; transform: translateY(100vh) scaleY(3); }
         }
 
         @keyframes strikeBlue {
-            0%, 95%, 100% { 
-                opacity: 0; 
-                transform: translateY(-100vh) scaleY(1);
-            }
-            96% { 
-                opacity: 1; 
-                transform: translateY(0) scaleY(2);
-                filter: blur(0px) drop-shadow(0 0 20px var(--electric-blue));
-            }
-            97% {
-                opacity: 0.8;
-                transform: translateY(100vh) scaleY(3);
-            }
+            0%, 95%, 100% { opacity: 0; transform: translateY(-100vh) scaleY(1); }
+            96% { opacity: 1; transform: translateY(0) scaleY(2); filter: blur(0px) drop-shadow(0 0 20px var(--electric-blue)); }
+            97% { opacity: 0.8; transform: translateY(100vh) scaleY(3); }
         }
 
-        /* Loading Screen */
         #loadingScreen {
             position: fixed;
             top: 0;
@@ -215,25 +163,12 @@
         }
 
         @keyframes electricPulse {
-            0%, 100% { 
-                color: var(--lightning-yellow);
-                transform: scale(1) rotate(0deg);
-            }
-            25% {
-                color: var(--electric-purple);
-                transform: scale(1.1) rotate(5deg);
-            }
-            50% { 
-                color: var(--electric-blue);
-                transform: scale(1.2) rotate(-5deg);
-            }
-            75% {
-                color: var(--electric-purple);
-                transform: scale(1.1) rotate(5deg);
-            }
+            0%, 100% { color: var(--lightning-yellow); transform: scale(1) rotate(0deg); }
+            25% { color: var(--electric-purple); transform: scale(1.1) rotate(5deg); }
+            50% { color: var(--electric-blue); transform: scale(1.2) rotate(-5deg); }
+            75% { color: var(--electric-purple); transform: scale(1.1) rotate(5deg); }
         }
 
-        /* Navigation */
         nav {
             background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
@@ -306,7 +241,6 @@
             text-shadow: 0 0 10px rgba(255, 221, 0, 0.5);
         }
 
-        /* Buttons */
         .btn {
             padding: 0.75rem 2rem;
             border-radius: 0.5rem;
@@ -406,7 +340,6 @@
             transform: translateY(-2px);
         }
 
-        /* Main Content */
         main {
             margin-top: 80px;
             min-height: calc(100vh - 80px);
@@ -420,7 +353,6 @@
             padding: 2rem;
         }
 
-        /* Hero Section */
         .hero {
             padding: 4rem 2rem;
             text-align: center;
@@ -451,11 +383,7 @@
         .hero h1 {
             font-size: 4rem;
             margin-bottom: 1rem;
-            background: linear-gradient(90deg, 
-                var(--lightning-yellow), 
-                var(--electric-purple), 
-                var(--electric-blue), 
-                var(--lightning-yellow));
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple), var(--electric-blue), var(--lightning-yellow));
             background-size: 300% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -474,7 +402,6 @@
             margin-bottom: 2rem;
         }
 
-        /* Venue Cards */
         .venues-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -582,7 +509,6 @@
             filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.5));
         }
 
-        /* Dashboard Stats */
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -632,7 +558,6 @@
             filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.3));
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -692,7 +617,6 @@
             transform: rotate(90deg);
         }
 
-        /* Forms */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -723,7 +647,6 @@
             box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -764,7 +687,6 @@
             box-shadow: 0 0 30px rgba(255, 0, 68, 0.3);
         }
 
-        /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
             background: none;
@@ -774,7 +696,6 @@
             cursor: pointer;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
@@ -797,7 +718,6 @@
             }
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -816,7 +736,6 @@
             background: linear-gradient(var(--lightning-yellow), var(--electric-blue));
         }
 
-        /* Loading animation for buttons */
         .btn.loading {
             pointer-events: none;
             opacity: 0.7;
@@ -846,10 +765,33 @@
             padding: 3rem;
             color: rgba(255, 255, 255, 0.5);
         }
+
+        .qr-code-display {
+            text-align: center;
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 1rem;
+            margin: 1rem 0;
+        }
+
+        .ml-suggestion {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--electric-blue);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .revenue-chart {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
     </style>
 </head>
 <body>
-    <!-- Background Effects -->
     <div class="stars" id="stars"></div>
     <div class="lightning-container">
         <div class="lightning-bolt yellow"></div>
@@ -857,12 +799,10 @@
         <div class="lightning-bolt blue"></div>
     </div>
 
-    <!-- Loading Screen -->
     <div id="loadingScreen">
         <div class="loader">⚡</div>
     </div>
 
-    <!-- Navigation -->
     <nav>
         <div class="nav-container">
             <div class="logo" onclick="showView('customer')">
@@ -873,12 +813,12 @@
                 <a href="#" class="nav-link" onclick="showView('customer')">Browse Venues</a>
                 <a href="#" class="nav-link" onclick="showView('venue')">Venue Dashboard</a>
                 <a href="#" class="nav-link" onclick="showView('admin')">Admin</a>
+                <a href="#" class="nav-link" onclick="showView('scanner')">Scanner</a>
             </div>
             <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main>
         <!-- Customer View -->
         <div id="customerView" class="container">
@@ -936,6 +876,34 @@
                 </div>
             </div>
 
+            <!-- ML Pricing Suggestion -->
+            <div id="mlSuggestion" class="ml-suggestion" style="display: none;">
+                <h3 style="color: var(--electric-blue); margin-bottom: 0.5rem;">⚡ ML Price Recommendation</h3>
+                <p id="mlSuggestionText"></p>
+                <button class="btn btn-primary" style="margin-top: 1rem;" onclick="applyMLSuggestion()">
+                    <span>Apply Suggested Price</span>
+                </button>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="revenue-chart">
+                <h3 style="color: var(--electric-purple); margin-bottom: 1rem;">📊 Revenue Analytics</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <div class="stat-label">Last 24h Revenue</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);" id="revenue24h">$0</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Total Customers</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);" id="totalCustomers">0</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Avg Pass Price</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--neon-green);" id="avgPassPrice">$0</div>
+                    </div>
+                </div>
+            </div>
+
             <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;">
                 <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">⚡ Lightning Controls</h2>
                 
@@ -954,10 +922,16 @@
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
                     <button class="btn btn-success" onclick="activatePasses()"><span>Activate Passes</span></button>
                     <button class="btn btn-secondary" onclick="updatePricing()"><span>Update Pricing</span></button>
                     <button class="btn btn-danger" onclick="deactivatePasses()"><span>Deactivate</span></button>
+                    <button class="btn btn-primary" onclick="getMLPricingSuggestion()"><span>Get ML Suggestion</span></button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tonight's Tagline</label>
+                    <input type="text" class="form-input" id="tonightTagline" placeholder="e.g., DJ Set by Tiesto! 🎧">
                 </div>
             </div>
         </div>
@@ -984,6 +958,39 @@
                 <div class="stat-card">
                     <div class="stat-label">Today's Transactions</div>
                     <div class="stat-value" id="adminTransactions">0</div>
+                </div>
+            </div>
+
+            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem; margin-top: 2rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">🏢 Venue Management</h2>
+                <div id="adminVenueList" style="max-height: 400px; overflow-y: auto;">
+                    <div class="empty-state">Loading venues...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanner View -->
+        <div id="scannerView" class="container" style="display: none;">
+            <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Pass Scanner
+            </h1>
+            
+            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">🎫 Scan Lightning Pass</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Enter Pass ID</label>
+                    <input type="text" class="form-input" id="scanPassId" placeholder="LP-1234567890-abc">
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <button class="btn btn-primary" onclick="validatePass()"><span>Validate Pass</span></button>
+                    <button class="btn btn-success" onclick="usePass()"><span>Use Pass</span></button>
+                </div>
+
+                <div id="scanResult" style="display: none; padding: 1.5rem; border-radius: 0.5rem; margin-top: 1rem;">
+                    <h3 id="scanResultTitle"></h3>
+                    <div id="scanResultDetails"></div>
                 </div>
             </div>
         </div>
@@ -1033,11 +1040,32 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">⚡ Purchase Successful!</h2>
+                <button class="close-btn" onclick="closeModal('successModal')">&times;</button>
+            </div>
+            
+            <div style="text-align: center; padding: 2rem 0;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                <h3 style="color: var(--neon-green); margin-bottom: 1rem;">Your Lightning Pass is Ready!</h3>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem;">Check your phone for the QR code</p>
+                
+                <div id="successPassInfo"></div>
+                
+                <button class="btn btn-secondary" style="width: 100%; margin-top: 2rem;" onclick="closeModal('successModal')">
+                    <span>DONE</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
-        // API Configuration - Points to Railway backend
+        // API Configuration
         const API_BASE_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000' 
             : 'https://lightning-backend-production.up.railway.app';
@@ -1048,10 +1076,10 @@
             selectedVenue: null,
             venues: [],
             currentVenueId: null,
-            user: null
+            mlSuggestedPrice: null
         };
 
-        // API Helper Functions
+        // API Helper
         async function apiCall(endpoint, options = {}) {
             try {
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -1075,11 +1103,9 @@
             }
         }
 
-        // Initialize App
+        // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
             createStars();
-            
-            // Load initial data
             await loadVenues();
             await populateVenueSelector();
             
@@ -1090,7 +1116,7 @@
                 }, 500);
             }, 1000);
             
-            // Auto-refresh every 10 seconds
+            // Auto-refresh
             setInterval(async () => {
                 if (state.currentView === 'customer') {
                     await loadVenues();
@@ -1102,7 +1128,6 @@
             }, 10000);
         });
 
-        // Create starfield
         function createStars() {
             const starsContainer = document.getElementById('stars');
             const starCount = 150;
@@ -1123,17 +1148,16 @@
             }
         }
 
-        // View Management
         function showView(view) {
             state.currentView = view;
             
             document.getElementById('customerView').style.display = 'none';
             document.getElementById('venueView').style.display = 'none';
             document.getElementById('adminView').style.display = 'none';
+            document.getElementById('scannerView').style.display = 'none';
             
             document.getElementById(view + 'View').style.display = 'block';
             
-            // Load data for the view
             if (view === 'customer') {
                 loadVenues();
             } else if (view === 'venue') {
@@ -1143,7 +1167,6 @@
             }
         }
 
-        // Load Venues from API
         async function loadVenues() {
             try {
                 const data = await apiCall('/api/v1/lightning/venues');
@@ -1194,6 +1217,7 @@
                                 <span>${venue.availablePasses || 0} passes</span>
                             </div>
                         </div>
+                        ${venue.tonightTagline ? `<div style="color: var(--lightning-yellow); font-size: 0.875rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem;">🎉 ${venue.tonightTagline}</div>` : ''}
                         <div class="venue-price">$${venue.currentPrice || 35}</div>
                         ${trending}
                         <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue('${venue._id}')">
@@ -1208,7 +1232,6 @@
             }
         }
 
-        // Populate Venue Selector
         async function populateVenueSelector() {
             try {
                 const data = await apiCall('/api/v1/lightning/venues');
@@ -1223,7 +1246,6 @@
                     select.appendChild(option);
                 });
                 
-                // Auto-select first venue
                 if (data.venues.length > 0) {
                     select.value = data.venues[0]._id;
                     state.currentVenueId = data.venues[0]._id;
@@ -1234,7 +1256,6 @@
             }
         }
 
-        // Select Venue for Purchase
         async function selectVenue(venueId) {
             try {
                 const data = await apiCall(`/api/v1/lightning/venues/${venueId}`);
@@ -1260,7 +1281,6 @@
             }
         }
 
-        // Update Total
         function updateTotal() {
             if (!state.selectedVenue) return;
             
@@ -1272,7 +1292,6 @@
             document.getElementById('total').textContent = `$${total}`;
         }
 
-        // Process Purchase
         async function processPurchase(event) {
             event.preventDefault();
             
@@ -1284,8 +1303,6 @@
             const numPasses = parseInt(document.getElementById('numPasses').value);
             
             try {
-                showToast('Processing payment...', 'info');
-                
                 const data = await apiCall('/api/v1/lightning/passes/purchase', {
                     method: 'POST',
                     body: JSON.stringify({
@@ -1299,14 +1316,22 @@
                 button.classList.remove('loading');
                 closeModal('purchaseModal');
                 
-                showToast(`✅ Success! ${numPasses} Lightning Pass(es) sent to ${email}. Check your phone for QR code!`, 'success');
+                // Show success modal
+                document.getElementById('successPassInfo').innerHTML = `
+                    <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem; padding: 1rem;">
+                        <p style="margin-bottom: 0.5rem;"><strong>Pass ID:</strong> ${data.passId}</p>
+                        <p style="margin-bottom: 0.5rem;"><strong>Venue:</strong> ${state.selectedVenue.name}</p>
+                        <p style="margin-bottom: 0.5rem;"><strong>Passes:</strong> ${numPasses}</p>
+                        <p><strong>Total:</strong> $${numPasses * state.selectedVenue.currentPrice}</p>
+                    </div>
+                `;
+                showModal('successModal');
                 
                 // Reset form
                 document.getElementById('purchaseEmail').value = '';
                 document.getElementById('purchasePhone').value = '';
                 document.getElementById('numPasses').value = '1';
                 
-                // Reload venues to update availability
                 await loadVenues();
                 
             } catch (error) {
@@ -1315,7 +1340,6 @@
             }
         }
 
-        // Load Venue Stats
         async function loadVenueStats() {
             const venueId = document.getElementById('venueSelect').value;
             if (!venueId) return;
@@ -1323,16 +1347,14 @@
             state.currentVenueId = venueId;
             
             try {
-                // Get venue details
                 const venueData = await apiCall(`/api/v1/lightning/venues/${venueId}`);
                 const venue = venueData.venue;
                 
-                // Update form fields
                 document.getElementById('currentPrice').value = venue.currentPrice || 35;
                 document.getElementById('availablePasses').value = venue.availablePasses || 50;
                 document.getElementById('waitTime').value = venue.waitTime || 45;
+                document.getElementById('tonightTagline').value = venue.tonightTagline || '';
                 
-                // Get stats
                 const stats = await apiCall(`/api/v1/lightning/venue/${venueId}/stats`);
                 
                 document.getElementById('tonightRevenue').textContent = `$${stats.revenue || 0}`;
@@ -1340,12 +1362,52 @@
                 document.getElementById('currentWait').textContent = `${stats.currentWait || 0}m`;
                 document.getElementById('inLine').textContent = stats.inLine || 0;
                 
+                // Load revenue data
+                const revenueData = await apiCall(`/api/v1/analytics/venue/${venueId}/revenue`);
+                document.getElementById('revenue24h').textContent = `$${revenueData.total || 0}`;
+                document.getElementById('avgPassPrice').textContent = `$${revenueData.avgPassPrice || 0}`;
+                
+                // Load customer data
+                const customerData = await apiCall(`/api/v1/analytics/venue/${venueId}/customers`);
+                document.getElementById('totalCustomers').textContent = customerData.totalCustomers || 0;
+                
             } catch (error) {
                 console.error('Error loading venue stats:', error);
             }
         }
 
-        // Activate Passes
+        async function getMLPricingSuggestion() {
+            const venueId = state.currentVenueId;
+            if (!venueId) {
+                showToast('Please select a venue first', 'error');
+                return;
+            }
+            
+            try {
+                const data = await apiCall(`/api/v1/lightning/pricing/ml-suggest?venueId=${venueId}`);
+                
+                state.mlSuggestedPrice = data.suggestedPrice;
+                
+                document.getElementById('mlSuggestion').style.display = 'block';
+                document.getElementById('mlSuggestionText').innerHTML = `
+                    <strong style="font-size: 1.5rem; color: var(--lightning-yellow);">$${data.suggestedPrice}</strong>
+                    <p style="margin-top: 0.5rem;">${data.reasoning}</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">Confidence: ${(data.confidence * 100).toFixed(0)}%</p>
+                `;
+                
+                showToast('ML pricing suggestion loaded!', 'success');
+            } catch (error) {
+                showToast('Failed to get ML suggestion', 'error');
+            }
+        }
+
+        function applyMLSuggestion() {
+            if (state.mlSuggestedPrice) {
+                document.getElementById('currentPrice').value = state.mlSuggestedPrice;
+                showToast('ML suggested price applied!', 'success');
+            }
+        }
+
         async function activatePasses() {
             const venueId = state.currentVenueId;
             if (!venueId) {
@@ -1371,7 +1433,6 @@
             }
         }
 
-        // Deactivate Passes
         async function deactivatePasses() {
             const venueId = state.currentVenueId;
             if (!venueId) {
@@ -1392,7 +1453,6 @@
             }
         }
 
-        // Update Pricing
         async function updatePricing() {
             const venueId = state.currentVenueId;
             if (!venueId) {
@@ -1418,7 +1478,78 @@
             }
         }
 
-        // Load Admin Stats
+        async function validatePass() {
+            const passId = document.getElementById('scanPassId').value.trim();
+            if (!passId) {
+                showToast('Please enter a pass ID', 'error');
+                return;
+            }
+            
+            try {
+                const data = await apiCall(`/api/v1/lightning/passes/${passId}/validate`);
+                
+                const resultDiv = document.getElementById('scanResult');
+                resultDiv.style.display = 'block';
+                
+                if (data.valid) {
+                    resultDiv.style.background = 'rgba(57, 255, 20, 0.1)';
+                    resultDiv.style.border = '1px solid var(--neon-green)';
+                    document.getElementById('scanResultTitle').innerHTML = '✅ Valid Pass';
+                    document.getElementById('scanResultTitle').style.color = 'var(--neon-green)';
+                    
+                    const pass = data.pass;
+                    document.getElementById('scanResultDetails').innerHTML = `
+                        <p><strong>Pass ID:</strong> ${pass.passId}</p>
+                        <p><strong>Venue:</strong> ${pass.venueName}</p>
+                        <p><strong>Email:</strong> ${pass.email}</p>
+                        <p><strong>Quantity:</strong> ${pass.quantity}</p>
+                        <p><strong>Status:</strong> ${pass.status}</p>
+                        <p><strong>Valid Until:</strong> ${new Date(pass.validUntil).toLocaleString()}</p>
+                    `;
+                } else {
+                    resultDiv.style.background = 'rgba(255, 0, 68, 0.1)';
+                    resultDiv.style.border = '1px solid var(--danger-red)';
+                    document.getElementById('scanResultTitle').innerHTML = '❌ Invalid Pass';
+                    document.getElementById('scanResultTitle').style.color = 'var(--danger-red)';
+                    document.getElementById('scanResultDetails').innerHTML = `<p>${data.error}</p>`;
+                }
+            } catch (error) {
+                showToast('Error validating pass', 'error');
+            }
+        }
+
+        async function usePass() {
+            const passId = document.getElementById('scanPassId').value.trim();
+            if (!passId) {
+                showToast('Please enter a pass ID', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to mark this pass as used?')) {
+                return;
+            }
+            
+            try {
+                await apiCall(`/api/v1/lightning/passes/${passId}/use`, {
+                    method: 'POST'
+                });
+                
+                showToast('✅ Pass used successfully!', 'success');
+                
+                const resultDiv = document.getElementById('scanResult');
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = 'rgba(57, 255, 20, 0.1)';
+                resultDiv.style.border = '1px solid var(--neon-green)';
+                document.getElementById('scanResultTitle').innerHTML = '✅ Pass Used';
+                document.getElementById('scanResultTitle').style.color = 'var(--neon-green)';
+                document.getElementById('scanResultDetails').innerHTML = `<p>Pass has been marked as used and customer can enter.</p>`;
+                
+                document.getElementById('scanPassId').value = '';
+            } catch (error) {
+                showToast('Error using pass', 'error');
+            }
+        }
+
         async function loadAdminStats() {
             try {
                 const data = await apiCall('/api/v1/analytics/system/overview');
@@ -1428,12 +1559,41 @@
                 document.getElementById('adminPasses').textContent = data.totalPasses || 0;
                 document.getElementById('adminTransactions').textContent = data.todayTransactions || 0;
                 
+                // Load venue list
+                const venuesData = await apiCall('/api/v1/lightning/venues');
+                const venueListDiv = document.getElementById('adminVenueList');
+                
+                if (venuesData.venues.length === 0) {
+                    venueListDiv.innerHTML = '<div class="empty-state">No venues found</div>';
+                    return;
+                }
+                
+                venueListDiv.innerHTML = '';
+                venuesData.venues.forEach(venue => {
+                    const venueCard = document.createElement('div');
+                    venueCard.style.cssText = 'background: rgba(157, 78, 221, 0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;';
+                    venueCard.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="color: var(--electric-purple);">${venue.name}</h3>
+                                <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <p style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">$${venue.currentPrice}</p>
+                                <p style="font-size: 0.875rem; color: ${venue.isActive ? 'var(--neon-green)' : 'var(--danger-red)'};">
+                                    ${venue.isActive ? '✅ Active' : '❌ Inactive'}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    venueListDiv.appendChild(venueCard);
+                });
+                
             } catch (error) {
                 console.error('Error loading admin stats:', error);
             }
         }
 
-        // Modal Functions
         function showModal(modalId) {
             document.getElementById(modalId).classList.add('active');
         }
@@ -1442,7 +1602,6 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Toast Notifications
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -1453,12 +1612,10 @@
             }, 4000);
         }
 
-        // Scroll to venues
         function scrollToVenues() {
             document.getElementById('venuesGrid').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Mobile menu toggle
         function toggleMobileMenu() {
             const navLinks = document.getElementById('navLinks');
             if (navLinks.style.display === 'none' || navLinks.style.display === '') {
@@ -1476,7 +1633,6 @@
             }
         }
 
-        // Close modals on outside click
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', function(e) {
                 if (e.target === this) {
@@ -1485,7 +1641,6 @@
             });
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal.active').forEach(modal => {
