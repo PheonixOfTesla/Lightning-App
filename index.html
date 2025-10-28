@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Lightning Pass - Skip the Line, Capture the Revenue</title>
+    <title>⚡ Lightning Pass - Complete Platform</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     
     <style>
@@ -15,11 +15,9 @@
 
         :root {
             --pure-black: #000000;
-            --dark-black: #0a0a0a;
             --card-black: #111111;
             --border-dark: #1a1a1a;
             --lightning-yellow: #ffdd00;
-            --lightning-white: #ffffff;
             --electric-blue: #00d4ff;
             --electric-purple: #9d4edd;
             --neon-green: #39ff14;
@@ -33,8 +31,6 @@
             color: var(--white);
             line-height: 1.6;
             overflow-x: hidden;
-            position: relative;
-            min-height: 100vh;
         }
 
         body::before {
@@ -58,117 +54,6 @@
             50% { opacity: 1; }
         }
 
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 3s infinite;
-            box-shadow: 0 0 2px white;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0; transform: scale(0.5); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
-
-        .lightning-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .lightning-bolt {
-            position: absolute;
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, var(--lightning-yellow), var(--electric-purple), transparent);
-            filter: blur(1px);
-            opacity: 0;
-            transform-origin: top;
-        }
-
-        .lightning-bolt.yellow {
-            animation: strikeYellow 8s infinite;
-            left: 15%;
-            height: 200px;
-        }
-
-        .lightning-bolt.purple {
-            animation: strikePurple 8s infinite;
-            animation-delay: 2s;
-            left: 75%;
-            height: 300px;
-            background: linear-gradient(to bottom, transparent, var(--electric-purple), var(--lightning-yellow), transparent);
-        }
-
-        .lightning-bolt.blue {
-            animation: strikeBlue 8s infinite;
-            animation-delay: 4s;
-            left: 45%;
-            height: 250px;
-            background: linear-gradient(to bottom, transparent, var(--electric-blue), var(--electric-purple), transparent);
-        }
-
-        @keyframes strikeYellow {
-            0%, 95%, 100% { opacity: 0; transform: translateY(-100vh) scaleY(1); }
-            96% { opacity: 1; transform: translateY(0) scaleY(2); filter: blur(0px) drop-shadow(0 0 20px var(--lightning-yellow)); }
-            97% { opacity: 0.8; transform: translateY(100vh) scaleY(3); }
-        }
-
-        @keyframes strikePurple {
-            0%, 95%, 100% { opacity: 0; transform: translateY(-100vh) scaleY(1); }
-            96% { opacity: 1; transform: translateY(0) scaleY(2); filter: blur(0px) drop-shadow(0 0 20px var(--electric-purple)); }
-            97% { opacity: 0.8; transform: translateY(100vh) scaleY(3); }
-        }
-
-        @keyframes strikeBlue {
-            0%, 95%, 100% { opacity: 0; transform: translateY(-100vh) scaleY(1); }
-            96% { opacity: 1; transform: translateY(0) scaleY(2); filter: blur(0px) drop-shadow(0 0 20px var(--electric-blue)); }
-            97% { opacity: 0.8; transform: translateY(100vh) scaleY(3); }
-        }
-
-        #loadingScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--pure-black);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-
-        .loader {
-            font-size: 60px;
-            animation: electricPulse 1s infinite;
-            filter: drop-shadow(0 0 20px var(--lightning-yellow));
-        }
-
-        @keyframes electricPulse {
-            0%, 100% { color: var(--lightning-yellow); transform: scale(1) rotate(0deg); }
-            25% { color: var(--electric-purple); transform: scale(1.1) rotate(5deg); }
-            50% { color: var(--electric-blue); transform: scale(1.2) rotate(-5deg); }
-            75% { color: var(--electric-purple); transform: scale(1.1) rotate(5deg); }
-        }
-
         nav {
             background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
@@ -179,11 +64,10 @@
             z-index: 1000;
             padding: 1rem 2rem;
             border-bottom: 1px solid var(--border-dark);
-            box-shadow: 0 0 30px rgba(255, 221, 0, 0.1);
         }
 
         .nav-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -202,7 +86,11 @@
         .logo span:first-child {
             font-size: 2rem;
             animation: electricPulse 2s infinite;
-            filter: drop-shadow(0 0 15px var(--lightning-yellow));
+        }
+
+        @keyframes electricPulse {
+            0%, 100% { color: var(--lightning-yellow); }
+            50% { color: var(--electric-purple); }
         }
 
         .nav-links {
@@ -220,25 +108,8 @@
             padding: 0.5rem 0;
         }
 
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
-            transition: width 0.3s;
-            box-shadow: 0 0 10px var(--lightning-yellow);
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
         .nav-link:hover {
             color: var(--lightning-yellow);
-            text-shadow: 0 0 10px rgba(255, 221, 0, 0.5);
         }
 
         .btn {
@@ -250,34 +121,10 @@
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
-            position: relative;
-            overflow: hidden;
             background: transparent;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 0.875rem;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn span {
-            position: relative;
-            z-index: 1;
         }
 
         .btn-primary {
@@ -285,29 +132,9 @@
             color: var(--electric-blue);
         }
 
-        .btn-primary::before {
-            background: var(--electric-blue);
-        }
-
         .btn-primary:hover {
+            background: var(--electric-blue);
             color: var(--pure-black);
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            border-color: var(--lightning-yellow);
-            color: var(--lightning-yellow);
-        }
-
-        .btn-secondary::before {
-            background: var(--lightning-yellow);
-        }
-
-        .btn-secondary:hover {
-            color: var(--pure-black);
-            box-shadow: 0 0 30px rgba(255, 221, 0, 0.5);
-            transform: translateY(-2px);
         }
 
         .btn-success {
@@ -315,14 +142,9 @@
             color: var(--neon-green);
         }
 
-        .btn-success::before {
-            background: var(--neon-green);
-        }
-
         .btn-success:hover {
+            background: var(--neon-green);
             color: var(--pure-black);
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.5);
-            transform: translateY(-2px);
         }
 
         .btn-danger {
@@ -330,14 +152,19 @@
             color: var(--danger-red);
         }
 
-        .btn-danger::before {
+        .btn-danger:hover {
             background: var(--danger-red);
+            color: var(--white);
         }
 
-        .btn-danger:hover {
-            color: var(--white);
-            box-shadow: 0 0 30px rgba(255, 0, 68, 0.5);
-            transform: translateY(-2px);
+        .btn-secondary {
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
+        }
+
+        .btn-secondary:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
         }
 
         main {
@@ -348,7 +175,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -356,162 +183,73 @@
         .hero {
             padding: 4rem 2rem;
             text-align: center;
-            background: radial-gradient(circle at center, rgba(157, 78, 221, 0.05) 0%, transparent 70%);
+            background: radial-gradient(circle at center, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
             border: 1px solid var(--border-dark);
             border-radius: 1rem;
             margin-bottom: 3rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(157, 78, 221, 0.1), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
         .hero h1 {
             font-size: 4rem;
             margin-bottom: 1rem;
-            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple), var(--electric-blue), var(--lightning-yellow));
-            background-size: 300% auto;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple), var(--electric-blue));
+            background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gradient 3s linear infinite;
-            filter: drop-shadow(0 0 20px rgba(157, 78, 221, 0.5));
         }
 
         @keyframes gradient {
             0% { background-position: 0% center; }
-            100% { background-position: 300% center; }
+            100% { background-position: 200% center; }
         }
 
-        .hero p {
-            font-size: 1.25rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 2rem;
-        }
-
-        .venues-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .venue-card {
+        .section {
             background: var(--card-black);
             border: 1px solid var(--border-dark);
             border-radius: 1rem;
-            padding: 1.5rem;
-            transition: all 0.3s;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
-        .venue-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(157, 78, 221, 0.1), transparent);
-            transition: left 0.5s;
+        .section-title {
+            color: var(--electric-purple);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
         }
 
-        .venue-card:hover::before {
-            left: 100%;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .venue-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--electric-purple);
-            box-shadow: 0 10px 40px rgba(157, 78, 221, 0.3);
-        }
-
-        .venue-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
-        }
-
-        .venue-name {
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-
-        .venue-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--electric-purple);
+            font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .status-low {
-            background: rgba(57, 255, 20, 0.1);
-            color: var(--neon-green);
-            border: 1px solid var(--neon-green);
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--pure-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            font-size: 1rem;
         }
 
-        .status-medium {
-            background: rgba(255, 221, 0, 0.1);
-            color: var(--lightning-yellow);
-            border: 1px solid var(--lightning-yellow);
-        }
-
-        .status-high {
-            background: rgba(255, 0, 68, 0.1);
-            color: var(--danger-red);
-            border: 1px solid var(--danger-red);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .venue-info {
-            margin-bottom: 1rem;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.875rem;
-        }
-
-        .venue-price {
-            font-size: 2.5rem;
-            font-weight: bold;
-            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.5));
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--electric-purple);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
         }
 
         .dashboard-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 3rem;
         }
@@ -521,24 +259,6 @@
             border: 1px solid var(--border-dark);
             border-radius: 1rem;
             padding: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
-            animation: rotate 10s linear infinite;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .stat-label {
@@ -555,7 +275,50 @@
             background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 10px rgba(157, 78, 221, 0.3));
+        }
+
+        .venues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .venue-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .venue-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-purple);
+            box-shadow: 0 10px 40px rgba(157, 78, 221, 0.3);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-pending {
+            background: rgba(255, 221, 0, 0.2);
+            color: var(--lightning-yellow);
+            border: 1px solid var(--lightning-yellow);
+        }
+
+        .badge-approved {
+            background: rgba(57, 255, 20, 0.2);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
         }
 
         .modal {
@@ -585,7 +348,6 @@
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 0 50px rgba(157, 78, 221, 0.3);
-            position: relative;
         }
 
         .modal-header {
@@ -609,42 +371,10 @@
             color: var(--white);
             font-size: 1.5rem;
             cursor: pointer;
-            transition: all 0.3s;
         }
 
         .close-btn:hover {
             color: var(--electric-purple);
-            transform: rotate(90deg);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--electric-purple);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--pure-black);
-            border: 1px solid var(--border-dark);
-            border-radius: 0.5rem;
-            color: var(--white);
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--electric-purple);
-            box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
         }
 
         .toast {
@@ -652,57 +382,55 @@
             bottom: 2rem;
             right: 2rem;
             background: var(--card-black);
-            color: var(--white);
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            display: none;
-            z-index: 3000;
             border: 1px solid var(--electric-purple);
-            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
         }
 
         .toast.show {
             display: block;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .toast.success {
-            border-color: var(--neon-green);
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .toast.error {
-            border-color: var(--danger-red);
-            box-shadow: 0 0 30px rgba(255, 0, 68, 0.3);
+        .hidden {
+            display: none !important;
         }
 
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--white);
-            font-size: 1.5rem;
-            cursor: pointer;
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .alert-warning {
+            background: rgba(255, 221, 0, 0.1);
+            border: 1px solid var(--lightning-yellow);
+            color: var(--lightning-yellow);
+        }
+
+        .alert-success {
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
         }
 
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
-            }
-            
-            .mobile-menu-btn {
-                display: block;
             }
             
             .hero h1 {
@@ -712,122 +440,107 @@
             .venues-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .dashboard-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--pure-black);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--electric-purple), var(--lightning-yellow));
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(var(--lightning-yellow), var(--electric-blue));
-        }
-
-        .btn.loading {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
-        .btn.loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            top: 50%;
-            left: 50%;
-            margin-left: -10px;
-            margin-top: -10px;
-            border: 2px solid var(--white);
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spinner 0.6s linear infinite;
-        }
-
-        @keyframes spinner {
-            to { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .qr-code-display {
-            text-align: center;
-            padding: 2rem;
-            background: var(--white);
-            border-radius: 1rem;
-            margin: 1rem 0;
-        }
-
-        .ml-suggestion {
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid var(--electric-blue);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-
-        .revenue-chart {
-            background: var(--card-black);
-            border: 1px solid var(--border-dark);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
         }
     </style>
 </head>
 <body>
-    <div class="stars" id="stars"></div>
-    <div class="lightning-container">
-        <div class="lightning-bolt yellow"></div>
-        <div class="lightning-bolt purple"></div>
-        <div class="lightning-bolt blue"></div>
-    </div>
-
-    <div id="loadingScreen">
-        <div class="loader">⚡</div>
-    </div>
-
     <nav>
         <div class="nav-container">
-            <div class="logo" onclick="showView('customer')">
+            <div class="logo" onclick="showView('home')">
                 <span>⚡</span>
                 <span>Lightning Pass</span>
             </div>
             <div class="nav-links" id="navLinks">
-                <a href="#" class="nav-link" onclick="showView('customer')">Browse Venues</a>
-                <a href="#" class="nav-link" onclick="showView('venue')">Venue Dashboard</a>
-                <a href="#" class="nav-link" onclick="showView('admin')">Admin</a>
-                <a href="#" class="nav-link" onclick="showView('scanner')">Scanner</a>
+                <!-- Will be populated based on auth state -->
             </div>
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
     </nav>
 
     <main>
-        <!-- Customer View -->
-        <div id="customerView" class="container">
+        <!-- AUTH SCREEN (Login/Register) -->
+        <div id="authView" class="container">
+            <div style="max-width: 500px; margin: 4rem auto;">
+                <h1 style="text-align: center; margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Welcome to Lightning Pass
+                </h1>
+                
+                <!-- Login Form -->
+                <div id="loginSection" class="section">
+                    <h2 class="section-title">🔐 Sign In</h2>
+                    
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="loginEmail" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="loginPassword" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            SIGN IN
+                        </button>
+                    </form>
+                    
+                    <p style="text-align: center; margin-top: 1.5rem; color: rgba(255, 255, 255, 0.6);">
+                        Don't have an account? <a href="#" onclick="toggleAuthMode()" style="color: var(--electric-blue);">Register</a>
+                    </p>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerSection" class="section" style="display: none;">
+                    <h2 class="section-title">📝 Register</h2>
+                    
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="registerEmail" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-input" id="registerPhone" placeholder="+1 (305) 555-0123" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="registerPassword" required minlength="6">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">I am a:</label>
+                            <select class="form-select" id="registerRole">
+                                <option value="customer">Customer (Buy Passes)</option>
+                                <option value="venue">Venue Owner (Sell Passes)</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success" style="width: 100%;">
+                            REGISTER
+                        </button>
+                    </form>
+                    
+                    <p style="text-align: center; margin-top: 1.5rem; color: rgba(255, 255, 255, 0.6);">
+                        Already have an account? <a href="#" onclick="toggleAuthMode()" style="color: var(--electric-blue);">Sign In</a>
+                    </p>
+                </div>
+
+                <!-- Admin Login -->
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="#" onclick="showAdminLogin()" style="color: rgba(255, 255, 255, 0.4); font-size: 0.875rem;">Admin Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOMER VIEW -->
+        <div id="customerView" class="container hidden">
             <div class="hero">
                 <h1>Skip the Line Tonight</h1>
-                <p>Get instant access to the hottest venues</p>
-                <button class="btn btn-secondary" style="font-size: 1rem; padding: 1rem 2.5rem;" onclick="scrollToVenues()">
-                    <span>⚡ VIEW LIVE VENUES</span>
-                </button>
+                <p style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
+                    Get instant access to the hottest venues
+                </p>
             </div>
 
             <h2 style="margin-bottom: 2rem; font-size: 2rem;">
@@ -836,31 +549,28 @@
                 </span>
             </h2>
             
-            <div class="venues-grid" id="venuesGrid">
-                <div class="empty-state">
-                    <div class="loader">⚡</div>
-                    <p>Loading venues...</p>
-                </div>
+            <div class="venues-grid" id="customerVenuesGrid">
+                <div class="empty-state">Loading venues...</div>
             </div>
         </div>
 
-        <!-- Venue Dashboard -->
-        <div id="venueView" class="container" style="display: none;">
+        <!-- VENUE DASHBOARD -->
+        <div id="venueView" class="container hidden">
             <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                 Venue Dashboard
             </h1>
             
             <div style="margin-bottom: 2rem;">
-                <label class="form-label">Select Your Venue</label>
-                <select id="venueSelect" class="form-input" onchange="loadVenueStats()" style="cursor: pointer;">
-                    <option value="">Loading venues...</option>
+                <label class="form-label">Your Venue</label>
+                <select id="venueSelect" class="form-input" onchange="loadVenueStats()">
+                    <option value="">Loading...</option>
                 </select>
             </div>
             
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <div class="stat-label">Tonight's Revenue</div>
-                    <div class="stat-value" id="tonightRevenue">$0</div>
+                    <div class="stat-value" id="tonightRevenue" style="color: var(--neon-green);">$0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Passes Sold</div>
@@ -871,85 +581,60 @@
                     <div class="stat-value" id="currentWait">0m</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">People in Line</div>
+                    <div class="stat-label">In Line</div>
                     <div class="stat-value" id="inLine">0</div>
                 </div>
             </div>
 
-            <!-- ML Pricing Suggestion -->
-            <div id="mlSuggestion" class="ml-suggestion" style="display: none;">
-                <h3 style="color: var(--electric-blue); margin-bottom: 0.5rem;">⚡ ML Price Recommendation</h3>
-                <p id="mlSuggestionText"></p>
-                <button class="btn btn-primary" style="margin-top: 1rem;" onclick="applyMLSuggestion()">
-                    <span>Apply Suggested Price</span>
-                </button>
-            </div>
-
-            <!-- Revenue Chart -->
-            <div class="revenue-chart">
-                <h3 style="color: var(--electric-purple); margin-bottom: 1rem;">📊 Revenue Analytics</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div>
-                        <div class="stat-label">Last 24h Revenue</div>
-                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);" id="revenue24h">$0</div>
-                    </div>
-                    <div>
-                        <div class="stat-label">Total Customers</div>
-                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);" id="totalCustomers">0</div>
-                    </div>
-                    <div>
-                        <div class="stat-label">Avg Pass Price</div>
-                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--neon-green);" id="avgPassPrice">$0</div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;">
-                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">⚡ Lightning Controls</h2>
+            <div class="section">
+                <h2 class="section-title">⚡ Lightning Controls</h2>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="form-group">
                         <label class="form-label">Current Price ($)</label>
-                        <input type="number" class="form-input" id="currentPrice" value="35" min="10" max="500">
+                        <input type="number" class="form-input" id="currentPrice" value="35" min="10">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Available Passes</label>
-                        <input type="number" class="form-input" id="availablePasses" value="50" min="0" max="500">
+                        <input type="number" class="form-input" id="availablePasses" value="50" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Wait Time (minutes)</label>
-                        <input type="number" class="form-input" id="waitTime" value="45" min="0" max="180">
+                        <label class="form-label">Wait Time (min)</label>
+                        <input type="number" class="form-input" id="waitTime" value="45" min="0">
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
-                    <button class="btn btn-success" onclick="activatePasses()"><span>Activate Passes</span></button>
-                    <button class="btn btn-secondary" onclick="updatePricing()"><span>Update Pricing</span></button>
-                    <button class="btn btn-danger" onclick="deactivatePasses()"><span>Deactivate</span></button>
-                    <button class="btn btn-primary" onclick="getMLPricingSuggestion()"><span>Get ML Suggestion</span></button>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Tonight's Tagline</label>
-                    <input type="text" class="form-input" id="tonightTagline" placeholder="e.g., DJ Set by Tiesto! 🎧">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="activatePasses()">Activate</button>
+                    <button class="btn btn-secondary" onclick="updatePricing()">Update Price</button>
+                    <button class="btn btn-danger" onclick="deactivatePasses()">Deactivate</button>
+                    <button class="btn btn-primary" onclick="getMLPricingSuggestion()">ML Suggestion</button>
                 </div>
             </div>
         </div>
 
-        <!-- Admin View -->
-        <div id="adminView" class="container" style="display: none;">
+        <!-- ADMIN CONTROL PANEL -->
+        <div id="adminView" class="container hidden">
             <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                System Admin Panel
+                Admin Control Panel
             </h1>
             
+            <div id="pendingAlert" class="alert alert-warning" style="display: none;">
+                <strong>⚠️ Action Required:</strong> You have <strong id="pendingCount">0</strong> venue applications waiting for approval.
+            </div>
+
             <div class="dashboard-stats">
                 <div class="stat-card">
-                    <div class="stat-label">Total Revenue (24h)</div>
-                    <div class="stat-value" id="adminRevenue">$0</div>
+                    <div class="stat-label">Platform Revenue (24h)</div>
+                    <div class="stat-value" id="adminRevenue" style="color: var(--neon-green);">$0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Active Venues</div>
                     <div class="stat-value" id="adminVenues">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending Approval</div>
+                    <div class="stat-value" id="pendingVenues" style="color: var(--lightning-yellow);">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Total Passes</div>
@@ -959,24 +644,87 @@
                     <div class="stat-label">Today's Transactions</div>
                     <div class="stat-value" id="adminTransactions">0</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Venues</div>
+                    <div class="stat-value" id="totalVenues">0</div>
+                </div>
             </div>
 
-            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem; margin-top: 2rem;">
-                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">🏢 Venue Management</h2>
-                <div id="adminVenueList" style="max-height: 400px; overflow-y: auto;">
-                    <div class="empty-state">Loading venues...</div>
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="showPendingApprovals()">📋 PENDING APPROVALS</button>
+                <button class="btn btn-success" onclick="showCreateVenue()">➕ ADD VENUE</button>
+                <button class="btn btn-primary" onclick="loadAdminStats()">🔄 REFRESH</button>
+            </div>
+
+            <!-- Pending Approvals -->
+            <div id="pendingSection" class="section" style="display: none;">
+                <h2 class="section-title">⏳ Pending Venue Applications</h2>
+                <div id="pendingList">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Create Venue -->
+            <div id="createVenueSection" class="section" style="display: none;">
+                <h2 class="section-title">➕ Add Venue Manually</h2>
+                <form onsubmit="createVenue(event)">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Venue Name</label>
+                            <input type="text" class="form-input" id="newVenueName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select class="form-select" id="newVenueType">
+                                <option>Nightclub</option>
+                                <option>Bar</option>
+                                <option>Lounge</option>
+                                <option>Rooftop Bar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-input" id="newVenueAddress" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Capacity</label>
+                            <input type="number" class="form-input" id="newVenueCapacity" value="500" min="50">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Base Price</label>
+                            <input type="number" class="form-input" id="newVenuePrice" value="35" min="10">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Passes</label>
+                            <input type="number" class="form-input" id="newVenuePasses" value="50" min="0">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-success">CREATE</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideSection('createVenueSection')">CANCEL</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- All Venues -->
+            <div class="section">
+                <h2 class="section-title">🏢 All Venues</h2>
+                <div id="adminVenuesList">
+                    <div class="empty-state">Loading...</div>
                 </div>
             </div>
         </div>
 
-        <!-- Scanner View -->
-        <div id="scannerView" class="container" style="display: none;">
+        <!-- SCANNER VIEW -->
+        <div id="scannerView" class="container hidden">
             <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                 Pass Scanner
             </h1>
             
-            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem;">
-                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">🎫 Scan Lightning Pass</h2>
+            <div class="section">
+                <h2 class="section-title">🎫 Scan Lightning Pass</h2>
                 
                 <div class="form-group">
                     <label class="form-label">Enter Pass ID</label>
@@ -984,14 +732,11 @@
                 </div>
 
                 <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                    <button class="btn btn-primary" onclick="validatePass()"><span>Validate Pass</span></button>
-                    <button class="btn btn-success" onclick="usePass()"><span>Use Pass</span></button>
+                    <button class="btn btn-primary" onclick="validatePass()">Validate</button>
+                    <button class="btn btn-success" onclick="usePass()">Use Pass</button>
                 </div>
 
-                <div id="scanResult" style="display: none; padding: 1.5rem; border-radius: 0.5rem; margin-top: 1rem;">
-                    <h3 id="scanResultTitle"></h3>
-                    <div id="scanResultDetails"></div>
-                </div>
+                <div id="scanResult" style="display: none;"></div>
             </div>
         </div>
     </main>
@@ -1012,247 +757,328 @@
                     <input type="number" class="form-input" id="numPasses" value="1" min="1" max="10" onchange="updateTotal()">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="purchaseEmail" required placeholder="your@email.com">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Phone</label>
-                    <input type="tel" class="form-input" id="purchasePhone" required placeholder="+1 (305) 555-0123">
-                </div>
-
                 <div style="background: rgba(157, 78, 221, 0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Subtotal</span>
-                        <span id="subtotal">$0</span>
-                    </div>
                     <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; color: var(--lightning-yellow);">
                         <span>Total</span>
-                        <span id="total">$0</span>
+                        <span id="purchaseTotal">$0</span>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-secondary" style="width: 100%; font-size: 1rem;">
-                    <span>⚡ COMPLETE PURCHASE</span>
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                    ⚡ COMPLETE PURCHASE
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="modal">
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">⚡ Purchase Successful!</h2>
-                <button class="close-btn" onclick="closeModal('successModal')">&times;</button>
+                <h2 class="modal-title">Admin Login</h2>
+                <button class="close-btn" onclick="closeModal('adminLoginModal')">&times;</button>
             </div>
             
-            <div style="text-align: center; padding: 2rem 0;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-                <h3 style="color: var(--neon-green); margin-bottom: 1rem;">Your Lightning Pass is Ready!</h3>
-                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem;">Check your phone for the QR code</p>
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="adminUsername" value="admin">
+                </div>
                 
-                <div id="successPassInfo"></div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="adminPassword" value="admin123">
+                </div>
                 
-                <button class="btn btn-secondary" style="width: 100%; margin-top: 2rem;" onclick="closeModal('successModal')">
-                    <span>DONE</span>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    SIGN IN
                 </button>
-            </div>
+            </form>
         </div>
     </div>
 
     <div id="toast" class="toast"></div>
 
     <script>
-        // API Configuration
-        const API_BASE_URL = window.location.hostname === 'localhost' 
+        // ===== CONFIGURATION =====
+        const API_BASE = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000' 
             : 'https://lightning-backend-production.up.railway.app';
 
-        // State Management
+        // ===== STATE MANAGEMENT =====
         const state = {
-            currentView: 'customer',
+            user: null,
+            token: null,
+            currentView: 'auth',
             selectedVenue: null,
             venues: [],
-            currentVenueId: null,
-            mlSuggestedPrice: null
+            currentVenueId: null
         };
 
-        // API Helper
-        async function apiCall(endpoint, options = {}) {
-            try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                    ...options,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    }
-                });
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', async function() {
+            checkExistingAuth();
+        });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'API request failed');
-                }
-
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                showToast(`Error: ${error.message}`, 'error');
-                throw error;
+        function checkExistingAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                state.token = token;
+                state.user = JSON.parse(user);
+                handleAuthSuccess(state.user);
+            } else {
+                showView('auth');
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async function() {
-            createStars();
-            await loadVenues();
-            await populateVenueSelector();
+        // ===== AUTHENTICATION =====
+        function toggleAuthMode() {
+            const loginSection = document.getElementById('loginSection');
+            const registerSection = document.getElementById('registerSection');
             
-            setTimeout(() => {
-                document.getElementById('loadingScreen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loadingScreen').style.display = 'none';
-                }, 500);
-            }, 1000);
-            
-            // Auto-refresh
-            setInterval(async () => {
-                if (state.currentView === 'customer') {
-                    await loadVenues();
-                } else if (state.currentView === 'venue' && state.currentVenueId) {
-                    await loadVenueStats();
-                } else if (state.currentView === 'admin') {
-                    await loadAdminStats();
-                }
-            }, 10000);
-        });
+            if (loginSection.style.display === 'none') {
+                loginSection.style.display = 'block';
+                registerSection.style.display = 'none';
+            } else {
+                loginSection.style.display = 'none';
+                registerSection.style.display = 'block';
+            }
+        }
 
-        function createStars() {
-            const starsContainer = document.getElementById('stars');
-            const starCount = 150;
+        async function handleLogin(event) {
+            event.preventDefault();
             
-            for (let i = 0; i < starCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Mock login - In production, call your backend auth endpoint
+            try {
+                // For now, create a mock user based on email
+                let role = 'customer';
+                if (email.includes('venue')) role = 'venue';
+                if (email.includes('admin')) role = 'admin';
                 
-                const size = Math.random() * 2 + 1;
-                star.style.width = size + 'px';
-                star.style.height = size + 'px';
+                const user = {
+                    id: 'user_' + Date.now(),
+                    email: email,
+                    role: role
+                };
                 
-                starsContainer.appendChild(star);
+                const token = 'mock_token_' + Date.now();
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                state.token = token;
+                state.user = user;
+                
+                showToast('✅ Login successful!', 'success');
+                handleAuthSuccess(user);
+                
+            } catch (error) {
+                showToast('❌ Login failed', 'error');
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('registerEmail').value;
+            const phone = document.getElementById('registerPhone').value;
+            const password = document.getElementById('registerPassword').value;
+            const role = document.getElementById('registerRole').value;
+            
+            // Mock registration
+            try {
+                const user = {
+                    id: 'user_' + Date.now(),
+                    email: email,
+                    phone: phone,
+                    role: role
+                };
+                
+                const token = 'mock_token_' + Date.now();
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                state.token = token;
+                state.user = user;
+                
+                showToast('✅ Registration successful!', 'success');
+                handleAuthSuccess(user);
+                
+            } catch (error) {
+                showToast('❌ Registration failed', 'error');
+            }
+        }
+
+        function showAdminLogin() {
+            showModal('adminLoginModal');
+        }
+
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (username === 'admin' && password === 'admin123') {
+                const user = {
+                    id: 'admin_' + Date.now(),
+                    email: 'admin@lightningpass.com',
+                    role: 'admin'
+                };
+                
+                const token = 'admin_token_' + Date.now();
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                state.token = token;
+                state.user = user;
+                
+                closeModal('adminLoginModal');
+                showToast('✅ Admin login successful!', 'success');
+                handleAuthSuccess(user);
+            } else {
+                showToast('❌ Invalid credentials', 'error');
+            }
+        }
+
+        function handleAuthSuccess(user) {
+            updateNavigation(user);
+            
+            if (user.role === 'admin') {
+                showView('admin');
+                loadAdminStats();
+            } else if (user.role === 'venue') {
+                showView('venue');
+                populateVenueSelector();
+            } else {
+                showView('customer');
+                loadVenues();
+            }
+        }
+
+        function updateNavigation(user) {
+            const navLinks = document.getElementById('navLinks');
+            
+            if (user.role === 'admin') {
+                navLinks.innerHTML = `
+                    <a href="#" class="nav-link" onclick="showView('admin')">Control Panel</a>
+                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
+                `;
+            } else if (user.role === 'venue') {
+                navLinks.innerHTML = `
+                    <a href="#" class="nav-link" onclick="showView('venue')">Dashboard</a>
+                    <a href="#" class="nav-link" onclick="showView('scanner')">Scanner</a>
+                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
+                `;
+            } else {
+                navLinks.innerHTML = `
+                    <a href="#" class="nav-link" onclick="showView('customer')">Browse Venues</a>
+                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
+                `;
+            }
+            
+            navLinks.style.display = 'flex';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            state.token = null;
+            state.user = null;
+            
+            document.getElementById('navLinks').style.display = 'none';
+            showView('auth');
+            showToast('✅ Logged out successfully', 'success');
+        }
+
+        // ===== VIEW MANAGEMENT =====
+        function showView(view) {
+            state.currentView = view;
+            
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('customerView').classList.add('hidden');
+            document.getElementById('venueView').classList.add('hidden');
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('scannerView').classList.add('hidden');
+            
+            if (view === 'auth') {
+                document.getElementById('authView').classList.remove('hidden');
+            } else if (view === 'customer') {
+                document.getElementById('customerView').classList.remove('hidden');
+            } else if (view === 'venue') {
+                document.getElementById('venueView').classList.remove('hidden');
+            } else if (view === 'admin') {
+                document.getElementById('adminView').classList.remove('hidden');
+            } else if (view === 'scanner') {
+                document.getElementById('scannerView').classList.remove('hidden');
             }
         }
 
         function showView(view) {
+            // Backwards compatible with the old function name
+            const views = ['auth', 'customer', 'venue', 'admin', 'scanner'];
+            views.forEach(v => {
+                const element = document.getElementById(v + 'View');
+                if (element) {
+                    if (v === view) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                }
+            });
             state.currentView = view;
-            
-            document.getElementById('customerView').style.display = 'none';
-            document.getElementById('venueView').style.display = 'none';
-            document.getElementById('adminView').style.display = 'none';
-            document.getElementById('scannerView').style.display = 'none';
-            
-            document.getElementById(view + 'View').style.display = 'block';
-            
-            if (view === 'customer') {
-                loadVenues();
-            } else if (view === 'venue') {
-                loadVenueStats();
-            } else if (view === 'admin') {
-                loadAdminStats();
-            }
         }
 
+        // ===== CUSTOMER FUNCTIONS =====
         async function loadVenues() {
             try {
                 const data = await apiCall('/api/v1/lightning/venues');
                 state.venues = data.venues || [];
                 
-                const grid = document.getElementById('venuesGrid');
+                const grid = document.getElementById('customerVenuesGrid');
                 
                 if (state.venues.length === 0) {
-                    grid.innerHTML = '<div class="empty-state"><p>No active venues at the moment</p></div>';
+                    grid.innerHTML = '<div class="empty-state">No active venues</div>';
                     return;
                 }
                 
                 grid.innerHTML = '';
                 
-                state.venues.forEach((venue, index) => {
+                state.venues.forEach(venue => {
                     const card = document.createElement('div');
                     card.className = 'venue-card';
-                    card.style.animationDelay = (index * 0.1) + 's';
-                    
-                    const status = venue.status || 'medium';
-                    const trending = venue.trending ? '<div style="color: var(--electric-purple); font-size: 0.75rem; margin-bottom: 1rem;">🔥 TRENDING NOW</div>' : '';
-                    
                     card.innerHTML = `
-                        <div class="venue-header">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                             <div>
-                                <div class="venue-name">${venue.name}</div>
-                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.type || 'Venue'}</div>
+                                <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${venue.name}</h3>
+                                <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.type || 'Venue'}</p>
                             </div>
-                            <span class="venue-status status-${status}">
-                                ${venue.waitTime || 0} MIN
-                            </span>
+                            <span class="badge badge-approved">${venue.waitTime || 0} MIN</span>
                         </div>
-                        <div class="venue-info">
-                            <div class="info-row">
-                                <span>📍 Location</span>
-                                <span>${venue.address ? venue.address.split(',')[1] || venue.address : 'N/A'}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>👥 In Line</span>
-                                <span>${venue.inLine || 0} people</span>
-                            </div>
-                            <div class="info-row">
-                                <span>🏢 Capacity</span>
-                                <span>${venue.capacity || 500} max</span>
-                            </div>
-                            <div class="info-row">
-                                <span>🎫 Available</span>
-                                <span>${venue.availablePasses || 0} passes</span>
-                            </div>
+                        <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1rem;">${venue.address || ''}</p>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
+                            <span>👥 ${venue.inLine || 0} in line</span>
+                            <span>🎫 ${venue.availablePasses || 0} passes</span>
                         </div>
-                        ${venue.tonightTagline ? `<div style="color: var(--lightning-yellow); font-size: 0.875rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem;">🎉 ${venue.tonightTagline}</div>` : ''}
-                        <div class="venue-price">$${venue.currentPrice || 35}</div>
-                        ${trending}
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--lightning-yellow); margin-bottom: 1rem;">
+                            $${venue.currentPrice || 35}
+                        </div>
                         <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue('${venue._id}')">
-                            <span>⚡ GET LIGHTNING PASS</span>
+                            ⚡ GET PASS
                         </button>
                     `;
                     grid.appendChild(card);
                 });
             } catch (error) {
                 console.error('Error loading venues:', error);
-                document.getElementById('venuesGrid').innerHTML = '<div class="empty-state"><p>Error loading venues. Please refresh.</p></div>';
-            }
-        }
-
-        async function populateVenueSelector() {
-            try {
-                const data = await apiCall('/api/v1/lightning/venues');
-                const select = document.getElementById('venueSelect');
-                
-                select.innerHTML = '<option value="">Select a venue...</option>';
-                
-                data.venues.forEach(venue => {
-                    const option = document.createElement('option');
-                    option.value = venue._id;
-                    option.textContent = venue.name;
-                    select.appendChild(option);
-                });
-                
-                if (data.venues.length > 0) {
-                    select.value = data.venues[0]._id;
-                    state.currentVenueId = data.venues[0]._id;
-                    await loadVenueStats();
-                }
-            } catch (error) {
-                console.error('Error populating venue selector:', error);
             }
         }
 
@@ -1261,14 +1087,12 @@
                 const data = await apiCall(`/api/v1/lightning/venues/${venueId}`);
                 state.selectedVenue = data.venue;
                 
-                const info = document.getElementById('selectedVenueInfo');
-                info.innerHTML = `
-                    <div style="background: rgba(157, 78, 221, 0.05); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                document.getElementById('selectedVenueInfo').innerHTML = `
+                    <div style="background: rgba(157, 78, 221, 0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
                         <h3 style="color: var(--electric-purple);">${state.selectedVenue.name}</h3>
-                        <p style="color: rgba(255, 255, 255, 0.7); margin: 0.5rem 0;">${state.selectedVenue.address || 'Location not specified'}</p>
-                        ${state.selectedVenue.tonightTagline ? `<p style="color: var(--lightning-yellow); margin: 0.5rem 0;">🎉 ${state.selectedVenue.tonightTagline}</p>` : ''}
+                        <p style="color: rgba(255, 255, 255, 0.7);">${state.selectedVenue.address || ''}</p>
                         <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
-                            <span>⏱️ Current Wait: ${state.selectedVenue.waitTime || 0} minutes</span>
+                            <span>⏱️ Wait: ${state.selectedVenue.waitTime || 0} min</span>
                             <span style="color: var(--lightning-yellow); font-weight: bold;">$${state.selectedVenue.currentPrice || 35}/pass</span>
                         </div>
                     </div>
@@ -1277,7 +1101,7 @@
                 updateTotal();
                 showModal('purchaseModal');
             } catch (error) {
-                showToast('Error loading venue details', 'error');
+                showToast('Error loading venue', 'error');
             }
         }
 
@@ -1285,21 +1109,19 @@
             if (!state.selectedVenue) return;
             
             const numPasses = parseInt(document.getElementById('numPasses').value);
-            const subtotal = (state.selectedVenue.currentPrice || 35) * numPasses;
-            const total = subtotal;
+            const total = (state.selectedVenue.currentPrice || 35) * numPasses;
             
-            document.getElementById('subtotal').textContent = `$${subtotal}`;
-            document.getElementById('total').textContent = `$${total}`;
+            document.getElementById('purchaseTotal').textContent = `$${total}`;
         }
 
         async function processPurchase(event) {
             event.preventDefault();
             
-            const button = event.target.querySelector('button[type="submit"]');
-            button.classList.add('loading');
+            if (!state.user) {
+                showToast('Please login first', 'error');
+                return;
+            }
             
-            const email = document.getElementById('purchaseEmail').value;
-            const phone = document.getElementById('purchasePhone').value;
             const numPasses = parseInt(document.getElementById('numPasses').value);
             
             try {
@@ -1307,36 +1129,47 @@
                     method: 'POST',
                     body: JSON.stringify({
                         venueId: state.selectedVenue._id,
-                        email,
-                        phone,
+                        email: state.user.email,
+                        phone: state.user.phone || '+13055551234',
                         numPasses
                     })
                 });
                 
-                button.classList.remove('loading');
                 closeModal('purchaseModal');
-                
-                // Show success modal
-                document.getElementById('successPassInfo').innerHTML = `
-                    <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem; padding: 1rem;">
-                        <p style="margin-bottom: 0.5rem;"><strong>Pass ID:</strong> ${data.passId}</p>
-                        <p style="margin-bottom: 0.5rem;"><strong>Venue:</strong> ${state.selectedVenue.name}</p>
-                        <p style="margin-bottom: 0.5rem;"><strong>Passes:</strong> ${numPasses}</p>
-                        <p><strong>Total:</strong> $${numPasses * state.selectedVenue.currentPrice}</p>
-                    </div>
-                `;
-                showModal('successModal');
-                
-                // Reset form
-                document.getElementById('purchaseEmail').value = '';
-                document.getElementById('purchasePhone').value = '';
-                document.getElementById('numPasses').value = '1';
+                showToast('✅ Pass purchased successfully!', 'success');
                 
                 await loadVenues();
                 
             } catch (error) {
-                button.classList.remove('loading');
-                showToast(`Purchase failed: ${error.message}`, 'error');
+                showToast('Purchase failed: ' + error.message, 'error');
+            }
+        }
+
+        // ===== VENUE FUNCTIONS =====
+        async function populateVenueSelector() {
+            try {
+                const data = await apiCall('/api/v1/lightning/venues');
+                const select = document.getElementById('venueSelect');
+                
+                // Filter venues owned by current user (in production, filter by ownerId)
+                const userVenues = data.venues || [];
+                
+                select.innerHTML = '<option value="">Select a venue...</option>';
+                
+                userVenues.forEach(venue => {
+                    const option = document.createElement('option');
+                    option.value = venue._id;
+                    option.textContent = venue.name;
+                    select.appendChild(option);
+                });
+                
+                if (userVenues.length > 0) {
+                    select.value = userVenues[0]._id;
+                    state.currentVenueId = userVenues[0]._id;
+                    await loadVenueStats();
+                }
+            } catch (error) {
+                console.error('Error loading venues:', error);
             }
         }
 
@@ -1353,7 +1186,6 @@
                 document.getElementById('currentPrice').value = venue.currentPrice || 35;
                 document.getElementById('availablePasses').value = venue.availablePasses || 50;
                 document.getElementById('waitTime').value = venue.waitTime || 45;
-                document.getElementById('tonightTagline').value = venue.tonightTagline || '';
                 
                 const stats = await apiCall(`/api/v1/lightning/venue/${venueId}/stats`);
                 
@@ -1362,83 +1194,33 @@
                 document.getElementById('currentWait').textContent = `${stats.currentWait || 0}m`;
                 document.getElementById('inLine').textContent = stats.inLine || 0;
                 
-                // Load revenue data
-                const revenueData = await apiCall(`/api/v1/analytics/venue/${venueId}/revenue`);
-                document.getElementById('revenue24h').textContent = `$${revenueData.total || 0}`;
-                document.getElementById('avgPassPrice').textContent = `$${revenueData.avgPassPrice || 0}`;
-                
-                // Load customer data
-                const customerData = await apiCall(`/api/v1/analytics/venue/${venueId}/customers`);
-                document.getElementById('totalCustomers').textContent = customerData.totalCustomers || 0;
-                
             } catch (error) {
-                console.error('Error loading venue stats:', error);
-            }
-        }
-
-        async function getMLPricingSuggestion() {
-            const venueId = state.currentVenueId;
-            if (!venueId) {
-                showToast('Please select a venue first', 'error');
-                return;
-            }
-            
-            try {
-                const data = await apiCall(`/api/v1/lightning/pricing/ml-suggest?venueId=${venueId}`);
-                
-                state.mlSuggestedPrice = data.suggestedPrice;
-                
-                document.getElementById('mlSuggestion').style.display = 'block';
-                document.getElementById('mlSuggestionText').innerHTML = `
-                    <strong style="font-size: 1.5rem; color: var(--lightning-yellow);">$${data.suggestedPrice}</strong>
-                    <p style="margin-top: 0.5rem;">${data.reasoning}</p>
-                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">Confidence: ${(data.confidence * 100).toFixed(0)}%</p>
-                `;
-                
-                showToast('ML pricing suggestion loaded!', 'success');
-            } catch (error) {
-                showToast('Failed to get ML suggestion', 'error');
-            }
-        }
-
-        function applyMLSuggestion() {
-            if (state.mlSuggestedPrice) {
-                document.getElementById('currentPrice').value = state.mlSuggestedPrice;
-                showToast('ML suggested price applied!', 'success');
+                console.error('Error loading stats:', error);
             }
         }
 
         async function activatePasses() {
             const venueId = state.currentVenueId;
-            if (!venueId) {
-                showToast('Please select a venue first', 'error');
-                return;
-            }
+            if (!venueId) return;
             
             try {
                 const availablePasses = parseInt(document.getElementById('availablePasses').value);
                 
                 await apiCall('/api/v1/lightning/venue/activate', {
                     method: 'POST',
-                    body: JSON.stringify({
-                        venueId,
-                        availablePasses
-                    })
+                    body: JSON.stringify({ venueId, availablePasses })
                 });
                 
-                showToast('⚡ Lightning Passes activated!', 'success');
+                showToast('⚡ Passes activated!', 'success');
                 await loadVenueStats();
             } catch (error) {
-                showToast('Failed to activate passes', 'error');
+                showToast('Failed to activate', 'error');
             }
         }
 
         async function deactivatePasses() {
             const venueId = state.currentVenueId;
-            if (!venueId) {
-                showToast('Please select a venue first', 'error');
-                return;
-            }
+            if (!venueId) return;
             
             try {
                 await apiCall('/api/v1/lightning/venue/deactivate', {
@@ -1446,42 +1228,254 @@
                     body: JSON.stringify({ venueId })
                 });
                 
-                showToast('❌ Lightning Passes deactivated', 'success');
+                showToast('Passes deactivated', 'success');
                 await loadVenueStats();
             } catch (error) {
-                showToast('Failed to deactivate passes', 'error');
+                showToast('Failed to deactivate', 'error');
             }
         }
 
         async function updatePricing() {
             const venueId = state.currentVenueId;
-            if (!venueId) {
-                showToast('Please select a venue first', 'error');
-                return;
-            }
+            if (!venueId) return;
             
             try {
                 const newPrice = parseInt(document.getElementById('currentPrice').value);
                 
                 await apiCall('/api/v1/lightning/venue/pricing', {
                     method: 'PUT',
-                    body: JSON.stringify({
-                        venueId,
-                        newPrice
-                    })
+                    body: JSON.stringify({ venueId, newPrice })
                 });
                 
                 showToast(`💰 Price updated to $${newPrice}`, 'success');
                 await loadVenueStats();
             } catch (error) {
-                showToast('Failed to update pricing', 'error');
+                showToast('Failed to update price', 'error');
             }
         }
 
+        async function getMLPricingSuggestion() {
+            const venueId = state.currentVenueId;
+            if (!venueId) return;
+            
+            try {
+                const data = await apiCall(`/api/v1/lightning/pricing/ml-suggest?venueId=${venueId}`);
+                
+                alert(`💡 ML Pricing Suggestion\n\nRecommended Price: $${data.suggestedPrice}\n\n${data.reasoning}\n\nConfidence: ${(data.confidence * 100).toFixed(0)}%`);
+                
+                if (confirm('Apply this suggested price?')) {
+                    document.getElementById('currentPrice').value = data.suggestedPrice;
+                    await updatePricing();
+                }
+            } catch (error) {
+                showToast('Failed to get suggestion', 'error');
+            }
+        }
+
+        // ===== ADMIN FUNCTIONS =====
+        async function loadAdminStats() {
+            try {
+                const data = await apiCall('/api/v1/analytics/system/overview');
+                
+                document.getElementById('adminRevenue').textContent = `$${data.totalRevenue24h || 0}`;
+                document.getElementById('adminVenues').textContent = data.activeVenues || 0;
+                document.getElementById('adminPasses').textContent = data.totalPasses || 0;
+                document.getElementById('adminTransactions').textContent = data.todayTransactions || 0;
+                
+                const venuesData = await apiCall('/api/v1/lightning/venues');
+                const allVenues = venuesData.venues || [];
+                
+                const pending = allVenues.filter(v => v.approvalStatus === 'pending');
+                
+                document.getElementById('pendingVenues').textContent = pending.length;
+                document.getElementById('totalVenues').textContent = allVenues.length;
+                document.getElementById('pendingCount').textContent = pending.length;
+                
+                if (pending.length > 0) {
+                    document.getElementById('pendingAlert').style.display = 'block';
+                } else {
+                    document.getElementById('pendingAlert').style.display = 'none';
+                }
+                
+                renderAllVenues(allVenues);
+                
+            } catch (error) {
+                console.error('Error loading admin stats:', error);
+            }
+        }
+
+        function renderAllVenues(venues) {
+            const list = document.getElementById('adminVenuesList');
+            
+            if (venues.length === 0) {
+                list.innerHTML = '<div class="empty-state">No venues</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            
+            venues.forEach(venue => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background: rgba(157, 78, 221, 0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h3 style="color: var(--electric-purple);">${venue.name}</h3>
+                            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">$${venue.currentPrice}</p>
+                            <span class="badge ${venue.isActive ? 'badge-approved' : 'badge-pending'}">
+                                ${venue.isActive ? 'ACTIVE' : 'INACTIVE'}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="editVenue('${venue._id}')">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteVenue('${venue._id}', '${venue.name}')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function showPendingApprovals() {
+            document.getElementById('pendingSection').style.display = 'block';
+            document.getElementById('createVenueSection').style.display = 'none';
+            loadPendingApprovals();
+        }
+
+        async function loadPendingApprovals() {
+            try {
+                const data = await apiCall('/api/v1/lightning/venues');
+                const pending = (data.venues || []).filter(v => v.approvalStatus === 'pending');
+                
+                const list = document.getElementById('pendingList');
+                
+                if (pending.length === 0) {
+                    list.innerHTML = '<div class="empty-state">✅ No pending approvals</div>';
+                    return;
+                }
+                
+                list.innerHTML = '';
+                
+                pending.forEach(venue => {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background: rgba(255, 221, 0, 0.05); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;';
+                    card.innerHTML = `
+                        <h3 style="color: var(--lightning-yellow);">${venue.name}</h3>
+                        <p style="color: rgba(255, 255, 255, 0.6);">${venue.address}</p>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn btn-success" onclick="approveVenue('${venue._id}', '${venue.name}')">Approve</button>
+                            <button class="btn btn-danger" onclick="rejectVenue('${venue._id}', '${venue.name}')">Reject</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading pending:', error);
+            }
+        }
+
+        async function approveVenue(venueId, venueName) {
+            if (!confirm(`Approve ${venueName}?`)) return;
+            
+            try {
+                await apiCall('/api/v1/lightning/venue/approve', {
+                    method: 'POST',
+                    body: JSON.stringify({ venueId, approvalStatus: 'approved' })
+                });
+                
+                showToast(`✅ ${venueName} approved!`, 'success');
+                await loadAdminStats();
+                await loadPendingApprovals();
+            } catch (error) {
+                showToast('Approval failed', 'error');
+            }
+        }
+
+        async function rejectVenue(venueId, venueName) {
+            if (!confirm(`Reject ${venueName}?`)) return;
+            
+            try {
+                await apiCall('/api/v1/lightning/venue/approve', {
+                    method: 'POST',
+                    body: JSON.stringify({ venueId, approvalStatus: 'rejected' })
+                });
+                
+                showToast(`${venueName} rejected`, 'success');
+                await loadAdminStats();
+                await loadPendingApprovals();
+            } catch (error) {
+                showToast('Rejection failed', 'error');
+            }
+        }
+
+        function showCreateVenue() {
+            document.getElementById('createVenueSection').style.display = 'block';
+            document.getElementById('pendingSection').style.display = 'none';
+        }
+
+        function hideSection(sectionId) {
+            document.getElementById(sectionId).style.display = 'none';
+        }
+
+        async function createVenue(event) {
+            event.preventDefault();
+            
+            const venueData = {
+                name: document.getElementById('newVenueName').value,
+                type: document.getElementById('newVenueType').value,
+                address: document.getElementById('newVenueAddress').value,
+                capacity: parseInt(document.getElementById('newVenueCapacity').value),
+                basePrice: parseInt(document.getElementById('newVenuePrice').value),
+                currentPrice: parseInt(document.getElementById('newVenuePrice').value),
+                availablePasses: parseInt(document.getElementById('newVenuePasses').value),
+                isActive: true,
+                approvalStatus: 'approved',
+                waitTime: 45,
+                inLine: 0
+            };
+            
+            try {
+                await apiCall('/api/v1/lightning/venues/create', {
+                    method: 'POST',
+                    body: JSON.stringify(venueData)
+                });
+                
+                showToast(`✅ ${venueData.name} created!`, 'success');
+                event.target.reset();
+                hideSection('createVenueSection');
+                await loadAdminStats();
+            } catch (error) {
+                showToast('Creation failed', 'error');
+            }
+        }
+
+        async function deleteVenue(venueId, venueName) {
+            if (!confirm(`DELETE ${venueName}? This cannot be undone.`)) return;
+            
+            try {
+                await apiCall(`/api/v1/lightning/venues/${venueId}`, {
+                    method: 'DELETE'
+                });
+                
+                showToast(`${venueName} deleted`, 'success');
+                await loadAdminStats();
+            } catch (error) {
+                showToast('Deletion failed', 'error');
+            }
+        }
+
+        function editVenue(venueId) {
+            showToast('Edit feature coming soon', 'info');
+        }
+
+        // ===== SCANNER FUNCTIONS =====
         async function validatePass() {
             const passId = document.getElementById('scanPassId').value.trim();
             if (!passId) {
-                showToast('Please enter a pass ID', 'error');
+                showToast('Enter a pass ID', 'error');
                 return;
             }
             
@@ -1492,105 +1486,71 @@
                 resultDiv.style.display = 'block';
                 
                 if (data.valid) {
-                    resultDiv.style.background = 'rgba(57, 255, 20, 0.1)';
-                    resultDiv.style.border = '1px solid var(--neon-green)';
-                    document.getElementById('scanResultTitle').innerHTML = '✅ Valid Pass';
-                    document.getElementById('scanResultTitle').style.color = 'var(--neon-green)';
-                    
-                    const pass = data.pass;
-                    document.getElementById('scanResultDetails').innerHTML = `
-                        <p><strong>Pass ID:</strong> ${pass.passId}</p>
-                        <p><strong>Venue:</strong> ${pass.venueName}</p>
-                        <p><strong>Email:</strong> ${pass.email}</p>
-                        <p><strong>Quantity:</strong> ${pass.quantity}</p>
-                        <p><strong>Status:</strong> ${pass.status}</p>
-                        <p><strong>Valid Until:</strong> ${new Date(pass.validUntil).toLocaleString()}</p>
+                    resultDiv.style.cssText = 'background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem; padding: 1rem;';
+                    resultDiv.innerHTML = `
+                        <h3 style="color: var(--neon-green);">✅ Valid Pass</h3>
+                        <p><strong>Pass ID:</strong> ${data.pass.passId}</p>
+                        <p><strong>Customer:</strong> ${data.pass.email}</p>
+                        <p><strong>Quantity:</strong> ${data.pass.quantity}</p>
+                        <p><strong>Status:</strong> ${data.pass.status}</p>
                     `;
+                    showToast('✓ Pass is valid!', 'success');
                 } else {
-                    resultDiv.style.background = 'rgba(255, 0, 68, 0.1)';
-                    resultDiv.style.border = '1px solid var(--danger-red)';
-                    document.getElementById('scanResultTitle').innerHTML = '❌ Invalid Pass';
-                    document.getElementById('scanResultTitle').style.color = 'var(--danger-red)';
-                    document.getElementById('scanResultDetails').innerHTML = `<p>${data.error}</p>`;
+                    resultDiv.style.cssText = 'background: rgba(255, 0, 68, 0.1); border: 1px solid var(--danger-red); border-radius: 0.5rem; padding: 1rem;';
+                    resultDiv.innerHTML = `
+                        <h3 style="color: var(--danger-red);">❌ Invalid Pass</h3>
+                        <p>${data.error}</p>
+                    `;
+                    showToast('❌ Invalid pass', 'error');
                 }
             } catch (error) {
-                showToast('Error validating pass', 'error');
+                showToast('Validation error', 'error');
             }
         }
 
         async function usePass() {
             const passId = document.getElementById('scanPassId').value.trim();
             if (!passId) {
-                showToast('Please enter a pass ID', 'error');
+                showToast('Enter a pass ID', 'error');
                 return;
             }
             
-            if (!confirm('Are you sure you want to mark this pass as used?')) {
-                return;
-            }
+            if (!confirm('Mark this pass as used?')) return;
             
             try {
                 await apiCall(`/api/v1/lightning/passes/${passId}/use`, {
                     method: 'POST'
                 });
                 
-                showToast('✅ Pass used successfully!', 'success');
-                
-                const resultDiv = document.getElementById('scanResult');
-                resultDiv.style.display = 'block';
-                resultDiv.style.background = 'rgba(57, 255, 20, 0.1)';
-                resultDiv.style.border = '1px solid var(--neon-green)';
-                document.getElementById('scanResultTitle').innerHTML = '✅ Pass Used';
-                document.getElementById('scanResultTitle').style.color = 'var(--neon-green)';
-                document.getElementById('scanResultDetails').innerHTML = `<p>Pass has been marked as used and customer can enter.</p>`;
-                
+                showToast('✅ Pass used!', 'success');
                 document.getElementById('scanPassId').value = '';
+                document.getElementById('scanResult').style.display = 'none';
             } catch (error) {
                 showToast('Error using pass', 'error');
             }
         }
 
-        async function loadAdminStats() {
+        // ===== UTILITY FUNCTIONS =====
+        async function apiCall(endpoint, options = {}) {
             try {
-                const data = await apiCall('/api/v1/analytics/system/overview');
-                
-                document.getElementById('adminRevenue').textContent = `$${data.totalRevenue24h || 0}`;
-                document.getElementById('adminVenues').textContent = data.activeVenues || 0;
-                document.getElementById('adminPasses').textContent = data.totalPasses || 0;
-                document.getElementById('adminTransactions').textContent = data.todayTransactions || 0;
-                
-                // Load venue list
-                const venuesData = await apiCall('/api/v1/lightning/venues');
-                const venueListDiv = document.getElementById('adminVenueList');
-                
-                if (venuesData.venues.length === 0) {
-                    venueListDiv.innerHTML = '<div class="empty-state">No venues found</div>';
-                    return;
-                }
-                
-                venueListDiv.innerHTML = '';
-                venuesData.venues.forEach(venue => {
-                    const venueCard = document.createElement('div');
-                    venueCard.style.cssText = 'background: rgba(157, 78, 221, 0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;';
-                    venueCard.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <h3 style="color: var(--electric-purple);">${venue.name}</h3>
-                                <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
-                            </div>
-                            <div style="text-align: right;">
-                                <p style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">$${venue.currentPrice}</p>
-                                <p style="font-size: 0.875rem; color: ${venue.isActive ? 'var(--neon-green)' : 'var(--danger-red)'};">
-                                    ${venue.isActive ? '✅ Active' : '❌ Inactive'}
-                                </p>
-                            </div>
-                        </div>
-                    `;
-                    venueListDiv.appendChild(venueCard);
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': state.token ? `Bearer ${state.token}` : '',
+                        ...options.headers
+                    }
                 });
-                
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Request failed');
+                }
+
+                return await response.json();
             } catch (error) {
-                console.error('Error loading admin stats:', error);
+                console.error('API Error:', error);
+                throw error;
             }
         }
 
@@ -1605,34 +1565,20 @@
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.className = 'toast show ' + type;
+            toast.className = 'toast show';
+            
+            if (type === 'success') {
+                toast.style.borderColor = 'var(--neon-green)';
+            } else if (type === 'error') {
+                toast.style.borderColor = 'var(--danger-red)';
+            }
             
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 4000);
         }
 
-        function scrollToVenues() {
-            document.getElementById('venuesGrid').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function toggleMobileMenu() {
-            const navLinks = document.getElementById('navLinks');
-            if (navLinks.style.display === 'none' || navLinks.style.display === '') {
-                navLinks.style.display = 'flex';
-                navLinks.style.position = 'absolute';
-                navLinks.style.top = '100%';
-                navLinks.style.left = '0';
-                navLinks.style.right = '0';
-                navLinks.style.background = 'var(--pure-black)';
-                navLinks.style.flexDirection = 'column';
-                navLinks.style.padding = '1rem';
-                navLinks.style.borderTop = '1px solid var(--border-dark)';
-            } else {
-                navLinks.style.display = 'none';
-            }
-        }
-
+        // Close modals on background click
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', function(e) {
                 if (e.target === this) {
@@ -1641,6 +1587,7 @@
             });
         });
 
+        // Close modals on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal.active').forEach(modal => {
