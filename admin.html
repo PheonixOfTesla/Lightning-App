@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Lightning Pass - Admin Portal</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #000000;
+            --card-black: #111111;
+            --border-dark: #1a1a1a;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            background: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            border-color: var(--electric-blue);
+            color: var(--electric-blue);
+        }
+
+        .btn-primary:hover {
+            background: var(--electric-blue);
+            color: var(--pure-black);
+        }
+
+        .btn-success {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .btn-success:hover {
+            background: var(--neon-green);
+            color: var(--pure-black);
+        }
+
+        .btn-danger {
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-red);
+            color: var(--white);
+        }
+
+        .btn-secondary {
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
+        }
+
+        .btn-secondary:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--electric-purple);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--pure-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--electric-purple);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
+        }
+
+        .venue-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .venue-card.pending {
+            border-color: var(--lightning-yellow);
+            background: rgba(255, 221, 0, 0.05);
+        }
+
+        .venue-card.approved {
+            border-color: var(--neon-green);
+            background: rgba(57, 255, 20, 0.05);
+        }
+
+        .venue-card.rejected {
+            border-color: var(--danger-red);
+            background: rgba(255, 0, 68, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-pending {
+            background: rgba(255, 221, 0, 0.2);
+            color: var(--lightning-yellow);
+            border: 1px solid var(--lightning-yellow);
+        }
+
+        .badge-approved {
+            background: rgba(57, 255, 20, 0.2);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .badge-rejected {
+            background: rgba(255, 0, 68, 0.2);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .alert-warning {
+            background: rgba(255, 221, 0, 0.1);
+            border: 1px solid var(--lightning-yellow);
+            color: var(--lightning-yellow);
+        }
+
+        .alert-success {
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .section {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--electric-purple);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--card-black);
+            border: 1px solid var(--electric-purple);
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <span style="font-size: 2rem;">⚡</span>
+                <span>Lightning Pass Admin</span>
+            </div>
+            <div id="navActions" style="display: none;">
+                <button class="btn btn-danger" onclick="adminLogout()">SIGN OUT</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <div style="max-width: 500px; margin: 4rem auto;">
+                <h1 style="text-align: center; margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Admin Portal
+                </h1>
+                
+                <div class="section">
+                    <h2 class="section-title">🔐 Sign In</h2>
+                    
+                    <form onsubmit="adminLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="adminUsername" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="adminPassword" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            SIGN IN
+                        </button>
+                    </form>
+                    
+                    <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem; margin-top: 1rem; text-align: center;">
+                        Default: admin / admin123
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" style="display: none;">
+            <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Control Panel
+            </h1>
+
+            <!-- Pending Alert -->
+            <div id="pendingAlert" class="alert alert-warning" style="display: none;">
+                <strong>⚠️ Action Required:</strong> You have <strong id="pendingCount">0</strong> venue applications waiting for approval.
+            </div>
+
+            <!-- Stats -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Platform Revenue (24h)</div>
+                    <div class="stat-value" id="platformRevenue" style="color: var(--neon-green);">$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Venues</div>
+                    <div class="stat-value" id="activeVenues">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending Approval</div>
+                    <div class="stat-value" id="pendingVenues" style="color: var(--lightning-yellow);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Passes Sold</div>
+                    <div class="stat-value" id="totalPasses">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Today's Transactions</div>
+                    <div class="stat-value" id="todayTransactions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Venues</div>
+                    <div class="stat-value" id="totalVenues">0</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="showSection('pendingSection')">
+                    📋 PENDING APPROVALS
+                </button>
+                <button class="btn btn-success" onclick="showSection('createSection')">
+                    ➕ ADD VENUE MANUALLY
+                </button>
+                <button class="btn btn-primary" onclick="showSection('allVenuesSection')">
+                    🏢 ALL VENUES
+                </button>
+                <button class="btn btn-primary" onclick="loadDashboard()">
+                    🔄 REFRESH
+                </button>
+            </div>
+
+            <!-- Pending Approvals Section -->
+            <div id="pendingSection" class="section" style="display: none;">
+                <h2 class="section-title">⏳ Pending Venue Applications</h2>
+                <div id="pendingList">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Manual Venue Creation -->
+            <div id="createSection" class="section" style="display: none;">
+                <h2 class="section-title">➕ Add Venue Manually</h2>
+                <form onsubmit="createManualVenue(event)">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Venue Name *</label>
+                            <input type="text" class="form-input" id="manualName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type *</label>
+                            <select class="form-select" id="manualType">
+                                <option>Nightclub</option>
+                                <option>Bar</option>
+                                <option>Lounge</option>
+                                <option>Rooftop Bar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Address *</label>
+                        <input type="text" class="form-input" id="manualAddress" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Capacity *</label>
+                            <input type="number" class="form-input" id="manualCapacity" value="500" min="50">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Base Price *</label>
+                            <input type="number" class="form-input" id="manualPrice" value="35" min="10">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Passes *</label>
+                            <input type="number" class="form-input" id="manualPasses" value="50" min="0">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-success">CREATE VENUE</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideSection('createSection')">CANCEL</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- All Venues -->
+            <div id="allVenuesSection" class="section">
+                <h2 class="section-title">🏢 All Venues</h2>
+                <div id="allVenuesList">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : 'https://lightning-backend-production.up.railway.app';
+
+        let isLoggedIn = false;
+
+        // Admin Login
+        function adminLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            // Simple authentication (in production, use proper JWT)
+            if (username === 'admin' && password === 'admin123') {
+                isLoggedIn = true;
+                localStorage.setItem('adminToken', 'admin-authenticated');
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.getElementById('navActions').style.display = 'block';
+                
+                loadDashboard();
+                showToast('✅ Logged in successfully', 'success');
+            } else {
+                showToast('❌ Invalid credentials', 'error');
+            }
+        }
+
+        // Admin Logout
+        function adminLogout() {
+            isLoggedIn = false;
+            localStorage.removeItem('adminToken');
+            
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('navActions').style.display = 'none';
+            
+            showToast('✅ Logged out', 'success');
+        }
+
+        // Load Dashboard Data
+        async function loadDashboard() {
+            try {
+                // Load stats
+                const statsRes = await fetch(`${API_BASE}/api/v1/analytics/system/overview`);
+                const stats = await statsRes.json();
+                
+                document.getElementById('activeVenues').textContent = stats.activeVenues || 0;
+                document.getElementById('totalPasses').textContent = stats.totalPasses || 0;
+                document.getElementById('todayTransactions').textContent = stats.todayTransactions || 0;
+                document.getElementById('platformRevenue').textContent = '$' + (stats.totalRevenue24h || 0);
+                
+                // Load all venues
+                const venuesRes = await fetch(`${API_BASE}/api/v1/lightning/venues`);
+                const venuesData = await venuesRes.json();
+                const allVenues = venuesData.venues || [];
+                
+                // Filter pending vs approved
+                const pending = allVenues.filter(v => v.approvalStatus === 'pending');
+                const approved = allVenues.filter(v => v.approvalStatus === 'approved' || !v.approvalStatus);
+                
+                document.getElementById('pendingVenues').textContent = pending.length;
+                document.getElementById('totalVenues').textContent = allVenues.length;
+                document.getElementById('pendingCount').textContent = pending.length;
+                
+                // Show/hide alert
+                if (pending.length > 0) {
+                    document.getElementById('pendingAlert').style.display = 'block';
+                } else {
+                    document.getElementById('pendingAlert').style.display = 'none';
+                }
+                
+                // Render lists
+                renderPendingVenues(pending);
+                renderAllVenues(allVenues);
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('⚠️ Error loading data', 'error');
+            }
+        }
+
+        // Render Pending Venues
+        function renderPendingVenues(venues) {
+            const list = document.getElementById('pendingList');
+            
+            if (venues.length === 0) {
+                list.innerHTML = '<div class="empty-state">✅ No pending approvals</div>';
+                return;
+            }
+            
+            list.innerHTML = venues.map(venue => `
+                <div class="venue-card pending">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">${venue.name}</h3>
+                            <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 0.5rem;">${venue.type || 'Venue'}</p>
+                            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
+                        </div>
+                        <span class="badge badge-pending">PENDING</span>
+                    </div>
+                    
+                    <div style="margin: 1rem 0; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 0.5rem;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; font-size: 0.875rem;">
+                            <div>
+                                <strong>Capacity:</strong> ${venue.capacity}
+                            </div>
+                            <div>
+                                <strong>Base Price:</strong> $${venue.basePrice || venue.currentPrice}
+                            </div>
+                            <div>
+                                <strong>Passes:</strong> ${venue.availablePasses}
+                            </div>
+                        </div>
+                        ${venue.ownerEmail ? `
+                        <div style="margin-top: 0.5rem;">
+                            <strong>Contact:</strong> ${venue.ownerEmail} ${venue.ownerPhone ? '• ' + venue.ownerPhone : ''}
+                        </div>
+                        ` : ''}
+                        ${venue.ownerName ? `
+                        <div>
+                            <strong>Owner:</strong> ${venue.ownerName}
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="approveVenue('${venue._id}', '${venue.name}')">
+                            ✓ APPROVE
+                        </button>
+                        <button class="btn btn-danger" onclick="rejectVenue('${venue._id}', '${venue.name}')">
+                            ✗ REJECT
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render All Venues
+        function renderAllVenues(venues) {
+            const list = document.getElementById('allVenuesList');
+            
+            if (venues.length === 0) {
+                list.innerHTML = '<div class="empty-state">No venues yet</div>';
+                return;
+            }
+            
+            list.innerHTML = venues.map(venue => {
+                const status = venue.approvalStatus || 'approved';
+                const badgeClass = status === 'pending' ? 'badge-pending' : status === 'approved' ? 'badge-approved' : 'badge-rejected';
+                
+                return `
+                <div class="venue-card ${status}">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="color: var(--electric-purple);">${venue.name}</h3>
+                            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge ${badgeClass}">${status.toUpperCase()}</span>
+                            <div style="margin-top: 0.5rem;">
+                                <span class="badge" style="background: ${venue.isActive ? 'rgba(57, 255, 20, 0.2)' : 'rgba(255, 0, 68, 0.2)'}; color: ${venue.isActive ? 'var(--neon-green)' : 'var(--danger-red)'}; border: 1px solid ${venue.isActive ? 'var(--neon-green)' : 'var(--danger-red)'};">
+                                    ${venue.isActive ? 'ACTIVE' : 'INACTIVE'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
+                        <div><strong>Capacity:</strong> ${venue.capacity}</div>
+                        <div><strong>Price:</strong> $${venue.currentPrice}</div>
+                        <div><strong>Passes:</strong> ${venue.availablePasses}</div>
+                        <div><strong>Wait:</strong> ${venue.waitTime}m</div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="editVenue('${venue._id}')">EDIT</button>
+                        <button class="btn btn-danger" onclick="deleteVenue('${venue._id}', '${venue.name}')">DELETE</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Approve Venue
+        async function approveVenue(venueId, venueName) {
+            if (!confirm(`Approve ${venueName}?\n\nThis will activate the venue and send credentials to the owner.`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/venue/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ venueId, approvalStatus: 'approved' })
+                });
+                
+                if (res.ok) {
+                    showToast(`✅ ${venueName} approved!`, 'success');
+                    loadDashboard();
+                } else {
+                    showToast('❌ Error approving venue', 'error');
+                }
+            } catch (error) {
+                console.error('Approval error:', error);
+                showToast('⚠️ Connection error', 'error');
+            }
+        }
+
+        // Reject Venue
+        async function rejectVenue(venueId, venueName) {
+            if (!confirm(`Reject ${venueName}?\n\nThis will notify the applicant.`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/venue/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ venueId, approvalStatus: 'rejected' })
+                });
+                
+                if (res.ok) {
+                    showToast(`✅ ${venueName} rejected`, 'success');
+                    loadDashboard();
+                } else {
+                    showToast('❌ Error rejecting venue', 'error');
+                }
+            } catch (error) {
+                console.error('Rejection error:', error);
+                showToast('⚠️ Connection error', 'error');
+            }
+        }
+
+        // Create Manual Venue
+        async function createManualVenue(event) {
+            event.preventDefault();
+            
+            const venueData = {
+                name: document.getElementById('manualName').value,
+                type: document.getElementById('manualType').value,
+                address: document.getElementById('manualAddress').value,
+                capacity: parseInt(document.getElementById('manualCapacity').value),
+                basePrice: parseInt(document.getElementById('manualPrice').value),
+                currentPrice: parseInt(document.getElementById('manualPrice').value),
+                availablePasses: parseInt(document.getElementById('manualPasses').value),
+                isActive: false,
+                approvalStatus: 'approved',
+                waitTime: 45,
+                inLine: 0,
+                status: 'medium'
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/venues/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(venueData)
+                });
+                
+                if (res.ok) {
+                    showToast(`✅ ${venueData.name} created!`, 'success');
+                    event.target.reset();
+                    hideSection('createSection');
+                    loadDashboard();
+                } else {
+                    showToast('❌ Error creating venue', 'error');
+                }
+            } catch (error) {
+                console.error('Creation error:', error);
+                showToast('⚠️ Connection error', 'error');
+            }
+        }
+
+        // Delete Venue
+        async function deleteVenue(venueId, venueName) {
+            if (!confirm(`DELETE ${venueName}?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/venues/${venueId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    showToast(`✅ ${venueName} deleted`, 'success');
+                    loadDashboard();
+                } else {
+                    showToast('❌ Error deleting venue', 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showToast('⚠️ Connection error', 'error');
+            }
+        }
+
+        // Edit Venue (placeholder)
+        function editVenue(venueId) {
+            showToast('Edit feature coming soon', 'info');
+        }
+
+        // Show Section
+        function showSection(sectionId) {
+            document.getElementById('pendingSection').style.display = 'none';
+            document.getElementById('createSection').style.display = 'none';
+            document.getElementById('allVenuesSection').style.display = 'none';
+            
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        // Hide Section
+        function hideSection(sectionId) {
+            document.getElementById(sectionId).style.display = 'none';
+        }
+
+        // Show Toast
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            if (type === 'success') {
+                toast.style.borderColor = 'var(--neon-green)';
+            } else if (type === 'error') {
+                toast.style.borderColor = 'var(--danger-red)';
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('adminToken');
+            if (token === 'admin-authenticated') {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.getElementById('navActions').style.display = 'block';
+                isLoggedIn = true;
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
