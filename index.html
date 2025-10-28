@@ -840,6 +840,12 @@
         @keyframes spinner {
             to { transform: rotate(360deg); }
         }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -867,7 +873,6 @@
                 <a href="#" class="nav-link" onclick="showView('customer')">Browse Venues</a>
                 <a href="#" class="nav-link" onclick="showView('venue')">Venue Dashboard</a>
                 <a href="#" class="nav-link" onclick="showView('admin')">Admin</a>
-                <button class="btn btn-primary" onclick="showLoginModal()"><span>Login</span></button>
             </div>
             <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
@@ -879,7 +884,7 @@
         <div id="customerView" class="container">
             <div class="hero">
                 <h1>Skip the Line Tonight</h1>
-                <p>Get instant access to the hottest venues in Miami</p>
+                <p>Get instant access to the hottest venues</p>
                 <button class="btn btn-secondary" style="font-size: 1rem; padding: 1rem 2.5rem;" onclick="scrollToVenues()">
                     <span>⚡ VIEW LIVE VENUES</span>
                 </button>
@@ -892,7 +897,10 @@
             </h2>
             
             <div class="venues-grid" id="venuesGrid">
-                <!-- Venues will be dynamically loaded -->
+                <div class="empty-state">
+                    <div class="loader">⚡</div>
+                    <p>Loading venues...</p>
+                </div>
             </div>
         </div>
 
@@ -901,6 +909,13 @@
             <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                 Venue Dashboard
             </h1>
+            
+            <div style="margin-bottom: 2rem;">
+                <label class="form-label">Select Your Venue</label>
+                <select id="venueSelect" class="form-input" onchange="loadVenueStats()" style="cursor: pointer;">
+                    <option value="">Loading venues...</option>
+                </select>
+            </div>
             
             <div class="dashboard-stats">
                 <div class="stat-card">
@@ -942,15 +957,7 @@
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                     <button class="btn btn-success" onclick="activatePasses()"><span>Activate Passes</span></button>
                     <button class="btn btn-secondary" onclick="updatePricing()"><span>Update Pricing</span></button>
-                    <button class="btn btn-primary" onclick="sendNotification()"><span>Push to Users</span></button>
                     <button class="btn btn-danger" onclick="deactivatePasses()"><span>Deactivate</span></button>
-                </div>
-            </div>
-
-            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem;">
-                <h3 style="margin-bottom: 1rem; color: var(--electric-purple);">Recent Transactions</h3>
-                <div id="recentTransactions">
-                    <p style="color: rgba(255, 255, 255, 0.5);">No transactions yet tonight</p>
                 </div>
             </div>
         </div>
@@ -964,29 +971,19 @@
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <div class="stat-label">Total Revenue (24h)</div>
-                    <div class="stat-value">$48,750</div>
+                    <div class="stat-value" id="adminRevenue">$0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Active Venues</div>
-                    <div class="stat-value">47</div>
+                    <div class="stat-value" id="adminVenues">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Total Users</div>
-                    <div class="stat-value">12,847</div>
+                    <div class="stat-label">Total Passes</div>
+                    <div class="stat-value" id="adminPasses">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Monthly Subscribers</div>
-                    <div class="stat-value">2,341</div>
-                </div>
-            </div>
-
-            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 2rem;">
-                <h2 style="margin-bottom: 1.5rem; color: var(--electric-purple);">System Controls</h2>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="addVenue()"><span>Add New Venue</span></button>
-                    <button class="btn btn-secondary" onclick="viewAnalytics()"><span>Analytics</span></button>
-                    <button class="btn btn-success" onclick="exportData()"><span>Export Data</span></button>
-                    <button class="btn btn-danger" onclick="systemAlert()"><span>Send Alert</span></button>
+                    <div class="stat-label">Today's Transactions</div>
+                    <div class="stat-value" id="adminTransactions">0</div>
                 </div>
             </div>
         </div>
@@ -1015,17 +1012,13 @@
 
                 <div class="form-group">
                     <label class="form-label">Phone</label>
-                    <input type="tel" class="form-input" id="purchasePhone" required placeholder="(305) 555-0123">
+                    <input type="tel" class="form-input" id="purchasePhone" required placeholder="+1 (305) 555-0123">
                 </div>
 
                 <div style="background: rgba(157, 78, 221, 0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                         <span>Subtotal</span>
                         <span id="subtotal">$0</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Service Fee</span>
-                        <span id="serviceFee">$0</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; color: var(--lightning-yellow);">
                         <span>Total</span>
@@ -1040,142 +1033,73 @@
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Login</h2>
-                <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
-            </div>
-            
-            <form onsubmit="processLogin(event)">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="loginEmail" required placeholder="demo: venue@demo.com">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-input" id="loginPassword" required placeholder="any password works">
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <span>LOGIN</span>
-                </button>
-
-                <div style="text-align: center; margin-top: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.5);">
-                    Demo accounts:<br>
-                    venue@demo.com → Venue Dashboard<br>
-                    admin@lightning.com → Admin Panel
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
     <script>
+        // API Configuration - automatically detects environment
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : window.location.origin;
+
         // State Management
         const state = {
             currentView: 'customer',
             selectedVenue: null,
-            venues: [
-                {
-                    id: 1,
-                    name: 'Electric Paradise',
-                    type: 'Nightclub',
-                    waitTime: 75,
-                    inLine: 187,
-                    price: 45,
-                    status: 'high',
-                    address: '123 Ocean Drive, Miami Beach',
-                    capacity: 500,
-                    trending: true
-                },
-                {
-                    id: 2,
-                    name: 'The Velvet Room',
-                    type: 'Lounge',
-                    waitTime: 35,
-                    inLine: 62,
-                    price: 25,
-                    status: 'medium',
-                    address: '456 Wynwood Ave, Miami',
-                    capacity: 200
-                },
-                {
-                    id: 3,
-                    name: 'Sunset Terrace',
-                    type: 'Rooftop Bar',
-                    waitTime: 20,
-                    inLine: 28,
-                    price: 20,
-                    status: 'low',
-                    address: '789 Brickell Ave, Miami',
-                    capacity: 150
-                },
-                {
-                    id: 4,
-                    name: 'Golden Hour',
-                    type: 'Beach Club',
-                    waitTime: 90,
-                    inLine: 234,
-                    price: 60,
-                    status: 'high',
-                    address: '321 Collins Ave, South Beach',
-                    capacity: 600,
-                    trending: true
-                },
-                {
-                    id: 5,
-                    name: 'The Underground',
-                    type: 'Dance Club',
-                    waitTime: 45,
-                    inLine: 98,
-                    price: 35,
-                    status: 'medium',
-                    address: '654 Downtown Miami',
-                    capacity: 400
-                },
-                {
-                    id: 6,
-                    name: 'Sky Lounge',
-                    type: 'Hotel Bar',
-                    waitTime: 15,
-                    inLine: 18,
-                    price: 15,
-                    status: 'low',
-                    address: '987 Biscayne Blvd, Miami',
-                    capacity: 100
-                }
-            ],
-            transactions: [],
-            user: null,
-            venueStats: {
-                revenue: 0,
-                passesSold: 0,
-                currentWait: 45,
-                inLine: 127
-            }
+            venues: [],
+            currentVenueId: null,
+            user: null
         };
 
+        // API Helper Functions
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'API request failed');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                showToast(`Error: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
         // Initialize App
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             createStars();
+            
+            // Load initial data
+            await loadVenues();
+            await populateVenueSelector();
             
             setTimeout(() => {
                 document.getElementById('loadingScreen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loadingScreen').style.display = 'none';
                 }, 500);
-            }, 1500);
-
-            loadVenues();
-            updateDashboard();
+            }, 1000);
             
-            // Live updates
-            setInterval(updateLiveData, 5000);
+            // Auto-refresh every 10 seconds
+            setInterval(async () => {
+                if (state.currentView === 'customer') {
+                    await loadVenues();
+                } else if (state.currentView === 'venue' && state.currentVenueId) {
+                    await loadVenueStats();
+                } else if (state.currentView === 'admin') {
+                    await loadAdminStats();
+                }
+            }, 10000);
         });
 
         // Create starfield
@@ -1191,7 +1115,6 @@
                 star.style.animationDelay = Math.random() * 3 + 's';
                 star.style.animationDuration = (Math.random() * 3 + 2) + 's';
                 
-                // Random star sizes
                 const size = Math.random() * 2 + 1;
                 star.style.width = size + 'px';
                 star.style.height = size + 'px';
@@ -1210,73 +1133,131 @@
             
             document.getElementById(view + 'View').style.display = 'block';
             
-            // Update nav highlighting
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.style.color = 'var(--white)';
-            });
+            // Load data for the view
+            if (view === 'customer') {
+                loadVenues();
+            } else if (view === 'venue') {
+                loadVenueStats();
+            } else if (view === 'admin') {
+                loadAdminStats();
+            }
         }
 
-        // Load Venues
-        function loadVenues() {
-            const grid = document.getElementById('venuesGrid');
-            grid.innerHTML = '';
-            
-            state.venues.forEach((venue, index) => {
-                const card = document.createElement('div');
-                card.className = 'venue-card';
-                card.style.animationDelay = (index * 0.1) + 's';
-                card.innerHTML = `
-                    <div class="venue-header">
-                        <div>
-                            <div class="venue-name">${venue.name}</div>
-                            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.type}</div>
+        // Load Venues from API
+        async function loadVenues() {
+            try {
+                const data = await apiCall('/api/v1/lightning/venues');
+                state.venues = data.venues || [];
+                
+                const grid = document.getElementById('venuesGrid');
+                
+                if (state.venues.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><p>No active venues at the moment</p></div>';
+                    return;
+                }
+                
+                grid.innerHTML = '';
+                
+                state.venues.forEach((venue, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'venue-card';
+                    card.style.animationDelay = (index * 0.1) + 's';
+                    
+                    const status = venue.status || 'medium';
+                    const trending = venue.trending ? '<div style="color: var(--electric-purple); font-size: 0.75rem; margin-bottom: 1rem;">🔥 TRENDING NOW</div>' : '';
+                    
+                    card.innerHTML = `
+                        <div class="venue-header">
+                            <div>
+                                <div class="venue-name">${venue.name}</div>
+                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.type || 'Venue'}</div>
+                            </div>
+                            <span class="venue-status status-${status}">
+                                ${venue.waitTime || 0} MIN
+                            </span>
                         </div>
-                        <span class="venue-status status-${venue.status}">
-                            ${venue.waitTime} MIN
-                        </span>
+                        <div class="venue-info">
+                            <div class="info-row">
+                                <span>📍 Location</span>
+                                <span>${venue.address ? venue.address.split(',')[1] || venue.address : 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>👥 In Line</span>
+                                <span>${venue.inLine || 0} people</span>
+                            </div>
+                            <div class="info-row">
+                                <span>🏢 Capacity</span>
+                                <span>${venue.capacity || 500} max</span>
+                            </div>
+                            <div class="info-row">
+                                <span>🎫 Available</span>
+                                <span>${venue.availablePasses || 0} passes</span>
+                            </div>
+                        </div>
+                        <div class="venue-price">$${venue.currentPrice || 35}</div>
+                        ${trending}
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue('${venue._id}')">
+                            <span>⚡ GET LIGHTNING PASS</span>
+                        </button>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading venues:', error);
+                document.getElementById('venuesGrid').innerHTML = '<div class="empty-state"><p>Error loading venues. Please refresh.</p></div>';
+            }
+        }
+
+        // Populate Venue Selector
+        async function populateVenueSelector() {
+            try {
+                const data = await apiCall('/api/v1/lightning/venues');
+                const select = document.getElementById('venueSelect');
+                
+                select.innerHTML = '<option value="">Select a venue...</option>';
+                
+                data.venues.forEach(venue => {
+                    const option = document.createElement('option');
+                    option.value = venue._id;
+                    option.textContent = venue.name;
+                    select.appendChild(option);
+                });
+                
+                // Auto-select first venue
+                if (data.venues.length > 0) {
+                    select.value = data.venues[0]._id;
+                    state.currentVenueId = data.venues[0]._id;
+                    await loadVenueStats();
+                }
+            } catch (error) {
+                console.error('Error populating venue selector:', error);
+            }
+        }
+
+        // Select Venue for Purchase
+        async function selectVenue(venueId) {
+            try {
+                const data = await apiCall(`/api/v1/lightning/venues/${venueId}`);
+                state.selectedVenue = data.venue;
+                
+                const info = document.getElementById('selectedVenueInfo');
+                info.innerHTML = `
+                    <div style="background: rgba(157, 78, 221, 0.05); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                        <h3 style="color: var(--electric-purple);">${state.selectedVenue.name}</h3>
+                        <p style="color: rgba(255, 255, 255, 0.7); margin: 0.5rem 0;">${state.selectedVenue.address || 'Location not specified'}</p>
+                        ${state.selectedVenue.tonightTagline ? `<p style="color: var(--lightning-yellow); margin: 0.5rem 0;">🎉 ${state.selectedVenue.tonightTagline}</p>` : ''}
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                            <span>⏱️ Current Wait: ${state.selectedVenue.waitTime || 0} minutes</span>
+                            <span style="color: var(--lightning-yellow); font-weight: bold;">$${state.selectedVenue.currentPrice || 35}/pass</span>
+                        </div>
                     </div>
-                    <div class="venue-info">
-                        <div class="info-row">
-                            <span>📍 Location</span>
-                            <span>${venue.address.split(',')[1]}</span>
-                        </div>
-                        <div class="info-row">
-                            <span>👥 In Line</span>
-                            <span>${venue.inLine} people</span>
-                        </div>
-                        <div class="info-row">
-                            <span>🏢 Capacity</span>
-                            <span>${venue.capacity} max</span>
-                        </div>
-                    </div>
-                    <div class="venue-price">$${venue.price}</div>
-                    ${venue.trending ? '<div style="color: var(--electric-purple); font-size: 0.75rem; margin-bottom: 1rem;">🔥 TRENDING NOW</div>' : ''}
-                    <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue(${venue.id})">
-                        <span>⚡ GET LIGHTNING PASS</span>
-                    </button>
                 `;
-                grid.appendChild(card);
-            });
-        }
-
-        // Select Venue
-        function selectVenue(venueId) {
-            state.selectedVenue = state.venues.find(v => v.id === venueId);
-            
-            const info = document.getElementById('selectedVenueInfo');
-            info.innerHTML = `
-                <div style="background: rgba(157, 78, 221, 0.05); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
-                    <h3 style="color: var(--electric-purple);">${state.selectedVenue.name}</h3>
-                    <p style="color: rgba(255, 255, 255, 0.7); margin: 0.5rem 0;">${state.selectedVenue.address}</p>
-                    <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
-                        <span>⏱️ Current Wait: ${state.selectedVenue.waitTime} minutes</span>
-                        <span style="color: var(--lightning-yellow); font-weight: bold;">$${state.selectedVenue.price}/pass</span>
-                    </div>
-                </div>
-            `;
-            
-            updateTotal();
-            showModal('purchaseModal');
+                
+                updateTotal();
+                showModal('purchaseModal');
+            } catch (error) {
+                showToast('Error loading venue details', 'error');
+            }
         }
 
         // Update Total
@@ -1284,17 +1265,15 @@
             if (!state.selectedVenue) return;
             
             const numPasses = parseInt(document.getElementById('numPasses').value);
-            const subtotal = state.selectedVenue.price * numPasses;
-            const serviceFee = Math.round(subtotal * 0.1);
-            const total = subtotal + serviceFee;
+            const subtotal = (state.selectedVenue.currentPrice || 35) * numPasses;
+            const total = subtotal;
             
             document.getElementById('subtotal').textContent = `$${subtotal}`;
-            document.getElementById('serviceFee').textContent = `$${serviceFee}`;
             document.getElementById('total').textContent = `$${total}`;
         }
 
         // Process Purchase
-        function processPurchase(event) {
+        async function processPurchase(event) {
             event.preventDefault();
             
             const button = event.target.querySelector('button[type="submit"]');
@@ -1304,149 +1283,153 @@
             const phone = document.getElementById('purchasePhone').value;
             const numPasses = parseInt(document.getElementById('numPasses').value);
             
-            showToast('Processing payment...', 'info');
-            
-            setTimeout(() => {
-                // Update stats
-                state.venueStats.passesSold += numPasses;
-                state.venueStats.revenue += state.selectedVenue.price * numPasses * 0.7;
-                updateDashboard();
+            try {
+                showToast('Processing payment...', 'info');
                 
-                // Add transaction
-                state.transactions.unshift({
-                    id: Date.now(),
-                    venue: state.selectedVenue.name,
-                    email: email,
-                    amount: state.selectedVenue.price * numPasses,
-                    passes: numPasses,
-                    time: new Date().toLocaleTimeString()
+                const data = await apiCall('/api/v1/lightning/passes/purchase', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        venueId: state.selectedVenue._id,
+                        email,
+                        phone,
+                        numPasses
+                    })
                 });
                 
                 button.classList.remove('loading');
                 closeModal('purchaseModal');
-                showToast(`✅ Success! ${numPasses} Lightning Pass(es) sent to ${email}`, 'success');
+                
+                showToast(`✅ Success! ${numPasses} Lightning Pass(es) sent to ${email}. Check your phone for QR code!`, 'success');
                 
                 // Reset form
                 document.getElementById('purchaseEmail').value = '';
                 document.getElementById('purchasePhone').value = '';
                 document.getElementById('numPasses').value = '1';
-            }, 2000);
-        }
-
-        // Process Login
-        function processLogin(event) {
-            event.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            
-            if (email === 'venue@demo.com') {
-                state.user = { type: 'venue', name: 'Electric Paradise' };
-                showView('venue');
-                showToast('⚡ Welcome back! Venue dashboard loaded.', 'success');
-            } else if (email === 'admin@lightning.com') {
-                state.user = { type: 'admin', name: 'System Admin' };
-                showView('admin');
-                showToast('🔐 Admin access granted.', 'success');
-            } else {
-                state.user = { type: 'customer', email: email };
-                showToast('✅ Logged in successfully!', 'success');
-            }
-            
-            closeModal('loginModal');
-        }
-
-        // Venue Dashboard Functions
-        function updateDashboard() {
-            document.getElementById('tonightRevenue').textContent = `$${state.venueStats.revenue.toFixed(0)}`;
-            document.getElementById('passesSold').textContent = state.venueStats.passesSold;
-            document.getElementById('currentWait').textContent = state.venueStats.currentWait + 'm';
-            document.getElementById('inLine').textContent = state.venueStats.inLine;
-            
-            const transactionsDiv = document.getElementById('recentTransactions');
-            if (state.transactions.length > 0) {
-                transactionsDiv.innerHTML = state.transactions.slice(0, 5).map(t => `
-                    <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-dark);">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>${t.passes} pass(es) - ${t.email}</span>
-                            <span style="color: var(--neon-green);">+$${(t.amount * 0.7).toFixed(0)}</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-top: 0.25rem;">
-                            ${t.time}
-                        </div>
-                    </div>
-                `).join('');
+                
+                // Reload venues to update availability
+                await loadVenues();
+                
+            } catch (error) {
+                button.classList.remove('loading');
+                showToast(`Purchase failed: ${error.message}`, 'error');
             }
         }
 
-        function activatePasses() {
-            showToast('⚡ Lightning Passes activated! Customers can now purchase.', 'success');
-        }
-
-        function deactivatePasses() {
-            showToast('❌ Lightning Passes deactivated.', 'error');
-        }
-
-        function updatePricing() {
-            const newPrice = document.getElementById('currentPrice').value;
-            showToast(`💰 Price updated to $${newPrice}`, 'success');
-        }
-
-        function sendNotification() {
-            showToast('📱 Push notification sent to 2,341 nearby users!', 'success');
-        }
-
-        // Admin Functions
-        function addVenue() {
-            showToast('🏢 Add Venue feature coming soon!', 'info');
-        }
-
-        function viewAnalytics() {
-            showToast('📊 Analytics dashboard coming soon!', 'info');
-        }
-
-        function exportData() {
-            showToast('📥 Exporting data to CSV...', 'success');
-        }
-
-        function systemAlert() {
-            showToast('🚨 System alert sent to all venues!', 'error');
-        }
-
-        // Live Data Updates
-        function updateLiveData() {
-            state.venues.forEach(venue => {
-                // Simulate changes
-                venue.waitTime += Math.floor(Math.random() * 11) - 5;
-                venue.waitTime = Math.max(5, Math.min(120, venue.waitTime));
+        // Load Venue Stats
+        async function loadVenueStats() {
+            const venueId = document.getElementById('venueSelect').value;
+            if (!venueId) return;
+            
+            state.currentVenueId = venueId;
+            
+            try {
+                // Get venue details
+                const venueData = await apiCall(`/api/v1/lightning/venues/${venueId}`);
+                const venue = venueData.venue;
                 
-                venue.inLine += Math.floor(Math.random() * 21) - 10;
-                venue.inLine = Math.max(0, venue.inLine);
+                // Update form fields
+                document.getElementById('currentPrice').value = venue.currentPrice || 35;
+                document.getElementById('availablePasses').value = venue.availablePasses || 50;
+                document.getElementById('waitTime').value = venue.waitTime || 45;
                 
-                // Update status
-                if (venue.waitTime > 60) {
-                    venue.status = 'high';
-                    venue.price = Math.min(100, venue.price + 5);
-                } else if (venue.waitTime > 30) {
-                    venue.status = 'medium';
-                } else {
-                    venue.status = 'low';
-                    venue.price = Math.max(15, venue.price - 5);
-                }
-            });
+                // Get stats
+                const stats = await apiCall(`/api/v1/lightning/venue/${venueId}/stats`);
+                
+                document.getElementById('tonightRevenue').textContent = `$${stats.revenue || 0}`;
+                document.getElementById('passesSold').textContent = stats.passesSold || 0;
+                document.getElementById('currentWait').textContent = `${stats.currentWait || 0}m`;
+                document.getElementById('inLine').textContent = stats.inLine || 0;
+                
+            } catch (error) {
+                console.error('Error loading venue stats:', error);
+            }
+        }
+
+        // Activate Passes
+        async function activatePasses() {
+            const venueId = state.currentVenueId;
+            if (!venueId) {
+                showToast('Please select a venue first', 'error');
+                return;
+            }
             
-            // Update stats
-            state.venueStats.currentWait += Math.floor(Math.random() * 11) - 5;
-            state.venueStats.currentWait = Math.max(5, Math.min(120, state.venueStats.currentWait));
+            try {
+                const availablePasses = parseInt(document.getElementById('availablePasses').value);
+                
+                await apiCall('/api/v1/lightning/venue/activate', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        venueId,
+                        availablePasses
+                    })
+                });
+                
+                showToast('⚡ Lightning Passes activated!', 'success');
+                await loadVenueStats();
+            } catch (error) {
+                showToast('Failed to activate passes', 'error');
+            }
+        }
+
+        // Deactivate Passes
+        async function deactivatePasses() {
+            const venueId = state.currentVenueId;
+            if (!venueId) {
+                showToast('Please select a venue first', 'error');
+                return;
+            }
             
-            state.venueStats.inLine += Math.floor(Math.random() * 21) - 10;
-            state.venueStats.inLine = Math.max(0, state.venueStats.inLine);
+            try {
+                await apiCall('/api/v1/lightning/venue/deactivate', {
+                    method: 'POST',
+                    body: JSON.stringify({ venueId })
+                });
+                
+                showToast('❌ Lightning Passes deactivated', 'success');
+                await loadVenueStats();
+            } catch (error) {
+                showToast('Failed to deactivate passes', 'error');
+            }
+        }
+
+        // Update Pricing
+        async function updatePricing() {
+            const venueId = state.currentVenueId;
+            if (!venueId) {
+                showToast('Please select a venue first', 'error');
+                return;
+            }
             
-            // Reload views
-            if (state.currentView === 'customer') {
-                loadVenues();
-            } else if (state.currentView === 'venue') {
-                document.getElementById('currentWait').textContent = state.venueStats.currentWait + 'm';
-                document.getElementById('inLine').textContent = state.venueStats.inLine;
+            try {
+                const newPrice = parseInt(document.getElementById('currentPrice').value);
+                
+                await apiCall('/api/v1/lightning/venue/pricing', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        venueId,
+                        newPrice
+                    })
+                });
+                
+                showToast(`💰 Price updated to $${newPrice}`, 'success');
+                await loadVenueStats();
+            } catch (error) {
+                showToast('Failed to update pricing', 'error');
+            }
+        }
+
+        // Load Admin Stats
+        async function loadAdminStats() {
+            try {
+                const data = await apiCall('/api/v1/analytics/system/overview');
+                
+                document.getElementById('adminRevenue').textContent = `$${data.totalRevenue24h || 0}`;
+                document.getElementById('adminVenues').textContent = data.activeVenues || 0;
+                document.getElementById('adminPasses').textContent = data.totalPasses || 0;
+                document.getElementById('adminTransactions').textContent = data.todayTransactions || 0;
+                
+            } catch (error) {
+                console.error('Error loading admin stats:', error);
             }
         }
 
@@ -1459,10 +1442,6 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        function showLoginModal() {
-            showModal('loginModal');
-        }
-
         // Toast Notifications
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
@@ -1471,7 +1450,7 @@
             
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3000);
+            }, 4000);
         }
 
         // Scroll to venues
