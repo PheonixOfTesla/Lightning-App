@@ -1097,6 +1097,21 @@
                         We typically review applications within 24-48 hours. You'll receive an email once your venue is approved.
                     </p>
 
+                    <div style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; text-align: left;">
+                        <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem;">🏦 Set Up Bank Account</h3>
+                        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem;">
+                            Get ready faster! Connect your bank account now so you can start accepting payments immediately once approved.
+                        </p>
+                        <div id="pendingStripeStatus" style="margin-bottom: 1rem;">
+                            <div class="alert alert-warning">
+                                <strong>⚠️ Not Connected:</strong> Connect your bank account to receive payouts.
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="connectStripePending('${user.venueId}')">
+                            🏦 Connect Bank Account Now
+                        </button>
+                    </div>
+
                     <button class="btn btn-secondary" onclick="logout()">
                         Sign Out
                     </button>
@@ -1106,6 +1121,11 @@
             // Hide all views and show pending view
             document.querySelectorAll('#authView, #customerView, #venueView, #adminView').forEach(v => v.classList.add('hidden'));
             document.body.appendChild(container);
+
+            // Check if Stripe is already connected for this pending venue
+            if (user.venueId) {
+                checkPendingStripeStatus(user.venueId);
+            }
         }
 
         function updateNavigation(user) {
@@ -1563,6 +1583,68 @@
                 }
             } catch (error) {
                 showToast('❌ Failed to connect: ' + error.message, 'error');
+            }
+        }
+
+        // Connect Stripe for pending venues
+        async function connectStripePending(venueId) {
+            const email = state.user?.email;
+
+            if (!venueId) {
+                showToast('Venue ID not found', 'error');
+                return;
+            }
+
+            if (!email) {
+                showToast('Email not found', 'error');
+                return;
+            }
+
+            try {
+                showToast('Creating Stripe Connect account...', 'info');
+
+                const data = await apiCall('/api/v1/lightning/venue/connect/create', {
+                    method: 'POST',
+                    body: JSON.stringify({ venueId, email })
+                });
+
+                if (data.onboardingUrl) {
+                    showToast('✅ Redirecting to Stripe...', 'success');
+                    // Redirect to Stripe onboarding
+                    setTimeout(() => {
+                        window.location.href = data.onboardingUrl;
+                    }, 1000);
+                } else {
+                    showToast('Error: No onboarding URL received', 'error');
+                }
+            } catch (error) {
+                showToast('❌ Failed to connect: ' + error.message, 'error');
+            }
+        }
+
+        // Check Stripe status for pending venues
+        async function checkPendingStripeStatus(venueId) {
+            try {
+                const data = await apiCall(`/api/v1/lightning/venue/${venueId}`);
+
+                const statusDiv = document.getElementById('pendingStripeStatus');
+                if (!statusDiv) return;
+
+                if (data.venue?.stripeConnectId && data.venue?.bankAccountLast4) {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>✅ Bank Account Connected:</strong> •••• ${data.venue.bankAccountLast4}
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Not Connected:</strong> Connect your bank account to receive payouts.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to check Stripe status:', error);
             }
         }
 
