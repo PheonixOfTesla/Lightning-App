@@ -668,6 +668,19 @@
                 </div>
             </div>
 
+            <!-- PASS TEMPLATES SECTION -->
+            <div class="section">
+                <h2 class="section-title">🎫 Pass Types</h2>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-success" onclick="showCreatePassTemplate()">+ Create New Pass Type</button>
+                </div>
+
+                <div id="passTemplatesList">
+                    <div class="loading">Loading pass types...</div>
+                </div>
+            </div>
+
             <div class="section">
                 <h2 class="section-title">⚡ Lightning Controls</h2>
                 
@@ -1377,37 +1390,26 @@
         // ===== VENUE FUNCTIONS =====
         async function populateVenueSelector() {
             try {
-                const data = await apiCall('/api/v1/lightning/venues?includeAll=true');
+                // Load all venues owned by this user
+                const data = await apiCall('/api/v1/lightning/venues/by-owner');
                 const select = document.getElementById('venueSelect');
-                
-                // ✅ FIXED: Filter by venueId from JWT token
-                const userVenues = (data.venues || []).filter(v => {
-                    // If user has venueId, only show their venue
-                    if (state.user.venueId) {
-                        return v._id === state.user.venueId;
-                    }
-                    // If admin, show all venues
-                    if (state.user.role === 'admin') {
-                        return true;
-                    }
-                    // Otherwise, filter by ownerId (if available)
-                    return v.ownerId === state.user.id;
-                });
-                
+
+                const userVenues = data.venues || [];
+
                 select.innerHTML = '<option value="">Select a venue...</option>';
-                
+
                 if (userVenues.length === 0) {
                     select.innerHTML = '<option value="">No venues found. Contact admin.</option>';
                     return;
                 }
-                
+
                 userVenues.forEach(venue => {
                     const option = document.createElement('option');
                     option.value = venue._id;
-                    option.textContent = venue.name;
+                    option.textContent = `${venue.name}${venue.approvalStatus === 'pending' ? ' (Pending)' : ''}`;
                     select.appendChild(option);
                 });
-                
+
                 // Auto-select first venue
                 select.value = userVenues[0]._id;
                 state.currentVenueId = userVenues[0]._id;
@@ -1439,8 +1441,9 @@
                 document.getElementById('currentWait').textContent = `${stats.currentWait || 0}m`;
                 document.getElementById('inLine').textContent = stats.inLine || 0;
 
-                // Load payout info
+                // Load payout info and pass templates
                 await loadPayoutInfo();
+                await loadPassTemplates();
 
             } catch (error) {
                 console.error('Error loading stats:', error);
@@ -1678,6 +1681,118 @@
                 await loadVenueStats();
             } catch (error) {
                 showToast('❌ Payout failed: ' + error.message, 'error');
+            }
+        }
+
+        // ===== PASS TEMPLATE FUNCTIONS =====
+        async function loadPassTemplates() {
+            const venueId = state.currentVenueId || document.getElementById('venueSelect').value;
+            if (!venueId) return;
+
+            try {
+                const data = await apiCall(`/api/v1/lightning/venue/${venueId}/pass-templates`);
+                const templates = data.templates || [];
+
+                const list = document.getElementById('passTemplatesList');
+
+                if (templates.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No pass types yet. Create your first pass type!</div>';
+                    return;
+                }
+
+                list.innerHTML = '';
+
+                templates.forEach(template => {
+                    const card = document.createElement('div');
+                    card.className = 'stat-card';
+                    card.style.cssText = 'text-align: left; position: relative;';
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">${template.name}</h3>
+                                <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-bottom: 0.5rem;">${template.description || 'No description'}</p>
+                                ${template.tagline ? `<p style="color: var(--electric-purple); font-style: italic; font-size: 0.85rem; margin-bottom: 0.5rem;">"${template.tagline}"</p>` : ''}
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--neon-green); margin-top: 0.5rem;">$${template.price}</div>
+                                <div style="margin-top: 0.5rem;">
+                                    <span class="badge ${template.isActive ? 'badge-active' : 'badge-inactive'}">${template.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-danger" onclick="deletePassTemplate('${template._id}', '${template.name.replace(/'/g, "\\'")}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Error loading pass templates:', error);
+                showToast('Error loading pass types', 'error');
+            }
+        }
+
+        function showCreatePassTemplate() {
+            const venueId = state.currentVenueId || document.getElementById('venueSelect').value;
+            if (!venueId) {
+                showToast('Please select a venue first', 'error');
+                return;
+            }
+
+            const name = prompt('Pass Type Name (e.g., "VIP Unlimited Drinks"):');
+            if (!name) return;
+
+            const description = prompt('Description (optional):') || '';
+            const tagline = prompt('Tagline (e.g., "DJ ESCO at 9pm - Enjoy the night!"):') || '';
+            const priceStr = prompt('Price ($):');
+
+            if (!priceStr) return;
+
+            const price = parseFloat(priceStr);
+            if (isNaN(price) || price < 10 || price > 500) {
+                showToast('Price must be between $10 and $500', 'error');
+                return;
+            }
+
+            createPassTemplate({ name, description, tagline, price, venueId });
+        }
+
+        async function createPassTemplate({ name, description, tagline, price, venueId }) {
+            try {
+                showToast('Creating pass type...', 'info');
+
+                await apiCall(`/api/v1/lightning/venue/${venueId}/pass-templates`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        tagline,
+                        price
+                    })
+                });
+
+                showToast('✅ Pass type created!', 'success');
+                await loadPassTemplates();
+
+            } catch (error) {
+                showToast('❌ Failed to create: ' + error.message, 'error');
+            }
+        }
+
+        async function deletePassTemplate(templateId, templateName) {
+            if (!confirm(`Delete "${templateName}"?`)) return;
+
+            const venueId = state.currentVenueId || document.getElementById('venueSelect').value;
+
+            try {
+                await apiCall(`/api/v1/lightning/venue/${venueId}/pass-templates/${templateId}`, {
+                    method: 'DELETE'
+                });
+
+                showToast('✅ Pass type deleted', 'success');
+                await loadPassTemplates();
+
+            } catch (error) {
+                showToast('❌ Failed to delete: ' + error.message, 'error');
             }
         }
 
