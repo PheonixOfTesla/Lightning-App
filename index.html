@@ -814,9 +814,9 @@
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize Stripe (replace with your publishable key)
-            // state.stripe = Stripe('pk_test_YOUR_KEY_HERE');
-            
+            // Initialize Stripe with publishable key
+            state.stripe = Stripe('pk_test_51SJ1eLEEVPwT4uXVRnuf6vCilK2PKwRApwEoQbagqTQCueQRtiuIim1BSb2PitlOYjZc0BwXmblcugnzRFJru5Ed00PvpkpLS4');
+
             checkExistingAuth();
         });
 
@@ -1130,10 +1130,10 @@
             statusDiv.textContent = 'Creating payment...';
             
             try {
-                // STEP 1: Create payment intent (no pass created yet!)
-                statusDiv.textContent = 'Step 1/2: Initializing payment...';
-                
-                const paymentData = await apiCall('/api/v1/lightning/passes/create-payment', {
+                // STEP 1: Create payment intent
+                statusDiv.textContent = 'Step 1/3: Initializing payment...';
+
+                const paymentData = await apiCall('/api/v1/lightning/passes/purchase', {
                     method: 'POST',
                     body: JSON.stringify({
                         venueId: state.selectedVenue._id,
@@ -1142,41 +1142,54 @@
                         numPasses
                     })
                 });
-                
+
                 state.paymentIntentId = paymentData.paymentIntentId;
-                
-                // STEP 2: For now, simulate successful payment
-                // In production, you'd use Stripe Elements here:
-                // const result = await state.stripe.confirmCardPayment(paymentData.clientSecret);
-                
-                statusDiv.textContent = 'Step 2/2: Confirming purchase...';
-                
-                // Simulate payment success and confirm
+
+                // STEP 2: Confirm payment with Stripe (simulated for testing - use real card in production)
+                statusDiv.textContent = 'Step 2/3: Processing payment...';
+
+                // For testing: automatically simulate successful payment
+                // In production with real cards, use:
+                // const result = await state.stripe.confirmCardPayment(paymentData.clientSecret, {
+                //     payment_method: {
+                //         card: cardElement,
+                //         billing_details: { email: state.user.email }
+                //     }
+                // });
+
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate payment processing
+
+                // STEP 3: Confirm purchase on backend (creates pass after payment verified)
+                statusDiv.textContent = 'Step 3/3: Creating your pass...';
+
                 const confirmData = await apiCall('/api/v1/lightning/passes/confirm-payment', {
                     method: 'POST',
                     body: JSON.stringify({
                         paymentIntentId: state.paymentIntentId,
+                        venueId: state.selectedVenue._id,
                         email: state.user.email,
-                        phone: state.user.phone
+                        phone: state.user.phone,
+                        numPasses
                     })
                 });
-                
+
                 // Success!
                 statusDiv.className = 'alert alert-success';
                 statusDiv.innerHTML = `
                     <h3>✅ Purchase Successful!</h3>
                     <p><strong>Pass ID:</strong> ${confirmData.passId}</p>
-                    <p>Check your phone for SMS confirmation!</p>
+                    <p><strong>Amount:</strong> $${(state.selectedVenue.currentPrice * numPasses).toFixed(2)}</p>
+                    <p>Check your phone for SMS confirmation with QR code!</p>
                 `;
-                
+
                 showToast('✅ Pass purchased successfully!', 'success');
-                
-                // Wait 2 seconds then close modal and reload
+
+                // Wait 3 seconds then close modal and reload
                 setTimeout(async () => {
                     closeModal('purchaseModal');
                     await loadVenues();
-                }, 2000);
-                
+                }, 3000);
+
             } catch (error) {
                 console.error('Purchase error:', error);
                 statusDiv.className = 'alert alert-error';
