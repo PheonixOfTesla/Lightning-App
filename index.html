@@ -605,6 +605,38 @@
                 </div>
             </div>
 
+            <!-- STRIPE CONNECT & PAYOUTS SECTION -->
+            <div class="section">
+                <h2 class="section-title">💰 Bank Account & Payouts</h2>
+
+                <!-- Stripe Connect Status Alert -->
+                <div id="stripeStatus" class="alert alert-warning" style="margin-bottom: 1.5rem;">
+                    <strong>⚠️ Bank Account Required:</strong> Connect your bank account to receive payouts automatically.
+                </div>
+
+                <!-- Payout Info Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Payout</div>
+                        <div class="stat-value" id="pendingPayout" style="color: var(--lightning-yellow);">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Paid Out</div>
+                        <div class="stat-value" id="totalPaidOut" style="color: var(--neon-green);">$0</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-success" id="connectStripeBtn" onclick="connectStripeAccount()">
+                        🏦 Connect Bank Account
+                    </button>
+                    <button class="btn btn-primary" id="requestPayoutBtn" onclick="requestPayout()" style="display: none;" disabled>
+                        💸 Request Payout
+                    </button>
+                </div>
+            </div>
+
             <div class="section">
                 <h2 class="section-title">⚡ Lightning Controls</h2>
                 
@@ -1267,7 +1299,10 @@
                 document.getElementById('passesSold').textContent = stats.passesSold || 0;
                 document.getElementById('currentWait').textContent = `${stats.currentWait || 0}m`;
                 document.getElementById('inLine').textContent = stats.inLine || 0;
-                
+
+                // Load payout info
+                await loadPayoutInfo();
+
             } catch (error) {
                 console.error('Error loading stats:', error);
                 showToast('Error loading venue stats', 'error');
@@ -1344,6 +1379,104 @@
                 }
             } catch (error) {
                 showToast('❌ Failed to get suggestion: ' + error.message, 'error');
+            }
+        }
+
+        // ===== STRIPE CONNECT & PAYOUT FUNCTIONS =====
+        async function loadPayoutInfo() {
+            const venueId = state.currentVenueId || state.user?.venueId;
+            if (!venueId) return;
+
+            try {
+                const data = await apiCall(`/api/v1/lightning/venue/${venueId}/payout-info`);
+
+                // Update payout amounts
+                document.getElementById('pendingPayout').textContent = `$${(data.pendingPayout || 0).toFixed(2)}`;
+                document.getElementById('totalPaidOut').textContent = `$${(data.totalPaidOut || 0).toFixed(2)}`;
+
+                // Update UI based on Stripe Connect status
+                const statusDiv = document.getElementById('stripeStatus');
+                const connectBtn = document.getElementById('connectStripeBtn');
+                const payoutBtn = document.getElementById('requestPayoutBtn');
+
+                if (data.hasStripeConnect) {
+                    statusDiv.className = 'alert alert-success';
+                    statusDiv.innerHTML = '<strong>✅ Bank Account Connected:</strong> You receive payouts automatically (85% of each sale).';
+                    connectBtn.style.display = 'none';
+                    payoutBtn.style.display = 'inline-block';
+
+                    // Enable payout button if there's money to pay out
+                    payoutBtn.disabled = (data.pendingPayout || 0) <= 0;
+                } else {
+                    statusDiv.className = 'alert alert-warning';
+                    statusDiv.innerHTML = '<strong>⚠️ Bank Account Required:</strong> Connect your bank account to receive automatic payouts (85% of sales).';
+                    connectBtn.style.display = 'inline-block';
+                    payoutBtn.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading payout info:', error);
+            }
+        }
+
+        async function connectStripeAccount() {
+            const venueId = state.currentVenueId || state.user?.venueId;
+            const email = state.user?.email;
+
+            if (!venueId) {
+                showToast('No venue selected', 'error');
+                return;
+            }
+
+            if (!email) {
+                showToast('Email not found', 'error');
+                return;
+            }
+
+            try {
+                showToast('Creating Stripe Connect account...', 'info');
+
+                const data = await apiCall('/api/v1/lightning/venue/connect/create', {
+                    method: 'POST',
+                    body: JSON.stringify({ venueId, email })
+                });
+
+                if (data.onboardingUrl) {
+                    showToast('✅ Redirecting to Stripe...', 'success');
+                    // Redirect to Stripe onboarding
+                    setTimeout(() => {
+                        window.location.href = data.onboardingUrl;
+                    }, 1000);
+                } else {
+                    showToast('Error: No onboarding URL received', 'error');
+                }
+            } catch (error) {
+                showToast('❌ Failed to connect: ' + error.message, 'error');
+            }
+        }
+
+        async function requestPayout() {
+            const venueId = state.currentVenueId || state.user?.venueId;
+
+            if (!venueId) {
+                showToast('No venue selected', 'error');
+                return;
+            }
+
+            if (!confirm('Request immediate payout for all pending revenue?')) {
+                return;
+            }
+
+            try {
+                const data = await apiCall('/api/v1/lightning/venue/payout', {
+                    method: 'POST',
+                    body: JSON.stringify({ venueId })
+                });
+
+                showToast(`✅ Payout of $${data.amountPaid.toFixed(2)} sent to your bank!`, 'success');
+                await loadPayoutInfo();
+                await loadVenueStats();
+            } catch (error) {
+                showToast('❌ Payout failed: ' + error.message, 'error');
             }
         }
 
