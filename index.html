@@ -879,7 +879,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             // Initialize Stripe with publishable key from backend
             try {
-                const configResponse = await fetch(`${API_BASE_URL}/config`);
+                const configResponse = await fetch(`${API_BASE}/api/v1/lightning/config`);
                 const config = await configResponse.json();
                 state.stripe = Stripe(config.stripePublishableKey);
             } catch (error) {
