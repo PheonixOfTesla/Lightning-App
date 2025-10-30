@@ -877,8 +877,15 @@
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize Stripe with publishable key
-            state.stripe = Stripe('pk_test_51SJ1eLEEVPwT4uXVRnuf6vCilK2PKwRApwEoQbagqTQCueQRtiuIim1BSb2PitlOYjZc0BwXmblcugnzRFJru5Ed00PvpkpLS4');
+            // Initialize Stripe with publishable key from backend
+            try {
+                const configResponse = await fetch(`${API_BASE_URL}/config`);
+                const config = await configResponse.json();
+                state.stripe = Stripe(config.stripePublishableKey);
+            } catch (error) {
+                console.error('Failed to load Stripe config:', error);
+                showToast('Failed to initialize payment system', 'error');
+            }
 
             checkExistingAuth();
         });
