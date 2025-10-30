@@ -535,12 +535,43 @@
                         
                         <div class="form-group">
                             <label class="form-label">I am a:</label>
-                            <select class="form-select" id="registerRole">
+                            <select class="form-select" id="registerRole" onchange="toggleVenueFields()">
                                 <option value="customer">Customer (Buy Passes)</option>
                                 <option value="venue">Venue Owner (Sell Passes)</option>
                             </select>
                         </div>
-                        
+
+                        <!-- VENUE APPLICATION FIELDS (Hidden by default) -->
+                        <div id="venueFields" style="display: none;">
+                            <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(255, 221, 0, 0.1); border-left: 3px solid var(--lightning-yellow); border-radius: 4px;">
+                                <strong style="color: var(--lightning-yellow);">📋 Venue Application</strong>
+                                <p style="font-size: 0.9rem; margin: 0.5rem 0 0; color: rgba(255, 255, 255, 0.7);">
+                                    Your application will be reviewed by our team before activation.
+                                </p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Venue Name</label>
+                                <input type="text" class="form-input" id="venueName" placeholder="The Electric Lounge">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Venue Type</label>
+                                <select class="form-select" id="venueType">
+                                    <option value="Nightclub">Nightclub</option>
+                                    <option value="Bar">Bar</option>
+                                    <option value="Lounge">Lounge</option>
+                                    <option value="Restaurant">Restaurant</option>
+                                    <option value="Event Space">Event Space</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Full Address</label>
+                                <input type="text" class="form-input" id="venueAddress" placeholder="123 Main St, City, State 12345">
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-success" id="registerBtn" style="width: 100%;">
                             REGISTER
                         </button>
@@ -931,27 +962,59 @@
             }
         }
 
+        function toggleVenueFields() {
+            const role = document.getElementById('registerRole').value;
+            const venueFields = document.getElementById('venueFields');
+            const venueInputs = venueFields.querySelectorAll('input, select');
+
+            if (role === 'venue') {
+                venueFields.style.display = 'block';
+                // Make venue fields required
+                venueInputs.forEach(input => input.setAttribute('required', 'required'));
+            } else {
+                venueFields.style.display = 'none';
+                // Remove required attribute
+                venueInputs.forEach(input => input.removeAttribute('required'));
+            }
+        }
+
         async function handleRegister(event) {
             event.preventDefault();
-            
+
             const email = document.getElementById('registerEmail').value;
             const phone = document.getElementById('registerPhone').value;
             const password = document.getElementById('registerPassword').value;
             const role = document.getElementById('registerRole').value;
             const registerBtn = document.getElementById('registerBtn');
             const errorDiv = document.getElementById('registerError');
-            
+
+            // Collect venue data if registering as venue owner
+            const registrationData = { email, phone, password, role };
+
+            if (role === 'venue') {
+                registrationData.venueName = document.getElementById('venueName').value;
+                registrationData.venueType = document.getElementById('venueType').value;
+                registrationData.venueAddress = document.getElementById('venueAddress').value;
+
+                // Validate venue fields
+                if (!registrationData.venueName || !registrationData.venueAddress) {
+                    errorDiv.textContent = 'Please fill in all venue information';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+            }
+
             // Disable button and show loading
             registerBtn.disabled = true;
             registerBtn.textContent = 'REGISTERING...';
             errorDiv.style.display = 'none';
-            
+
             try {
-                // ✅ REAL API CALL
+                // ✅ REAL API CALL with venue data
                 const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, phone, password, role })
+                    body: JSON.stringify(registrationData)
                 });
                 
                 const data = await response.json();
@@ -983,17 +1046,66 @@
 
         function handleAuthSuccess(user) {
             updateNavigation(user);
-            
+
             if (user.role === 'admin') {
                 showView('admin');
                 loadAdminStats();
             } else if (user.role === 'venue') {
-                showView('venue');
-                populateVenueSelector();
+                // Check if venue application is pending
+                if (user.venuePending) {
+                    showVenuePendingView(user);
+                } else {
+                    showView('venue');
+                    populateVenueSelector();
+                }
             } else {
                 showView('customer');
                 loadVenues();
             }
+        }
+
+        function showVenuePendingView(user) {
+            const container = document.createElement('div');
+            container.className = 'container';
+            container.innerHTML = `
+                <div style="max-width: 600px; margin: 4rem auto; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 2rem;">⏳</div>
+                    <h1 style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">
+                        Application Under Review
+                    </h1>
+                    <p style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
+                        Your venue application has been submitted and is being reviewed by our team.
+                    </p>
+
+                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; text-align: left;">
+                        <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem;">Application Details</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: rgba(255, 255, 255, 0.6);">Email:</strong><br>
+                            <span style="color: white;">${user.email}</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: rgba(255, 255, 255, 0.6);">Phone:</strong><br>
+                            <span style="color: white;">${user.phone}</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: rgba(255, 255, 255, 0.6);">Status:</strong><br>
+                            <span style="color: var(--lightning-yellow);">⏳ Pending Approval</span>
+                        </div>
+                    </div>
+
+                    <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 2rem;">
+                        We typically review applications within 24-48 hours. You'll receive an email once your venue is approved.
+                    </p>
+
+                    <button class="btn btn-secondary" onclick="logout()">
+                        Sign Out
+                    </button>
+                </div>
+            `;
+
+            // Hide all views and show pending view
+            document.querySelectorAll('#authView, #customerView, #venueView, #adminView').forEach(v => v.classList.add('hidden'));
+            document.body.appendChild(container);
         }
 
         function updateNavigation(user) {
