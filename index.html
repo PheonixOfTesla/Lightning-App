@@ -491,6 +491,68 @@
             color: var(--electric-purple);
         }
 
+        .tab-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--white);
+        }
+
+        .tab-btn.active {
+            color: var(--lightning-yellow);
+            border-bottom-color: var(--lightning-yellow);
+        }
+
+        .pass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .pass-card:hover {
+            border-color: var(--electric-purple);
+            background: rgba(157, 78, 221, 0.05);
+        }
+
+        .pass-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .pass-status.active {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--neon-green);
+        }
+
+        .pass-status.used {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .pass-status.refunded {
+            background: rgba(255, 221, 0, 0.1);
+            color: var(--lightning-yellow);
+        }
+
+        .pass-status.pending {
+            background: rgba(255, 165, 0, 0.1);
+            color: #FFA500;
+        }
+
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -709,12 +771,20 @@
                 </p>
             </div>
 
+            <!-- MY PASSES SECTION -->
+            <div class="section" style="margin-bottom: 2rem;">
+                <h2 class="section-title">🎫 My Passes</h2>
+                <div id="customerPassesList">
+                    <div class="loading">Loading your passes...</div>
+                </div>
+            </div>
+
             <h2 style="margin-bottom: 2rem; font-size: 2rem;">
                 <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                     Live Venues Near You
                 </span>
             </h2>
-            
+
             <div class="venues-grid" id="customerVenuesGrid">
                 <div class="empty-state">Loading venues...</div>
             </div>
@@ -752,24 +822,26 @@
                 </div>
             </div>
 
-            <!-- STRIPE CONNECT & PAYOUTS SECTION -->
+            <!-- STRIPE CONNECT & REVENUE SECTION -->
             <div class="section">
-                <h2 class="section-title">💰 Bank Account & Payouts</h2>
+                <h2 class="section-title">💰 Revenue & Automatic Payouts</h2>
 
                 <!-- Stripe Connect Status Alert -->
                 <div id="stripeStatus" class="alert alert-warning" style="margin-bottom: 1.5rem;">
-                    <strong>⚠️ Bank Account Required:</strong> Connect your bank account to receive payouts automatically.
+                    <strong>⚠️ Bank Account Required:</strong> Connect your bank account to receive automatic payouts after each sale.
                 </div>
 
-                <!-- Payout Info Grid -->
+                <!-- Revenue Info Grid -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
                     <div class="stat-card">
-                        <div class="stat-label">Pending Payout</div>
-                        <div class="stat-value" id="pendingPayout" style="color: var(--lightning-yellow);">$0</div>
+                        <div class="stat-label">Lifetime Revenue (85%)</div>
+                        <div class="stat-value" id="lifetimeRevenue" style="color: var(--lightning-yellow);">$0</div>
+                        <p style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">Total earned from all sales</p>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Total Paid Out</div>
-                        <div class="stat-value" id="totalPaidOut" style="color: var(--neon-green);">$0</div>
+                        <div class="stat-label">Auto-Payouts</div>
+                        <div class="stat-value" id="autoPayoutStatus" style="color: var(--neon-green); font-size: 1rem;">✅ Enabled</div>
+                        <p style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">Money sent after each sale</p>
                     </div>
                 </div>
 
@@ -778,9 +850,43 @@
                     <button class="btn btn-success" id="connectStripeBtn" onclick="connectStripeAccount()">
                         🏦 Connect Bank Account
                     </button>
-                    <button class="btn btn-primary" id="requestPayoutBtn" onclick="requestPayout()" style="display: none;" disabled>
-                        💸 Request Payout
+                    <a href="#" id="viewStripeDashboard" class="btn btn-secondary" target="_blank" style="display: none; text-decoration: none;">
+                        📊 View Stripe Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- REFUND MANAGEMENT SECTION -->
+            <div class="section">
+                <h2 class="section-title">💸 Refund Management</h2>
+
+                <!-- Tabs -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-dark);">
+                    <button class="tab-btn active" onclick="showRefundTab('requests')" id="requestsTab">
+                        Pending Requests (<span id="pendingRequestCount">0</span>)
                     </button>
+                    <button class="tab-btn" onclick="showRefundTab('search')" id="searchTab">
+                        Search & Refund
+                    </button>
+                </div>
+
+                <!-- Tab: Pending Requests -->
+                <div id="refundRequestsTab">
+                    <div id="pendingRequestsList">
+                        <div class="loading">Loading refund requests...</div>
+                    </div>
+                </div>
+
+                <!-- Tab: Search & Refund -->
+                <div id="refundSearchTab" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label">Search by Email, Phone, or Pass ID</label>
+                        <div style="display: flex; gap: 1rem;">
+                            <input type="text" id="refundSearchInput" class="form-input" placeholder="customer@example.com or +1234567890 or LP-xxx" style="flex: 1;">
+                            <button class="btn btn-primary" onclick="searchPassesForRefund()">🔍 Search</button>
+                        </div>
+                    </div>
+                    <div id="refundSearchResults"></div>
                 </div>
             </div>
 
@@ -993,6 +1099,32 @@
             </form>
             
             <div id="purchaseStatus" style="display: none; margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Refund Request Modal -->
+    <div id="refundRequestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Request Refund</h2>
+                <button class="close-btn" onclick="closeModal('refundRequestModal')">&times;</button>
+            </div>
+
+            <div id="refundPassInfo" style="background: rgba(255, 221, 0, 0.05); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;"></div>
+
+            <form onsubmit="submitRefundRequest(event)" id="refundRequestForm">
+                <div class="form-group">
+                    <label class="form-label">Reason for Refund</label>
+                    <textarea class="form-input" id="refundReason" rows="4" placeholder="Please explain why you need a refund (minimum 10 characters)" required minlength="10"></textarea>
+                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">The venue will review your request and respond via SMS.</p>
+                </div>
+
+                <button type="submit" class="btn btn-secondary" id="refundRequestBtn" style="width: 100%;">
+                    📝 Submit Refund Request
+                </button>
+            </form>
+
+            <div id="refundRequestStatus" style="display: none; margin-top: 1rem;"></div>
         </div>
     </div>
 
@@ -1231,6 +1363,7 @@
             } else {
                 showView('customer');
                 loadVenues();
+                loadCustomerPasses();
             }
         }
 
@@ -1700,9 +1833,10 @@
                 document.getElementById('currentWait').textContent = `${stats.currentWait || 0}m`;
                 document.getElementById('inLine').textContent = stats.inLine || 0;
 
-                // Load payout info and pass templates
+                // Load payout info, pass templates, and refund requests
                 await loadPayoutInfo();
                 await loadPassTemplates();
+                await loadRefundRequests();
 
             } catch (error) {
                 console.error('Error loading stats:', error);
@@ -1791,28 +1925,34 @@
             try {
                 const data = await apiCall(`/api/v1/lightning/venue/${venueId}/payout-info`);
 
-                // Update payout amounts
-                document.getElementById('pendingPayout').textContent = `$${(data.pendingPayout || 0).toFixed(2)}`;
-                document.getElementById('totalPaidOut').textContent = `$${(data.totalPaidOut || 0).toFixed(2)}`;
+                // Update revenue displays
+                document.getElementById('lifetimeRevenue').textContent = `$${(data.lifetimeRevenue || 0).toFixed(2)}`;
+                const autoPayoutStatus = document.getElementById('autoPayoutStatus');
 
                 // Update UI based on Stripe Connect status
                 const statusDiv = document.getElementById('stripeStatus');
                 const connectBtn = document.getElementById('connectStripeBtn');
-                const payoutBtn = document.getElementById('requestPayoutBtn');
+                const dashboardLink = document.getElementById('viewStripeDashboard');
 
                 if (data.hasStripeConnect) {
                     statusDiv.className = 'alert alert-success';
-                    statusDiv.innerHTML = '<strong>✅ Bank Account Connected:</strong> You receive payouts automatically (85% of each sale).';
+                    statusDiv.innerHTML = '<strong>✅ Bank Account Connected:</strong> ' + (data.message || 'Money automatically sent to your Stripe account after each sale (85% to you, 15% platform fee)');
                     connectBtn.style.display = 'none';
-                    payoutBtn.style.display = 'inline-block';
+                    autoPayoutStatus.textContent = '✅ Enabled';
+                    autoPayoutStatus.style.color = 'var(--neon-green)';
 
-                    // Enable payout button if there's money to pay out
-                    payoutBtn.disabled = (data.pendingPayout || 0) <= 0;
+                    // Show Stripe dashboard link if we have the account ID
+                    if (data.stripeConnectId) {
+                        dashboardLink.href = `https://dashboard.stripe.com/connect/accounts/${data.stripeConnectId}`;
+                        dashboardLink.style.display = 'inline-block';
+                    }
                 } else {
                     statusDiv.className = 'alert alert-warning';
-                    statusDiv.innerHTML = '<strong>⚠️ Bank Account Required:</strong> Connect your bank account to receive automatic payouts (85% of sales).';
+                    statusDiv.innerHTML = '<strong>⚠️ Bank Account Required:</strong> Connect your bank account to receive automatic payouts after each sale.';
                     connectBtn.style.display = 'inline-block';
-                    payoutBtn.style.display = 'none';
+                    autoPayoutStatus.textContent = '⚠️ Not Connected';
+                    autoPayoutStatus.style.color = '#FFA500';
+                    dashboardLink.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error loading payout info:', error);
@@ -1914,32 +2054,6 @@
                 }
             } catch (error) {
                 console.error('Failed to check Stripe status:', error);
-            }
-        }
-
-        async function requestPayout() {
-            const venueId = state.currentVenueId || state.user?.venueId;
-
-            if (!venueId) {
-                showToast('No venue selected', 'error');
-                return;
-            }
-
-            if (!confirm('Request immediate payout for all pending revenue?')) {
-                return;
-            }
-
-            try {
-                const data = await apiCall('/api/v1/lightning/venue/payout', {
-                    method: 'POST',
-                    body: JSON.stringify({ venueId })
-                });
-
-                showToast(`✅ Payout of $${data.amountPaid.toFixed(2)} sent to your bank!`, 'success');
-                await loadPayoutInfo();
-                await loadVenueStats();
-            } catch (error) {
-                showToast('❌ Payout failed: ' + error.message, 'error');
             }
         }
 
@@ -2383,6 +2497,280 @@
                 });
             }
         });
+
+        // ===== CUSTOMER REFUND FUNCTIONS =====
+        let selectedPassForRefund = null;
+
+        async function loadCustomerPasses() {
+            if (!state.user) return;
+
+            try {
+                const data = await apiCall('/api/v1/lightning/customer/passes');
+                const passes = data.passes || [];
+                const container = document.getElementById('customerPassesList');
+
+                if (passes.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No passes found. Purchase a pass to get started!</div>';
+                    return;
+                }
+
+                container.innerHTML = passes.map(pass => {
+                    const canRefund = pass.status === 'active' && !pass.refundRequested;
+                    const statusClass = pass.refundRequested ? 'pending' : pass.status;
+                    const statusText = pass.refundRequested ? 'Refund Pending' : pass.status.charAt(0).toUpperCase() + pass.status.slice(1);
+
+                    return `
+                        <div class="pass-card">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${pass.passName || 'General Admission'}</h3>
+                                    <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">${pass.venueName}</p>
+                                </div>
+                                <span class="pass-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255,255,255,0.6);">
+                                <div><strong>Pass ID:</strong> ${pass.passId}</div>
+                                <div><strong>Quantity:</strong> ${pass.quantity}</div>
+                                <div><strong>Amount:</strong> $${pass.amount.toFixed(2)}</div>
+                                <div><strong>Purchased:</strong> ${new Date(pass.createdAt).toLocaleDateString()}</div>
+                            </div>
+                            ${pass.tagline ? `<p style="color: var(--electric-purple); font-style: italic; margin-bottom: 1rem;">"${pass.tagline}"</p>` : ''}
+                            ${canRefund ? `<button class="btn btn-secondary" style="width: 100%;" onclick='openRefundRequest(${JSON.stringify(pass)})'>💸 Request Refund</button>` : ''}
+                            ${pass.refundRequested ? '<p style="color: #FFA500; margin-top: 0.5rem; font-size: 0.875rem;">⏳ Waiting for venue approval...</p>' : ''}
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading passes:', error);
+                document.getElementById('customerPassesList').innerHTML = '<div class="empty-state">Error loading passes. Please refresh.</div>';
+            }
+        }
+
+        function openRefundRequest(pass) {
+            selectedPassForRefund = pass;
+            document.getElementById('refundPassInfo').innerHTML = `
+                <h4 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">${pass.passName || 'General Admission'}</h4>
+                <p style="color: rgba(255,255,255,0.7);">${pass.venueName}</p>
+                <p style="color: rgba(255,255,255,0.6); margin-top: 0.5rem;">Amount: $${pass.amount.toFixed(2)}</p>
+            `;
+            document.getElementById('refundReason').value = '';
+            document.getElementById('refundRequestStatus').style.display = 'none';
+            showModal('refundRequestModal');
+        }
+
+        async function submitRefundRequest(event) {
+            event.preventDefault();
+            if (!selectedPassForRefund) return;
+
+            const reason = document.getElementById('refundReason').value;
+            const btn = document.getElementById('refundRequestBtn');
+            const statusDiv = document.getElementById('refundRequestStatus');
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'loading';
+            statusDiv.textContent = 'Submitting refund request...';
+
+            try {
+                await apiCall(`/api/v1/lightning/passes/${selectedPassForRefund.passId}/request-refund`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason })
+                });
+
+                statusDiv.className = 'alert alert-success';
+                statusDiv.innerHTML = `
+                    <h3>✅ Refund Request Submitted!</h3>
+                    <p>The venue will review your request and respond via SMS within 24 hours.</p>
+                `;
+                showToast('✅ Refund request submitted!', 'success');
+
+                setTimeout(async () => {
+                    closeModal('refundRequestModal');
+                    await loadCustomerPasses();
+                }, 2000);
+
+            } catch (error) {
+                statusDiv.className = 'alert alert-error';
+                statusDiv.innerHTML = `<h3>❌ Error</h3><p>${error.message}</p>`;
+                showToast('❌ ' + error.message, 'error');
+                btn.disabled = false;
+                btn.textContent = '📝 Submit Refund Request';
+            }
+        }
+
+        // ===== VENUE REFUND FUNCTIONS =====
+        let currentRefundTab = 'requests';
+
+        function showRefundTab(tab) {
+            currentRefundTab = tab;
+            document.getElementById('requestsTab').classList.toggle('active', tab === 'requests');
+            document.getElementById('searchTab').classList.toggle('active', tab === 'search');
+            document.getElementById('refundRequestsTab').style.display = tab === 'requests' ? 'block' : 'none';
+            document.getElementById('refundSearchTab').style.display = tab === 'search' ? 'block' : 'none';
+
+            if (tab === 'requests') {
+                loadRefundRequests();
+            }
+        }
+
+        async function loadRefundRequests() {
+            if (!state.currentVenueId) return;
+
+            try {
+                const data = await apiCall(`/api/v1/lightning/venue/${state.currentVenueId}/refund-requests?status=pending`);
+                const requests = data.requests || [];
+                const container = document.getElementById('pendingRequestsList');
+                const countSpan = document.getElementById('pendingRequestCount');
+
+                countSpan.textContent = requests.length;
+
+                if (requests.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No pending refund requests</div>';
+                    return;
+                }
+
+                container.innerHTML = requests.map(req => `
+                    <div class="pass-card" style="border-color: #FFA500;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="color: var(--lightning-yellow);">Refund Request</h4>
+                                <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">Pass ID: ${req.passId}</p>
+                            </div>
+                            <span class="pass-status pending">Pending</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255,255,255,0.6);">
+                            <div><strong>Customer:</strong> ${req.customerEmail}</div>
+                            <div><strong>Phone:</strong> ${req.customerPhone}</div>
+                            <div><strong>Amount:</strong> $${req.refundAmount.toFixed(2)}</div>
+                            <div><strong>Requested:</strong> ${new Date(req.requestedAt).toLocaleDateString()}</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                            <strong style="color: rgba(255,255,255,0.8);">Reason:</strong>
+                            <p style="color: rgba(255,255,255,0.6); margin-top: 0.5rem;">${req.customerReason}</p>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-success" style="flex: 1;" onclick="respondToRefund('${req._id}', 'approve')">✅ Approve Refund</button>
+                            <button class="btn btn-danger" style="flex: 1;" onclick="respondToRefund('${req._id}', 'deny')">❌ Deny</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading refund requests:', error);
+                document.getElementById('pendingRequestsList').innerHTML = '<div class="empty-state">Error loading requests. Please refresh.</div>';
+            }
+        }
+
+        async function respondToRefund(requestId, action) {
+            let denialReason = null;
+
+            if (action === 'deny') {
+                denialReason = prompt('Why are you denying this refund request?');
+                if (!denialReason || denialReason.trim().length < 10) {
+                    showToast('Please provide a valid reason (at least 10 characters)', 'error');
+                    return;
+                }
+            }
+
+            if (!confirm(`Are you sure you want to ${action} this refund request?`)) {
+                return;
+            }
+
+            try {
+                const payload = { action };
+                if (denialReason) payload.denialReason = denialReason;
+
+                await apiCall(`/api/v1/lightning/venue/${state.currentVenueId}/refund-requests/${requestId}/respond`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                showToast(action === 'approve' ? '✅ Refund approved!' : '❌ Refund denied', 'success');
+                await loadRefundRequests();
+                await loadVenueStats(); // Refresh revenue
+
+            } catch (error) {
+                showToast('❌ ' + error.message, 'error');
+            }
+        }
+
+        async function searchPassesForRefund() {
+            const query = document.getElementById('refundSearchInput').value.trim();
+            if (query.length < 3) {
+                showToast('Please enter at least 3 characters', 'error');
+                return;
+            }
+
+            const container = document.getElementById('refundSearchResults');
+            container.innerHTML = '<div class="loading">Searching...</div>';
+
+            try {
+                const data = await apiCall(`/api/v1/lightning/venue/${state.currentVenueId}/passes/search?q=${encodeURIComponent(query)}`);
+                const passes = data.passes || [];
+
+                if (passes.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No passes found matching your search.</div>';
+                    return;
+                }
+
+                container.innerHTML = passes.map(pass => {
+                    const canRefund = pass.status !== 'refunded';
+                    const statusClass = pass.status;
+                    const statusText = pass.status.charAt(0).toUpperCase() + pass.status.slice(1);
+
+                    return `
+                        <div class="pass-card">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <div>
+                                    <h4 style="color: var(--electric-purple);">${pass.passName || 'General Admission'}</h4>
+                                    <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">Pass ID: ${pass.passId}</p>
+                                </div>
+                                <span class="pass-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255,255,255,0.6);">
+                                <div><strong>Customer:</strong> ${pass.email}</div>
+                                <div><strong>Phone:</strong> ${pass.phone}</div>
+                                <div><strong>Amount:</strong> $${pass.amount.toFixed(2)}</div>
+                                <div><strong>Purchased:</strong> ${new Date(pass.createdAt).toLocaleDateString()}</div>
+                            </div>
+                            ${canRefund ? `<button class="btn btn-danger" style="width: 100%;" onclick="issueDirectRefund('${pass.passId}', ${pass.amount})">💸 Issue Refund</button>` : '<p style="color: rgba(255,255,255,0.5); text-align: center;">Already refunded</p>'}
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error searching passes. Please try again.</div>';
+                showToast('❌ ' + error.message, 'error');
+            }
+        }
+
+        async function issueDirectRefund(passId, amount) {
+            const reason = prompt('Reason for refund (for your records):');
+            if (!reason || reason.trim().length < 5) {
+                showToast('Please provide a reason for the refund', 'error');
+                return;
+            }
+
+            if (!confirm(`Issue refund of $${amount.toFixed(2)}? This will immediately return money to the customer.`)) {
+                return;
+            }
+
+            try {
+                await apiCall(`/api/v1/lightning/venue/${state.currentVenueId}/passes/${passId}/refund`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason, notifyCustomer: true })
+                });
+
+                showToast('✅ Refund issued successfully!', 'success');
+                await searchPassesForRefund(); // Refresh search results
+                await loadVenueStats(); // Refresh revenue
+
+            } catch (error) {
+                showToast('❌ ' + error.message, 'error');
+            }
+        }
     </script>
 </body>
 </html>
