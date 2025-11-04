@@ -2576,6 +2576,9 @@
                         <div>
                             <h3 style="color: var(--electric-purple);">${venue.name}</h3>
                             <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
+                            <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem; margin-top: 0.5rem;">
+                                📧 ${venue.ownerEmail || 'N/A'} ${venue.ownerPhone ? `| 📞 ${venue.ownerPhone}` : ''}
+                            </p>
                             ${venue.approvalStatus === 'pending' ? '<span class="badge badge-pending">PENDING</span>' : ''}
                         </div>
                         <div style="text-align: right;">
@@ -2619,6 +2622,9 @@
                     card.innerHTML = `
                         <h3 style="color: var(--lightning-yellow);">${venue.name}</h3>
                         <p style="color: rgba(255, 255, 255, 0.6);">${venue.address}</p>
+                        <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem; margin-top: 0.5rem;">
+                            📧 ${venue.ownerEmail || 'N/A'} ${venue.ownerPhone ? `| 📞 ${venue.ownerPhone}` : ''}
+                        </p>
                         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                             <button class="btn btn-success" onclick="approveVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Approve</button>
                             <button class="btn btn-danger" onclick="rejectVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Reject</button>
