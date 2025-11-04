@@ -971,6 +971,21 @@
                             </select>
                         </div>
 
+                        <!-- PROMOTIONAL SIGNUP (For Customers) -->
+                        <div id="promoSignupField" class="form-group">
+                            <div style="background: rgba(0, 230, 118, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem; padding: 1rem;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="wantsPromotions" style="width: 20px; height: 20px; margin-right: 0.75rem; cursor: pointer;">
+                                    <span>
+                                        <strong style="color: var(--neon-green);">📢 Sign Up for Exclusive Promotions</strong>
+                                        <div style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.25rem;">
+                                            Get special discounts and exclusive offers on passes!
+                                        </div>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- VENUE APPLICATION FIELDS (Hidden by default) -->
                         <div id="venueFields" style="display: none;">
                             <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(255, 221, 0, 0.1); border-left: 3px solid var(--lightning-yellow); border-radius: 4px;">
@@ -1231,6 +1246,26 @@
                 <div class="stat-card">
                     <div class="stat-label">Total Venues</div>
                     <div class="stat-value" id="totalVenues">0</div>
+                </div>
+            </div>
+
+            <!-- Promotional Discount Control -->
+            <div class="section" style="margin-bottom: 2rem; background: rgba(0, 230, 118, 0.05); border: 2px solid var(--neon-green);">
+                <h2 class="section-title" style="color: var(--neon-green);">🎁 Promotional Discount Control</h2>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem;">
+                    Set a discount percentage for customers who sign up for promotions. This applies automatically at checkout.
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Discount Percentage (0-100%)</label>
+                        <input type="number" class="form-input" id="promotionalDiscount" min="0" max="100" value="0" style="font-size: 1.25rem; font-weight: bold;">
+                    </div>
+                    <button class="btn btn-success" onclick="updatePromotionalDiscount()" style="height: fit-content;">
+                        💾 Update Discount
+                    </button>
+                </div>
+                <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0, 230, 118, 0.1); border-radius: 0.5rem; color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">
+                    <strong style="color: var(--neon-green);">ℹ️ How it works:</strong> Customers who check "Sign Up for Promotions" during registration will automatically receive this discount on all pass purchases.
                 </div>
             </div>
 
@@ -1555,14 +1590,17 @@
         function toggleVenueFields() {
             const role = document.getElementById('registerRole').value;
             const venueFields = document.getElementById('venueFields');
+            const promoField = document.getElementById('promoSignupField');
             const venueInputs = venueFields.querySelectorAll('input, select');
 
             if (role === 'venue') {
                 venueFields.style.display = 'block';
+                promoField.style.display = 'none'; // Hide promo signup for venue owners
                 // Make venue fields required
                 venueInputs.forEach(input => input.setAttribute('required', 'required'));
             } else {
                 venueFields.style.display = 'none';
+                promoField.style.display = 'block'; // Show promo signup for customers
                 // Remove required attribute
                 venueInputs.forEach(input => input.removeAttribute('required'));
             }
@@ -1580,6 +1618,11 @@
 
             // Collect venue data if registering as venue owner
             const registrationData = { email, phone, password, role };
+
+            // Collect promotional signup preference (for customers)
+            if (role === 'customer') {
+                registrationData.wantsPromotions = document.getElementById('wantsPromotions').checked;
+            }
 
             if (role === 'venue') {
                 registrationData.venueName = document.getElementById('venueName').value;
@@ -2551,10 +2594,44 @@
                 }
                 
                 renderAllVenues(allVenues);
-                
+
+                // Load promotional discount setting
+                await loadPromotionalDiscount();
+
             } catch (error) {
                 console.error('Error loading admin stats:', error);
                 showToast('Error loading stats', 'error');
+            }
+        }
+
+        async function loadPromotionalDiscount() {
+            try {
+                const data = await apiCall('/api/v1/lightning/system/settings');
+                document.getElementById('promotionalDiscount').value = data.promotionalDiscountPercent || 0;
+            } catch (error) {
+                console.error('Error loading promotional discount:', error);
+            }
+        }
+
+        async function updatePromotionalDiscount() {
+            try {
+                const discount = parseInt(document.getElementById('promotionalDiscount').value);
+
+                if (isNaN(discount) || discount < 0 || discount > 100) {
+                    showToast('⚠️ Discount must be between 0 and 100', 'error');
+                    return;
+                }
+
+                await apiCall('/api/v1/lightning/system/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({ promotionalDiscountPercent: discount })
+                });
+
+                showToast(`✅ Promotional discount set to ${discount}%!`, 'success');
+
+            } catch (error) {
+                console.error('Error updating promotional discount:', error);
+                showToast('❌ Failed to update discount: ' + error.message, 'error');
             }
         }
 
