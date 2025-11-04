@@ -2,6 +2,8 @@
   "version": 2,
   "rewrites": [
     { "source": "/add-venue", "destination": "/add-venue.html" },
+    { "source": "/venue/connect/return", "destination": "/index.html" },
+    { "source": "/venue/connect/refresh", "destination": "/index.html" },
     { "source": "/", "destination": "/index.html" }
   ],
   "headers": [
