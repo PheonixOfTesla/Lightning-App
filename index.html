@@ -1053,6 +1053,7 @@
                 <select id="venueSelect" class="form-input" onchange="loadVenueStats()">
                     <option value="">Loading...</option>
                 </select>
+                <div id="venueOwnerEmail" style="margin-top: 0.5rem; font-size: 0.875rem; color: rgba(255,255,255,0.6);"></div>
             </div>
 
             <!-- CRITICAL: BANK ACCOUNT REQUIRED WARNING -->
@@ -2067,6 +2068,17 @@
         }
 
         // ===== VENUE FUNCTIONS =====
+        function updateVenueOwnerEmail(venue) {
+            const emailDiv = document.getElementById('venueOwnerEmail');
+            if (!emailDiv) return;
+
+            if (venue && venue.ownerEmail) {
+                emailDiv.innerHTML = `📧 Owner: ${venue.ownerEmail} | 📞 ${venue.ownerPhone || 'N/A'}`;
+            } else {
+                emailDiv.innerHTML = '';
+            }
+        }
+
         async function populateVenueSelector() {
             try {
                 // Load all venues owned by this user
@@ -2089,9 +2101,16 @@
                     select.appendChild(option);
                 });
 
+                // Store venues for email display
+                state.userVenues = userVenues;
+
                 // Auto-select first venue
                 select.value = userVenues[0]._id;
                 state.currentVenueId = userVenues[0]._id;
+
+                // Display owner email
+                updateVenueOwnerEmail(userVenues[0]);
+
                 await loadVenueStats();
             } catch (error) {
                 console.error('Error loading venues:', error);
@@ -2102,12 +2121,15 @@
         async function loadVenueStats() {
             const venueId = document.getElementById('venueSelect').value;
             if (!venueId) return;
-            
+
             state.currentVenueId = venueId;
-            
+
             try {
                 const venueData = await apiCall(`/api/v1/lightning/venues/${venueId}`);
                 const venue = venueData.venue;
+
+                // Update email display
+                updateVenueOwnerEmail(venue);
                 
                 document.getElementById('currentPrice').value = venue.currentPrice || 35;
                 document.getElementById('availablePasses').value = venue.availablePasses || 50;
