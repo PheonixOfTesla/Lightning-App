@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ Lightning Pass - Complete Platform</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-    
+
+    <!-- Premium Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <!-- Stripe.js for payment processing -->
     <script src="https://js.stripe.com/v3/"></script>
-    
+
     <style>
         * {
             margin: 0;
@@ -29,11 +34,14 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--pure-black);
             color: var(--white);
             line-height: 1.6;
             overflow-x: hidden;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body::before {
@@ -125,58 +133,108 @@
             border: 1px solid;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             display: inline-block;
             background: transparent;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 0.875rem;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-primary {
             border-color: var(--electric-blue);
             color: var(--electric-blue);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0);
         }
 
         .btn-primary:hover {
             background: var(--electric-blue);
             color: var(--pure-black);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow:
+                0 0 20px rgba(0, 212, 255, 0.4),
+                0 0 40px rgba(0, 212, 255, 0.2),
+                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn-success {
             border-color: var(--neon-green);
             color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0);
         }
 
         .btn-success:hover {
             background: var(--neon-green);
             color: var(--pure-black);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow:
+                0 0 20px rgba(57, 255, 20, 0.4),
+                0 0 40px rgba(57, 255, 20, 0.2),
+                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn-danger {
             border-color: var(--danger-red);
             color: var(--danger-red);
+            box-shadow: 0 0 20px rgba(255, 0, 68, 0);
         }
 
         .btn-danger:hover {
             background: var(--danger-red);
             color: var(--white);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow:
+                0 0 20px rgba(255, 0, 68, 0.4),
+                0 0 40px rgba(255, 0, 68, 0.2),
+                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn-secondary {
             border-color: var(--lightning-yellow);
             color: var(--lightning-yellow);
+            box-shadow: 0 0 20px rgba(255, 221, 0, 0);
         }
 
         .btn-secondary:hover {
             background: var(--lightning-yellow);
             color: var(--pure-black);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow:
+                0 0 20px rgba(255, 221, 0, 0.4),
+                0 0 40px rgba(255, 221, 0, 0.2),
+                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn:disabled:hover {
+            box-shadow: none !important;
         }
 
         main {
@@ -216,7 +274,7 @@
             100% { background-position: 200% center; }
         }
 
-        /* Lightning Effect Animation */
+        /* Premium Lightning Effect with SVG */
         .lightning-bg {
             position: fixed;
             top: 0;
@@ -228,102 +286,235 @@
             overflow: hidden;
         }
 
-        .lightning-bolt {
+        .lightning-svg {
             position: absolute;
-            width: 4px;
-            background: linear-gradient(to bottom,
-                transparent,
-                var(--lightning-yellow),
-                var(--electric-blue),
-                transparent
-            );
+            width: 100%;
+            height: 100%;
             opacity: 0;
-            animation: lightning-strike 4s ease-in-out infinite;
-            box-shadow: 0 0 20px var(--lightning-yellow),
-                        0 0 40px var(--electric-blue),
-                        0 0 60px var(--lightning-yellow);
         }
 
-        .lightning-bolt:nth-child(1) {
-            left: 15%;
-            height: 40%;
+        .lightning-path {
+            stroke: url(#lightning-gradient);
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: url(#lightning-glow);
+        }
+
+        .lightning-branch {
+            stroke: url(#lightning-gradient);
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            opacity: 0.7;
+            filter: url(#lightning-glow);
+        }
+
+        .lightning-svg:nth-child(1) {
+            animation: realistic-lightning 6s ease-in-out infinite;
             animation-delay: 0s;
         }
 
-        .lightning-bolt:nth-child(2) {
-            left: 45%;
-            height: 60%;
-            animation-delay: 1.5s;
+        .lightning-svg:nth-child(2) {
+            animation: realistic-lightning 6s ease-in-out infinite;
+            animation-delay: 2s;
         }
 
-        .lightning-bolt:nth-child(3) {
-            left: 75%;
-            height: 50%;
-            animation-delay: 3s;
-        }
-
-        .lightning-bolt:nth-child(4) {
-            left: 85%;
-            height: 45%;
-            animation-delay: 2.2s;
-        }
-
-        .lightning-bolt:nth-child(5) {
-            left: 25%;
-            height: 55%;
+        .lightning-svg:nth-child(3) {
+            animation: realistic-lightning 6s ease-in-out infinite;
             animation-delay: 4s;
         }
 
-        @keyframes lightning-strike {
-            0%, 10%, 12%, 100% {
+        @keyframes realistic-lightning {
+            0%, 8%, 100% {
                 opacity: 0;
-                transform: translateY(-100%) scaleY(0);
             }
-            10.5% {
+            8.5% {
                 opacity: 1;
-                transform: translateY(0) scaleY(1);
             }
-            11% {
-                opacity: 0.8;
-                transform: translateY(0) scaleY(1);
+            8.8% {
+                opacity: 0.3;
             }
-            11.5% {
+            9% {
                 opacity: 1;
-                transform: translateY(0) scaleY(1.05);
+            }
+            9.3% {
+                opacity: 0;
             }
         }
 
-        /* Flash effect */
+        /* Premium Flash Effect */
         .lightning-flash {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle,
-                rgba(255, 221, 0, 0.1) 0%,
-                transparent 50%
+            background: radial-gradient(circle at center,
+                rgba(255, 255, 255, 0.4) 0%,
+                rgba(255, 221, 0, 0.2) 30%,
+                rgba(0, 212, 255, 0.1) 50%,
+                transparent 70%
             );
             opacity: 0;
             pointer-events: none;
-            z-index: 1;
+            z-index: 9999;
+            mix-blend-mode: screen;
         }
 
-        @keyframes flash {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
+        @keyframes dramatic-flash {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            20% { opacity: 0; }
+            25% { opacity: 0.8; }
+            30% { opacity: 0; }
         }
 
         .lightning-flash.active {
-            animation: flash 0.15s ease-in-out 2;
+            animation: dramatic-flash 0.3s ease-out;
+        }
+
+        /* Particle System */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Ambient Light Rays */
+        .ambient-lights {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .light-ray {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom,
+                transparent 0%,
+                rgba(255, 221, 0, 0.05) 20%,
+                rgba(0, 212, 255, 0.05) 50%,
+                rgba(157, 78, 221, 0.05) 80%,
+                transparent 100%
+            );
+            transform-origin: top center;
+            animation: rotate-ray 20s linear infinite;
+            filter: blur(2px);
+        }
+
+        .light-ray:nth-child(1) {
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .light-ray:nth-child(2) {
+            left: 30%;
+            animation-delay: -5s;
+        }
+
+        .light-ray:nth-child(3) {
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        .light-ray:nth-child(4) {
+            left: 70%;
+            animation-delay: -15s;
+        }
+
+        .light-ray:nth-child(5) {
+            left: 90%;
+            animation-delay: -8s;
+        }
+
+        @keyframes rotate-ray {
+            0% { transform: rotate(-5deg); opacity: 0.3; }
+            50% { transform: rotate(5deg); opacity: 0.6; }
+            100% { transform: rotate(-5deg); opacity: 0.3; }
+        }
+
+        /* Circuit Grid Overlay */
+        .circuit-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image:
+                linear-gradient(rgba(157, 78, 221, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(157, 78, 221, 0.5) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes grid-pulse {
+            0%, 100% { opacity: 0.02; }
+            50% { opacity: 0.06; }
         }
 
         .section {
-            background: var(--card-black);
-            border: 1px solid var(--border-dark);
+            background: rgba(17, 17, 17, 0.8);
+            backdrop-filter: blur(50px) saturate(180%);
+            -webkit-backdrop-filter: blur(50px) saturate(180%);
+            border: 1px solid rgba(157, 78, 221, 0.2);
             border-radius: 1rem;
             padding: 2rem;
             margin-bottom: 2rem;
+            position: relative;
+            box-shadow:
+                0 8px 32px 0 rgba(0, 0, 0, 0.37),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+                0 0 0 1px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg,
+                rgba(255, 221, 0, 0.1) 0%,
+                rgba(157, 78, 221, 0.1) 50%,
+                rgba(0, 212, 255, 0.1) 100%
+            );
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .section:hover::before {
+            opacity: 1;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 12px 48px 0 rgba(157, 78, 221, 0.15),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(157, 78, 221, 0.3);
         }
 
         .section-title {
@@ -644,18 +835,76 @@
         </div>
     </nav>
 
+    <!-- Premium Background Effects -->
+    <div class="circuit-grid"></div>
+    <div class="ambient-lights">
+        <div class="light-ray"></div>
+        <div class="light-ray"></div>
+        <div class="light-ray"></div>
+        <div class="light-ray"></div>
+        <div class="light-ray"></div>
+    </div>
+    <canvas id="particles-canvas"></canvas>
+    <div class="lightning-flash" id="lightningFlash"></div>
+
+    <!-- Premium SVG Lightning -->
+    <div class="lightning-bg">
+        <svg class="lightning-svg" viewBox="0 0 100 200" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="lightning-gradient-1" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:rgba(255,255,255,1);stop-opacity:1" />
+                    <stop offset="20%" style="stop-color:rgba(255,221,0,1);stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:rgba(0,212,255,0.9);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:rgba(157,78,221,0.7);stop-opacity:0.8" />
+                </linearGradient>
+                <filter id="lightning-glow-1">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+            </defs>
+            <path class="lightning-path" d="M15,0 L20,40 L10,45 L18,80 L8,85 L15,120 L10,130 L18,180 L12,200" stroke="url(#lightning-gradient-1)" filter="url(#lightning-glow-1)"/>
+            <path class="lightning-branch" d="M18,80 L30,90 L25,110" stroke="url(#lightning-gradient-1)" filter="url(#lightning-glow-1)"/>
+            <path class="lightning-branch" d="M10,45 L5,55 L8,70" stroke="url(#lightning-gradient-1)" filter="url(#lightning-glow-1)"/>
+        </svg>
+        <svg class="lightning-svg" viewBox="0 0 100 200" preserveAspectRatio="none" style="left: 50%;">
+            <defs>
+                <linearGradient id="lightning-gradient-2" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:rgba(255,255,255,1);stop-opacity:1" />
+                    <stop offset="20%" style="stop-color:rgba(0,212,255,1);stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:rgba(255,221,0,0.9);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:rgba(157,78,221,0.7);stop-opacity:0.8" />
+                </linearGradient>
+                <filter id="lightning-glow-2">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+            </defs>
+            <path class="lightning-path" d="M45,0 L50,35 L42,40 L48,75 L38,82 L45,115 L40,125 L50,170 L44,200" stroke="url(#lightning-gradient-2)" filter="url(#lightning-glow-2)"/>
+            <path class="lightning-branch" d="M48,75 L60,82 L55,100" stroke="url(#lightning-gradient-2)" filter="url(#lightning-glow-2)"/>
+            <path class="lightning-branch" d="M42,40 L35,48 L38,65" stroke="url(#lightning-gradient-2)" filter="url(#lightning-glow-2)"/>
+        </svg>
+        <svg class="lightning-svg" viewBox="0 0 100 200" preserveAspectRatio="none" style="left: 80%;">
+            <defs>
+                <linearGradient id="lightning-gradient-3" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:rgba(255,255,255,1);stop-opacity:1" />
+                    <stop offset="20%" style="stop-color:rgba(157,78,221,1);stop-opacity:1" />
+                    <stop offset="60%" style="stop-color:rgba(255,221,0,0.9);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:rgba(0,212,255,0.7);stop-opacity:0.8" />
+                </linearGradient>
+                <filter id="lightning-glow-3">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+            </defs>
+            <path class="lightning-path" d="M70,0 L75,38 L65,43 L73,78 L63,85 L70,118 L65,128 L75,175 L68,200" stroke="url(#lightning-gradient-3)" filter="url(#lightning-glow-3)"/>
+            <path class="lightning-branch" d="M73,78 L85,88 L80,105" stroke="url(#lightning-gradient-3)" filter="url(#lightning-glow-3)"/>
+            <path class="lightning-branch" d="M65,43 L58,52 L62,68" stroke="url(#lightning-gradient-3)" filter="url(#lightning-glow-3)"/>
+        </svg>
+    </div>
+
     <main>
         <!-- AUTH SCREEN (Login/Register) -->
         <div id="authView" class="container">
-            <!-- Lightning Background Effect -->
-            <div class="lightning-bg">
-                <div class="lightning-bolt"></div>
-                <div class="lightning-bolt"></div>
-                <div class="lightning-bolt"></div>
-                <div class="lightning-bolt"></div>
-                <div class="lightning-bolt"></div>
-            </div>
-            <div class="lightning-flash" id="lightningFlash"></div>
 
             <div style="max-width: 500px; margin: 4rem auto; position: relative; z-index: 10;">
                 <h1 style="text-align: center; margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
@@ -2791,6 +3040,113 @@
                 showToast('❌ ' + error.message, 'error');
             }
         }
+
+        // ===== PREMIUM PARTICLE SYSTEM =====
+        (function initParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let animationId;
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 10;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = -(Math.random() * 2 + 1);
+                    this.size = Math.random() * 2 + 1;
+                    this.alpha = Math.random() * 0.5 + 0.5;
+                    this.decay = Math.random() * 0.01 + 0.005;
+                    this.color = ['255,221,0', '0,212,255', '157,78,221', '57,255,20'][Math.floor(Math.random() * 4)];
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.alpha -= this.decay;
+
+                    if (this.alpha <= 0 || this.y < -10) {
+                        this.reset();
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    ctx.fillStyle = `rgb(${this.color})`;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `rgb(${this.color})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            function init() {
+                resizeCanvas();
+                // Reduce particles on mobile for performance
+                const particleCount = window.innerWidth < 768 ? 30 : 80;
+                particles = Array.from({ length: particleCount }, () => new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // Respect user's motion preferences
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                return;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            init();
+            animate();
+
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', () => {
+                cancelAnimationFrame(animationId);
+            });
+        })();
+
+        // ===== LIGHTNING FLASH TRIGGER =====
+        (function setupLightningFlash() {
+            const flashElement = document.getElementById('lightningFlash');
+            if (!flashElement) return;
+
+            // Trigger flash synchronized with lightning strikes
+            function triggerFlash() {
+                flashElement.classList.add('active');
+                setTimeout(() => {
+                    flashElement.classList.remove('active');
+                }, 300);
+            }
+
+            // Flash on lightning strike (every 6s with delays)
+            setInterval(triggerFlash, 6000);
+            setTimeout(() => setInterval(triggerFlash, 6000), 2000);
+            setTimeout(() => setInterval(triggerFlash, 6000), 4000);
+        })();
+
+        // Note for QR Scanner: Will be added after UI polish is complete
     </script>
 </body>
 </html>
