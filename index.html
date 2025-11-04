@@ -1444,6 +1444,9 @@
                 showToast('Failed to initialize payment system', 'error');
             }
 
+            // Handle Stripe Connect OAuth callbacks
+            await handleStripeConnectCallback();
+
             checkExistingAuth();
             initializeLightningEffects();
         });
@@ -2246,6 +2249,47 @@
                 }
             } catch (error) {
                 console.error('Error loading payout info:', error);
+            }
+        }
+
+        // Handle Stripe Connect OAuth callback
+        async function handleStripeConnectCallback() {
+            const path = window.location.pathname;
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Handle successful Stripe Connect onboarding
+            if (path === '/venue/connect/return' || path.includes('/venue/connect/return')) {
+                try {
+                    showToast('✅ Bank account connected successfully!', 'success');
+
+                    // Wait a moment for Stripe to finish processing
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Reload payout info to update UI
+                    if (state.currentVenueId || state.user?.venueId) {
+                        await loadPayoutInfo();
+                    }
+
+                    // Clean up URL and redirect to dashboard
+                    window.history.replaceState({}, '', '/');
+
+                } catch (error) {
+                    console.error('Error handling Stripe callback:', error);
+                    showToast('⚠️ Connected, but unable to refresh status. Please refresh the page.', 'warning');
+                    setTimeout(() => {
+                        window.history.replaceState({}, '', '/');
+                    }, 3000);
+                }
+            }
+
+            // Handle expired or failed Stripe Connect onboarding
+            if (path === '/venue/connect/refresh' || path.includes('/venue/connect/refresh')) {
+                showToast('⚠️ Onboarding session expired. Please try again.', 'error');
+
+                // Clean up URL
+                setTimeout(() => {
+                    window.history.replaceState({}, '', '/');
+                }, 2000);
             }
         }
 
