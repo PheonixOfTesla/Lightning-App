@@ -802,7 +802,21 @@
                     <option value="">Loading...</option>
                 </select>
             </div>
-            
+
+            <!-- CRITICAL: BANK ACCOUNT REQUIRED WARNING -->
+            <div id="bankAccountWarning" class="alert alert-error" style="display: none; margin-bottom: 2rem; border-left: 4px solid var(--danger-red);">
+                <h3 style="color: var(--danger-red); margin-bottom: 0.5rem;">🚫 Bank Account Required</h3>
+                <p style="margin-bottom: 1rem;">You must connect your bank account via Stripe Connect before you can:</p>
+                <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li>Create or edit pass templates</li>
+                    <li>Sell passes to customers</li>
+                    <li>Receive payments</li>
+                </ul>
+                <button class="btn btn-success" onclick="connectStripeAccount()">
+                    🏦 Connect Bank Account Now
+                </button>
+            </div>
+
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <div class="stat-label">Tonight's Revenue</div>
@@ -1925,6 +1939,9 @@
             try {
                 const data = await apiCall(`/api/v1/lightning/venue/${venueId}/payout-info`);
 
+                // Store Stripe Connect status in state for validation
+                state.hasStripeConnect = data.hasStripeConnect;
+
                 // Update revenue displays
                 document.getElementById('lifetimeRevenue').textContent = `$${(data.lifetimeRevenue || 0).toFixed(2)}`;
                 const autoPayoutStatus = document.getElementById('autoPayoutStatus');
@@ -1933,6 +1950,7 @@
                 const statusDiv = document.getElementById('stripeStatus');
                 const connectBtn = document.getElementById('connectStripeBtn');
                 const dashboardLink = document.getElementById('viewStripeDashboard');
+                const bankAccountWarning = document.getElementById('bankAccountWarning');
 
                 if (data.hasStripeConnect) {
                     statusDiv.className = 'alert alert-success';
@@ -1940,6 +1958,7 @@
                     connectBtn.style.display = 'none';
                     autoPayoutStatus.textContent = '✅ Enabled';
                     autoPayoutStatus.style.color = 'var(--neon-green)';
+                    bankAccountWarning.style.display = 'none'; // Hide warning
 
                     // Show Stripe dashboard link if we have the account ID
                     if (data.stripeConnectId) {
@@ -1953,6 +1972,7 @@
                     autoPayoutStatus.textContent = '⚠️ Not Connected';
                     autoPayoutStatus.style.color = '#FFA500';
                     dashboardLink.style.display = 'none';
+                    bankAccountWarning.style.display = 'block'; // Show warning banner
                 }
             } catch (error) {
                 console.error('Error loading payout info:', error);
