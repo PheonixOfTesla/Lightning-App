@@ -14,6 +14,9 @@
     <!-- Stripe.js for payment processing -->
     <script src="https://js.stripe.com/v3/"></script>
 
+    <!-- Socket.IO Client for Real-Time Updates -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
     <!-- QR Code Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
@@ -1548,7 +1551,8 @@
             cardElement: null,
             paymentIntentId: null,
             approvalCheckInterval: null,
-            approvedVenueCount: 0
+            approvedVenueCount: 0,
+            socket: null  // Socket.IO connection
         };
 
         // ===== INITIALIZATION =====
@@ -1590,6 +1594,7 @@
             await handleStripeConnectCallback();
 
             checkExistingAuth();
+            initSocketIO();  // Initialize WebSocket connection
             initializeLightningEffects();
         });
 
@@ -1671,6 +1676,82 @@
             } else {
                 showView('auth');
             }
+        }
+
+        // ===== SOCKET.IO REAL-TIME UPDATES =====
+        function initSocketIO() {
+            // Connect to Socket.IO server
+            state.socket = io(API_BASE, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 5
+            });
+
+            state.socket.on('connect', () => {
+                console.log('🔌 Connected to WebSocket');
+
+                // Join appropriate rooms based on user role
+                if (state.user) {
+                    if (state.user.role === 'admin') {
+                        state.socket.emit('join:admin');
+                        console.log('📡 Joined admin room');
+                    } else if (state.user.role === 'venue' && state.user.venueId) {
+                        state.socket.emit('join:venue', state.user.venueId);
+                        console.log('📡 Joined venue room:', state.user.venueId);
+                    }
+                }
+            });
+
+            state.socket.on('disconnect', () => {
+                console.log('🔌 Disconnected from WebSocket');
+            });
+
+            // ===== REAL-TIME EVENT LISTENERS =====
+
+            // 🎉 Venue Approved - Show notification and refresh dropdown
+            state.socket.on('venueApproved', (data) => {
+                console.log('🎉 Venue approved:', data);
+
+                // Only show if it's for this user
+                if (state.user && state.user.venueId && state.user.venueId === data.venueId.toString()) {
+                    showToast('🎉 Venue approved!', 'success');
+
+                    // Refresh venue selector
+                    if (typeof populateVenueSelector === 'function') {
+                        populateVenueSelector();
+                    }
+                }
+            });
+
+            // 📱 New Venue Application - Admin sees it instantly
+            state.socket.on('newVenueApplication', (data) => {
+                console.log('📱 New venue application:', data);
+
+                if (state.user && state.user.role === 'admin') {
+                    showToast(`New venue application: ${data.venueName}`, 'info');
+
+                    // Refresh admin pending list
+                    if (typeof loadPendingVenues === 'function') {
+                        loadPendingVenues();
+                    }
+                }
+            });
+
+            // 💰 Pass Purchased - Update venue dashboard instantly
+            state.socket.on('passPurchased', (data) => {
+                console.log('💰 Pass purchased:', data);
+
+                // Only update if it's for current venue
+                if (state.currentVenueId && state.currentVenueId === data.venueId.toString()) {
+                    showToast(`New purchase: ${data.quantity} pass${data.quantity > 1 ? 'es' : ''}!`, 'success');
+
+                    // Update venue stats
+                    if (typeof loadVenueStats === 'function') {
+                        loadVenueStats();
+                    }
+                }
+            });
         }
 
         // ===== AUTHENTICATION - REAL API CALLS =====
@@ -2299,8 +2380,7 @@
 
                 if (userVenues.length === 0) {
                     select.innerHTML = '<option value="">No venues found. Contact admin.</option>';
-                    // Start polling for venue approval
-                    startVenueApprovalPolling();
+                    // WebSocket will handle real-time approval notifications
                     return;
                 }
 
@@ -2317,16 +2397,7 @@
                 // Store approved venue count
                 state.approvedVenueCount = approvedCount;
 
-                // If no approved venues yet, start polling
-                if (approvedCount === 0) {
-                    startVenueApprovalPolling();
-                } else {
-                    // Stop polling if we have approved venues
-                    if (state.approvalCheckInterval) {
-                        clearInterval(state.approvalCheckInterval);
-                        state.approvalCheckInterval = null;
-                    }
-                }
+                // WebSocket handles real-time approval notifications (no polling needed)
 
                 // Auto-select first venue
                 select.value = userVenues[0]._id;
