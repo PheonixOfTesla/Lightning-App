@@ -1175,6 +1175,19 @@
                 </div>
             </div>
 
+            <!-- MANAGE SOLD PASSES SECTION -->
+            <div class="section">
+                <h2 class="section-title">📋 Manage Sold Passes</h2>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" onclick="loadSoldPasses()">🔄 Refresh Passes</button>
+                </div>
+
+                <div id="soldPassesList">
+                    <div class="loading">Click refresh to load sold passes...</div>
+                </div>
+            </div>
+
             <!-- PASS TEMPLATES SECTION -->
             <div class="section">
                 <h2 class="section-title">🎫 Pass Types</h2>
@@ -1528,6 +1541,61 @@
             </form>
 
             <div id="refundRequestStatus" style="display: none; margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Edit Pass Modal -->
+    <div id="editPassModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✏️ Edit Pass</h2>
+                <button class="close-btn" onclick="closeModal('editPassModal')">&times;</button>
+            </div>
+
+            <div id="editPassInfo" style="background: rgba(255, 221, 0, 0.05); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;"></div>
+
+            <form onsubmit="submitEditPass(event)" id="editPassForm">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="editPassStatus">
+                        <option value="active">Active</option>
+                        <option value="used">Used</option>
+                        <option value="expired">Expired</option>
+                        <option value="refunded">Refunded</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Valid Until</label>
+                    <input type="datetime-local" class="form-input" id="editPassValidUntil">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" class="form-input" id="editPassQuantity" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pass Name</label>
+                    <input type="text" class="form-input" id="editPassName">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input" id="editPassDescription" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Internal Notes</label>
+                    <textarea class="form-input" id="editPassNotes" rows="3" placeholder="Add notes for internal tracking..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success" id="editPassBtn" style="width: 100%;">
+                    ✅ Save Changes
+                </button>
+            </form>
+
+            <div id="editPassStatus" style="display: none; margin-top: 1rem;"></div>
         </div>
     </div>
 
@@ -2950,8 +3018,8 @@
             if (!priceStr) return;
 
             const price = parseFloat(priceStr);
-            if (isNaN(price) || price < 10 || price > 500) {
-                showToast('Price must be between $10 and $500', 'error');
+            if (isNaN(price) || price < 5 || price > 500) {
+                showToast('Price must be between $5 and $500', 'error');
                 return;
             }
 
@@ -3227,16 +3295,175 @@
 
         async function deleteVenue(venueId, venueName) {
             if (!confirm(`DELETE ${venueName}? This cannot be undone.`)) return;
-            
+
             try {
                 await apiCall(`/api/v1/lightning/venues/${venueId}`, {
                     method: 'DELETE'
                 });
-                
+
                 showToast(`${venueName} deleted`, 'success');
                 await loadAdminStats();
             } catch (error) {
                 showToast('❌ Deletion failed: ' + error.message, 'error');
+            }
+        }
+
+        // ===== EDIT PASS FUNCTIONS =====
+        async function loadSoldPasses() {
+            const venueId = state.currentVenueId || state.user?.venueId;
+            if (!venueId) {
+                showToast('No venue selected', 'error');
+                return;
+            }
+
+            try {
+                showToast('Loading sold passes...', 'info');
+                const data = await apiCall(`/api/v1/lightning/venue/${venueId}/passes`);
+                const passes = data.passes || [];
+
+                const list = document.getElementById('soldPassesList');
+
+                if (passes.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No sold passes yet</div>';
+                    return;
+                }
+
+                // Create table
+                let tableHTML = `
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.3); border-radius: 0.5rem;">
+                            <thead>
+                                <tr style="background: rgba(157, 78, 221, 0.2); border-bottom: 2px solid var(--electric-purple);">
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Pass ID</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Customer</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Pass Name</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Qty</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Price</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Status</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Valid Until</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--lightning-yellow);">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                passes.forEach(pass => {
+                    const statusColors = {
+                        'active': 'var(--neon-green)',
+                        'used': 'rgba(255, 255, 255, 0.5)',
+                        'expired': '#FFA500',
+                        'refunded': '#FF6B6B'
+                    };
+
+                    const validUntil = new Date(pass.validUntil).toLocaleString();
+
+                    tableHTML += `
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <td style="padding: 1rem; color: rgba(255, 255, 255, 0.9); font-family: monospace; font-size: 0.85rem;">${pass.passId}</td>
+                            <td style="padding: 1rem; color: rgba(255, 255, 255, 0.9);">${pass.customerPhone || 'N/A'}</td>
+                            <td style="padding: 1rem; color: rgba(255, 255, 255, 0.9);">${pass.passName || 'N/A'}</td>
+                            <td style="padding: 1rem; color: rgba(255, 255, 255, 0.9);">${pass.quantity}</td>
+                            <td style="padding: 1rem; color: var(--neon-green); font-weight: bold;">$${pass.amountPaid}</td>
+                            <td style="padding: 1rem;">
+                                <span style="color: ${statusColors[pass.status] || 'white'}; font-weight: bold; text-transform: uppercase;">
+                                    ${pass.status}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem; color: rgba(255, 255, 255, 0.7); font-size: 0.85rem;">${validUntil}</td>
+                            <td style="padding: 1rem;">
+                                <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick='openEditPassModal(${JSON.stringify(pass).replace(/'/g, "&#39;")})'>
+                                    ✏️ Edit
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                list.innerHTML = tableHTML;
+                showToast(`Loaded ${passes.length} passes`, 'success');
+
+            } catch (error) {
+                console.error('Error loading sold passes:', error);
+                showToast('❌ Failed to load passes: ' + error.message, 'error');
+            }
+        }
+
+        function openEditPassModal(pass) {
+            // Store current pass in state
+            state.editingPass = pass;
+
+            // Populate form fields
+            document.getElementById('editPassStatus').value = pass.status;
+
+            // Format validUntil for datetime-local input
+            const validDate = new Date(pass.validUntil);
+            const formatted = validDate.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+            document.getElementById('editPassValidUntil').value = formatted;
+
+            document.getElementById('editPassQuantity').value = pass.quantity;
+            document.getElementById('editPassName').value = pass.passName || '';
+            document.getElementById('editPassDescription').value = pass.passDescription || '';
+            document.getElementById('editPassNotes').value = pass.notes || '';
+
+            // Show pass info
+            document.getElementById('editPassInfo').innerHTML = `
+                <div style="background: rgba(157, 78, 221, 0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                        <div><strong>Pass ID:</strong> ${pass.passId}</div>
+                        <div><strong>Customer:</strong> ${pass.customerPhone || 'N/A'}</div>
+                        <div><strong>Amount Paid:</strong> <span style="color: var(--neon-green);">$${pass.amountPaid}</span></div>
+                        <div><strong>Purchased:</strong> ${new Date(pass.purchasedAt).toLocaleDateString()}</div>
+                    </div>
+                </div>
+            `;
+
+            // Show modal
+            document.getElementById('editPassModal').style.display = 'flex';
+        }
+
+        async function submitEditPass(event) {
+            event.preventDefault();
+
+            const pass = state.editingPass;
+            if (!pass) {
+                showToast('No pass selected', 'error');
+                return;
+            }
+
+            try {
+                const updatedData = {
+                    status: document.getElementById('editPassStatus').value,
+                    validUntil: new Date(document.getElementById('editPassValidUntil').value).toISOString(),
+                    quantity: parseInt(document.getElementById('editPassQuantity').value),
+                    passName: document.getElementById('editPassName').value,
+                    passDescription: document.getElementById('editPassDescription').value,
+                    notes: document.getElementById('editPassNotes').value
+                };
+
+                showToast('Updating pass...', 'info');
+
+                await apiCall(`/api/v1/lightning/passes/${pass.passId}/edit`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedData)
+                });
+
+                showToast('✅ Pass updated successfully!', 'success');
+
+                // Close modal
+                closeModal('editPassModal');
+
+                // Refresh sold passes list
+                await loadSoldPasses();
+
+            } catch (error) {
+                console.error('Error updating pass:', error);
+                showToast('❌ Failed to update: ' + error.message, 'error');
             }
         }
 
