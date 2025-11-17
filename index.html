@@ -1546,7 +1546,9 @@
             currentVenueId: null,
             stripe: null,
             cardElement: null,
-            paymentIntentId: null
+            paymentIntentId: null,
+            approvalCheckInterval: null,
+            approvedVenueCount: 0
         };
 
         // ===== INITIALIZATION =====
@@ -2289,10 +2291,16 @@
 
                 const userVenues = data.venues || [];
 
+                // Count approved venues (not pending)
+                const approvedVenues = userVenues.filter(v => v.approvalStatus === 'approved');
+                const approvedCount = approvedVenues.length;
+
                 select.innerHTML = '<option value="">Select a venue...</option>';
 
                 if (userVenues.length === 0) {
                     select.innerHTML = '<option value="">No venues found. Contact admin.</option>';
+                    // Start polling for venue approval
+                    startVenueApprovalPolling();
                     return;
                 }
 
@@ -2306,6 +2314,20 @@
                 // Store venues for email display
                 state.userVenues = userVenues;
 
+                // Store approved venue count
+                state.approvedVenueCount = approvedCount;
+
+                // If no approved venues yet, start polling
+                if (approvedCount === 0) {
+                    startVenueApprovalPolling();
+                } else {
+                    // Stop polling if we have approved venues
+                    if (state.approvalCheckInterval) {
+                        clearInterval(state.approvalCheckInterval);
+                        state.approvalCheckInterval = null;
+                    }
+                }
+
                 // Auto-select first venue
                 select.value = userVenues[0]._id;
                 state.currentVenueId = userVenues[0]._id;
@@ -2317,6 +2339,48 @@
             } catch (error) {
                 console.error('Error loading venues:', error);
                 showToast('Error loading your venues', 'error');
+            }
+        }
+
+        function startVenueApprovalPolling() {
+            // Clear any existing interval
+            if (state.approvalCheckInterval) {
+                clearInterval(state.approvalCheckInterval);
+            }
+
+            // Check immediately, then every 10 seconds
+            checkForVenueApproval();
+            state.approvalCheckInterval = setInterval(checkForVenueApproval, 10000);
+        }
+
+        async function checkForVenueApproval() {
+            try {
+                // Only check if user is a venue owner
+                if (!state.user || state.user.role !== 'venue') return;
+
+                const data = await apiCall('/api/v1/lightning/venues/by-owner');
+                const userVenues = data.venues || [];
+
+                // Count approved venues
+                const approvedVenues = userVenues.filter(v => v.approvalStatus === 'approved');
+                const currentApprovedCount = approvedVenues.length;
+
+                // Check if a new venue was approved
+                if (currentApprovedCount > state.approvedVenueCount) {
+                    // New venue approved! Show notification and refresh
+                    showToast('🎉 Venue approved!', 'success');
+
+                    // Stop polling
+                    if (state.approvalCheckInterval) {
+                        clearInterval(state.approvalCheckInterval);
+                        state.approvalCheckInterval = null;
+                    }
+
+                    // Refresh the venue selector
+                    await populateVenueSelector();
+                }
+            } catch (error) {
+                console.error('Error checking venue approval:', error);
             }
         }
 
