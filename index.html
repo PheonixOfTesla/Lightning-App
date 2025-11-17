@@ -1612,14 +1612,60 @@
             }, 4000 + Math.random() * 4000);
         }
 
-        function checkExistingAuth() {
+        async function checkExistingAuth() {
             const token = localStorage.getItem('token');
             const user = localStorage.getItem('user');
-            
+
             if (token && user) {
                 state.token = token;
-                state.user = JSON.parse(user);
-                handleAuthSuccess(state.user);
+
+                // Verify token and get fresh user data from backend
+                try {
+                    const response = await fetch(`${API_BASE}/api/v1/lightning/venues/by-owner`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        // Token is valid, use cached user data but refresh it
+                        const parsedUser = JSON.parse(user);
+                        state.user = parsedUser;
+
+                        // If venue owner, fetch fresh venue status to update venuePending flag
+                        if (parsedUser.role === 'venue' && parsedUser.venueId) {
+                            try {
+                                const venueResponse = await fetch(`${API_BASE}/api/v1/lightning/venues/${parsedUser.venueId}`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+
+                                if (venueResponse.ok) {
+                                    const venueData = await venueResponse.json();
+                                    const venue = venueData.venue;
+
+                                    // Update venuePending flag based on current approval status
+                                    parsedUser.venuePending = venue && venue.approvalStatus === 'pending';
+
+                                    // Update localStorage with fresh data
+                                    localStorage.setItem('user', JSON.stringify(parsedUser));
+                                    state.user = parsedUser;
+                                }
+                            } catch (error) {
+                                console.log('Could not fetch venue status, using cached data');
+                            }
+                        }
+
+                        handleAuthSuccess(state.user);
+                    } else {
+                        // Token invalid, clear and show login
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        showView('auth');
+                    }
+                } catch (error) {
+                    console.error('Auth verification failed:', error);
+                    // On network error, use cached data as fallback
+                    state.user = JSON.parse(user);
+                    handleAuthSuccess(state.user);
+                }
             } else {
                 showView('auth');
             }
