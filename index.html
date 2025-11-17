@@ -1599,6 +1599,50 @@
         </div>
     </div>
 
+    <!-- Edit Pass Type Modal -->
+    <div id="editPassTypeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✏️ Edit Pass Type</h2>
+                <button class="close-btn" onclick="closeModal('editPassTypeModal')">&times;</button>
+            </div>
+
+            <form onsubmit="submitEditPassType(event)" id="editPassTypeForm">
+                <div class="form-group">
+                    <label class="form-label">Pass Type Name *</label>
+                    <input type="text" class="form-input" id="editPassTypeName" required placeholder="e.g., VIP Unlimited Drinks">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input" id="editPassTypeDescription" rows="2" placeholder="Describe what this pass includes..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tagline</label>
+                    <input type="text" class="form-input" id="editPassTypeTagline" placeholder="e.g., DJ ESCO at 9pm - Enjoy the night!">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Price ($) *</label>
+                    <input type="number" class="form-input" id="editPassTypePrice" min="5" max="500" step="0.01" required placeholder="5-500">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="editPassTypeIsActive">
+                        <option value="true">✅ Published (Customers can buy)</option>
+                        <option value="false">📝 Draft (Hidden from customers)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    ✅ Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
@@ -2988,6 +3032,7 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary" onclick='openEditPassTypeModal(${JSON.stringify(template).replace(/'/g, "&#39;")})'>✏️ Edit</button>
                                 <button class="btn btn-danger" onclick="deletePassTemplate('${template._id}', '${template.name.replace(/'/g, "\\'")}')">🗑️</button>
                             </div>
                         </div>
@@ -3063,6 +3108,73 @@
 
             } catch (error) {
                 showToast('❌ Failed to delete: ' + error.message, 'error');
+            }
+        }
+
+        // ===== EDIT PASS TYPE FUNCTIONS =====
+        function openEditPassTypeModal(template) {
+            // Store template in state
+            state.editingPassType = template;
+
+            // Populate form fields
+            document.getElementById('editPassTypeName').value = template.name;
+            document.getElementById('editPassTypeDescription').value = template.description || '';
+            document.getElementById('editPassTypeTagline').value = template.tagline || '';
+            document.getElementById('editPassTypePrice').value = template.price;
+            document.getElementById('editPassTypeIsActive').value = template.isActive ? 'true' : 'false';
+
+            // Show modal
+            document.getElementById('editPassTypeModal').style.display = 'flex';
+        }
+
+        async function submitEditPassType(event) {
+            event.preventDefault();
+
+            const template = state.editingPassType;
+            if (!template) {
+                showToast('No pass type selected', 'error');
+                return;
+            }
+
+            const venueId = state.currentVenueId || state.user?.venueId;
+            if (!venueId) {
+                showToast('No venue selected', 'error');
+                return;
+            }
+
+            try {
+                const updatedData = {
+                    name: document.getElementById('editPassTypeName').value,
+                    description: document.getElementById('editPassTypeDescription').value,
+                    tagline: document.getElementById('editPassTypeTagline').value,
+                    price: parseFloat(document.getElementById('editPassTypePrice').value),
+                    isActive: document.getElementById('editPassTypeIsActive').value === 'true'
+                };
+
+                // Validate price
+                if (updatedData.price < 5 || updatedData.price > 500) {
+                    showToast('Price must be between $5 and $500', 'error');
+                    return;
+                }
+
+                showToast('Updating pass type...', 'info');
+
+                await apiCall(`/api/v1/lightning/venue/${venueId}/pass-templates/${template._id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedData)
+                });
+
+                showToast('✅ Pass type updated successfully!', 'success');
+
+                // Close modal
+                closeModal('editPassTypeModal');
+
+                // Refresh pass templates list
+                await loadPassTemplates();
+
+            } catch (error) {
+                console.error('Error updating pass type:', error);
+                showToast('❌ Failed to update: ' + error.message, 'error');
             }
         }
 
