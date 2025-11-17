@@ -1210,6 +1210,79 @@
                     <button class="btn btn-primary" onclick="getMLPricingSuggestion()">ML Suggestion</button>
                 </div>
             </div>
+
+            <!-- BROADCAST MESSAGING SECTION -->
+            <div class="section">
+                <h2 class="section-title">📢 Send Message to Customers</h2>
+
+                <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                    <strong>💬 Reach Your Customers:</strong> Send promotional messages, event updates, or special offers directly to pass holders via SMS.
+                </div>
+
+                <!-- Estimate Box -->
+                <div class="stat-card" style="margin-bottom: 1.5rem; background: rgba(255, 221, 0, 0.05); border-left: 4px solid var(--lightning-yellow);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <div class="stat-label" style="color: rgba(255,255,255,0.7);">Recipients</div>
+                            <div class="stat-value" id="broadcastRecipients" style="color: var(--lightning-yellow); font-size: 2rem;">-</div>
+                        </div>
+                        <div>
+                            <div class="stat-label" style="color: rgba(255,255,255,0.7);">Message Segments</div>
+                            <div class="stat-value" id="broadcastSegments" style="color: var(--electric-purple); font-size: 2rem;">1</div>
+                        </div>
+                        <div>
+                            <div class="stat-label" style="color: rgba(255,255,255,0.7);">Estimated Cost</div>
+                            <div class="stat-value" id="broadcastCost" style="color: var(--neon-green); font-size: 2rem;">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target Audience -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label">Target Audience</label>
+                    <select id="targetAudience" class="form-input" onchange="updateBroadcastEstimate()">
+                        <option value="all_customers">All Customers</option>
+                        <option value="active_pass_holders">Active Pass Holders Only</option>
+                        <option value="recent_customers">Recent Customers (Last 30 Days)</option>
+                    </select>
+                </div>
+
+                <!-- Message Composer -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label">Your Message</label>
+                    <textarea
+                        id="broadcastMessage"
+                        class="form-input"
+                        rows="5"
+                        maxlength="1000"
+                        placeholder="Example: Join us tonight for Happy Hour! 50% off all drinks from 5-7pm. Show your Lightning Pass at the door for instant entry!"
+                        oninput="updateBroadcastEstimate()"
+                        style="resize: vertical; font-family: inherit;"
+                    ></textarea>
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.875rem; color: rgba(255,255,255,0.6);">
+                        <span id="charCount">0 / 1000 characters</span>
+                        <span id="segmentInfo">1 segment (160 chars max per segment)</span>
+                    </div>
+                </div>
+
+                <!-- Send Button -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="sendBroadcastMessage()" id="sendBroadcastBtn">
+                        📤 Send Message
+                    </button>
+                    <button class="btn btn-secondary" onclick="viewBroadcastHistory()">
+                        📋 View Message History
+                    </button>
+                </div>
+
+                <!-- Broadcast History -->
+                <div id="broadcastHistorySection" style="display: none; margin-top: 2rem;">
+                    <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem;">Recent Broadcasts</h3>
+                    <div id="broadcastHistoryList">
+                        <div class="loading">Loading broadcast history...</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ADMIN CONTROL PANEL -->
@@ -1413,6 +1486,13 @@
                     </div>
                 </div>
 
+                <!-- Stripe Card Element -->
+                <div class="form-group">
+                    <label class="form-label">💳 Payment Information</label>
+                    <div id="card-element" style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></div>
+                    <div id="card-errors" role="alert" style="color: var(--danger-red); font-size: 0.875rem; margin-top: 0.5rem;"></div>
+                </div>
+
                 <button type="submit" class="btn btn-secondary" id="purchaseBtn" style="width: 100%;">
                     ⚡ COMPLETE PURCHASE
                 </button>
@@ -1465,6 +1545,7 @@
             venues: [],
             currentVenueId: null,
             stripe: null,
+            cardElement: null,
             paymentIntentId: null
         };
 
@@ -1475,6 +1556,29 @@
                 const configResponse = await fetch(`${API_BASE}/api/v1/lightning/config`);
                 const config = await configResponse.json();
                 state.stripe = Stripe(config.stripePublishableKey);
+
+                // Create Stripe Elements for card input
+                const elements = state.stripe.elements();
+                state.cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#32325d',
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                            '::placeholder': {
+                                color: '#aab7c4'
+                            }
+                        },
+                        invalid: {
+                            color: '#fa755a',
+                            iconColor: '#fa755a'
+                        }
+                    }
+                });
+
+                // Mount card element (will be mounted when modal opens)
+                // state.cardElement.mount('#card-element'); // Mounted in openPurchaseModal
+
             } catch (error) {
                 console.error('Failed to load Stripe config:', error);
                 showToast('Failed to initialize payment system', 'error');
@@ -1731,21 +1835,6 @@
                         We typically review applications within 24-48 hours. You'll receive an email once your venue is approved.
                     </p>
 
-                    <div style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; text-align: left;">
-                        <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem;">🏦 Set Up Bank Account</h3>
-                        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem;">
-                            Get ready faster! Connect your bank account now so you can start accepting payments immediately once approved.
-                        </p>
-                        <div id="pendingStripeStatus" style="margin-bottom: 1rem;">
-                            <div class="alert alert-warning">
-                                <strong>⚠️ Not Connected:</strong> Connect your bank account to receive payouts.
-                            </div>
-                        </div>
-                        <button class="btn btn-success" onclick="connectStripePending('${user.venueId}')">
-                            🏦 Connect Bank Account Now
-                        </button>
-                    </div>
-
                     <button class="btn btn-secondary" onclick="logout()">
                         Sign Out
                     </button>
@@ -1756,10 +1845,32 @@
             document.querySelectorAll('#authView, #customerView, #venueView, #adminView').forEach(v => v.classList.add('hidden'));
             document.body.appendChild(container);
 
-            // Check if Stripe is already connected for this pending venue
-            if (user.venueId) {
-                checkPendingStripeStatus(user.venueId);
-            }
+            // Auto-refresh approval status every 10 seconds
+            const checkApprovalStatus = async () => {
+                try {
+                    if (!user.venueId) return;
+
+                    const response = await apiCall(`/api/v1/lightning/venues/${user.venueId}`);
+                    const venue = response.venue;
+
+                    // If venue is now approved, refresh to venue dashboard
+                    if (venue && venue.approvalStatus === 'approved') {
+                        clearInterval(state.approvalCheckInterval);
+                        showToast('Your venue has been approved! Redirecting to dashboard...', 'success');
+
+                        // Wait a moment then reload the page to get fresh token/data
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('Error checking approval status:', error);
+                }
+            };
+
+            // Check immediately and then every 10 seconds
+            checkApprovalStatus();
+            state.approvalCheckInterval = setInterval(checkApprovalStatus, 10000);
         }
 
         function updateNavigation(user) {
@@ -2045,19 +2156,25 @@
 
                 state.paymentIntentId = paymentData.paymentIntentId;
 
-                // STEP 2: Confirm payment with Stripe (simulated for testing - use real card in production)
+                // STEP 2: Confirm payment with Stripe using real card
                 statusDiv.textContent = 'Step 2/3: Processing payment...';
 
-                // For testing: automatically simulate successful payment
-                // In production with real cards, use:
-                // const result = await state.stripe.confirmCardPayment(paymentData.clientSecret, {
-                //     payment_method: {
-                //         card: cardElement,
-                //         billing_details: { email: state.user.email }
-                //     }
-                // });
+                const {error, paymentIntent} = await state.stripe.confirmCardPayment(paymentData.clientSecret, {
+                    payment_method: {
+                        card: state.cardElement,
+                        billing_details: {
+                            email: state.user.email
+                        }
+                    }
+                });
 
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate payment processing
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                if (paymentIntent.status !== 'succeeded') {
+                    throw new Error('Payment failed. Please try again.');
+                }
 
                 // STEP 3: Confirm purchase on backend (creates pass after payment verified)
                 statusDiv.textContent = 'Step 3/3: Creating your pass...';
@@ -2266,6 +2383,139 @@
                 }
             } catch (error) {
                 showToast('❌ Failed to get suggestion: ' + error.message, 'error');
+            }
+        }
+
+        // ===== BROADCAST MESSAGING FUNCTIONS =====
+
+        async function updateBroadcastEstimate() {
+            const venueId = state.currentVenueId;
+            if (!venueId) return;
+
+            const message = document.getElementById('broadcastMessage').value;
+            const targetAudience = document.getElementById('targetAudience').value;
+
+            // Update character count
+            const charCount = message.length;
+            document.getElementById('charCount').textContent = `${charCount} / 1000 characters`;
+
+            // Calculate segments
+            const hasUnicode = /[^\x00-\x7F]/.test(message);
+            const maxLength = hasUnicode ? 70 : 160;
+            const segments = Math.max(1, Math.ceil(message.length / maxLength));
+            document.getElementById('broadcastSegments').textContent = segments;
+            document.getElementById('segmentInfo').textContent = `${segments} segment${segments > 1 ? 's' : ''} (${maxLength} chars max per segment)`;
+
+            try {
+                const data = await apiCall(`/api/v1/lightning/venue/${venueId}/broadcast/estimate?targetAudience=${targetAudience}&message=${encodeURIComponent(message)}`);
+
+                document.getElementById('broadcastRecipients').textContent = data.estimate.optedInCustomers;
+                document.getElementById('broadcastCost').textContent = `$${data.estimate.estimatedCost}`;
+
+                if (data.estimate.optedInCustomers === 0) {
+                    document.getElementById('sendBroadcastBtn').disabled = true;
+                    showToast('No eligible recipients found', 'warning');
+                } else {
+                    document.getElementById('sendBroadcastBtn').disabled = false;
+                }
+            } catch (error) {
+                console.error('Failed to get estimate:', error);
+            }
+        }
+
+        async function sendBroadcastMessage() {
+            const venueId = state.currentVenueId;
+            if (!venueId) {
+                showToast('Please select a venue first', 'error');
+                return;
+            }
+
+            const message = document.getElementById('broadcastMessage').value.trim();
+            const targetAudience = document.getElementById('targetAudience').value;
+
+            if (!message) {
+                showToast('Please enter a message', 'error');
+                return;
+            }
+
+            const cost = document.getElementById('broadcastCost').textContent;
+            const recipients = document.getElementById('broadcastRecipients').textContent;
+
+            if (!confirm(`Send message to ${recipients} customers?\n\nEstimated cost: ${cost}\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            const sendBtn = document.getElementById('sendBroadcastBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '📤 Sending...';
+
+            try {
+                const data = await apiCall(`/api/v1/lightning/venue/${venueId}/broadcast`, {
+                    method: 'POST',
+                    body: JSON.stringify({ message, targetAudience })
+                });
+
+                showToast(`✅ Message sent to ${data.broadcast.successfulSends} customers! Cost: $${data.broadcast.estimatedCost.toFixed(2)}`, 'success');
+
+                // Clear message
+                document.getElementById('broadcastMessage').value = '';
+                updateBroadcastEstimate();
+
+                // Show failure count if any
+                if (data.broadcast.failedSends > 0) {
+                    showToast(`⚠️ ${data.broadcast.failedSends} messages failed to send`, 'warning');
+                }
+            } catch (error) {
+                showToast('❌ Failed to send broadcast: ' + error.message, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📤 Send Message';
+            }
+        }
+
+        async function viewBroadcastHistory() {
+            const venueId = state.currentVenueId;
+            if (!venueId) return;
+
+            const historySection = document.getElementById('broadcastHistorySection');
+            const historyList = document.getElementById('broadcastHistoryList');
+
+            if (historySection.style.display === 'none') {
+                historySection.style.display = 'block';
+
+                try {
+                    const data = await apiCall(`/api/v1/lightning/venue/${venueId}/broadcasts`);
+
+                    if (data.broadcasts.length === 0) {
+                        historyList.innerHTML = '<p style="color: rgba(255,255,255,0.6);">No broadcast messages sent yet.</p>';
+                        return;
+                    }
+
+                    historyList.innerHTML = data.broadcasts.map(broadcast => `
+                        <div class="stat-card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <div style="font-weight: bold; color: var(--lightning-yellow);">
+                                    ${new Date(broadcast.createdAt).toLocaleString()}
+                                </div>
+                                <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">
+                                    Cost: $${broadcast.estimatedCost.toFixed(2)}
+                                </div>
+                            </div>
+                            <p style="color: white; margin-bottom: 0.5rem;">${broadcast.message}</p>
+                            <div style="display: flex; gap: 1.5rem; font-size: 0.875rem; color: rgba(255,255,255,0.6);">
+                                <span>✅ Sent: ${broadcast.successfulSends}</span>
+                                <span>❌ Failed: ${broadcast.failedSends}</span>
+                                <span>📊 Segments: ${broadcast.messageSegments}</span>
+                                <span>🎯 ${broadcast.targetAudience.replace(/_/g, ' ')}</span>
+                            </div>
+                        </div>
+                    `).join('');
+
+                } catch (error) {
+                    historyList.innerHTML = `<p style="color: var(--danger-red);">Failed to load history: ${error.message}</p>`;
+                }
+            } else {
+                historySection.style.display = 'none';
             }
         }
 
@@ -2486,7 +2736,10 @@
                                 ${template.tagline ? `<p style="color: var(--electric-purple); font-style: italic; font-size: 0.85rem; margin-bottom: 0.5rem;">"${template.tagline}"</p>` : ''}
                                 <div style="font-size: 1.5rem; font-weight: bold; color: var(--neon-green); margin-top: 0.5rem;">$${template.price}</div>
                                 <div style="margin-top: 0.5rem;">
-                                    <span class="badge ${template.isActive ? 'badge-active' : 'badge-inactive'}">${template.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
+                                    <span class="badge ${template.isActive ? 'badge-active' : 'badge-inactive'}">
+                                        ${template.isActive ? '✅ PUBLISHED' : '📝 DRAFT'}
+                                    </span>
+                                    ${template.isActive ? '<span style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-left: 0.5rem;">Customers can buy this pass</span>' : '<span style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-left: 0.5rem;">Not visible to customers</span>'}
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem;">
@@ -2970,6 +3223,26 @@
 
         function showModal(modalId) {
             document.getElementById(modalId).classList.add('active');
+
+            // Mount Stripe card element when purchase modal opens
+            if (modalId === 'purchaseModal' && state.cardElement) {
+                setTimeout(() => {
+                    const cardContainer = document.getElementById('card-element');
+                    if (cardContainer && !cardContainer.hasChildNodes()) {
+                        state.cardElement.mount('#card-element');
+
+                        // Handle real-time validation errors from the card Element
+                        state.cardElement.on('change', function(event) {
+                            const displayError = document.getElementById('card-errors');
+                            if (event.error) {
+                                displayError.textContent = event.error.message;
+                            } else {
+                                displayError.textContent = '';
+                            }
+                        });
+                    }
+                }, 100);
+            }
         }
 
         function closeModal(modalId) {
