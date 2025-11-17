@@ -3841,6 +3841,9 @@
                                 <div><strong>Purchased:</strong> ${new Date(pass.createdAt).toLocaleDateString()}</div>
                             </div>
                             ${pass.tagline ? `<p style="color: var(--electric-purple); font-style: italic; margin-bottom: 1rem;">"${pass.tagline}"</p>` : ''}
+                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;" onclick="window.open('${API_BASE}/api/v1/lightning/passes/${pass.passId}/qr-image', '_blank')">
+                                📱 View QR Code
+                            </button>
                             ${canRefund ? `<button class="btn btn-secondary" style="width: 100%;" onclick='openRefundRequest(${JSON.stringify(pass)})'>💸 Request Refund</button>` : ''}
                             ${pass.refundRequested ? '<p style="color: #FFA500; margin-top: 0.5rem; font-size: 0.875rem;">⏳ Waiting for venue approval...</p>' : ''}
                         </div>
