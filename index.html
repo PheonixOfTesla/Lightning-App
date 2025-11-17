@@ -1834,13 +1834,9 @@
                 showView('admin');
                 loadAdminStats();
             } else if (user.role === 'venue') {
-                // Check if venue application is pending
-                if (user.venuePending) {
-                    showVenuePendingView(user);
-                } else {
-                    showView('venue');
-                    populateVenueSelector();
-                }
+                // Always show venue dashboard, regardless of approval status
+                showView('venue');
+                populateVenueSelector();
             } else {
                 showView('customer');
                 loadVenues();
