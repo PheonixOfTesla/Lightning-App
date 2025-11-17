@@ -3124,7 +3124,7 @@
             document.getElementById('editPassTypeIsActive').value = template.isActive ? 'true' : 'false';
 
             // Show modal
-            document.getElementById('editPassTypeModal').style.display = 'flex';
+            document.getElementById('editPassTypeModal').classList.add('active');
         }
 
         async function submitEditPassType(event) {
@@ -3536,7 +3536,7 @@
             `;
 
             // Show modal
-            document.getElementById('editPassModal').style.display = 'flex';
+            document.getElementById('editPassModal').classList.add('active');
         }
 
         async function submitEditPass(event) {
@@ -3764,7 +3764,7 @@
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
-                modal.style.display = 'none';
+                modal.classList.remove('active');
             }
         }
 
