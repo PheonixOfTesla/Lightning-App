@@ -1684,46 +1684,53 @@
         };
 
         // ===== INITIALIZATION =====
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize Stripe with publishable key from backend
-            try {
-                const configResponse = await fetch(`${API_BASE}/api/v1/lightning/config`);
-                const config = await configResponse.json();
-                state.stripe = Stripe(config.stripePublishableKey);
-
-                // Create Stripe Elements for card input
-                const elements = state.stripe.elements();
-                state.cardElement = elements.create('card', {
-                    style: {
-                        base: {
-                            fontSize: '16px',
-                            color: '#32325d',
-                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                            '::placeholder': {
-                                color: '#aab7c4'
-                            }
-                        },
-                        invalid: {
-                            color: '#fa755a',
-                            iconColor: '#fa755a'
-                        }
-                    }
-                });
-
-                // Mount card element (will be mounted when modal opens)
-                // state.cardElement.mount('#card-element'); // Mounted in openPurchaseModal
-
-            } catch (error) {
-                console.error('Failed to load Stripe config:', error);
-                showToast('Failed to initialize payment system', 'error');
-            }
-
-            // Handle Stripe Connect OAuth callbacks
-            await handleStripeConnectCallback();
-
-            checkExistingAuth();
-            initSocketIO();  // Initialize WebSocket connection
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show UI immediately, load data in background
             initializeLightningEffects();
+
+            // Run all initialization tasks in parallel (non-blocking)
+            Promise.all([
+                // Initialize Stripe
+                (async () => {
+                    try {
+                        const configResponse = await fetch(`${API_BASE}/api/v1/lightning/config`);
+                        const config = await configResponse.json();
+                        state.stripe = Stripe(config.stripePublishableKey);
+
+                        // Create Stripe Elements for card input
+                        const elements = state.stripe.elements();
+                        state.cardElement = elements.create('card', {
+                            style: {
+                                base: {
+                                    fontSize: '16px',
+                                    color: '#32325d',
+                                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                    '::placeholder': {
+                                        color: '#aab7c4'
+                                    }
+                                },
+                                invalid: {
+                                    color: '#fa755a',
+                                    iconColor: '#fa755a'
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Failed to load Stripe config:', error);
+                    }
+                })(),
+
+                // Handle Stripe Connect OAuth callbacks
+                handleStripeConnectCallback(),
+
+                // Check authentication
+                checkExistingAuth()
+            ]).catch(error => {
+                console.error('Initialization error:', error);
+            });
+
+            // Initialize WebSocket immediately (non-blocking)
+            initSocketIO();
         });
 
         // Lightning flash effect on auth page
