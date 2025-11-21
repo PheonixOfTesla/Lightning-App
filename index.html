@@ -843,9 +843,228 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Video Landing Page Styles */
+        #landingPage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        #landingPage.hidden {
+            display: none;
+        }
+
+        #video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+            z-index: 1;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.7) 0%,
+                rgba(0, 0, 0, 0.5) 50%,
+                rgba(0, 0, 0, 0.7) 100%
+            );
+            z-index: 2;
+        }
+
+        .landing-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .landing-logo {
+            font-size: 8rem;
+            margin-bottom: 1rem;
+            animation: electricPulse 2s infinite, float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .landing-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple), var(--electric-blue));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s linear infinite;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .landing-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .landing-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .landing-btn {
+            padding: 1.25rem 3rem;
+            font-size: 1.1rem;
+            border-radius: 0.75rem;
+            border: 2px solid;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .landing-btn:active::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .landing-btn-login {
+            border-color: var(--electric-blue);
+            color: var(--electric-blue);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .landing-btn-login:hover {
+            background: var(--electric-blue);
+            color: var(--pure-black);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow:
+                0 0 40px rgba(0, 212, 255, 0.6),
+                0 0 80px rgba(0, 212, 255, 0.3),
+                0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .landing-btn-signup {
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
+            box-shadow: 0 0 30px rgba(255, 221, 0, 0.3);
+        }
+
+        .landing-btn-signup:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow:
+                0 0 40px rgba(255, 221, 0, 0.6),
+                0 0 80px rgba(255, 221, 0, 0.3),
+                0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .landing-logo {
+                font-size: 5rem;
+            }
+
+            .landing-title {
+                font-size: 2.5rem;
+            }
+
+            .landing-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .landing-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .landing-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- VIDEO LANDING PAGE -->
+    <div id="landingPage">
+        <!-- Video Background -->
+        <video id="video-background" autoplay muted loop playsinline>
+            <source src="background-video.mov" type="video/quicktime">
+        </video>
+
+        <!-- Dark Overlay -->
+        <div class="video-overlay"></div>
+
+        <!-- Landing Content -->
+        <div class="landing-content">
+            <div class="landing-logo">⚡</div>
+            <h1 class="landing-title">Lightning App</h1>
+            <p class="landing-subtitle">Skip the Line. Live the Night.</p>
+
+            <div class="landing-buttons">
+                <button class="landing-btn landing-btn-login" onclick="showLoginFromLanding()">
+                    Login
+                </button>
+                <button class="landing-btn landing-btn-signup" onclick="showSignupFromLanding()">
+                    Sign Up
+                </button>
+            </div>
+        </div>
+
+        <!-- Keep existing lightning and firework effects -->
+        <div class="circuit-grid"></div>
+        <div class="ambient-lights">
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+        </div>
+        <div class="lightning-flash" id="lightningFlashLanding"></div>
+    </div>
+
     <nav>
         <div class="nav-container">
             <div class="logo" onclick="goHome()">
@@ -1760,8 +1979,32 @@
             socket: null  // Socket.IO connection
         };
 
+        // ===== LANDING PAGE FUNCTIONS =====
+        function showLoginFromLanding() {
+            // Hide landing page
+            document.getElementById('landingPage').classList.add('hidden');
+            // Show auth view and scroll to login
+            showView('auth');
+            document.getElementById('loginSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showSignupFromLanding() {
+            // Hide landing page
+            document.getElementById('landingPage').classList.add('hidden');
+            // Show auth view and scroll to register
+            showView('auth');
+            document.getElementById('registerSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            const token = localStorage.getItem('token');
+            if (token) {
+                // User is logged in, skip landing page
+                document.getElementById('landingPage').classList.add('hidden');
+            }
+
             // Show UI immediately, load data in background
             initializeLightningEffects();
 
@@ -1810,11 +2053,22 @@
             initSocketIO();
         });
 
-        // Lightning flash effect on auth page
+        // Lightning flash effect on auth page and landing page
         function initializeLightningEffects() {
             const flash = document.getElementById('lightningFlash');
+            const flashLanding = document.getElementById('lightningFlashLanding');
 
             function triggerFlash() {
+                // Flash on landing page if visible
+                const landingPage = document.getElementById('landingPage');
+                if (flashLanding && !landingPage.classList.contains('hidden')) {
+                    flashLanding.classList.add('active');
+                    setTimeout(() => {
+                        flashLanding.classList.remove('active');
+                    }, 300);
+                }
+
+                // Flash on auth page
                 if (state.currentView === 'auth' && flash) {
                     flash.classList.add('active');
                     setTimeout(() => {
@@ -1825,9 +2079,7 @@
 
             // Trigger flash every 4-8 seconds randomly
             setInterval(() => {
-                if (state.currentView === 'auth') {
-                    triggerFlash();
-                }
+                triggerFlash();
             }, 4000 + Math.random() * 4000);
         }
 
