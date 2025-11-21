@@ -1983,16 +1983,24 @@
         function showLoginFromLanding() {
             // Hide landing page
             document.getElementById('landingPage').classList.add('hidden');
-            // Show auth view and scroll to login
+            // Show auth view
             showView('auth');
+            // Show login section, hide register section
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('registerSection').style.display = 'none';
+            // Scroll to login
             document.getElementById('loginSection').scrollIntoView({ behavior: 'smooth' });
         }
 
         function showSignupFromLanding() {
             // Hide landing page
             document.getElementById('landingPage').classList.add('hidden');
-            // Show auth view and scroll to register
+            // Show auth view
             showView('auth');
+            // Hide login section, show register section
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('registerSection').style.display = 'block';
+            // Scroll to register
             document.getElementById('registerSection').scrollIntoView({ behavior: 'smooth' });
         }
 
