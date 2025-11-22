@@ -1028,7 +1028,7 @@
 </head>
 <body>
     <!-- VIDEO LANDING PAGE -->
-    <div id="landingPage">
+    <div id="landingPage" autocomplete="off">
         <!-- Video Background -->
         <video id="video-background" autoplay muted loop playsinline>
             <source src="background-video.mp4" type="video/mp4">
@@ -1043,10 +1043,10 @@
             <p class="landing-subtitle">Skip the Line. Live the Night.</p>
 
             <div class="landing-buttons">
-                <button class="landing-btn landing-btn-login" onclick="showLoginFromLanding()">
+                <button type="button" class="landing-btn landing-btn-login" onclick="showLoginFromLanding()" autocomplete="off">
                     Login
                 </button>
-                <button class="landing-btn landing-btn-signup" onclick="showSignupFromLanding()">
+                <button type="button" class="landing-btn landing-btn-signup" onclick="showSignupFromLanding()" autocomplete="off">
                     Sign Up
                 </button>
             </div>
