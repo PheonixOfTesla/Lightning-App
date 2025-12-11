@@ -2005,6 +2005,40 @@
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
+            // Ensure background video plays continuously
+            const video = document.getElementById('video-background');
+            if (video) {
+                // Force play on load
+                video.play().catch(e => console.log('Video autoplay prevented:', e));
+
+                // Restart video if it pauses unexpectedly
+                video.addEventListener('pause', function() {
+                    setTimeout(() => {
+                        video.play().catch(e => console.log('Video restart failed:', e));
+                    }, 100);
+                });
+
+                // Restart video if it ends (backup to loop attribute)
+                video.addEventListener('ended', function() {
+                    video.currentTime = 0;
+                    video.play().catch(e => console.log('Video loop failed:', e));
+                });
+
+                // Resume video when page becomes visible again
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && video.paused) {
+                        video.play().catch(e => console.log('Video resume failed:', e));
+                    }
+                });
+
+                // Handle user interruptions - restart after click anywhere
+                document.addEventListener('click', function() {
+                    if (video.paused) {
+                        video.play().catch(e => console.log('Video click-play failed:', e));
+                    }
+                }, { once: false });
+            }
+
             // Check if user is already logged in
             const token = localStorage.getItem('token');
             if (token) {
