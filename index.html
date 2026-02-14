@@ -1196,9 +1196,12 @@
         }
 
         .splash-logo {
-            font-size: 4rem;
             margin-bottom: 2rem;
             animation: electricPulse 2s infinite;
+        }
+
+        .splash-logo svg {
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
         }
 
         .splash-title {
@@ -1240,7 +1243,7 @@
         }
 
         @media (max-width: 768px) {
-            .splash-logo { font-size: 3rem; }
+            .splash-logo svg { width: 60px; height: 60px; }
             .splash-title { font-size: 1.8rem; }
             .splash-enter { padding: 0.8rem 2rem; font-size: 1rem; }
         }
@@ -1249,7 +1252,17 @@
 <body>
     <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
     <div id="splashScreen" onclick="enterApp()">
-        <div class="splash-logo">⚡</div>
+        <div class="splash-logo">
+            <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffd700"/>
+                        <stop offset="100%" stop-color="#ff8c00"/>
+                    </linearGradient>
+                </defs>
+                <path d="M55 5L15 55H40L30 95L85 40H55L70 5H55Z" fill="url(#boltGrad)"/>
+            </svg>
+        </div>
         <h1 class="splash-title">Lightning Pass</h1>
         <button class="splash-enter">Tap to Enter</button>
     </div>
