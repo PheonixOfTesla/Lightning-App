@@ -1195,13 +1195,71 @@
             display: none;
         }
 
-        .splash-logo {
+        .lightning-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
             margin-bottom: 2rem;
-            animation: electricPulse 2s infinite;
         }
 
-        .splash-logo svg {
-            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+        .lightning-bolt {
+            position: absolute;
+            width: 4px;
+            background: linear-gradient(180deg,
+                rgba(255,255,255,0) 0%,
+                rgba(200,220,255,0.8) 10%,
+                rgba(150,180,255,1) 30%,
+                rgba(200,220,255,1) 50%,
+                rgba(150,180,255,1) 70%,
+                rgba(200,220,255,0.8) 90%,
+                rgba(255,255,255,0) 100%
+            );
+            filter: drop-shadow(0 0 8px rgba(150,180,255,1))
+                    drop-shadow(0 0 20px rgba(100,150,255,0.8))
+                    drop-shadow(0 0 40px rgba(100,150,255,0.5));
+            clip-path: polygon(
+                50% 0%, 30% 25%, 60% 25%, 20% 55%,
+                55% 55%, 0% 100%, 45% 60%,
+                15% 60%, 55% 30%, 25% 30%, 50% 0%
+            );
+            opacity: 0;
+            animation: lightningFlash 2s infinite;
+        }
+
+        .bolt-1 {
+            left: 50%;
+            top: 0;
+            height: 180px;
+            transform: translateX(-50%);
+            animation-delay: 0s;
+        }
+
+        .bolt-2 {
+            left: 30%;
+            top: 20px;
+            height: 140px;
+            width: 3px;
+            transform: rotate(-15deg);
+            animation-delay: 0.3s;
+        }
+
+        .bolt-3 {
+            left: 65%;
+            top: 15px;
+            height: 150px;
+            width: 3px;
+            transform: rotate(12deg);
+            animation-delay: 0.6s;
+        }
+
+        @keyframes lightningFlash {
+            0%, 89%, 100% { opacity: 0; }
+            90%, 92% { opacity: 1; }
+            91% { opacity: 0.5; }
+            93%, 95% { opacity: 0.9; }
+            94% { opacity: 0.3; }
+            96%, 98% { opacity: 1; }
+            97% { opacity: 0.6; }
         }
 
         .splash-title {
@@ -1243,7 +1301,10 @@
         }
 
         @media (max-width: 768px) {
-            .splash-logo svg { width: 60px; height: 60px; }
+            .lightning-container { width: 150px; height: 150px; }
+            .bolt-1 { height: 130px; }
+            .bolt-2 { height: 100px; }
+            .bolt-3 { height: 110px; }
             .splash-title { font-size: 1.8rem; }
             .splash-enter { padding: 0.8rem 2rem; font-size: 1rem; }
         }
@@ -1252,16 +1313,10 @@
 <body>
     <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
     <div id="splashScreen" onclick="enterApp()">
-        <div class="splash-logo">
-            <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffd700"/>
-                        <stop offset="100%" stop-color="#ff8c00"/>
-                    </linearGradient>
-                </defs>
-                <path d="M55 5L15 55H40L30 95L85 40H55L70 5H55Z" fill="url(#boltGrad)"/>
-            </svg>
+        <div class="lightning-container">
+            <div class="lightning-bolt bolt-1"></div>
+            <div class="lightning-bolt bolt-2"></div>
+            <div class="lightning-bolt bolt-3"></div>
         </div>
         <h1 class="splash-title">Lightning Pass</h1>
         <button class="splash-enter">Tap to Enter</button>
