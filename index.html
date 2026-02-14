@@ -1196,9 +1196,21 @@
         }
 
         #lightningCanvas {
-            width: 300px;
-            height: 250px;
-            margin-bottom: 1rem;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .splash-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .splash-title {
@@ -1240,7 +1252,6 @@
         }
 
         @media (max-width: 768px) {
-            #lightningCanvas { width: 250px; height: 200px; }
             .splash-title { font-size: 1.8rem; }
             .splash-enter { padding: 0.8rem 2rem; font-size: 1rem; }
         }
@@ -1250,8 +1261,10 @@
     <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
     <div id="splashScreen" onclick="enterApp()">
         <canvas id="lightningCanvas"></canvas>
+        <div class="splash-content">
         <h1 class="splash-title">Lightning Pass</h1>
         <button class="splash-enter">Tap to Enter</button>
+        </div>
     </div>
 
     <!-- VIDEO LANDING PAGE -->
@@ -2539,93 +2552,154 @@
             }
         }
 
-        // ===== REALISTIC LIGHTNING EFFECT =====
+        // ===== FULLSCREEN REALISTIC LIGHTNING STORM =====
         (function initLightning() {
             const canvas = document.getElementById('lightningCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
-            // High DPI support
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = 300 * dpr;
-            canvas.height = 250 * dpr;
-            ctx.scale(dpr, dpr);
+            function resize() {
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = window.innerWidth * dpr;
+                canvas.height = window.innerHeight * dpr;
+                ctx.scale(dpr, dpr);
+            }
+            resize();
+            window.addEventListener('resize', resize);
 
-            function drawLightning(x, y, angle, length, depth) {
-                if (depth === 0 || length < 5) return;
+            const W = () => window.innerWidth;
+            const H = () => window.innerHeight;
 
-                const endX = x + Math.sin(angle) * length;
-                const endY = y + Math.cos(angle) * length;
+            function drawBolt(startX, startY, endX, endY, thickness, brightness) {
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const segments = Math.max(10, Math.floor(dist / 20));
 
-                // Main bolt
+                // Build jagged path
+                const points = [{x: startX, y: startY}];
+                for (let i = 1; i < segments; i++) {
+                    const t = i / segments;
+                    const x = startX + dx * t + (Math.random() - 0.5) * 80 * (1 - Math.abs(t - 0.5) * 2);
+                    const y = startY + dy * t + (Math.random() - 0.5) * 20;
+                    points.push({x, y});
+                }
+                points.push({x: endX, y: endY});
+
+                // Draw main bolt with glow layers
+                for (let glow = 3; glow >= 0; glow--) {
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y);
+                    }
+                    const glowSize = thickness + glow * 8;
+                    const alpha = glow === 0 ? brightness : brightness * 0.3 / (glow + 1);
+                    ctx.strokeStyle = glow === 0
+                        ? `rgba(255, 255, 255, ${brightness})`
+                        : `rgba(180, 200, 255, ${alpha})`;
+                    ctx.lineWidth = glowSize;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke();
+                }
+
+                // Draw branches
+                for (let i = 2; i < points.length - 2; i++) {
+                    if (Math.random() < 0.35) {
+                        const branchLen = 50 + Math.random() * 150;
+                        const angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.5;
+                        const bx = points[i].x + Math.cos(angle) * branchLen;
+                        const by = points[i].y + Math.sin(angle) * branchLen;
+                        drawBranch(points[i].x, points[i].y, bx, by, thickness * 0.5, brightness * 0.7);
+                    }
+                }
+            }
+
+            function drawBranch(x1, y1, x2, y2, thickness, brightness) {
+                const segments = 5;
+                const points = [{x: x1, y: y1}];
+                for (let i = 1; i < segments; i++) {
+                    const t = i / segments;
+                    points.push({
+                        x: x1 + (x2 - x1) * t + (Math.random() - 0.5) * 30,
+                        y: y1 + (y2 - y1) * t + (Math.random() - 0.5) * 15
+                    });
+                }
+                points.push({x: x2, y: y2});
+
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-
-                // Create jagged path
-                let currX = x, currY = y;
-                const segments = Math.floor(length / 10);
-                for (let i = 0; i < segments; i++) {
-                    const progress = (i + 1) / segments;
-                    const targetX = x + (endX - x) * progress;
-                    const targetY = y + (endY - y) * progress;
-                    const jitter = (1 - progress) * 15;
-                    currX = targetX + (Math.random() - 0.5) * jitter;
-                    currY = targetY + (Math.random() - 0.5) * jitter * 0.3;
-                    ctx.lineTo(currX, currY);
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
                 }
-
-                ctx.strokeStyle = `rgba(220, 240, 255, ${0.3 + depth * 0.15})`;
-                ctx.lineWidth = depth * 1.5;
-                ctx.lineCap = 'round';
+                ctx.strokeStyle = `rgba(200, 220, 255, ${brightness})`;
+                ctx.lineWidth = thickness;
                 ctx.stroke();
 
-                // Glow effect
-                ctx.shadowColor = 'rgba(180, 200, 255, 0.8)';
-                ctx.shadowBlur = 20;
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-
-                // Branches
-                if (Math.random() < 0.4 && depth > 1) {
-                    const branchAngle = angle + (Math.random() - 0.5) * 1.2;
-                    drawLightning(currX, currY, branchAngle, length * 0.5, depth - 1);
-                }
-                if (Math.random() < 0.3 && depth > 1) {
-                    const branchAngle = angle + (Math.random() - 0.5) * 1.0;
-                    drawLightning(currX, currY, branchAngle, length * 0.4, depth - 1);
+                // Sub-branches
+                if (Math.random() < 0.3 && thickness > 1) {
+                    const midIdx = Math.floor(points.length / 2);
+                    const subLen = 30 + Math.random() * 50;
+                    const angle = Math.random() * Math.PI * 2;
+                    drawBranch(
+                        points[midIdx].x, points[midIdx].y,
+                        points[midIdx].x + Math.cos(angle) * subLen,
+                        points[midIdx].y + Math.sin(angle) * subLen,
+                        thickness * 0.5, brightness * 0.5
+                    );
                 }
             }
 
-            function flash() {
-                ctx.clearRect(0, 0, 300, 250);
+            function strike() {
+                const w = W(), h = H();
+                ctx.clearRect(0, 0, w, h);
 
-                // Draw multiple bolts
-                drawLightning(150, 0, 0.1, 200, 4);
-                if (Math.random() > 0.5) {
-                    drawLightning(120, 0, -0.2, 180, 3);
+                // Screen flash
+                ctx.fillStyle = 'rgba(200, 220, 255, 0.1)';
+                ctx.fillRect(0, 0, w, h);
+
+                // Multiple large bolts
+                const numBolts = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < numBolts; i++) {
+                    const startX = Math.random() * w;
+                    const endX = startX + (Math.random() - 0.5) * 200;
+                    drawBolt(startX, -20, endX, h + 20, 3 + Math.random() * 2, 0.9);
                 }
-                if (Math.random() > 0.6) {
-                    drawLightning(180, 0, 0.3, 170, 3);
-                }
 
-                // Flicker effect
+                // Flicker sequence
                 setTimeout(() => {
-                    ctx.clearRect(0, 0, 300, 250);
-                }, 50 + Math.random() * 100);
+                    ctx.clearRect(0, 0, w, h);
+                }, 60);
 
                 setTimeout(() => {
-                    drawLightning(150, 0, (Math.random() - 0.5) * 0.3, 200, 4);
-                }, 80 + Math.random() * 50);
+                    ctx.fillStyle = 'rgba(200, 220, 255, 0.05)';
+                    ctx.fillRect(0, 0, w, h);
+                    const bx = Math.random() * w;
+                    drawBolt(bx, -20, bx + (Math.random() - 0.5) * 150, h + 20, 2, 0.7);
+                }, 100);
 
                 setTimeout(() => {
-                    ctx.clearRect(0, 0, 300, 250);
-                }, 200 + Math.random() * 100);
+                    ctx.clearRect(0, 0, w, h);
+                }, 180);
+
+                setTimeout(() => {
+                    for (let i = 0; i < 2; i++) {
+                        const sx = Math.random() * w;
+                        drawBolt(sx, -20, sx + (Math.random() - 0.5) * 180, h + 20, 2.5, 0.8);
+                    }
+                }, 220);
+
+                setTimeout(() => {
+                    ctx.clearRect(0, 0, w, h);
+                }, 350);
             }
 
-            // Initial flash
-            setTimeout(flash, 500);
-            // Repeat
-            setInterval(flash, 2000 + Math.random() * 1000);
+            // Storm loop
+            setTimeout(strike, 300);
+            setInterval(() => {
+                strike();
+            }, 1500 + Math.random() * 1000);
         })();
 
         // ===== SPLASH SCREEN ENTRY =====
