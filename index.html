@@ -1195,71 +1195,10 @@
             display: none;
         }
 
-        .lightning-container {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            margin-bottom: 2rem;
-        }
-
-        .lightning-bolt {
-            position: absolute;
-            width: 4px;
-            background: linear-gradient(180deg,
-                rgba(255,255,255,0) 0%,
-                rgba(200,220,255,0.8) 10%,
-                rgba(150,180,255,1) 30%,
-                rgba(200,220,255,1) 50%,
-                rgba(150,180,255,1) 70%,
-                rgba(200,220,255,0.8) 90%,
-                rgba(255,255,255,0) 100%
-            );
-            filter: drop-shadow(0 0 8px rgba(150,180,255,1))
-                    drop-shadow(0 0 20px rgba(100,150,255,0.8))
-                    drop-shadow(0 0 40px rgba(100,150,255,0.5));
-            clip-path: polygon(
-                50% 0%, 30% 25%, 60% 25%, 20% 55%,
-                55% 55%, 0% 100%, 45% 60%,
-                15% 60%, 55% 30%, 25% 30%, 50% 0%
-            );
-            opacity: 0;
-            animation: lightningFlash 2s infinite;
-        }
-
-        .bolt-1 {
-            left: 50%;
-            top: 0;
-            height: 180px;
-            transform: translateX(-50%);
-            animation-delay: 0s;
-        }
-
-        .bolt-2 {
-            left: 30%;
-            top: 20px;
-            height: 140px;
-            width: 3px;
-            transform: rotate(-15deg);
-            animation-delay: 0.3s;
-        }
-
-        .bolt-3 {
-            left: 65%;
-            top: 15px;
-            height: 150px;
-            width: 3px;
-            transform: rotate(12deg);
-            animation-delay: 0.6s;
-        }
-
-        @keyframes lightningFlash {
-            0%, 89%, 100% { opacity: 0; }
-            90%, 92% { opacity: 1; }
-            91% { opacity: 0.5; }
-            93%, 95% { opacity: 0.9; }
-            94% { opacity: 0.3; }
-            96%, 98% { opacity: 1; }
-            97% { opacity: 0.6; }
+        #lightningCanvas {
+            width: 300px;
+            height: 250px;
+            margin-bottom: 1rem;
         }
 
         .splash-title {
@@ -1301,10 +1240,7 @@
         }
 
         @media (max-width: 768px) {
-            .lightning-container { width: 150px; height: 150px; }
-            .bolt-1 { height: 130px; }
-            .bolt-2 { height: 100px; }
-            .bolt-3 { height: 110px; }
+            #lightningCanvas { width: 250px; height: 200px; }
             .splash-title { font-size: 1.8rem; }
             .splash-enter { padding: 0.8rem 2rem; font-size: 1rem; }
         }
@@ -1313,11 +1249,7 @@
 <body>
     <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
     <div id="splashScreen" onclick="enterApp()">
-        <div class="lightning-container">
-            <div class="lightning-bolt bolt-1"></div>
-            <div class="lightning-bolt bolt-2"></div>
-            <div class="lightning-bolt bolt-3"></div>
-        </div>
+        <canvas id="lightningCanvas"></canvas>
         <h1 class="splash-title">Lightning Pass</h1>
         <button class="splash-enter">Tap to Enter</button>
     </div>
@@ -2606,6 +2538,95 @@
                 startMusic();
             }
         }
+
+        // ===== REALISTIC LIGHTNING EFFECT =====
+        (function initLightning() {
+            const canvas = document.getElementById('lightningCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // High DPI support
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = 300 * dpr;
+            canvas.height = 250 * dpr;
+            ctx.scale(dpr, dpr);
+
+            function drawLightning(x, y, angle, length, depth) {
+                if (depth === 0 || length < 5) return;
+
+                const endX = x + Math.sin(angle) * length;
+                const endY = y + Math.cos(angle) * length;
+
+                // Main bolt
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+
+                // Create jagged path
+                let currX = x, currY = y;
+                const segments = Math.floor(length / 10);
+                for (let i = 0; i < segments; i++) {
+                    const progress = (i + 1) / segments;
+                    const targetX = x + (endX - x) * progress;
+                    const targetY = y + (endY - y) * progress;
+                    const jitter = (1 - progress) * 15;
+                    currX = targetX + (Math.random() - 0.5) * jitter;
+                    currY = targetY + (Math.random() - 0.5) * jitter * 0.3;
+                    ctx.lineTo(currX, currY);
+                }
+
+                ctx.strokeStyle = `rgba(220, 240, 255, ${0.3 + depth * 0.15})`;
+                ctx.lineWidth = depth * 1.5;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                // Glow effect
+                ctx.shadowColor = 'rgba(180, 200, 255, 0.8)';
+                ctx.shadowBlur = 20;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Branches
+                if (Math.random() < 0.4 && depth > 1) {
+                    const branchAngle = angle + (Math.random() - 0.5) * 1.2;
+                    drawLightning(currX, currY, branchAngle, length * 0.5, depth - 1);
+                }
+                if (Math.random() < 0.3 && depth > 1) {
+                    const branchAngle = angle + (Math.random() - 0.5) * 1.0;
+                    drawLightning(currX, currY, branchAngle, length * 0.4, depth - 1);
+                }
+            }
+
+            function flash() {
+                ctx.clearRect(0, 0, 300, 250);
+
+                // Draw multiple bolts
+                drawLightning(150, 0, 0.1, 200, 4);
+                if (Math.random() > 0.5) {
+                    drawLightning(120, 0, -0.2, 180, 3);
+                }
+                if (Math.random() > 0.6) {
+                    drawLightning(180, 0, 0.3, 170, 3);
+                }
+
+                // Flicker effect
+                setTimeout(() => {
+                    ctx.clearRect(0, 0, 300, 250);
+                }, 50 + Math.random() * 100);
+
+                setTimeout(() => {
+                    drawLightning(150, 0, (Math.random() - 0.5) * 0.3, 200, 4);
+                }, 80 + Math.random() * 50);
+
+                setTimeout(() => {
+                    ctx.clearRect(0, 0, 300, 250);
+                }, 200 + Math.random() * 100);
+            }
+
+            // Initial flash
+            setTimeout(flash, 500);
+            // Repeat
+            setInterval(flash, 2000 + Math.random() * 1000);
+        })();
 
         // ===== SPLASH SCREEN ENTRY =====
         function enterApp() {
