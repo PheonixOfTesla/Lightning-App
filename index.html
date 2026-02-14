@@ -1001,6 +1001,87 @@
                 0 12px 24px rgba(0, 0, 0, 0.4);
         }
 
+        /* Music Toggle Button */
+        .music-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid var(--electric-purple);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            color: var(--electric-purple);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+        }
+
+        .music-toggle:hover {
+            background: var(--electric-purple);
+            color: var(--pure-black);
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.7);
+        }
+
+        .music-toggle.playing {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            animation: musicPulse 1s ease-in-out infinite;
+        }
+
+        .music-toggle.playing:hover {
+            background: var(--neon-green);
+            color: var(--pure-black);
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.7);
+        }
+
+        @keyframes musicPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        /* Equalizer bars animation inside button */
+        .eq-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 20px;
+        }
+
+        .eq-bar {
+            width: 3px;
+            background: currentColor;
+            border-radius: 1px;
+            transition: height 0.1s ease;
+        }
+
+        .music-toggle.playing .eq-bar {
+            animation: eqBounce 0.6s ease-in-out infinite alternate;
+        }
+
+        .music-toggle.playing .eq-bar:nth-child(1) { animation-delay: 0s; }
+        .music-toggle.playing .eq-bar:nth-child(2) { animation-delay: 0.1s; }
+        .music-toggle.playing .eq-bar:nth-child(3) { animation-delay: 0.2s; }
+        .music-toggle.playing .eq-bar:nth-child(4) { animation-delay: 0.15s; }
+        .music-toggle.playing .eq-bar:nth-child(5) { animation-delay: 0.05s; }
+
+        @keyframes eqBounce {
+            0% { height: 4px; }
+            100% { height: 18px; }
+        }
+
+        .music-toggle:not(.playing) .eq-bar {
+            height: 4px !important;
+        }
+
         @media (max-width: 768px) {
             .landing-logo {
                 font-size: 5rem;
@@ -1023,14 +1104,21 @@
             .landing-btn {
                 width: 100%;
             }
+
+            .music-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 48px;
+                height: 48px;
+            }
         }
     </style>
 </head>
 <body>
     <!-- VIDEO LANDING PAGE -->
     <div id="landingPage" autocomplete="off">
-        <!-- Video Background -->
-        <video id="video-background" autoplay muted loop playsinline>
+        <!-- Video Background - Continuous Loop -->
+        <video id="video-background" autoplay muted loop playsinline preload="auto" disablePictureInPicture>
             <source src="background-video.mp4" type="video/mp4">
         </video>
 
@@ -1063,6 +1151,17 @@
         </div>
         <div class="lightning-flash" id="lightningFlashLanding"></div>
     </div>
+
+    <!-- Music Toggle Button -->
+    <button id="musicToggle" class="music-toggle" onclick="toggleMusic()" title="Toggle Music">
+        <div class="eq-bars">
+            <div class="eq-bar" style="height: 4px;"></div>
+            <div class="eq-bar" style="height: 4px;"></div>
+            <div class="eq-bar" style="height: 4px;"></div>
+            <div class="eq-bar" style="height: 4px;"></div>
+            <div class="eq-bar" style="height: 4px;"></div>
+        </div>
+    </button>
 
     <nav>
         <div class="nav-container">
@@ -1979,7 +2078,29 @@
         };
 
         // ===== LANDING PAGE FUNCTIONS =====
+        function fadeOutMusic(callback) {
+            if (musicPlaying && musicGainNode) {
+                const fadeTime = 1.5; // seconds
+                musicGainNode.gain.setValueAtTime(musicGainNode.gain.value, audioCtx.currentTime);
+                musicGainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeTime);
+                setTimeout(() => {
+                    stopMusic();
+                    musicGainNode.gain.value = 0.35; // Reset for next time
+                    // Hide the music toggle when leaving landing
+                    const btn = document.getElementById('musicToggle');
+                    if (btn) btn.style.display = 'none';
+                    if (callback) callback();
+                }, fadeTime * 1000);
+            } else {
+                const btn = document.getElementById('musicToggle');
+                if (btn) btn.style.display = 'none';
+                if (callback) callback();
+            }
+        }
+
         function showLoginFromLanding() {
+            // Fade out music smoothly
+            fadeOutMusic();
             // Hide landing page
             document.getElementById('landingPage').classList.add('hidden');
             // Show auth view
@@ -1992,6 +2113,8 @@
         }
 
         function showSignupFromLanding() {
+            // Fade out music smoothly
+            fadeOutMusic();
             // Hide landing page
             document.getElementById('landingPage').classList.add('hidden');
             // Show auth view
@@ -2003,25 +2126,368 @@
             document.getElementById('registerSection').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // ===== ENERGETIC BACKGROUND MUSIC ENGINE (Web Audio API) =====
+        let audioCtx = null;
+        let musicPlaying = false;
+        let musicGainNode = null;
+        let musicInterval = null;
+        let musicStarted = false;
+
+        function createAudioContext() {
+            if (audioCtx) return audioCtx;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            musicGainNode = audioCtx.createGain();
+            musicGainNode.gain.value = 0.35;
+            // Add a compressor for punch
+            const compressor = audioCtx.createDynamicsCompressor();
+            compressor.threshold.value = -24;
+            compressor.knee.value = 30;
+            compressor.ratio.value = 4;
+            compressor.attack.value = 0.003;
+            compressor.release.value = 0.25;
+            musicGainNode.connect(compressor);
+            compressor.connect(audioCtx.destination);
+            return audioCtx;
+        }
+
+        function playKick(time) {
+            const ctx = audioCtx;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, time);
+            osc.frequency.exponentialRampToValueAtTime(30, time + 0.12);
+            gain.gain.setValueAtTime(1.0, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
+            osc.connect(gain);
+            gain.connect(musicGainNode);
+            osc.start(time);
+            osc.stop(time + 0.35);
+        }
+
+        function playSnare(time) {
+            const ctx = audioCtx;
+            // Noise burst
+            const bufferSize = ctx.sampleRate * 0.15;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+            const noiseGain = ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.7, time);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 1000;
+            noise.connect(filter);
+            filter.connect(noiseGain);
+            noiseGain.connect(musicGainNode);
+            noise.start(time);
+            // Body
+            const osc = ctx.createOscillator();
+            const oscGain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, time);
+            osc.frequency.exponentialRampToValueAtTime(80, time + 0.08);
+            oscGain.gain.setValueAtTime(0.5, time);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+            osc.connect(oscGain);
+            oscGain.connect(musicGainNode);
+            osc.start(time);
+            osc.stop(time + 0.1);
+        }
+
+        function playHiHat(time, open) {
+            const ctx = audioCtx;
+            const bufferSize = ctx.sampleRate * (open ? 0.12 : 0.05);
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, open ? 1 : 3);
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(open ? 0.25 : 0.18, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + (open ? 0.12 : 0.05));
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 8000;
+            filter.Q.value = 1.5;
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(musicGainNode);
+            noise.start(time);
+        }
+
+        function playBass(time, freq, duration) {
+            const ctx = audioCtx;
+            const osc = ctx.createOscillator();
+            const osc2 = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const filter = ctx.createBiquadFilter();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, time);
+            osc2.type = 'square';
+            osc2.frequency.setValueAtTime(freq * 0.998, time); // slight detune
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, time);
+            filter.frequency.exponentialRampToValueAtTime(200, time + duration * 0.8);
+            filter.Q.value = 8;
+            gain.gain.setValueAtTime(0.3, time);
+            gain.gain.setValueAtTime(0.3, time + duration * 0.7);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+            osc.connect(filter);
+            osc2.connect(filter);
+            filter.connect(gain);
+            gain.connect(musicGainNode);
+            osc.start(time);
+            osc.stop(time + duration);
+            osc2.start(time);
+            osc2.stop(time + duration);
+        }
+
+        function playSynthChord(time, freqs, duration) {
+            const ctx = audioCtx;
+            freqs.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, time);
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2000, time);
+                filter.frequency.exponentialRampToValueAtTime(400, time + duration);
+                filter.Q.value = 2;
+                gain.gain.setValueAtTime(0.08, time);
+                gain.gain.setValueAtTime(0.08, time + duration * 0.6);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(musicGainNode);
+                osc.start(time);
+                osc.stop(time + duration);
+            });
+        }
+
+        function playArp(time, freq, duration) {
+            const ctx = audioCtx;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const filter = ctx.createBiquadFilter();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(freq, time);
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(3000, time);
+            filter.frequency.exponentialRampToValueAtTime(500, time + duration);
+            gain.gain.setValueAtTime(0.1, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(musicGainNode);
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+
+        function scheduleBar(barStartTime) {
+            const bpm = 128;
+            const beatDur = 60 / bpm;
+            const sixteenth = beatDur / 4;
+
+            // Bass notes pattern (E minor pentatonic vibes)
+            const bassNotes = [
+                [82.41, 0], [82.41, 3], [110, 4], [98, 6], [82.41, 8],
+                [73.42, 10], [82.41, 12], [110, 14]
+            ];
+
+            // Chord progressions (Em - C - G - D feel)
+            const chords = [
+                [329.63, 392.00, 493.88], // Em
+                [261.63, 329.63, 392.00], // C
+                [392.00, 493.88, 587.33], // G
+                [293.66, 369.99, 440.00]  // D
+            ];
+
+            // Arp notes
+            const arpNotes = [659.26, 784.00, 987.77, 784.00, 659.26, 523.25, 659.26, 784.00];
+
+            for (let step = 0; step < 16; step++) {
+                const t = barStartTime + step * sixteenth;
+
+                // Kick on 1, 5, 9, 13 (four-on-the-floor)
+                if (step % 4 === 0) {
+                    playKick(t);
+                }
+
+                // Snare on 4 and 12 (beats 2 and 4)
+                if (step === 4 || step === 12) {
+                    playSnare(t);
+                }
+
+                // Hi-hats on every other sixteenth
+                if (step % 2 === 0) {
+                    playHiHat(t, step % 8 === 6); // open hat on offbeats
+                }
+
+                // Bass notes
+                const bassHit = bassNotes.find(n => n[1] === step);
+                if (bassHit) {
+                    playBass(t, bassHit[0], sixteenth * 1.8);
+                }
+
+                // Arp on every other sixteenth (offset)
+                if (step % 2 === 1) {
+                    playArp(t, arpNotes[Math.floor(step / 2) % arpNotes.length], sixteenth * 1.5);
+                }
+            }
+
+            // Chord - one per bar, full bar duration
+            const chordIdx = Math.floor((barStartTime * 2) % chords.length);
+            playSynthChord(barStartTime, chords[chordIdx], beatDur * 4 * 0.9);
+        }
+
+        let nextBarTime = 0;
+        let schedulerRunning = false;
+
+        function startMusicScheduler() {
+            if (schedulerRunning) return;
+            schedulerRunning = true;
+            const bpm = 128;
+            const barDuration = (60 / bpm) * 4; // 4 beats per bar
+
+            nextBarTime = audioCtx.currentTime + 0.05;
+
+            function scheduler() {
+                if (!musicPlaying) {
+                    schedulerRunning = false;
+                    return;
+                }
+                // Schedule bars ahead (lookahead)
+                while (nextBarTime < audioCtx.currentTime + 0.5) {
+                    scheduleBar(nextBarTime);
+                    nextBarTime += barDuration;
+                }
+                musicInterval = setTimeout(scheduler, 100);
+            }
+            scheduler();
+        }
+
+        function startMusic() {
+            if (musicPlaying) return;
+            createAudioContext();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            musicPlaying = true;
+            musicStarted = true;
+            startMusicScheduler();
+            const btn = document.getElementById('musicToggle');
+            if (btn) btn.classList.add('playing');
+        }
+
+        function stopMusic() {
+            musicPlaying = false;
+            schedulerRunning = false;
+            if (musicInterval) {
+                clearTimeout(musicInterval);
+                musicInterval = null;
+            }
+            const btn = document.getElementById('musicToggle');
+            if (btn) btn.classList.remove('playing');
+        }
+
+        function toggleMusic() {
+            if (musicPlaying) {
+                stopMusic();
+            } else {
+                startMusic();
+            }
+        }
+
+        // Auto-play music when page loads (will work if browser allows)
+        // Falls back to starting on first user interaction
+        function attemptAutoplayMusic() {
+            try {
+                createAudioContext();
+                if (audioCtx.state === 'running') {
+                    startMusic();
+                } else {
+                    // Browser blocked autoplay - start on first interaction
+                    const startOnInteraction = () => {
+                        if (!musicStarted) {
+                            startMusic();
+                        }
+                        document.removeEventListener('click', startOnInteraction);
+                        document.removeEventListener('touchstart', startOnInteraction);
+                    };
+                    document.addEventListener('click', startOnInteraction);
+                    document.addEventListener('touchstart', startOnInteraction, { passive: true });
+
+                    // Also try resuming the context
+                    audioCtx.resume().then(() => {
+                        if (!musicStarted && audioCtx.state === 'running') {
+                            startMusic();
+                        }
+                    }).catch(() => {});
+                }
+            } catch(e) {
+                console.log('Web Audio not supported:', e);
+            }
+        }
+
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Ensure background video plays continuously
+            // Only autoplay music if landing page is visible (user not logged in)
+            const existingToken = localStorage.getItem('token');
+            if (!existingToken) {
+                attemptAutoplayMusic();
+            } else {
+                // User is logged in, hide music toggle
+                const musicBtn = document.getElementById('musicToggle');
+                if (musicBtn) musicBtn.style.display = 'none';
+            }
+
+            // ===== BULLETPROOF VIDEO LOOP =====
             const video = document.getElementById('video-background');
             if (video) {
+                // Ensure loop attribute stays set
+                video.loop = true;
+                video.muted = true;
+
                 // Force play on load
                 video.play().catch(e => console.log('Video autoplay prevented:', e));
 
                 // Restart video if it pauses unexpectedly
                 video.addEventListener('pause', function() {
-                    setTimeout(() => {
-                        video.play().catch(e => console.log('Video restart failed:', e));
-                    }, 100);
+                    if (!document.hidden) {
+                        setTimeout(() => {
+                            video.play().catch(e => console.log('Video restart failed:', e));
+                        }, 100);
+                    }
                 });
 
                 // Restart video if it ends (backup to loop attribute)
                 video.addEventListener('ended', function() {
                     video.currentTime = 0;
                     video.play().catch(e => console.log('Video loop failed:', e));
+                });
+
+                // Handle stalled/error - reload source and retry
+                video.addEventListener('stalled', function() {
+                    console.log('Video stalled, attempting recovery...');
+                    video.load();
+                    video.play().catch(e => console.log('Video stall recovery failed:', e));
+                });
+
+                video.addEventListener('error', function() {
+                    console.log('Video error, attempting reload...');
+                    setTimeout(() => {
+                        video.load();
+                        video.play().catch(e => console.log('Video error recovery failed:', e));
+                    }, 1000);
                 });
 
                 // Resume video when page becomes visible again
@@ -2031,12 +2497,30 @@
                     }
                 });
 
-                // Handle user interruptions - restart after click anywhere
+                // Handle user interruptions - restart after click/touch anywhere
                 document.addEventListener('click', function() {
                     if (video.paused) {
                         video.play().catch(e => console.log('Video click-play failed:', e));
                     }
                 }, { once: false });
+
+                document.addEventListener('touchstart', function() {
+                    if (video.paused) {
+                        video.play().catch(e => console.log('Video touch-play failed:', e));
+                    }
+                }, { once: false, passive: true });
+
+                // Periodic watchdog - check every 3 seconds that video is playing
+                setInterval(() => {
+                    if (!document.hidden && video.paused && !video.ended) {
+                        video.play().catch(e => {});
+                    }
+                    // If video somehow got near the end without loop kicking in
+                    if (video.duration && video.currentTime >= video.duration - 0.1) {
+                        video.currentTime = 0;
+                        video.play().catch(e => {});
+                    }
+                }, 3000);
             }
 
             // Check if user is already logged in
