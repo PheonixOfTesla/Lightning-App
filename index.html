@@ -1159,11 +1159,87 @@
                 height: 48px;
             }
         }
+        /* Splash Screen - Tap to Enter */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #splashScreen.hidden {
+            display: none;
+        }
+
+        .splash-logo {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: electricPulse 2s infinite;
+        }
+
+        .splash-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #a855f7, #06b6d4, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .splash-enter {
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            background: transparent;
+            border: 2px solid #ffd700;
+            color: #ffd700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .splash-enter:hover {
+            background: #ffd700;
+            color: #000;
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+        }
+
+        @media (max-width: 768px) {
+            .splash-logo { font-size: 3rem; }
+            .splash-title { font-size: 1.8rem; }
+            .splash-enter { padding: 0.8rem 2rem; font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
+    <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
+    <div id="splashScreen" onclick="enterApp()">
+        <div class="splash-logo">⚡</div>
+        <h1 class="splash-title">Lightning Pass</h1>
+        <button class="splash-enter">Tap to Enter</button>
+    </div>
+
     <!-- VIDEO LANDING PAGE -->
-    <div id="landingPage" autocomplete="off">
+    <div id="landingPage" autocomplete="off" style="display: none;">
         <!-- Video Background - Continuous Loop -->
         <video id="video-background" autoplay muted loop playsinline webkit-playsinline preload="auto" disablePictureInPicture controls="false">
             <source src="background-video.mp4" type="video/mp4">
@@ -2447,6 +2523,23 @@
             }
         }
 
+        // ===== SPLASH SCREEN ENTRY =====
+        function enterApp() {
+            // Hide splash screen
+            document.getElementById('splashScreen').classList.add('hidden');
+            // Show landing page
+            document.getElementById('landingPage').style.display = 'flex';
+
+            // Start video (user interaction allows autoplay now)
+            const video = document.getElementById('video-background');
+            if (video) {
+                video.play().catch(e => console.log('Video play failed:', e));
+            }
+
+            // Start music
+            startMusic();
+        }
+
         // Auto-play music when page loads (will work if browser allows)
         // Falls back to starting on first user interaction
         function attemptAutoplayMusic() {
@@ -2480,13 +2573,15 @@
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Music toggle is always visible - music plays throughout the app
-            // Only autoplay on landing page, but user can toggle music anytime
             const existingToken = localStorage.getItem('token');
-            if (!existingToken) {
-                attemptAutoplayMusic();
+
+            if (existingToken) {
+                // User logged in - hide splash and landing, go to app
+                document.getElementById('splashScreen').classList.add('hidden');
+                document.getElementById('landingPage').style.display = 'none';
             }
-            // Music toggle stays visible for all users - they can turn it on/off anytime
+            // If not logged in, splash screen shows by default, landing is hidden
+            // User taps "Enter" -> enterApp() shows landing with video/music
 
             // ===== BULLETPROOF VIDEO LOOP =====
             const video = document.getElementById('video-background');
@@ -2494,11 +2589,8 @@
                 // Ensure loop attribute stays set
                 video.loop = true;
                 video.muted = true;
-                video.controls = false; // Explicitly disable controls
-                video.removeAttribute('controls'); // Remove any controls attribute
-
-                // Force play on load
-                video.play().catch(e => console.log('Video autoplay prevented:', e));
+                video.controls = false;
+                video.removeAttribute('controls');
 
                 // Mobile: Force play on first touch (fires before click)
                 const forcePlayOnTouch = () => {
