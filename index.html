@@ -834,13 +834,40 @@
             .nav-links {
                 display: none;
             }
-            
+
             .hero h1 {
                 font-size: 2.5rem;
             }
-            
+
             .venues-grid {
                 grid-template-columns: 1fr;
+            }
+
+            /* Force inline grids to stack on mobile */
+            [style*="grid-template-columns: repeat(2"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            [style*="grid-template-columns: repeat(3"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Mobile-friendly buttons */
+            .btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            /* Mobile-friendly form inputs */
+            .form-input, .form-select {
+                font-size: 16px; /* Prevents iOS zoom */
+            }
+
+            /* Modal close button larger touch target */
+            .close-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
             }
         }
         /* Video Landing Page Styles */
@@ -871,6 +898,26 @@
             object-fit: cover;
             opacity: 0.4;
             z-index: 1;
+            /* Hide all native video controls on mobile */
+            pointer-events: none;
+        }
+
+        /* Hide iOS/Safari native play button and controls */
+        #video-background::-webkit-media-controls {
+            display: none !important;
+        }
+        #video-background::-webkit-media-controls-start-playback-button {
+            display: none !important;
+            -webkit-appearance: none;
+        }
+        #video-background::-webkit-media-controls-panel {
+            display: none !important;
+        }
+        #video-background::-webkit-media-controls-play-button {
+            display: none !important;
+        }
+        video::-webkit-media-controls-overlay-play-button {
+            display: none !important;
         }
 
         .video-overlay {
@@ -1118,7 +1165,7 @@
     <!-- VIDEO LANDING PAGE -->
     <div id="landingPage" autocomplete="off">
         <!-- Video Background - Continuous Loop -->
-        <video id="video-background" autoplay muted loop playsinline preload="auto" disablePictureInPicture>
+        <video id="video-background" autoplay muted loop playsinline webkit-playsinline preload="auto" disablePictureInPicture controls="false">
             <source src="background-video.mp4" type="video/mp4">
         </video>
 
@@ -2086,21 +2133,15 @@
                 setTimeout(() => {
                     stopMusic();
                     musicGainNode.gain.value = 0.35; // Reset for next time
-                    // Hide the music toggle when leaving landing
-                    const btn = document.getElementById('musicToggle');
-                    if (btn) btn.style.display = 'none';
                     if (callback) callback();
                 }, fadeTime * 1000);
             } else {
-                const btn = document.getElementById('musicToggle');
-                if (btn) btn.style.display = 'none';
                 if (callback) callback();
             }
         }
 
         function showLoginFromLanding() {
-            // Fade out music smoothly
-            fadeOutMusic();
+            // Music keeps playing throughout the app - toggle always visible
             // Hide landing page
             document.getElementById('landingPage').classList.add('hidden');
             // Show auth view
@@ -2113,8 +2154,7 @@
         }
 
         function showSignupFromLanding() {
-            // Fade out music smoothly
-            fadeOutMusic();
+            // Music keeps playing throughout the app - toggle always visible
             // Hide landing page
             document.getElementById('landingPage').classList.add('hidden');
             // Show auth view
@@ -2440,15 +2480,13 @@
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Only autoplay music if landing page is visible (user not logged in)
+            // Music toggle is always visible - music plays throughout the app
+            // Only autoplay on landing page, but user can toggle music anytime
             const existingToken = localStorage.getItem('token');
             if (!existingToken) {
                 attemptAutoplayMusic();
-            } else {
-                // User is logged in, hide music toggle
-                const musicBtn = document.getElementById('musicToggle');
-                if (musicBtn) musicBtn.style.display = 'none';
             }
+            // Music toggle stays visible for all users - they can turn it on/off anytime
 
             // ===== BULLETPROOF VIDEO LOOP =====
             const video = document.getElementById('video-background');
@@ -2456,9 +2494,18 @@
                 // Ensure loop attribute stays set
                 video.loop = true;
                 video.muted = true;
+                video.controls = false; // Explicitly disable controls
+                video.removeAttribute('controls'); // Remove any controls attribute
 
                 // Force play on load
                 video.play().catch(e => console.log('Video autoplay prevented:', e));
+
+                // Mobile: Force play on first touch (fires before click)
+                const forcePlayOnTouch = () => {
+                    video.play().catch(e => {});
+                    document.removeEventListener('touchstart', forcePlayOnTouch);
+                };
+                document.addEventListener('touchstart', forcePlayOnTouch, { passive: true });
 
                 // Restart video if it pauses unexpectedly
                 video.addEventListener('pause', function() {
