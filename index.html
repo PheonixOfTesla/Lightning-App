@@ -3231,6 +3231,21 @@
 
         // ===== VIEW MANAGEMENT =====
         function showView(view) {
+            // Role-based view access guard
+            const roleViewAccess = {
+                'admin': ['auth', 'admin'],
+                'venue': ['auth', 'venue', 'scanner'],
+                'customer': ['auth', 'customer']
+            };
+            const userRole = state.user?.role;
+            if (userRole && view !== 'auth') {
+                const allowed = roleViewAccess[userRole] || ['auth'];
+                if (!allowed.includes(view)) {
+                    console.warn('Access denied: ' + userRole + ' cannot access ' + view);
+                    return;
+                }
+            }
+
             state.currentView = view;
 
             const views = ['auth', 'customer', 'venue', 'admin', 'scanner'];
