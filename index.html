@@ -3837,24 +3837,45 @@
                 // Check Stripe Connect status
                 const stripeStatus = await getDJStripeStatus();
 
+                // Load and populate venue selector for starting sessions
+                await populateDJVenueSelector();
+
                 // Update DJ dashboard UI
                 const djDashboard = document.getElementById('djDashboard');
                 if (djDashboard) {
-                    // Update earnings display
+                    // Update stats display
                     const earningsEl = document.getElementById('djTotalEarnings');
                     if (earningsEl) earningsEl.textContent = '$' + (data.dj.totalEarnings / 100).toFixed(2);
 
+                    const requestsEl = document.getElementById('djTotalRequests');
+                    if (requestsEl) requestsEl.textContent = data.dj.totalRequests || 0;
+
+                    const playedEl = document.getElementById('djSongsPlayed');
+                    if (playedEl) playedEl.textContent = data.dj.totalSongsPlayed || 0;
+
                     // Update session status
                     const sessionBtn = document.getElementById('djSessionBtn');
+                    const sessionStatus = document.getElementById('djSessionStatus');
                     if (sessionBtn) {
                         if (data.dj.currentSessionId) {
                             sessionBtn.textContent = 'End Session';
                             sessionBtn.onclick = handleEndDJSession;
+                            sessionBtn.className = 'btn btn-secondary';
                             state.djSession = data.dj.currentSessionId;
+                            state.currentVenueId = data.dj.currentVenueId;
+                            if (sessionStatus) sessionStatus.innerHTML = `<span style="color: var(--neon-green);">✓ Session Active</span>`;
+
+                            // Join venue room for real-time updates
+                            if (state.socket && data.dj.currentVenueId) {
+                                state.socket.emit('join:venue', data.dj.currentVenueId);
+                            }
+
                             loadDJQueue(data.dj.currentSessionId);
                         } else {
                             sessionBtn.textContent = 'Start Session';
                             sessionBtn.onclick = () => showModal('startSessionModal');
+                            sessionBtn.className = 'btn btn-primary';
+                            if (sessionStatus) sessionStatus.textContent = 'No active session';
                         }
                     }
 
@@ -3874,6 +3895,14 @@
             try {
                 const data = await startDJSession(venueId);
                 state.djSession = data.sessionId;
+                state.currentVenueId = venueId;
+
+                // Join venue room for real-time updates
+                if (state.socket) {
+                    state.socket.emit('join:venue', venueId);
+                    console.log('📡 DJ joined venue room:', venueId);
+                }
+
                 showToast('Session started!', 'success');
                 closeModal('startSessionModal');
                 loadDJDashboard();
@@ -3887,11 +3916,40 @@
 
         async function handleEndDJSession() {
             try {
+                // Leave venue room
+                if (state.socket && state.currentVenueId) {
+                    state.socket.emit('leave:venue', state.currentVenueId);
+                    console.log('📡 DJ left venue room:', state.currentVenueId);
+                }
+
                 const data = await endDJSession();
+                state.currentVenueId = null;
                 showToast(`Session ended! Total: $${data.summary.totalEarnings}`, 'success');
                 loadDJDashboard();
             } catch (err) {
                 showToast(err.message, 'error');
+            }
+        }
+
+        // Populate DJ venue selector with approved venues
+        async function populateDJVenueSelector() {
+            try {
+                const data = await apiCall('/api/v1/lightning/venues');
+                const select = document.getElementById('djVenueSelect');
+                if (!select) return;
+
+                select.innerHTML = '<option value="">Select a venue...</option>';
+
+                if (data.venues && data.venues.length > 0) {
+                    data.venues.forEach(venue => {
+                        const option = document.createElement('option');
+                        option.value = venue._id;
+                        option.textContent = venue.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading venues for DJ:', err);
             }
         }
 
