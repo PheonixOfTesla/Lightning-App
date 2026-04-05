@@ -1477,6 +1477,7 @@
                             <select class="form-select" id="registerRole" onchange="toggleVenueFields()">
                                 <option value="customer">Customer (Buy Passes)</option>
                                 <option value="venue">Venue Owner (Sell Passes)</option>
+                                <option value="dj">DJ (Accept Song Requests)</option>
                             </select>
                         </div>
 
@@ -1526,11 +1527,37 @@
                             </div>
                         </div>
 
+                        <!-- DJ APPLICATION FIELDS (Hidden by default) -->
+                        <div id="djFields" style="display: none;">
+                            <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(157, 78, 221, 0.1); border-left: 3px solid var(--electric-purple); border-radius: 4px;">
+                                <strong style="color: var(--electric-purple);">🎧 DJ Registration</strong>
+                                <p style="font-size: 0.9rem; margin: 0.5rem 0 0; color: rgba(255, 255, 255, 0.7);">
+                                    Accept paid song requests from your audience!
+                                </p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">DJ Name / Stage Name</label>
+                                <input type="text" class="form-input" id="djName" placeholder="DJ Phoenix">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Bio (Optional)</label>
+                                <textarea class="form-input" id="djBio" placeholder="Tell your audience about yourself..." rows="3" style="resize: vertical;"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Genres (Optional)</label>
+                                <input type="text" class="form-input" id="djGenres" placeholder="House, Hip-Hop, Top 40">
+                                <small style="color: rgba(255,255,255,0.5);">Comma-separated list</small>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-success" id="registerBtn" style="width: 100%;">
                             REGISTER
                         </button>
                     </form>
-                    
+
                     <p style="text-align: center; margin-top: 1.5rem; color: rgba(255, 255, 255, 0.6);">
                         Already have an account? <a href="#" onclick="toggleAuthMode()" style="color: var(--electric-blue);">Sign In</a>
                     </p>
@@ -1563,6 +1590,82 @@
 
             <div class="venues-grid" id="customerVenuesGrid">
                 <div class="empty-state">Loading venues...</div>
+            </div>
+        </div>
+
+        <!-- DJ DASHBOARD -->
+        <div id="djView" class="container hidden">
+            <div id="djDashboard">
+                <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--electric-purple), var(--electric-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    🎧 DJ Dashboard
+                </h1>
+
+                <!-- Stripe Connect Prompt -->
+                <div id="djStripePrompt" style="display: none; background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">💳 Connect Your Bank Account</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Connect Stripe to receive payments from song requests</p>
+                    <button class="btn btn-primary" onclick="handleDJStripeConnect()">Connect Stripe</button>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card" style="background: var(--card-black); border: 1px solid var(--border-dark); padding: 1.5rem; border-radius: 12px;">
+                        <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Total Earnings</div>
+                        <div id="djTotalEarnings" style="font-size: 2rem; font-weight: 700; color: var(--neon-green);">$0.00</div>
+                    </div>
+                    <div class="stat-card" style="background: var(--card-black); border: 1px solid var(--border-dark); padding: 1.5rem; border-radius: 12px;">
+                        <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Total Requests</div>
+                        <div id="djTotalRequests" style="font-size: 2rem; font-weight: 700; color: var(--electric-blue);">0</div>
+                    </div>
+                    <div class="stat-card" style="background: var(--card-black); border: 1px solid var(--border-dark); padding: 1.5rem; border-radius: 12px;">
+                        <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Songs Played</div>
+                        <div id="djSongsPlayed" style="font-size: 2rem; font-weight: 700; color: var(--electric-purple);">0</div>
+                    </div>
+                </div>
+
+                <!-- Session Controls -->
+                <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Session Control</h3>
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <button id="djSessionBtn" class="btn btn-primary" onclick="showModal('startSessionModal')">Start Session</button>
+                        <div id="djSessionStatus" style="color: rgba(255,255,255,0.6);">No active session</div>
+                    </div>
+                </div>
+
+                <!-- Queue -->
+                <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem;">🎵 Request Queue</h3>
+                    <div id="djQueueList">
+                        <div style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">
+                            Start a session to see incoming requests
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Session Modal -->
+        <div id="startSessionModal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <h2 style="color: var(--electric-purple); margin-bottom: 1rem;">🎵 Start DJ Session</h2>
+                <div class="form-group">
+                    <label class="form-label">Select Venue</label>
+                    <select id="djVenueSelect" class="form-input">
+                        <option value="">Select a venue...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Base Request Fee</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="color: rgba(255,255,255,0.6);">$</span>
+                        <input type="number" id="djBaseFee" class="form-input" value="5.00" min="1" max="100" step="0.50">
+                    </div>
+                    <small style="color: rgba(255,255,255,0.5);">You receive 80% of base fee</small>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn btn-secondary" onclick="closeModal('startSessionModal')" style="flex: 1;">Cancel</button>
+                    <button class="btn btn-primary" onclick="handleStartSession()" style="flex: 1;">Start Session</button>
+                </div>
             </div>
         </div>
 
@@ -2226,7 +2329,12 @@
             paymentIntentId: null,
             approvalCheckInterval: null,
             approvedVenueCount: 0,
-            socket: null  // Socket.IO connection
+            socket: null,  // Socket.IO connection
+            // DJ Song Request state
+            djSession: null,
+            djQueue: [],
+            djPaymentIntentId: null,
+            currentDJ: null
         };
 
         // ===== LANDING PAGE FUNCTIONS =====
@@ -2552,16 +2660,27 @@
             }
         }
 
-        // ===== FULLSCREEN REALISTIC LIGHTNING STORM =====
+        // ===== ULTRA-REALISTIC LIGHTNING STORM =====
         (function initLightning() {
             const canvas = document.getElementById('lightningCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
+            // Screen flash overlay element
+            let flashOverlay = document.getElementById('lightningFlash');
+            if (!flashOverlay) {
+                flashOverlay = document.createElement('div');
+                flashOverlay.id = 'lightningFlash';
+                flashOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;background:white;opacity:0;z-index:9998;transition:opacity 0.05s ease-out;';
+                document.body.appendChild(flashOverlay);
+            }
+
+            let dpr = 1;
             function resize() {
-                const dpr = window.devicePixelRatio || 1;
+                dpr = window.devicePixelRatio || 1;
                 canvas.width = window.innerWidth * dpr;
                 canvas.height = window.innerHeight * dpr;
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
                 ctx.scale(dpr, dpr);
             }
             resize();
@@ -2570,136 +2689,276 @@
             const W = () => window.innerWidth;
             const H = () => window.innerHeight;
 
-            function drawBolt(startX, startY, endX, endY, thickness, brightness) {
-                const dx = endX - startX;
-                const dy = endY - startY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const segments = Math.max(10, Math.floor(dist / 20));
-
-                // Build jagged path
-                const points = [{x: startX, y: startY}];
-                for (let i = 1; i < segments; i++) {
-                    const t = i / segments;
-                    const x = startX + dx * t + (Math.random() - 0.5) * 80 * (1 - Math.abs(t - 0.5) * 2);
-                    const y = startY + dy * t + (Math.random() - 0.5) * 20;
-                    points.push({x, y});
+            // Generate fractal lightning path with Bezier curves
+            function generateBoltPath(startX, startY, endX, endY, displacement, detail) {
+                if (displacement < detail) {
+                    return [{ x: startX, y: startY }, { x: endX, y: endY }];
                 }
-                points.push({x: endX, y: endY});
+                const midX = (startX + endX) / 2 + (Math.random() - 0.5) * displacement;
+                const midY = (startY + endY) / 2 + (Math.random() - 0.5) * displacement * 0.3;
+                const left = generateBoltPath(startX, startY, midX, midY, displacement / 2, detail);
+                const right = generateBoltPath(midX, midY, endX, endY, displacement / 2, detail);
+                return left.slice(0, -1).concat(right);
+            }
 
-                // Draw main bolt with glow layers
-                for (let glow = 3; glow >= 0; glow--) {
-                    ctx.beginPath();
-                    ctx.moveTo(points[0].x, points[0].y);
-                    for (let i = 1; i < points.length; i++) {
-                        ctx.lineTo(points[i].x, points[i].y);
-                    }
-                    const glowSize = thickness + glow * 8;
-                    const alpha = glow === 0 ? brightness : brightness * 0.3 / (glow + 1);
-                    ctx.strokeStyle = glow === 0
-                        ? `rgba(255, 255, 255, ${brightness})`
-                        : `rgba(180, 200, 255, ${alpha})`;
-                    ctx.lineWidth = glowSize;
+            // Convert points to smooth Bezier curve
+            function drawSmoothPath(points) {
+                if (points.length < 2) return;
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length - 1; i++) {
+                    const xc = (points[i].x + points[i + 1].x) / 2;
+                    const yc = (points[i].y + points[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                }
+                const last = points[points.length - 1];
+                ctx.lineTo(last.x, last.y);
+            }
+
+            // Recursive fractal branch drawing (Lichtenberg patterns)
+            function drawFractalBranch(x, y, angle, length, thickness, brightness, depth, maxDepth) {
+                if (depth > maxDepth || length < 10 || thickness < 0.5 || brightness < 0.05) return;
+
+                const endX = x + Math.cos(angle) * length;
+                const endY = y + Math.sin(angle) * length;
+
+                // Generate jagged path for this branch
+                const displacement = length * 0.3;
+                const points = generateBoltPath(x, y, endX, endY, displacement, 8);
+
+                // Draw multi-layer glow for branch
+                const glowLayers = [
+                    { color: [138, 43, 226], size: thickness + 20, alpha: brightness * 0.08 },  // Purple outer
+                    { color: [65, 105, 225], size: thickness + 12, alpha: brightness * 0.12 }, // Blue
+                    { color: [100, 200, 255], size: thickness + 6, alpha: brightness * 0.2 },  // Cyan
+                    { color: [200, 230, 255], size: thickness + 2, alpha: brightness * 0.5 },  // Light blue
+                    { color: [255, 255, 255], size: thickness, alpha: brightness }             // White core
+                ];
+
+                glowLayers.forEach(layer => {
+                    drawSmoothPath(points);
+                    ctx.strokeStyle = `rgba(${layer.color[0]}, ${layer.color[1]}, ${layer.color[2]}, ${layer.alpha})`;
+                    ctx.lineWidth = layer.size;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
                     ctx.stroke();
-                }
+                });
 
-                // Draw branches
-                for (let i = 2; i < points.length - 2; i++) {
-                    if (Math.random() < 0.35) {
-                        const branchLen = 50 + Math.random() * 150;
-                        const angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.5;
-                        const bx = points[i].x + Math.cos(angle) * branchLen;
-                        const by = points[i].y + Math.sin(angle) * branchLen;
-                        drawBranch(points[i].x, points[i].y, bx, by, thickness * 0.5, brightness * 0.7);
+                // Spawn sub-branches with decreasing probability
+                const branchProb = 0.4 * Math.pow(0.7, depth);
+                const numBranches = Math.floor(Math.random() * 3);
+
+                for (let i = 0; i < numBranches; i++) {
+                    if (Math.random() < branchProb) {
+                        const branchPoint = points[Math.floor(Math.random() * (points.length - 2)) + 1];
+                        const branchAngle = angle + (Math.random() - 0.5) * 1.2;
+                        const branchLength = length * (0.3 + Math.random() * 0.4);
+                        const branchThickness = thickness * 0.6;
+                        const branchBrightness = brightness * 0.7;
+
+                        drawFractalBranch(
+                            branchPoint.x, branchPoint.y,
+                            branchAngle, branchLength,
+                            branchThickness, branchBrightness,
+                            depth + 1, maxDepth
+                        );
                     }
                 }
             }
 
-            function drawBranch(x1, y1, x2, y2, thickness, brightness) {
-                const segments = 5;
-                const points = [{x: x1, y: y1}];
-                for (let i = 1; i < segments; i++) {
-                    const t = i / segments;
-                    points.push({
-                        x: x1 + (x2 - x1) * t + (Math.random() - 0.5) * 30,
-                        y: y1 + (y2 - y1) * t + (Math.random() - 0.5) * 15
-                    });
-                }
-                points.push({x: x2, y: y2});
+            // Main bolt with full fractal branching
+            function drawMainBolt(startX, startY, endX, endY, thickness, brightness, isBackground) {
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
 
-                ctx.beginPath();
-                ctx.moveTo(points[0].x, points[0].y);
-                for (let i = 1; i < points.length; i++) {
-                    ctx.lineTo(points[i].x, points[i].y);
-                }
-                ctx.strokeStyle = `rgba(200, 220, 255, ${brightness})`;
-                ctx.lineWidth = thickness;
-                ctx.stroke();
+                // Generate main bolt path
+                const displacement = isBackground ? 40 : 80;
+                const detail = isBackground ? 15 : 8;
+                const points = generateBoltPath(startX, startY, endX, endY, displacement, detail);
 
-                // Sub-branches
-                if (Math.random() < 0.3 && thickness > 1) {
-                    const midIdx = Math.floor(points.length / 2);
-                    const subLen = 30 + Math.random() * 50;
-                    const angle = Math.random() * Math.PI * 2;
-                    drawBranch(
-                        points[midIdx].x, points[midIdx].y,
-                        points[midIdx].x + Math.cos(angle) * subLen,
-                        points[midIdx].y + Math.sin(angle) * subLen,
-                        thickness * 0.5, brightness * 0.5
-                    );
+                // Multi-layer glow system
+                const layers = isBackground ? [
+                    { color: [100, 120, 180], size: thickness + 8, alpha: brightness * 0.1 },
+                    { color: [150, 180, 220], size: thickness + 3, alpha: brightness * 0.3 },
+                    { color: [200, 220, 255], size: thickness, alpha: brightness }
+                ] : [
+                    { color: [128, 0, 255], size: thickness + 40, alpha: brightness * 0.04 },   // Purple bloom
+                    { color: [138, 43, 226], size: thickness + 28, alpha: brightness * 0.06 }, // Violet
+                    { color: [65, 105, 225], size: thickness + 18, alpha: brightness * 0.1 },  // Royal blue
+                    { color: [100, 149, 237], size: thickness + 12, alpha: brightness * 0.15 },// Cornflower
+                    { color: [135, 206, 250], size: thickness + 7, alpha: brightness * 0.25 }, // Light sky blue
+                    { color: [200, 230, 255], size: thickness + 3, alpha: brightness * 0.5 },  // Pale blue
+                    { color: [255, 255, 255], size: thickness, alpha: brightness }              // Pure white core
+                ];
+
+                layers.forEach(layer => {
+                    drawSmoothPath(points);
+                    ctx.strokeStyle = `rgba(${layer.color[0]}, ${layer.color[1]}, ${layer.color[2]}, ${layer.alpha})`;
+                    ctx.lineWidth = layer.size;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke();
+                });
+
+                // Fractal branches (Lichtenberg pattern)
+                if (!isBackground) {
+                    const mainAngle = Math.atan2(dy, dx);
+                    const branchCount = 4 + Math.floor(Math.random() * 4);
+
+                    for (let i = 0; i < branchCount; i++) {
+                        const idx = Math.floor((i + 1) * points.length / (branchCount + 1));
+                        if (idx < points.length) {
+                            const pt = points[idx];
+                            const side = Math.random() > 0.5 ? 1 : -1;
+                            const branchAngle = mainAngle + side * (0.3 + Math.random() * 0.8);
+                            const branchLength = 80 + Math.random() * 180;
+
+                            drawFractalBranch(
+                                pt.x, pt.y,
+                                branchAngle, branchLength,
+                                thickness * 0.5, brightness * 0.7,
+                                0, 3 // max 3 levels of recursion
+                            );
+                        }
+                    }
                 }
             }
 
-            function strike() {
+            // Animated stepped leader effect
+            function animateSteppedLeader(startX, startY, endX, endY, thickness, onComplete) {
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const steps = 8;
+                const stepDuration = 15; // ms per step
+                let currentStep = 0;
+
+                // Pre-generate the full path
+                const fullPath = generateBoltPath(startX, startY, endX, endY, 80, 8);
+
+                function drawStep() {
+                    if (currentStep >= steps) {
+                        if (onComplete) onComplete(fullPath);
+                        return;
+                    }
+
+                    const progress = (currentStep + 1) / steps;
+                    const pointIndex = Math.floor(progress * (fullPath.length - 1));
+                    const partialPath = fullPath.slice(0, pointIndex + 1);
+
+                    // Draw partial bolt with dim glow
+                    const dimBrightness = 0.3 + currentStep * 0.05;
+
+                    drawSmoothPath(partialPath);
+                    ctx.strokeStyle = `rgba(200, 220, 255, ${dimBrightness * 0.3})`;
+                    ctx.lineWidth = thickness + 10;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+
+                    drawSmoothPath(partialPath);
+                    ctx.strokeStyle = `rgba(220, 240, 255, ${dimBrightness})`;
+                    ctx.lineWidth = thickness;
+                    ctx.stroke();
+
+                    currentStep++;
+                    setTimeout(drawStep, stepDuration);
+                }
+
+                drawStep();
+            }
+
+            // Return stroke flash animation
+            function returnStrokeFlash(intensity, duration) {
+                flashOverlay.style.transition = 'none';
+                flashOverlay.style.opacity = intensity;
+
+                // Rapid decay
+                setTimeout(() => {
+                    flashOverlay.style.transition = `opacity ${duration}ms ease-out`;
+                    flashOverlay.style.opacity = 0;
+                }, 16);
+            }
+
+            // Complete lightning strike with all effects
+            function createStrike() {
                 const w = W(), h = H();
                 ctx.clearRect(0, 0, w, h);
 
-                // Screen flash
-                ctx.fillStyle = 'rgba(200, 220, 255, 0.1)';
-                ctx.fillRect(0, 0, w, h);
-
-                // Multiple large bolts
-                const numBolts = 2 + Math.floor(Math.random() * 3);
-                for (let i = 0; i < numBolts; i++) {
-                    const startX = Math.random() * w;
-                    const endX = startX + (Math.random() - 0.5) * 200;
-                    drawBolt(startX, -20, endX, h + 20, 3 + Math.random() * 2, 0.9);
+                // Background bolts (atmospheric perspective - dimmer, simpler)
+                const bgBolts = 1 + Math.floor(Math.random() * 2);
+                for (let i = 0; i < bgBolts; i++) {
+                    const bx = Math.random() * w;
+                    drawMainBolt(bx, -30, bx + (Math.random() - 0.5) * 100, h + 30, 1.5, 0.3, true);
                 }
 
-                // Flicker sequence
-                setTimeout(() => {
+                // Main foreground bolt with stepped leader animation
+                const mainX = w * 0.2 + Math.random() * w * 0.6;
+                const mainEndX = mainX + (Math.random() - 0.5) * 300;
+
+                animateSteppedLeader(mainX, -30, mainEndX, h + 30, 5, (path) => {
+                    // Clear and redraw with full brightness (return stroke)
                     ctx.clearRect(0, 0, w, h);
-                }, 60);
 
-                setTimeout(() => {
-                    ctx.fillStyle = 'rgba(200, 220, 255, 0.05)';
-                    ctx.fillRect(0, 0, w, h);
-                    const bx = Math.random() * w;
-                    drawBolt(bx, -20, bx + (Math.random() - 0.5) * 150, h + 20, 2, 0.7);
-                }, 100);
-
-                setTimeout(() => {
-                    ctx.clearRect(0, 0, w, h);
-                }, 180);
-
-                setTimeout(() => {
-                    for (let i = 0; i < 2; i++) {
-                        const sx = Math.random() * w;
-                        drawBolt(sx, -20, sx + (Math.random() - 0.5) * 180, h + 20, 2.5, 0.8);
+                    // Redraw background bolts
+                    for (let i = 0; i < bgBolts; i++) {
+                        const bx = Math.random() * w;
+                        drawMainBolt(bx, -30, bx + (Math.random() - 0.5) * 100, h + 30, 1.5, 0.25, true);
                     }
-                }, 220);
 
-                setTimeout(() => {
-                    ctx.clearRect(0, 0, w, h);
-                }, 350);
+                    // Main bolt at full power
+                    drawMainBolt(mainX, -30, mainEndX, h + 30, 4 + Math.random() * 3, 1.0, false);
+
+                    // Additional foreground bolts
+                    const extraBolts = Math.floor(Math.random() * 2);
+                    for (let i = 0; i < extraBolts; i++) {
+                        const ex = Math.random() * w;
+                        drawMainBolt(ex, -30, ex + (Math.random() - 0.5) * 200, h + 30, 3 + Math.random() * 2, 0.8, false);
+                    }
+
+                    // Return stroke screen flash
+                    returnStrokeFlash(0.25, 150);
+
+                    // Flicker sequence (3-4 rapid flickers)
+                    const flickerPattern = [
+                        { delay: 70, clear: true },
+                        { delay: 120, draw: true, intensity: 0.6 },
+                        { delay: 160, clear: true },
+                        { delay: 200, draw: true, intensity: 0.8 },
+                        { delay: 280, clear: true },
+                        { delay: 320, draw: true, intensity: 0.5 },
+                        { delay: 420, clear: true }
+                    ];
+
+                    flickerPattern.forEach(step => {
+                        setTimeout(() => {
+                            if (step.clear) {
+                                ctx.clearRect(0, 0, w, h);
+                            }
+                            if (step.draw) {
+                                // Redraw with flicker intensity
+                                const fx = mainX + (Math.random() - 0.5) * 50;
+                                drawMainBolt(fx, -30, fx + (Math.random() - 0.5) * 150, h + 30,
+                                    3 + Math.random() * 2, step.intensity, false);
+                                returnStrokeFlash(step.intensity * 0.15, 100);
+                            }
+                        }, step.delay);
+                    });
+                });
             }
 
-            // Storm loop
-            setTimeout(strike, 300);
-            setInterval(() => {
-                strike();
-            }, 1500 + Math.random() * 1000);
+            // Storm timing - random intervals between strikes
+            function scheduleNextStrike() {
+                const delay = 2000 + Math.random() * 3000; // 2-5 seconds between strikes
+                setTimeout(() => {
+                    createStrike();
+                    scheduleNextStrike();
+                }, delay);
+            }
+
+            // Initial strike after short delay
+            setTimeout(createStrike, 500);
+            scheduleNextStrike();
         })();
 
         // ===== SPLASH SCREEN ENTRY =====
@@ -3059,6 +3318,30 @@
                     }
                 }
             });
+
+            // 🎵 DJ Request Events
+            state.socket.on('dj:request:new', (data) => {
+                console.log('🎵 New DJ request:', data);
+                if (state.djSession) {
+                    showToast(`🎵 New request: "${data.songTitle}"${data.boltTier ? ` (${data.boltTier})` : ''}`, 'info');
+                    if (typeof loadDJQueue === 'function') loadDJQueue(state.djSession);
+                }
+            });
+
+            state.socket.on('dj:request:rejected', (data) => {
+                console.log('❌ DJ request rejected:', data);
+                if (state.djSession && typeof loadDJQueue === 'function') {
+                    loadDJQueue(state.djSession);
+                }
+            });
+
+            state.socket.on('dj:request:played', (data) => {
+                console.log('✅ DJ request played:', data);
+                if (state.djSession) {
+                    showToast(`✅ Played: "${data.songTitle}"`, 'success');
+                    if (typeof loadDJQueue === 'function') loadDJQueue(state.djSession);
+                }
+            });
         }
 
         // ===== AUTHENTICATION - REAL API CALLS =====
@@ -3130,19 +3413,25 @@
         function toggleVenueFields() {
             const role = document.getElementById('registerRole').value;
             const venueFields = document.getElementById('venueFields');
+            const djFields = document.getElementById('djFields');
             const promoField = document.getElementById('promoSignupField');
             const venueInputs = venueFields.querySelectorAll('input, select');
 
+            // Hide all role-specific fields first
+            venueFields.style.display = 'none';
+            if (djFields) djFields.style.display = 'none';
+            promoField.style.display = 'none';
+            venueInputs.forEach(input => input.removeAttribute('required'));
+
             if (role === 'venue') {
                 venueFields.style.display = 'block';
-                promoField.style.display = 'none'; // Hide promo signup for venue owners
                 // Make venue fields required
                 venueInputs.forEach(input => input.setAttribute('required', 'required'));
+            } else if (role === 'dj') {
+                if (djFields) djFields.style.display = 'block';
             } else {
-                venueFields.style.display = 'none';
-                promoField.style.display = 'block'; // Show promo signup for customers
-                // Remove required attribute
-                venueInputs.forEach(input => input.removeAttribute('required'));
+                // Customer
+                promoField.style.display = 'block';
             }
         }
 
@@ -3249,6 +3538,19 @@
                 // Validate venue fields
                 if (!registrationData.venueName || !registrationData.venueAddress) {
                     errorDiv.textContent = 'Please fill in all venue information';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+            }
+
+            // Collect DJ data if registering as DJ
+            if (role === 'dj') {
+                registrationData.djName = document.getElementById('djName').value;
+                registrationData.djBio = document.getElementById('djBio').value;
+                registrationData.djGenres = document.getElementById('djGenres').value;
+
+                if (!registrationData.djName) {
+                    errorDiv.textContent = 'Please enter your DJ name';
                     errorDiv.style.display = 'block';
                     return;
                 }
@@ -3426,10 +3728,184 @@
                 // Always show venue dashboard, regardless of approval status
                 showView('venue');
                 populateVenueSelector();
+            } else if (user.role === 'dj') {
+                showView('dj');
+                loadDJDashboard();
             } else {
                 showView('customer');
                 loadVenues();
                 loadCustomerPasses();
+            }
+        }
+
+        // Load DJ Dashboard
+        async function loadDJDashboard() {
+            try {
+                const data = await getDJProfile();
+                state.currentDJ = data.dj;
+
+                // Check Stripe Connect status
+                const stripeStatus = await getDJStripeStatus();
+
+                // Update DJ dashboard UI
+                const djDashboard = document.getElementById('djDashboard');
+                if (djDashboard) {
+                    // Update earnings display
+                    const earningsEl = document.getElementById('djTotalEarnings');
+                    if (earningsEl) earningsEl.textContent = '$' + (data.dj.totalEarnings / 100).toFixed(2);
+
+                    // Update session status
+                    const sessionBtn = document.getElementById('djSessionBtn');
+                    if (sessionBtn) {
+                        if (data.dj.currentSessionId) {
+                            sessionBtn.textContent = 'End Session';
+                            sessionBtn.onclick = handleEndDJSession;
+                            state.djSession = data.dj.currentSessionId;
+                            loadDJQueue(data.dj.currentSessionId);
+                        } else {
+                            sessionBtn.textContent = 'Start Session';
+                            sessionBtn.onclick = () => showModal('startSessionModal');
+                        }
+                    }
+
+                    // Show Stripe Connect prompt if not connected
+                    const stripePrompt = document.getElementById('djStripePrompt');
+                    if (stripePrompt) {
+                        stripePrompt.style.display = stripeStatus.connected ? 'none' : 'block';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading DJ dashboard:', err);
+                showToast('Error loading dashboard', 'error');
+            }
+        }
+
+        async function handleStartDJSession(venueId) {
+            try {
+                const data = await startDJSession(venueId);
+                state.djSession = data.sessionId;
+                showToast('Session started!', 'success');
+                closeModal('startSessionModal');
+                loadDJDashboard();
+
+                // Show QR code modal
+                showDJQRCode(data.qrUrl, data.sessionId);
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleEndDJSession() {
+            try {
+                const data = await endDJSession();
+                showToast(`Session ended! Total: $${data.summary.totalEarnings}`, 'success');
+                loadDJDashboard();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function showDJQRCode(qrUrl, sessionId) {
+            // Create QR code display modal
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px; text-align: center;">
+                    <h2 style="color: var(--electric-purple); margin-bottom: 1rem;">🎵 Your Session QR Code</h2>
+                    <p style="margin-bottom: 1rem; color: rgba(255,255,255,0.7);">Display this at your booth for song requests</p>
+                    <div id="djQRCodeDisplay" style="background: white; padding: 1rem; border-radius: 8px; display: inline-block; margin-bottom: 1rem;"></div>
+                    <p style="font-size: 0.875rem; color: rgba(255,255,255,0.5); word-break: break-all; margin-bottom: 1rem;">${qrUrl}</p>
+                    <button class="btn btn-primary" onclick="this.parentElement.parentElement.remove()">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Generate QR code
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(document.getElementById('djQRCodeDisplay'), {
+                    text: qrUrl,
+                    width: 200,
+                    height: 200
+                });
+            }
+        }
+
+        async function handleDJStripeConnect() {
+            try {
+                const data = await createDJStripeAccount();
+                window.location.href = data.onboardingUrl;
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleStartSession() {
+            const venueId = document.getElementById('djVenueSelect').value;
+            const baseFee = parseFloat(document.getElementById('djBaseFee').value) * 100;
+
+            if (!venueId) {
+                showToast('Please select a venue', 'error');
+                return;
+            }
+
+            // Update base fee first
+            try {
+                await apiCall('/api/v1/lightning/dj/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ baseFee: Math.round(baseFee) })
+                });
+            } catch (err) {
+                console.error('Error updating base fee:', err);
+            }
+
+            await handleStartDJSession(venueId);
+        }
+
+        // Render DJ queue items
+        function renderDJQueue(queue) {
+            const container = document.getElementById('djQueueList');
+            if (!container) return;
+
+            if (!queue || queue.length === 0) {
+                container.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">No requests in queue</div>';
+                return;
+            }
+
+            container.innerHTML = queue.map((req, index) => `
+                <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-weight: 600; color: white;">${req.songTitle}</span>
+                            ${req.boltTier ? `<span style="background: var(--lightning-yellow); color: black; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${req.boltTier.toUpperCase()}</span>` : ''}
+                        </div>
+                        <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${req.artist || 'Unknown Artist'}</div>
+                        ${req.comment ? `<div style="font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem; font-style: italic;">"${req.comment}"</div>` : ''}
+                        <div style="font-size: 0.75rem; color: var(--neon-green); margin-top: 0.25rem;">$${(req.payouts?.djTotal / 100 || 0).toFixed(2)} earned</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="handlePlayRequest('${req._id}')" class="btn btn-small" style="background: var(--neon-green); color: black; padding: 0.5rem 1rem;">✓ Played</button>
+                        <button onclick="handleRejectRequest('${req._id}')" class="btn btn-small" style="background: var(--danger-red); padding: 0.5rem 1rem;">✗</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handlePlayRequest(requestId) {
+            try {
+                await markDJRequestPlayed(requestId);
+                showToast('Song marked as played!', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleRejectRequest(requestId) {
+            const reason = prompt('Reason for rejection (optional):');
+            try {
+                await rejectDJRequest(requestId, reason || 'Request rejected');
+                showToast('Request rejected and refunded', 'info');
+            } catch (err) {
+                showToast(err.message, 'error');
             }
         }
 
@@ -3553,7 +4029,8 @@
             const roleViewAccess = {
                 'admin': ['auth', 'admin'],
                 'venue': ['auth', 'venue', 'scanner'],
-                'customer': ['auth', 'customer']
+                'customer': ['auth', 'customer'],
+                'dj': ['auth', 'dj']
             };
             const userRole = state.user?.role;
             if (userRole && view !== 'auth') {
@@ -3566,7 +4043,7 @@
 
             state.currentView = view;
 
-            const views = ['auth', 'customer', 'venue', 'admin', 'scanner'];
+            const views = ['auth', 'customer', 'venue', 'admin', 'scanner', 'dj'];
             const nav = document.querySelector('nav');
 
             views.forEach(v => {
@@ -5212,6 +5689,124 @@
                 });
             }
         });
+
+        // ===== DJ SONG REQUEST FUNCTIONS =====
+
+        // Submit a song request (customer-facing)
+        async function submitDJRequest({ djId, venueId, songTitle, artist, comment, genre, boltTier, tipDollars, sessionId, customerName, customerEmail, isKaraoke, performerName, keyPreference }) {
+            const tipAmount = tipDollars || 0;
+
+            // Step 1: Create payment intent
+            const intentData = await apiCall('/api/v1/lightning/dj/request/create-intent', {
+                method: 'POST',
+                body: JSON.stringify({ djId, venueId, songTitle, artist, comment, genre, boltTier, tipAmount, sessionId, email: customerEmail || state.user?.email, customerName, isKaraoke, performerName, keyPreference })
+            });
+
+            state.djPaymentIntentId = intentData.paymentIntentId;
+
+            // Step 2: Confirm payment with Stripe
+            const { error, paymentIntent } = await state.stripe.confirmCardPayment(intentData.clientSecret, {
+                payment_method: { card: state.cardElement }
+            });
+
+            if (error) throw new Error(error.message);
+            if (paymentIntent.status !== 'succeeded') throw new Error('Payment did not succeed');
+
+            // Step 3: Confirm with backend
+            return await apiCall('/api/v1/lightning/dj/request/confirm', {
+                method: 'POST',
+                body: JSON.stringify({ paymentIntentId: paymentIntent.id, djId, venueId, songTitle, artist, comment, genre, boltTier, tipAmount, sessionId, customerName, customerEmail, isKaraoke, performerName, keyPreference })
+            });
+        }
+
+        // Load DJ queue (DJ/Venue dashboard)
+        async function loadDJQueue(sessionId) {
+            const data = await apiCall(`/api/v1/lightning/dj/queue/${sessionId}`);
+            state.djQueue = data.queue;
+            if (typeof renderDJQueue === 'function') renderDJQueue(data.queue);
+            return data.queue;
+        }
+
+        // Reject a DJ request
+        async function rejectDJRequest(requestId, reason) {
+            return await apiCall(`/api/v1/lightning/dj/request/${requestId}/reject`, {
+                method: 'POST',
+                body: JSON.stringify({ reason })
+            });
+        }
+
+        // Mark DJ request as played
+        async function markDJRequestPlayed(requestId) {
+            return await apiCall(`/api/v1/lightning/dj/request/${requestId}/played`, {
+                method: 'POST'
+            });
+        }
+
+        // Load DJ earnings summary
+        async function loadDJEarnings(sessionId) {
+            const data = await apiCall(`/api/v1/lightning/dj/earnings/${sessionId}`);
+            return data.summary;
+        }
+
+        // Get session info (for QR code landing page)
+        async function getDJSessionInfo(sessionId) {
+            return await apiCall(`/api/v1/lightning/dj/session/${sessionId}`);
+        }
+
+        // Get bolt tier pricing
+        async function getDJTiers() {
+            return await apiCall('/api/v1/lightning/dj/tiers');
+        }
+
+        // Start DJ session
+        async function startDJSession(venueId) {
+            const data = await apiCall('/api/v1/lightning/dj/session/start', {
+                method: 'POST',
+                body: JSON.stringify({ venueId })
+            });
+            state.djSession = data.sessionId;
+            return data;
+        }
+
+        // End DJ session
+        async function endDJSession() {
+            const data = await apiCall('/api/v1/lightning/dj/session/end', {
+                method: 'POST'
+            });
+            state.djSession = null;
+            return data;
+        }
+
+        // Register as DJ
+        async function registerAsDJ(name, bio, genres) {
+            return await apiCall('/api/v1/lightning/dj/register', {
+                method: 'POST',
+                body: JSON.stringify({ name, bio, genres })
+            });
+        }
+
+        // Get DJ profile
+        async function getDJProfile() {
+            return await apiCall('/api/v1/lightning/dj/profile');
+        }
+
+        // Create DJ Stripe Connect account
+        async function createDJStripeAccount() {
+            return await apiCall('/api/v1/lightning/dj/connect/create', {
+                method: 'POST'
+            });
+        }
+
+        // Check DJ Stripe Connect status
+        async function getDJStripeStatus() {
+            return await apiCall('/api/v1/lightning/dj/connect/status');
+        }
+
+        // Render DJ queue (placeholder - implement based on UI needs)
+        function renderDJQueue(queue) {
+            console.log('DJ Queue:', queue);
+            // TODO: Implement queue rendering based on your UI
+        }
 
         // ===== CUSTOMER REFUND FUNCTIONS =====
         let selectedPassForRefund = null;
