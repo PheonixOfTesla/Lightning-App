@@ -1596,9 +1596,14 @@
         <!-- DJ DASHBOARD -->
         <div id="djView" class="container hidden">
             <div id="djDashboard">
-                <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--electric-purple), var(--electric-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                    🎧 DJ Dashboard
-                </h1>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <h1 style="margin: 0; background: linear-gradient(90deg, var(--electric-purple), var(--electric-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        🎧 DJ Dashboard
+                    </h1>
+                    <button class="btn" onclick="showModal('djInfoModal')" style="background: transparent; border: 1px solid var(--electric-purple); color: var(--electric-purple);">
+                        ℹ️ How It Works
+                    </button>
+                </div>
 
                 <!-- Stripe Connect Prompt -->
                 <div id="djStripePrompt" style="display: none; background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
@@ -1640,6 +1645,91 @@
                             Start a session to see incoming requests
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DJ Info Modal -->
+        <div id="djInfoModal" class="modal">
+            <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                <h2 style="background: linear-gradient(90deg, var(--electric-purple), var(--lightning-yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; text-align: center;">
+                    ⚡ Stop Taking Free Requests
+                </h2>
+
+                <p style="text-align: center; color: rgba(255,255,255,0.8); margin-bottom: 2rem; font-size: 1.1rem;">
+                    Turn every song request into revenue. Your crowd pays, you play, everyone wins.
+                </p>
+
+                <!-- How It Works -->
+                <div style="background: rgba(157, 78, 221, 0.1); border: 1px solid var(--electric-purple); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--electric-purple); margin-bottom: 1rem;">🎵 How It Works</h3>
+                    <ol style="color: rgba(255,255,255,0.8); padding-left: 1.25rem; margin: 0;">
+                        <li style="margin-bottom: 0.75rem;"><strong>Start a Session</strong> — Select your venue and set your base request fee</li>
+                        <li style="margin-bottom: 0.75rem;"><strong>Display Your QR Code</strong> — Put it at your booth, on screen, anywhere visible</li>
+                        <li style="margin-bottom: 0.75rem;"><strong>Fans Scan & Pay</strong> — They request songs and pay instantly via their phone</li>
+                        <li style="margin-bottom: 0.75rem;"><strong>You Get Paid</strong> — Money hits your Stripe account automatically</li>
+                    </ol>
+                </div>
+
+                <!-- Revenue Breakdown -->
+                <div style="background: rgba(0, 212, 255, 0.1); border: 1px solid var(--electric-blue); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--electric-blue); margin-bottom: 1rem;">💰 Your Revenue Split</h3>
+                    <div style="display: grid; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                            <span style="color: rgba(255,255,255,0.7);">Base Request Fee</span>
+                            <span style="color: var(--neon-green); font-weight: 600;">You keep 80%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                            <span style="color: rgba(255,255,255,0.7);">Bolt (Queue Skip)</span>
+                            <span style="color: var(--neon-green); font-weight: 600;">You keep 40%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                            <span style="color: rgba(255,255,255,0.7);">Tips</span>
+                            <span style="color: var(--neon-green); font-weight: 600;">You keep 100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bolt Tiers -->
+                <div style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem;">⚡ Bolt Queue-Skip Tiers</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Fans pay extra to jump the queue — you earn more, they get heard faster:</p>
+                    <div style="display: grid; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: white;">Next 5</span>
+                            <span style="color: var(--lightning-yellow); font-weight: 600;">$3.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: white;">Next Up</span>
+                            <span style="color: var(--lightning-yellow); font-weight: 600;">$10.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: white;">Play Now</span>
+                            <span style="color: var(--lightning-yellow); font-weight: 600;">$25.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example Night -->
+                <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--neon-green); margin-bottom: 1rem;">📊 Example: One Night</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 0.75rem;">30 requests × $8 average (with bolts & tips)</p>
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--neon-green); text-align: center; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        $150+ extra per night
+                    </div>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.875rem; text-align: center; margin-top: 0.75rem;">
+                        That's $600+/month doing what you already do
+                    </p>
+                </div>
+
+                <!-- CTA -->
+                <div style="text-align: center; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
+                    <p style="color: rgba(255,255,255,0.6); margin-bottom: 1rem;">
+                        No more "play my song bro" for free. Get paid for every request.
+                    </p>
+                    <button class="btn btn-primary" onclick="closeModal('djInfoModal')" style="padding: 1rem 2rem; font-size: 1rem;">
+                        Let's Go ⚡
+                    </button>
                 </div>
             </div>
         </div>
