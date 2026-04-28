@@ -351,6 +351,10 @@
         <source src="background-video.mp4" type="video/mp4">
     </video>
 
+    <audio id="bgMusic" loop>
+        <source src="background-music.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="overlay"></div>
 
     <div class="particles" id="particles"></div>
@@ -462,6 +466,18 @@
         }
 
         init();
+
+        // Auto-play music on first interaction (browsers block autoplay)
+        const music = document.getElementById('bgMusic');
+        music.volume = 0.3;
+
+        document.addEventListener('click', function startMusic() {
+            music.play();
+            document.removeEventListener('click', startMusic);
+        }, { once: true });
+
+        // Try autoplay
+        music.play().catch(() => {});
     </script>
 </body>
 </html>
