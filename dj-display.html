@@ -471,6 +471,8 @@
         }
         createParticles();
 
+        let socket = null;
+
         async function init(){
             if(!djId||djId==='dj-display')return;
 
@@ -487,8 +489,41 @@
                     document.getElementById('djName').textContent=d.dj.name;
                 }
                 fetchQueue();
-                setInterval(fetchQueue,5000);
+
+                // Connect to WebSocket for real-time updates
+                connectSocket();
+
+                // Fallback polling every 30s in case socket disconnects
+                setInterval(fetchQueue,30000);
             }catch(e){console.error(e)}
+        }
+
+        function connectSocket(){
+            socket = io(API, { transports: ['websocket', 'polling'] });
+
+            socket.on('connect', () => {
+                console.log('Socket connected');
+                socket.emit('join:dj', djId);
+            });
+
+            socket.on('dj:request:new', (data) => {
+                console.log('New request:', data);
+                fetchQueue(); // Refresh queue immediately
+            });
+
+            socket.on('dj:request:played', (data) => {
+                console.log('Request played:', data);
+                fetchQueue();
+            });
+
+            socket.on('dj:request:rejected', (data) => {
+                console.log('Request rejected:', data);
+                fetchQueue();
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Socket disconnected, will reconnect...');
+            });
         }
 
         async function fetchQueue(){
