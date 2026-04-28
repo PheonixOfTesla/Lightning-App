@@ -4,91 +4,396 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DJ Display - Lightning Pass</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Inter',sans-serif;background:#000;color:#fff;height:100vh;overflow:hidden;display:flex}
 
-        /* Animated Background */
-        .bg{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0}
-        .bg::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(255,221,0,0.1) 0%,transparent 50%,rgba(157,78,221,0.1) 100%);animation:pulse 4s ease-in-out infinite}
-        .bg::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,221,0,0.05) 0%,transparent 40%);animation:rotate 20s linear infinite}
-        @keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
-        @keyframes rotate{to{transform:rotate(360deg)}}
+        :root{
+            --purple:#a855f7;
+            --cyan:#06b6d4;
+            --gold:#fbbf24;
+            --dark:#0a0a0f;
+            --card:rgba(15,15,25,0.85);
+        }
 
-        /* Layout */
-        .container{position:relative;z-index:1;display:flex;width:100%;height:100%}
+        body{
+            font-family:'Inter',sans-serif;
+            background:var(--dark);
+            color:#fff;
+            height:100vh;
+            overflow:hidden;
+        }
 
-        /* Left Panel - QR & Branding */
-        .left{width:40%;padding:60px;display:flex;flex-direction:column;justify-content:center;align-items:center;border-right:1px solid #222}
-        .logo{font-size:48px;font-weight:900;background:linear-gradient(135deg,#ffdd00,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;text-align:center}
-        .dj-name{font-size:36px;font-weight:700;margin-bottom:40px;text-align:center}
-        .qr-container{background:#fff;padding:20px;border-radius:20px;margin-bottom:30px;box-shadow:0 0 60px rgba(255,221,0,0.3)}
-        .qr-container img,.qr-container canvas{width:280px;height:280px}
-        .scan-text{font-size:20px;font-weight:600;color:#888;text-align:center}
-        .scan-text span{color:#ffdd00}
+        /* Video Background */
+        .video-bg{
+            position:fixed;
+            top:0;left:0;
+            width:100%;height:100%;
+            object-fit:cover;
+            z-index:0;
+            opacity:0.4;
+        }
 
-        /* Right Panel - Queue */
-        .right{flex:1;padding:60px;display:flex;flex-direction:column}
-        .queue-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px}
-        .queue-title{font-size:32px;font-weight:800}
-        .live-badge{background:#ff0044;padding:8px 16px;border-radius:20px;font-size:14px;font-weight:700;animation:blink 1s infinite}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.5}}
+        /* Overlay gradient */
+        .overlay{
+            position:fixed;
+            top:0;left:0;right:0;bottom:0;
+            background:linear-gradient(135deg,rgba(168,85,247,0.15) 0%,rgba(6,182,212,0.1) 50%,rgba(251,191,36,0.1) 100%);
+            z-index:1;
+        }
+
+        /* Main Layout */
+        .container{
+            position:relative;
+            z-index:2;
+            display:flex;
+            height:100vh;
+        }
+
+        /* Left Panel */
+        .left{
+            width:42%;
+            padding:50px;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            border-right:1px solid rgba(255,255,255,0.1);
+            background:linear-gradient(180deg,rgba(0,0,0,0.3) 0%,rgba(0,0,0,0.5) 100%);
+        }
+
+        /* Animated Logo */
+        .logo-container{
+            margin-bottom:30px;
+            text-align:center;
+        }
+
+        .logo-text{
+            font-size:52px;
+            font-weight:900;
+            letter-spacing:-2px;
+            background:linear-gradient(90deg,var(--purple),var(--cyan),var(--gold));
+            background-size:200% 100%;
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            animation:gradientShift 4s ease-in-out infinite;
+        }
+
+        .logo-bolt{
+            display:inline-block;
+            vertical-align:middle;
+            margin-right:8px;
+            animation:boltPulse 2s ease-in-out infinite;
+            filter:drop-shadow(0 0 20px var(--cyan));
+        }
+
+        @keyframes gradientShift{
+            0%,100%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+        }
+
+        @keyframes boltPulse{
+            0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px var(--cyan))}
+            50%{transform:scale(1.1);filter:drop-shadow(0 0 40px var(--purple))}
+        }
+
+        .tagline{
+            font-size:18px;
+            font-weight:300;
+            color:rgba(255,255,255,0.7);
+            letter-spacing:4px;
+            text-transform:uppercase;
+            margin-top:10px;
+            animation:fadeInUp 1s ease-out;
+        }
+
+        /* DJ Name with glow */
+        .dj-name{
+            font-size:32px;
+            font-weight:700;
+            margin:40px 0;
+            text-align:center;
+            text-shadow:0 0 30px rgba(6,182,212,0.5);
+            animation:textGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes textGlow{
+            0%,100%{text-shadow:0 0 30px rgba(6,182,212,0.5)}
+            50%{text-shadow:0 0 50px rgba(168,85,247,0.8),0 0 80px rgba(6,182,212,0.4)}
+        }
+
+        /* QR Container */
+        .qr-container{
+            background:#fff;
+            padding:20px;
+            border-radius:16px;
+            box-shadow:0 0 60px rgba(168,85,247,0.4),0 0 120px rgba(6,182,212,0.2);
+            animation:qrFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes qrFloat{
+            0%,100%{transform:translateY(0);box-shadow:0 0 60px rgba(168,85,247,0.4)}
+            50%{transform:translateY(-10px);box-shadow:0 0 80px rgba(6,182,212,0.6)}
+        }
+
+        .qr-container canvas{width:260px;height:260px}
+
+        .scan-prompt{
+            margin-top:30px;
+            font-size:18px;
+            font-weight:500;
+            color:rgba(255,255,255,0.8);
+            text-align:center;
+        }
+
+        .scan-prompt span{
+            background:linear-gradient(90deg,var(--cyan),var(--gold));
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            font-weight:700;
+        }
+
+        /* Right Panel */
+        .right{
+            flex:1;
+            padding:50px;
+            display:flex;
+            flex-direction:column;
+            background:rgba(0,0,0,0.4);
+        }
+
+        .queue-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:30px;
+        }
+
+        .queue-title{
+            font-size:28px;
+            font-weight:800;
+            letter-spacing:-1px;
+        }
+
+        .live-indicator{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            background:rgba(255,0,68,0.2);
+            border:1px solid rgba(255,0,68,0.4);
+            padding:8px 16px;
+            border-radius:20px;
+            font-size:13px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:1px;
+        }
+
+        .live-dot{
+            width:8px;height:8px;
+            background:#ff0044;
+            border-radius:50%;
+            animation:livePulse 1.5s infinite;
+        }
+
+        @keyframes livePulse{
+            0%,100%{opacity:1;transform:scale(1)}
+            50%{opacity:0.5;transform:scale(1.2)}
+        }
 
         /* Now Playing */
-        .now-playing{background:linear-gradient(135deg,rgba(255,221,0,0.2),rgba(255,140,0,0.1));border:2px solid #ffdd00;border-radius:20px;padding:30px;margin-bottom:30px}
-        .np-label{font-size:14px;font-weight:700;color:#ffdd00;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
-        .np-song{font-size:42px;font-weight:800;margin-bottom:8px;line-height:1.2}
-        .np-artist{font-size:24px;color:#888}
-        .np-requester{font-size:16px;color:#666;margin-top:15px}
+        .now-playing{
+            background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(6,182,212,0.15));
+            border:1px solid rgba(168,85,247,0.3);
+            border-radius:16px;
+            padding:28px;
+            margin-bottom:24px;
+            animation:nowPlayingPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes nowPlayingPulse{
+            0%,100%{border-color:rgba(168,85,247,0.3);box-shadow:0 0 30px rgba(168,85,247,0.1)}
+            50%{border-color:rgba(6,182,212,0.5);box-shadow:0 0 50px rgba(6,182,212,0.2)}
+        }
+
+        .np-label{
+            font-size:12px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:3px;
+            color:var(--cyan);
+            margin-bottom:12px;
+        }
+
+        .np-song{
+            font-size:36px;
+            font-weight:800;
+            line-height:1.2;
+            margin-bottom:8px;
+            animation:textReveal 0.5s ease-out;
+        }
+
+        @keyframes textReveal{
+            from{opacity:0;transform:translateY(20px)}
+            to{opacity:1;transform:translateY(0)}
+        }
+
+        .np-artist{
+            font-size:20px;
+            color:rgba(255,255,255,0.6);
+        }
+
+        .np-requester{
+            font-size:14px;
+            color:rgba(255,255,255,0.4);
+            margin-top:12px;
+        }
 
         /* Queue List */
-        .queue-list{flex:1;overflow:hidden}
-        .queue-item{background:#111;border:1px solid #222;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;animation:slideIn 0.3s ease-out}
-        @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
-        .queue-position{width:50px;height:50px;background:linear-gradient(135deg,#ffdd00,#ff8c00);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#000}
+        .queue-list{
+            flex:1;
+            overflow:hidden;
+        }
+
+        .queue-item{
+            background:var(--card);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:12px;
+            padding:18px 22px;
+            margin-bottom:12px;
+            display:flex;
+            align-items:center;
+            gap:18px;
+            animation:slideInRight 0.4s ease-out;
+            backdrop-filter:blur(10px);
+        }
+
+        @keyframes slideInRight{
+            from{opacity:0;transform:translateX(40px)}
+            to{opacity:1;transform:translateX(0)}
+        }
+
+        .queue-position{
+            width:44px;height:44px;
+            background:linear-gradient(135deg,var(--purple),var(--cyan));
+            border-radius:10px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:20px;
+            font-weight:800;
+        }
+
         .queue-info{flex:1}
-        .queue-song{font-size:22px;font-weight:700;margin-bottom:4px}
-        .queue-artist{font-size:16px;color:#888}
-        .queue-bolt{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700}
-        .queue-bolt.next_5{background:rgba(255,221,0,0.2);color:#ffdd00}
-        .queue-bolt.next_up{background:rgba(0,212,255,0.2);color:#00d4ff}
-        .queue-bolt.play_now{background:rgba(157,78,221,0.2);color:#9d4edd}
+        .queue-song{font-size:18px;font-weight:700;margin-bottom:3px}
+        .queue-artist{font-size:14px;color:rgba(255,255,255,0.5)}
+
+        .queue-bolt{
+            padding:6px 12px;
+            border-radius:6px;
+            font-size:11px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:1px;
+        }
+
+        .queue-bolt.next_5{background:rgba(251,191,36,0.2);color:var(--gold);border:1px solid rgba(251,191,36,0.3)}
+        .queue-bolt.next_up{background:rgba(6,182,212,0.2);color:var(--cyan);border:1px solid rgba(6,182,212,0.3)}
+        .queue-bolt.play_now{background:rgba(168,85,247,0.2);color:var(--purple);border:1px solid rgba(168,85,247,0.3)}
 
         /* Empty State */
-        .empty{text-align:center;padding:80px 40px;color:#444}
-        .empty-icon{font-size:80px;margin-bottom:20px}
-        .empty h3{font-size:28px;margin-bottom:10px;color:#666}
+        .empty{
+            text-align:center;
+            padding:60px 30px;
+        }
+
+        .empty-title{
+            font-size:24px;
+            font-weight:600;
+            color:rgba(255,255,255,0.4);
+            margin-bottom:10px;
+        }
+
+        .empty-sub{
+            font-size:16px;
+            color:rgba(255,255,255,0.25);
+        }
+
+        /* Animated particles */
+        .particles{
+            position:fixed;
+            top:0;left:0;right:0;bottom:0;
+            z-index:1;
+            pointer-events:none;
+            overflow:hidden;
+        }
+
+        .particle{
+            position:absolute;
+            width:4px;height:4px;
+            background:var(--cyan);
+            border-radius:50%;
+            opacity:0.3;
+            animation:particleFloat 15s linear infinite;
+        }
+
+        @keyframes particleFloat{
+            0%{transform:translateY(100vh) rotate(0deg);opacity:0}
+            10%{opacity:0.3}
+            90%{opacity:0.3}
+            100%{transform:translateY(-100vh) rotate(720deg);opacity:0}
+        }
     </style>
 </head>
 <body>
-    <div class="bg"></div>
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="background-video.mp4" type="video/mp4">
+    </video>
+
+    <div class="overlay"></div>
+
+    <div class="particles" id="particles"></div>
+
     <div class="container">
         <div class="left">
-            <div class="logo">⚡ LIGHTNING PASS</div>
+            <div class="logo-container">
+                <div>
+                    <svg class="logo-bolt" viewBox="0 0 24 24" width="48" height="48"><path fill="url(#bolt-grad)" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/><defs><linearGradient id="bolt-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#a855f7"/><stop offset="50%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient></defs></svg>
+                    <span class="logo-text">LIGHTNING PASS</span>
+                </div>
+                <div class="tagline">Skip the Line. Live the Night.</div>
+            </div>
+
             <div class="dj-name" id="djName">Loading...</div>
-            <div class="qr-container" id="qrContainer">
+
+            <div class="qr-container">
                 <canvas id="qrCode"></canvas>
             </div>
-            <div class="scan-text">Scan to <span>request a song</span></div>
+
+            <div class="scan-prompt">Scan to <span>request a song</span></div>
         </div>
+
         <div class="right">
             <div class="queue-header">
-                <div class="queue-title">🎵 Song Queue</div>
-                <div class="live-badge">● LIVE</div>
+                <div class="queue-title">Song Queue</div>
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    LIVE
+                </div>
             </div>
+
             <div class="now-playing" id="nowPlaying" style="display:none">
                 <div class="np-label">Now Playing</div>
                 <div class="np-song" id="npSong"></div>
                 <div class="np-artist" id="npArtist"></div>
                 <div class="np-requester" id="npRequester"></div>
             </div>
+
             <div class="queue-list" id="queueList">
                 <div class="empty">
-                    <div class="empty-icon">🎶</div>
-                    <h3>No songs in queue</h3>
-                    <p>Scan the QR code to request a song!</p>
+                    <div class="empty-title">No songs in queue</div>
+                    <div class="empty-sub">Scan the QR code to request a song</div>
                 </div>
             </div>
         </div>
@@ -98,36 +403,35 @@
     <script>
         const API='https://lightning-backend-production.up.railway.app';
         const djId=window.location.pathname.split('/').pop();
-        let socket;
+
+        // Create floating particles
+        function createParticles(){
+            const container=document.getElementById('particles');
+            for(let i=0;i<20;i++){
+                const p=document.createElement('div');
+                p.className='particle';
+                p.style.left=Math.random()*100+'%';
+                p.style.animationDelay=Math.random()*15+'s';
+                p.style.animationDuration=(10+Math.random()*10)+'s';
+                if(Math.random()>0.5)p.style.background='#a855f7';
+                if(Math.random()>0.7)p.style.background='#fbbf24';
+                container.appendChild(p);
+            }
+        }
+        createParticles();
 
         async function init(){
             if(!djId||djId==='dj-display')return;
-
             try{
-                // Fetch DJ info
                 const r=await fetch(`${API}/api/v1/lightning/dj/${djId}/public`);
                 const d=await r.json();
                 if(d.success){
                     document.getElementById('djName').textContent=d.dj.name;
-
-                    // Generate QR code
                     const qrUrl=`https://thelightningpass.com/dj/${djId}`;
-                    QRCode.toCanvas(document.getElementById('qrCode'),qrUrl,{width:280,margin:0,color:{dark:'#000',light:'#fff'}});
+                    QRCode.toCanvas(document.getElementById('qrCode'),qrUrl,{width:260,margin:0,color:{dark:'#000',light:'#fff'}});
                 }
-
-                // Connect to WebSocket for live updates
-                socket=io(API);
-                socket.emit('join:dj',djId);
-
-                socket.on('queue:update',updateQueue);
-                socket.on('now-playing:update',updateNowPlaying);
-
-                // Fetch initial queue
                 fetchQueue();
-
-                // Poll every 5s as backup
                 setInterval(fetchQueue,5000);
-
             }catch(e){console.error(e)}
         }
 
@@ -142,29 +446,19 @@
         function updateQueue(queue){
             const list=document.getElementById('queueList');
             if(!queue||queue.length===0){
-                list.innerHTML='<div class="empty"><div class="empty-icon">🎶</div><h3>No songs in queue</h3><p>Scan the QR code to request a song!</p></div>';
+                list.innerHTML='<div class="empty"><div class="empty-title">No songs in queue</div><div class="empty-sub">Scan the QR code to request a song</div></div>';
                 return;
             }
-
             list.innerHTML=queue.slice(0,6).map((item,i)=>`
-                <div class="queue-item">
+                <div class="queue-item" style="animation-delay:${i*0.1}s">
                     <div class="queue-position">${i+1}</div>
                     <div class="queue-info">
                         <div class="queue-song">${item.songTitle}</div>
                         <div class="queue-artist">${item.artist||'Unknown Artist'}</div>
                     </div>
-                    ${item.boltTier?`<div class="queue-bolt ${item.boltTier}">${item.boltTier.replace('_',' ').toUpperCase()}</div>`:''}
+                    ${item.boltTier?`<div class="queue-bolt ${item.boltTier}">${item.boltTier.replace('_',' ')}</div>`:''}
                 </div>
             `).join('');
-        }
-
-        function updateNowPlaying(song){
-            const np=document.getElementById('nowPlaying');
-            if(!song){np.style.display='none';return}
-            np.style.display='block';
-            document.getElementById('npSong').textContent=song.songTitle;
-            document.getElementById('npArtist').textContent=song.artist||'Unknown Artist';
-            document.getElementById('npRequester').textContent=song.customerName?`Requested by ${song.customerName}`:'';
         }
 
         init();
