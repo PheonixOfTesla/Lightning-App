@@ -1637,6 +1637,22 @@
                     </div>
                 </div>
 
+                <!-- Digital Assets -->
+                <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Digital Assets</h3>
+                    <p style="color: rgba(255,255,255,0.6); margin-bottom: 1rem; font-size: 0.875rem;">Download your branded QR code banners and video for USB drives</p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a id="djAssetsLink" href="#" class="btn btn-primary" style="text-decoration: none;" target="_blank">
+                            <svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px;fill:currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                            Download Assets
+                        </a>
+                        <a id="djDisplayLink" href="#" class="btn" style="text-decoration: none; background: transparent; border: 1px solid var(--electric-purple); color: var(--electric-purple);" target="_blank">
+                            <svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px;fill:currentColor" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+                            Live Display
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Queue -->
                 <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.5rem;">
                     <h3 style="margin-bottom: 1rem;">🎵 Request Queue</h3>
@@ -3884,6 +3900,13 @@
                     if (stripePrompt) {
                         stripePrompt.style.display = stripeStatus.connected ? 'none' : 'block';
                     }
+
+                    // Wire up Digital Assets links
+                    const djId = data.dj._id || data.dj.id;
+                    const assetsLink = document.getElementById('djAssetsLink');
+                    const displayLink = document.getElementById('djDisplayLink');
+                    if (assetsLink) assetsLink.href = `/dj-assets/${djId}`;
+                    if (displayLink) displayLink.href = `/dj-display/${djId}`;
                 }
             } catch (err) {
                 console.error('Error loading DJ dashboard:', err);

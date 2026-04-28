@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Banner - Lightning Pass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#0a0a0f;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+
+        .controls{margin-bottom:30px;display:flex;gap:15px;flex-wrap:wrap;justify-content:center}
+        .btn{padding:12px 24px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
+        .btn-primary{background:linear-gradient(135deg,#a855f7,#06b6d4);color:#fff}
+        .btn-primary:hover{transform:scale(1.05)}
+        .btn-secondary{background:#222;color:#fff;border:1px solid #333}
+
+        /* Banner Container */
+        .banner-wrap{background:#000;border-radius:20px;overflow:hidden;box-shadow:0 0 60px rgba(168,85,247,0.3)}
+
+        #banner{
+            width:600px;
+            height:800px;
+            background:linear-gradient(180deg,#0a0a12 0%,#0f0f1a 50%,#0a0a12 100%);
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            padding:50px;
+            position:relative;
+            overflow:hidden;
+        }
+
+        /* Glow effects */
+        #banner::before{
+            content:'';
+            position:absolute;
+            top:-50%;left:-50%;
+            width:200%;height:200%;
+            background:radial-gradient(circle at 30% 20%,rgba(168,85,247,0.15) 0%,transparent 40%),
+                        radial-gradient(circle at 70% 80%,rgba(6,182,212,0.1) 0%,transparent 40%);
+            pointer-events:none;
+        }
+
+        .logo-section{text-align:center;margin-bottom:20px;position:relative;z-index:1}
+
+        .logo-bolt{
+            width:60px;
+            height:60px;
+            margin-bottom:10px;
+        }
+
+        .logo-text{
+            font-size:64px;
+            font-weight:900;
+            line-height:1;
+            background:linear-gradient(180deg,#06b6d4 0%,#a855f7 50%,#06b6d4 100%);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .tagline{
+            font-size:16px;
+            font-weight:400;
+            letter-spacing:8px;
+            color:rgba(255,255,255,0.6);
+            margin-top:15px;
+            text-transform:uppercase;
+        }
+
+        .dj-name{
+            font-size:36px;
+            font-weight:700;
+            margin:40px 0;
+            position:relative;
+            z-index:1;
+        }
+
+        .qr-container{
+            background:#fff;
+            padding:20px;
+            border-radius:20px;
+            position:relative;
+            z-index:1;
+        }
+
+        .qr-container canvas{width:280px;height:280px}
+
+        .scan-text{
+            margin-top:30px;
+            font-size:20px;
+            font-weight:500;
+            position:relative;
+            z-index:1;
+        }
+
+        .scan-text span{
+            background:linear-gradient(90deg,#06b6d4,#fbbf24);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            font-weight:700;
+        }
+
+        .loading{text-align:center;padding:40px;color:#666}
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button class="btn btn-primary" onclick="downloadPNG()">Download PNG</button>
+        <button class="btn btn-primary" onclick="downloadJPG()">Download JPG</button>
+        <a href="" id="displayLink" class="btn btn-secondary" target="_blank">Open Live Display</a>
+    </div>
+
+    <div class="banner-wrap">
+        <div id="banner">
+            <div class="logo-section">
+                <svg class="logo-bolt" viewBox="0 0 24 24">
+                    <defs>
+                        <linearGradient id="bolt-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#06b6d4"/>
+                            <stop offset="100%" stop-color="#a855f7"/>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#bolt-grad)" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <div class="logo-text">LIGHTNING</div>
+                <div class="logo-text">PASS</div>
+                <div class="tagline">Skip the Line. Live the Night.</div>
+            </div>
+
+            <div class="dj-name" id="djName">Loading...</div>
+
+            <div class="qr-container">
+                <canvas id="qrCode"></canvas>
+            </div>
+
+            <div class="scan-text">Scan to <span>request a song</span></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        const API='https://lightning-backend-production.up.railway.app';
+        const djId=window.location.pathname.split('/').pop();
+
+        async function init(){
+            if(!djId||djId==='dj-banner')return;
+            try{
+                const r=await fetch(`${API}/api/v1/lightning/dj/${djId}/public`);
+                const d=await r.json();
+                if(d.success){
+                    document.getElementById('djName').textContent=d.dj.name;
+                    const qrUrl=`https://thelightningpass.com/dj/${djId}`;
+                    QRCode.toCanvas(document.getElementById('qrCode'),qrUrl,{width:280,margin:0,color:{dark:'#000',light:'#fff'}});
+                    document.getElementById('displayLink').href=`/dj-display/${djId}`;
+                }
+            }catch(e){console.error(e)}
+        }
+
+        async function downloadPNG(){
+            const banner=document.getElementById('banner');
+            const canvas=await html2canvas(banner,{backgroundColor:'#0a0a12',scale:2});
+            const link=document.createElement('a');
+            link.download=`LightningPass-${document.getElementById('djName').textContent.replace(/\s+/g,'-')}-Banner.png`;
+            link.href=canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        async function downloadJPG(){
+            const banner=document.getElementById('banner');
+            const canvas=await html2canvas(banner,{backgroundColor:'#0a0a12',scale:2});
+            const link=document.createElement('a');
+            link.download=`LightningPass-${document.getElementById('djName').textContent.replace(/\s+/g,'-')}-Banner.jpg`;
+            link.href=canvas.toDataURL('image/jpeg',0.95);
+            link.click();
+        }
+
+        init();
+    </script>
+</body>
+</html>
