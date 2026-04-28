@@ -473,13 +473,18 @@
 
         async function init(){
             if(!djId||djId==='dj-display')return;
+
+            // Always generate QR code first
+            const qrUrl=`https://thelightningpass.com/dj/${djId}`;
+            try{
+                QRCode.toCanvas(document.getElementById('qrCode'),qrUrl,{width:260,margin:0,color:{dark:'#000',light:'#fff'}});
+            }catch(qrErr){console.error('QR generation failed:',qrErr)}
+
             try{
                 const r=await fetch(`${API}/api/v1/lightning/dj/${djId}/public`);
                 const d=await r.json();
                 if(d.success){
                     document.getElementById('djName').textContent=d.dj.name;
-                    const qrUrl=`https://thelightningpass.com/dj/${djId}`;
-                    QRCode.toCanvas(document.getElementById('qrCode'),qrUrl,{width:260,margin:0,color:{dark:'#000',light:'#fff'}});
                 }
                 fetchQueue();
                 setInterval(fetchQueue,5000);
