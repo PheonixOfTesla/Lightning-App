@@ -32,14 +32,22 @@
             width:100%;height:100%;
             object-fit:cover;
             z-index:0;
-            opacity:0.4;
+            opacity:0.25;
         }
 
-        /* Overlay gradient */
+        /* Dark overlay */
         .overlay{
             position:fixed;
             top:0;left:0;right:0;bottom:0;
-            background:linear-gradient(135deg,rgba(168,85,247,0.15) 0%,rgba(6,182,212,0.1) 50%,rgba(251,191,36,0.1) 100%);
+            background:rgba(0,0,0,0.7);
+            z-index:1;
+        }
+
+        /* Color gradient overlay */
+        .color-overlay{
+            position:fixed;
+            top:0;left:0;right:0;bottom:0;
+            background:linear-gradient(135deg,rgba(168,85,247,0.1) 0%,rgba(6,182,212,0.08) 50%,rgba(251,191,36,0.08) 100%);
             z-index:1;
         }
 
@@ -302,6 +310,27 @@
         .queue-bolt.next_up{background:rgba(6,182,212,0.2);color:var(--cyan);border:1px solid rgba(6,182,212,0.3)}
         .queue-bolt.play_now{background:rgba(168,85,247,0.2);color:var(--purple);border:1px solid rgba(168,85,247,0.3)}
 
+        /* Music prompt */
+        .music-prompt{
+            position:fixed;
+            bottom:30px;
+            left:50%;
+            transform:translateX(-50%);
+            background:rgba(168,85,247,0.9);
+            padding:12px 24px;
+            border-radius:30px;
+            font-size:14px;
+            font-weight:600;
+            z-index:100;
+            cursor:pointer;
+            animation:bounce 1s infinite;
+        }
+
+        @keyframes bounce{
+            0%,100%{transform:translateX(-50%) translateY(0)}
+            50%{transform:translateX(-50%) translateY(-5px)}
+        }
+
         /* Empty State */
         .empty{
             text-align:center;
@@ -351,11 +380,16 @@
         <source src="/background-video.mp4" type="video/mp4">
     </video>
 
-    <audio id="bgMusic" loop>
+    <audio id="bgMusic" loop preload="auto">
         <source src="/background-music.mp3" type="audio/mpeg">
     </audio>
 
+    <div class="music-prompt" id="musicPrompt" onclick="document.getElementById('bgMusic').play();this.style.display='none';">
+        Click anywhere to start music
+    </div>
+
     <div class="overlay"></div>
+    <div class="color-overlay"></div>
 
     <div class="particles" id="particles"></div>
 
@@ -467,17 +501,23 @@
 
         init();
 
-        // Auto-play music on first interaction (browsers block autoplay)
+        // Music setup
         const music = document.getElementById('bgMusic');
-        music.volume = 0.3;
+        music.volume = 0.4;
 
-        document.addEventListener('click', function startMusic() {
-            music.play();
-            document.removeEventListener('click', startMusic);
-        }, { once: true });
+        function startMusic() {
+            music.play().then(() => {
+                document.getElementById('musicPrompt').style.display = 'none';
+            }).catch(() => {});
+        }
 
-        // Try autoplay
-        music.play().catch(() => {});
+        // Try autoplay immediately
+        startMusic();
+
+        // Also try on any interaction
+        ['click', 'touchstart', 'keydown'].forEach(evt => {
+            document.addEventListener(evt, startMusic, { once: true });
+        });
     </script>
 </body>
 </html>
