@@ -310,26 +310,38 @@
         .queue-bolt.next_up{background:rgba(6,182,212,0.2);color:var(--cyan);border:1px solid rgba(6,182,212,0.3)}
         .queue-bolt.play_now{background:rgba(168,85,247,0.2);color:var(--purple);border:1px solid rgba(168,85,247,0.3)}
 
-        /* Music prompt */
-        .music-prompt{
+        /* Music toggle button */
+        .music-btn{
             position:fixed;
             bottom:30px;
-            left:50%;
-            transform:translateX(-50%);
+            right:30px;
+            width:56px;
+            height:56px;
             background:rgba(168,85,247,0.9);
-            padding:12px 24px;
-            border-radius:30px;
-            font-size:14px;
-            font-weight:600;
-            z-index:100;
+            border:none;
+            border-radius:50%;
             cursor:pointer;
-            animation:bounce 1s infinite;
+            z-index:100;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition:all 0.2s;
         }
 
-        @keyframes bounce{
-            0%,100%{transform:translateX(-50%) translateY(0)}
-            50%{transform:translateX(-50%) translateY(-5px)}
+        .music-btn:hover{
+            background:var(--cyan);
+            transform:scale(1.1);
         }
+
+        .music-btn svg{
+            width:24px;
+            height:24px;
+            fill:#fff;
+        }
+
+        .music-btn .pause{display:none}
+        .music-btn.playing .play{display:none}
+        .music-btn.playing .pause{display:block}
 
         /* Empty State */
         .empty{
@@ -384,9 +396,10 @@
         <source src="/background-music.mp3" type="audio/mpeg">
     </audio>
 
-    <div class="music-prompt" id="musicPrompt" onclick="document.getElementById('bgMusic').play();this.style.display='none';">
-        Click anywhere to start music
-    </div>
+    <button class="music-btn" id="musicBtn" onclick="toggleMusic()">
+        <svg class="play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg class="pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
 
     <div class="overlay"></div>
     <div class="color-overlay"></div>
@@ -501,23 +514,20 @@
 
         init();
 
-        // Music setup
+        // Music toggle
         const music = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicBtn');
         music.volume = 0.4;
 
-        function startMusic() {
-            music.play().then(() => {
-                document.getElementById('musicPrompt').style.display = 'none';
-            }).catch(() => {});
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                musicBtn.classList.add('playing');
+            } else {
+                music.pause();
+                musicBtn.classList.remove('playing');
+            }
         }
-
-        // Try autoplay immediately
-        startMusic();
-
-        // Also try on any interaction
-        ['click', 'touchstart', 'keydown'].forEach(evt => {
-            document.addEventListener(evt, startMusic, { once: true });
-        });
     </script>
 </body>
 </html>
