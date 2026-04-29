@@ -2074,30 +2074,38 @@
                 <strong>⚠️ Action Required:</strong> You have <strong id="pendingCount">0</strong> venue applications waiting for approval.
             </div>
 
-            <div class="dashboard-stats">
+            <div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
                 <div class="stat-card">
-                    <div class="stat-label">Platform Revenue (24h)</div>
+                    <div class="stat-label">Platform Revenue</div>
                     <div class="stat-value" id="adminRevenue" style="color: var(--neon-green);">$0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Active Venues</div>
-                    <div class="stat-value" id="adminVenues">0</div>
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value" id="adminTotalUsers" style="color: var(--electric-blue);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total DJs</div>
+                    <div class="stat-value" id="adminTotalDJs" style="color: var(--electric-purple);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Venues</div>
+                    <div class="stat-value" id="totalVenues">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Pending Approval</div>
                     <div class="stat-value" id="pendingVenues" style="color: var(--lightning-yellow);">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Total Passes</div>
+                    <div class="stat-label">Total Passes Sold</div>
                     <div class="stat-value" id="adminPasses">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">DJ Requests</div>
+                    <div class="stat-value" id="adminDJRequests" style="color: var(--electric-purple);">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Today's Transactions</div>
                     <div class="stat-value" id="adminTransactions">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Total Venues</div>
-                    <div class="stat-value" id="totalVenues">0</div>
                 </div>
             </div>
 
@@ -2121,11 +2129,21 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
-                <button class="btn btn-secondary" onclick="showPendingApprovals()">📋 PENDING APPROVALS</button>
-                <button class="btn btn-success" onclick="showCreateVenue()">➕ ADD VENUE</button>
-                <button class="btn btn-primary" onclick="loadAdminStats()">🔄 REFRESH</button>
+            <!-- Admin Navigation Tabs -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem;">
+                <button class="btn" id="tabVenues" onclick="showAdminTab('venues')" style="background: var(--electric-purple); color: white; border-color: var(--electric-purple);">🏢 Venues</button>
+                <button class="btn" id="tabDJs" onclick="showAdminTab('djs')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎧 DJs</button>
+                <button class="btn" id="tabUsers" onclick="showAdminTab('users')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">👥 Users</button>
+                <button class="btn" id="tabTransactions" onclick="showAdminTab('transactions')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">💳 Transactions</button>
+                <button class="btn btn-primary" onclick="loadAdminStats()" style="margin-left: auto;">🔄 REFRESH</button>
             </div>
+
+            <!-- Venues Tab -->
+            <div id="adminTabVenues">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="showPendingApprovals()">📋 PENDING APPROVALS</button>
+                    <button class="btn btn-success" onclick="showCreateVenue()">➕ ADD VENUE</button>
+                </div>
 
             <!-- Pending Approvals -->
             <div id="pendingSection" class="section" style="display: none;">
@@ -2184,6 +2202,47 @@
                 <h2 class="section-title">🏢 All Venues</h2>
                 <div id="adminVenuesList">
                     <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+            </div><!-- End Venues Tab -->
+
+            <!-- DJs Tab -->
+            <div id="adminTabDJs" style="display: none;">
+                <div class="section">
+                    <h2 class="section-title">🎧 All DJs</h2>
+                    <div id="adminDJsList">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="adminTabUsers" style="display: none;">
+                <div class="section">
+                    <h2 class="section-title">👥 All Users</h2>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" class="form-input" id="userSearchInput" placeholder="Search by email..." style="max-width: 300px;" oninput="filterAdminUsers()">
+                    </div>
+                    <div id="adminUsersList" style="max-height: 600px; overflow-y: auto;">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div id="adminTabTransactions" style="display: none;">
+                <div class="section">
+                    <h2 class="section-title">💳 Recent Transactions</h2>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <select class="form-select" id="txnTypeFilter" onchange="loadAdminTransactions()" style="max-width: 200px;">
+                            <option value="all">All Types</option>
+                            <option value="pass">Venue Passes</option>
+                            <option value="dj">DJ Requests</option>
+                        </select>
+                    </div>
+                    <div id="adminTransactionsList" style="max-height: 600px; overflow-y: auto;">
+                        <div class="empty-state">Loading...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -5360,38 +5419,250 @@
         }
 
         // ===== ADMIN FUNCTIONS =====
+        let adminUsersCache = [];
+        let adminDJsCache = [];
+
+        function showAdminTab(tab) {
+            // Hide all tabs
+            document.getElementById('adminTabVenues').style.display = 'none';
+            document.getElementById('adminTabDJs').style.display = 'none';
+            document.getElementById('adminTabUsers').style.display = 'none';
+            document.getElementById('adminTabTransactions').style.display = 'none';
+
+            // Reset all tab buttons
+            ['tabVenues', 'tabDJs', 'tabUsers', 'tabTransactions'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'var(--border-dark)';
+                btn.style.color = 'rgba(255,255,255,0.6)';
+            });
+
+            // Show selected tab and highlight button
+            const activeBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+            activeBtn.style.background = 'var(--electric-purple)';
+            activeBtn.style.borderColor = 'var(--electric-purple)';
+            activeBtn.style.color = 'white';
+
+            if (tab === 'venues') {
+                document.getElementById('adminTabVenues').style.display = 'block';
+            } else if (tab === 'djs') {
+                document.getElementById('adminTabDJs').style.display = 'block';
+                loadAdminDJs();
+            } else if (tab === 'users') {
+                document.getElementById('adminTabUsers').style.display = 'block';
+                loadAdminUsers();
+            } else if (tab === 'transactions') {
+                document.getElementById('adminTabTransactions').style.display = 'block';
+                loadAdminTransactions();
+            }
+        }
+
         async function loadAdminStats() {
             try {
                 const data = await apiCall('/api/v1/analytics/system/overview');
-                
+
                 document.getElementById('adminRevenue').textContent = `$${data.totalRevenue24h || 0}`;
-                document.getElementById('adminVenues').textContent = data.activeVenues || 0;
                 document.getElementById('adminPasses').textContent = data.totalPasses || 0;
                 document.getElementById('adminTransactions').textContent = data.todayTransactions || 0;
-                
+
                 const venuesData = await apiCall('/api/v1/lightning/venues?includeAll=true');
                 const allVenues = venuesData.venues || [];
-                
+
                 const pending = allVenues.filter(v => v.approvalStatus === 'pending');
-                
+
                 document.getElementById('pendingVenues').textContent = pending.length;
                 document.getElementById('totalVenues').textContent = allVenues.length;
                 document.getElementById('pendingCount').textContent = pending.length;
-                
+
                 if (pending.length > 0) {
                     document.getElementById('pendingAlert').style.display = 'block';
                 } else {
                     document.getElementById('pendingAlert').style.display = 'none';
                 }
-                
+
                 renderAllVenues(allVenues);
 
                 // Load promotional discount setting
                 await loadPromotionalDiscount();
 
+                // Load additional stats
+                await loadAdminExtraStats();
+
             } catch (error) {
                 console.error('Error loading admin stats:', error);
                 showToast('Error loading stats', 'error');
+            }
+        }
+
+        async function loadAdminExtraStats() {
+            try {
+                // Load users count
+                const usersRes = await fetch(`${API_BASE}/api/v1/lightning/admin/users`, {
+                    headers: { 'x-admin-key': 'lightning-admin-2024' }
+                });
+                if (usersRes.ok) {
+                    const usersData = await usersRes.json();
+                    adminUsersCache = usersData.users || [];
+                    document.getElementById('adminTotalUsers').textContent = adminUsersCache.length;
+                    const djCount = adminUsersCache.filter(u => u.role === 'dj').length;
+                    document.getElementById('adminTotalDJs').textContent = djCount;
+                }
+
+                // Load DJ requests count
+                const djsRes = await fetch(`${API_BASE}/api/v1/lightning/admin/djs/stripe`, {
+                    headers: { 'x-admin-key': 'lightning-admin-2024' }
+                });
+                if (djsRes.ok) {
+                    const djsData = await djsRes.json();
+                    adminDJsCache = djsData.djs || [];
+                    const totalRequests = adminDJsCache.reduce((sum, dj) => sum + (dj.totalRequests || 0), 0);
+                    document.getElementById('adminDJRequests').textContent = totalRequests;
+                }
+            } catch (err) {
+                console.error('Error loading extra stats:', err);
+            }
+        }
+
+        async function loadAdminDJs() {
+            const list = document.getElementById('adminDJsList');
+            list.innerHTML = '<div class="empty-state">Loading...</div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/djs/stripe`, {
+                    headers: { 'x-admin-key': 'lightning-admin-2024' }
+                });
+                if (!res.ok) throw new Error('Failed to load DJs');
+                const data = await res.json();
+                const djs = data.djs || [];
+
+                if (djs.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No DJs registered</div>';
+                    return;
+                }
+
+                list.innerHTML = djs.map(dj => `
+                    <div style="background: rgba(157, 78, 221, 0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="color: var(--electric-purple);">${dj.name}</h3>
+                                <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">ID: ${dj._id}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <p style="font-size: 1.25rem; font-weight: bold; color: var(--neon-green);">$${((dj.totalEarnings || 0) / 100).toFixed(2)}</p>
+                                <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; ${dj.stripeConnected ? 'background: rgba(57, 255, 20, 0.2); color: var(--neon-green);' : 'background: rgba(255, 221, 0, 0.2); color: var(--lightning-yellow);'}">
+                                    ${dj.stripeConnected ? '✓ Stripe Connected' : '⚠ Stripe Not Connected'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading DJs:', err);
+                list.innerHTML = '<div class="empty-state">Error loading DJs</div>';
+            }
+        }
+
+        async function loadAdminUsers() {
+            const list = document.getElementById('adminUsersList');
+            list.innerHTML = '<div class="empty-state">Loading...</div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users`, {
+                    headers: { 'x-admin-key': 'lightning-admin-2024' }
+                });
+                if (!res.ok) throw new Error('Failed to load users');
+                const data = await res.json();
+                adminUsersCache = data.users || [];
+                renderAdminUsers(adminUsersCache);
+            } catch (err) {
+                console.error('Error loading users:', err);
+                list.innerHTML = '<div class="empty-state">Error loading users</div>';
+            }
+        }
+
+        function filterAdminUsers() {
+            const search = document.getElementById('userSearchInput').value.toLowerCase();
+            const filtered = adminUsersCache.filter(u => u.email.toLowerCase().includes(search));
+            renderAdminUsers(filtered);
+        }
+
+        function renderAdminUsers(users) {
+            const list = document.getElementById('adminUsersList');
+
+            if (users.length === 0) {
+                list.innerHTML = '<div class="empty-state">No users found</div>';
+                return;
+            }
+
+            const roleColors = {
+                admin: 'var(--danger-red)',
+                venue: 'var(--lightning-yellow)',
+                dj: 'var(--electric-purple)',
+                customer: 'var(--electric-blue)'
+            };
+
+            list.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-dark);">
+                            <th style="text-align: left; padding: 0.75rem; color: rgba(255,255,255,0.6);">Email</th>
+                            <th style="text-align: left; padding: 0.75rem; color: rgba(255,255,255,0.6);">Role</th>
+                            <th style="text-align: left; padding: 0.75rem; color: rgba(255,255,255,0.6);">Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr style="border-bottom: 1px solid var(--border-dark);">
+                                <td style="padding: 0.75rem;">${user.email}</td>
+                                <td style="padding: 0.75rem;">
+                                    <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; background: ${roleColors[user.role]}22; color: ${roleColors[user.role]}; text-transform: uppercase;">
+                                        ${user.role}
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; color: rgba(255,255,255,0.6);">${new Date(user.createdAt).toLocaleDateString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function loadAdminTransactions() {
+            const list = document.getElementById('adminTransactionsList');
+            list.innerHTML = '<div class="empty-state">Loading...</div>';
+
+            try {
+                // For now, show a placeholder - you can add a transactions endpoint later
+                const venuesRes = await fetch(`${API_BASE}/api/v1/lightning/admin/venues/stripe`, {
+                    headers: { 'x-admin-key': 'lightning-admin-2024' }
+                });
+                if (!venuesRes.ok) throw new Error('Failed to load data');
+                const venuesData = await venuesRes.json();
+
+                const djsRes = await fetch(`${API_BASE}/api/v1/lightning/admin/djs/stripe`, {
+                    headers: { 'x-admin-key': 'lightning-admin-2024' }
+                });
+                const djsData = await djsRes.json();
+
+                const totalVenueRevenue = (venuesData.venues || []).reduce((sum, v) => sum + (v.lifetimeRevenue || 0), 0);
+                const totalDJEarnings = (djsData.djs || []).reduce((sum, d) => sum + ((d.totalEarnings || 0) / 100), 0);
+
+                list.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 8px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Total Venue Revenue</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--neon-green);">$${totalVenueRevenue.toFixed(2)}</div>
+                        </div>
+                        <div style="background: rgba(157, 78, 221, 0.1); border: 1px solid var(--electric-purple); border-radius: 8px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Total DJ Earnings</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--electric-purple);">$${totalDJEarnings.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.5); text-align: center;">Detailed transaction history coming soon. Check Stripe Dashboard for full details.</p>
+                `;
+            } catch (err) {
+                console.error('Error loading transactions:', err);
+                list.innerHTML = '<div class="empty-state">Error loading transactions</div>';
             }
         }
 
