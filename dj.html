@@ -159,22 +159,82 @@
             document.getElementById('btn').textContent='⚡ Pay $'+(total/100).toFixed(2);
         }
 
+        let isSubmitting = false;
+        const STRIPE_KEY = 'pk_live_51KO7dKJfvGiPMW1cqmGqPVgbKnmnPxPJhkGcdl9H4eLY9F23Shl0Dg8j7yN7gKg8HwT5QmfBvJWxRqLH5M8qQk7r00xGhLz8Vr';
+
         async function submit(e){
             e.preventDefault();
+
+            // Prevent double submission
+            if(isSubmitting) return;
+            isSubmitting = true;
+
             const btn=document.getElementById('btn'),err=document.getElementById('error');
-            btn.disabled=true;btn.textContent='Processing...';err.style.display='none';
+            const songTitle = document.getElementById('song').value.trim();
+            const artist = document.getElementById('artist').value.trim();
+            const comment = document.getElementById('comment').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('name').value.trim();
+
+            // Client-side validation
+            if(!songTitle || songTitle.length < 1) {
+                err.textContent = 'Please enter a song title';
+                err.style.display = 'block';
+                isSubmitting = false;
+                return;
+            }
+            if(songTitle.length > 200) {
+                err.textContent = 'Song title is too long (max 200 characters)';
+                err.style.display = 'block';
+                isSubmitting = false;
+                return;
+            }
+            if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                err.textContent = 'Please enter a valid email address';
+                err.style.display = 'block';
+                isSubmitting = false;
+                return;
+            }
+
+            btn.disabled=true;
+            btn.textContent='Processing...';
+            err.style.display='none';
+
             try{
-                const r=await fetch(`${API}/dj/request/create-intent`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-                    djId,songTitle:document.getElementById('song').value,artist:document.getElementById('artist').value,
-                    comment:document.getElementById('comment').value,boltTier:selectedBolt,tipAmount:selectedTip,
-                    customerEmail:document.getElementById('email').value,customerName:document.getElementById('name').value
-                })});
+                const r=await fetch(`${API}/dj/request/create-intent`,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({
+                        djId,
+                        songTitle,
+                        artist,
+                        comment,
+                        boltTier:selectedBolt,
+                        tipAmount:selectedTip/100, // Convert cents to dollars
+                        email,
+                        customerName:name
+                    })
+                });
                 const d=await r.json();
-                if(!d.success)throw new Error(d.error);
-                const stripe=Stripe(d.publishableKey);
-                const{error}=await stripe.confirmPayment({clientSecret:d.clientSecret,confirmParams:{return_url:location.origin+'/dj/'+djId+'?success=1'}});
-                if(error)throw new Error(error.message);
-            }catch(x){err.textContent=x.message;err.style.display='block';btn.disabled=false;update()}
+                if(!d.success) throw new Error(d.error || 'Failed to create payment');
+
+                const stripe=Stripe(STRIPE_KEY);
+                const{error}=await stripe.confirmPayment({
+                    clientSecret:d.clientSecret,
+                    confirmParams:{
+                        return_url:location.origin+'/dj/'+djId+'?success=1',
+                        receipt_email: email || undefined
+                    }
+                });
+                if(error) throw new Error(error.message);
+            }catch(x){
+                console.error('Payment error:', x);
+                err.textContent=x.message || 'Payment failed. Please try again.';
+                err.style.display='block';
+                btn.disabled=false;
+                isSubmitting=false;
+                update();
+            }
         }
 
         if(location.search.includes('success')){

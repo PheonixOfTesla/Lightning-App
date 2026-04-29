@@ -504,6 +504,94 @@
             .queue-position{width:32px;height:32px;font-size:14px}
             .np-song{font-size:20px}
         }
+
+        /* Connection status indicator */
+        .connection-status{
+            position:fixed;
+            top:20px;
+            right:20px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:8px 16px;
+            border-radius:20px;
+            font-size:12px;
+            font-weight:600;
+            z-index:100;
+            transition:all 0.3s;
+        }
+        .connection-status.connected{
+            background:rgba(34,197,94,0.2);
+            border:1px solid rgba(34,197,94,0.4);
+            color:#22c55e;
+        }
+        .connection-status.disconnected{
+            background:rgba(239,68,68,0.2);
+            border:1px solid rgba(239,68,68,0.4);
+            color:#ef4444;
+        }
+        .connection-status.connecting{
+            background:rgba(251,191,36,0.2);
+            border:1px solid rgba(251,191,36,0.4);
+            color:#fbbf24;
+        }
+        .status-dot{
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:currentColor;
+        }
+        .connection-status.connected .status-dot{
+            animation:pulse 2s infinite;
+        }
+        .connection-status.connecting .status-dot{
+            animation:blink 1s infinite;
+        }
+        @keyframes pulse{
+            0%,100%{opacity:1}
+            50%{opacity:0.5}
+        }
+        @keyframes blink{
+            0%,100%{opacity:1}
+            50%{opacity:0.2}
+        }
+
+        /* Error state */
+        .error-state{
+            text-align:center;
+            padding:40px;
+            background:rgba(239,68,68,0.1);
+            border:1px solid rgba(239,68,68,0.3);
+            border-radius:12px;
+            margin:20px 0;
+        }
+        .error-state svg{
+            width:48px;
+            height:48px;
+            fill:#ef4444;
+            margin-bottom:15px;
+        }
+        .error-title{
+            font-size:18px;
+            font-weight:600;
+            color:#ef4444;
+            margin-bottom:8px;
+        }
+        .error-message{
+            font-size:14px;
+            color:rgba(255,255,255,0.6);
+        }
+        .retry-btn{
+            margin-top:15px;
+            padding:10px 24px;
+            background:linear-gradient(135deg,var(--purple),var(--cyan));
+            border:none;
+            border-radius:8px;
+            color:#fff;
+            font-weight:600;
+            cursor:pointer;
+        }
+        .retry-btn:hover{transform:scale(1.05)}
     </style>
 </head>
 <body>
@@ -519,6 +607,11 @@
         <svg class="play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         <svg class="pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
     </button>
+
+    <div class="connection-status connecting" id="connectionStatus">
+        <div class="status-dot"></div>
+        <span id="statusText">Connecting...</span>
+    </div>
 
     <div class="overlay"></div>
     <div class="color-overlay"></div>
@@ -573,6 +666,18 @@
     <script>
         const API='https://lightning-backend-production.up.railway.app';
         const djId=window.location.pathname.split('/').pop();
+        let socket = null;
+        let nowPlayingSong = null;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+
+        // Connection status management
+        function setConnectionStatus(status, text) {
+            const el = document.getElementById('connectionStatus');
+            const textEl = document.getElementById('statusText');
+            el.className = 'connection-status ' + status;
+            textEl.textContent = text;
+        }
 
         // Create floating particles
         function createParticles(){
@@ -590,31 +695,68 @@
         }
         createParticles();
 
-        let socket = null;
+        // Show error state in queue area
+        function showError(title, message) {
+            const list = document.getElementById('queueList');
+            list.innerHTML = `
+                <div class="error-state">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <div class="error-title">${title}</div>
+                    <div class="error-message">${message}</div>
+                    <button class="retry-btn" onclick="retryInit()">Retry</button>
+                </div>
+            `;
+        }
+
+        function retryInit() {
+            retryCount = 0;
+            const list = document.getElementById('queueList');
+            list.innerHTML = '<div class="empty"><div class="empty-title">Loading...</div></div>';
+            init();
+        }
 
         async function init(){
-            if(!djId||djId==='dj-display')return;
+            if(!djId||djId==='dj-display'){
+                showError('Invalid URL', 'DJ ID not found in URL');
+                return;
+            }
+
+            setConnectionStatus('connecting', 'Connecting...');
 
             // Always generate QR code first
             const qrUrl=`https://thelightningpass.com/dj/${djId}`;
             try{
                 QRCode.toCanvas(document.getElementById('qrCode'),qrUrl,{width:260,margin:0,color:{dark:'#000',light:'#fff'}});
-            }catch(qrErr){console.error('QR generation failed:',qrErr)}
+            }catch(qrErr){
+                console.error('QR generation failed:',qrErr);
+            }
 
             try{
                 const r=await fetch(`${API}/api/v1/lightning/dj/${djId}/public`);
+                if(!r.ok) throw new Error(`HTTP ${r.status}`);
                 const d=await r.json();
                 if(d.success){
                     document.getElementById('djName').textContent=d.dj.name;
+                    retryCount = 0;
+                } else {
+                    throw new Error(d.error || 'Failed to load DJ info');
                 }
-                fetchQueue();
 
-                // Connect to WebSocket for real-time updates
+                await fetchQueue();
                 connectSocket();
+                setInterval(fetchQueue, 30000);
 
-                // Fallback polling every 30s in case socket disconnects
-                setInterval(fetchQueue,30000);
-            }catch(e){console.error(e)}
+            }catch(e){
+                console.error('Init error:', e);
+                retryCount++;
+                if(retryCount < MAX_RETRIES) {
+                    setConnectionStatus('connecting', `Retrying (${retryCount}/${MAX_RETRIES})...`);
+                    setTimeout(init, 3000);
+                } else {
+                    setConnectionStatus('disconnected', 'Offline');
+                    showError('Connection Failed', 'Unable to connect to server. Check your internet connection.');
+                }
+            }
         }
 
         function connectSocket(){
@@ -622,16 +764,19 @@
 
             socket.on('connect', () => {
                 console.log('Socket connected');
+                setConnectionStatus('connected', 'Live');
                 socket.emit('join:dj', djId);
             });
 
             socket.on('dj:request:new', (data) => {
                 console.log('New request:', data);
-                fetchQueue(); // Refresh queue immediately
+                fetchQueue();
             });
 
             socket.on('dj:request:played', (data) => {
                 console.log('Request played:', data);
+                // Update now playing with the played song
+                updateNowPlaying(data.songTitle, data.artist);
                 fetchQueue();
             });
 
@@ -641,16 +786,61 @@
             });
 
             socket.on('disconnect', () => {
-                console.log('Socket disconnected, will reconnect...');
+                console.log('Socket disconnected');
+                setConnectionStatus('disconnected', 'Reconnecting...');
             });
+
+            socket.on('reconnect', () => {
+                console.log('Socket reconnected');
+                setConnectionStatus('connected', 'Live');
+                socket.emit('join:dj', djId);
+                fetchQueue();
+            });
+
+            socket.on('connect_error', (err) => {
+                console.error('Socket error:', err);
+                setConnectionStatus('disconnected', 'Connection error');
+            });
+        }
+
+        function updateNowPlaying(songTitle, artist) {
+            const np = document.getElementById('nowPlaying');
+            const npSong = document.getElementById('npSong');
+            const npArtist = document.getElementById('npArtist');
+
+            if(songTitle) {
+                npSong.textContent = songTitle;
+                npArtist.textContent = artist || '';
+                np.style.display = 'block';
+                nowPlayingSong = { songTitle, artist };
+
+                // Auto-hide after 60 seconds
+                setTimeout(() => {
+                    if(nowPlayingSong && nowPlayingSong.songTitle === songTitle) {
+                        np.style.display = 'none';
+                        nowPlayingSong = null;
+                    }
+                }, 60000);
+            }
         }
 
         async function fetchQueue(){
             try{
                 const r=await fetch(`${API}/api/v1/lightning/dj/${djId}/queue/public`);
+                if(!r.ok) throw new Error(`HTTP ${r.status}`);
                 const d=await r.json();
-                if(d.success)updateQueue(d.queue);
-            }catch(e){}
+                if(d.success) updateQueue(d.queue);
+            }catch(e){
+                console.error('Queue fetch error:', e);
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if(!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function updateQueue(queue){
@@ -659,14 +849,14 @@
                 list.innerHTML='<div class="empty"><div class="empty-title">No songs in queue</div><div class="empty-sub">Scan the QR code to request a song</div></div>';
                 return;
             }
-            list.innerHTML=queue.slice(0,6).map((item,i)=>`
+            list.innerHTML=queue.slice(0,8).map((item,i)=>`
                 <div class="queue-item" style="animation-delay:${i*0.1}s">
                     <div class="queue-position">${i+1}</div>
                     <div class="queue-info">
-                        <div class="queue-song">${item.songTitle}</div>
-                        <div class="queue-artist">${item.artist||'Unknown Artist'}</div>
+                        <div class="queue-song">${escapeHtml(item.songTitle)}</div>
+                        <div class="queue-artist">${escapeHtml(item.artist)||'Unknown Artist'}</div>
                     </div>
-                    ${item.boltTier?`<div class="queue-bolt ${item.boltTier}">${item.boltTier.replace('_',' ')}</div>`:''}
+                    ${item.boltTier?`<div class="queue-bolt ${item.boltTier}">${item.boltTier.replace('_',' ').toUpperCase()}</div>`:''}
                 </div>
             `).join('');
         }
