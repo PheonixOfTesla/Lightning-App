@@ -1628,6 +1628,54 @@
                     </div>
                 </div>
 
+                <!-- DJ Profile Settings -->
+                <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Your Profile</h3>
+                        <button id="djProfileEditBtn" class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; background: transparent; border: 1px solid var(--electric-purple); color: var(--electric-purple);" onclick="toggleDJProfileEdit()">Edit</button>
+                    </div>
+
+                    <!-- Display Mode -->
+                    <div id="djProfileDisplay">
+                        <div style="display: grid; gap: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-dark);">
+                                <span style="color: rgba(255,255,255,0.6);">DJ Name</span>
+                                <span id="djProfileName" style="font-weight: 600;">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-dark);">
+                                <span style="color: rgba(255,255,255,0.6);">Base Fee</span>
+                                <span id="djProfileFee" style="font-weight: 600; color: var(--neon-green);">$5.00</span>
+                            </div>
+                            <div style="padding: 0.5rem 0;">
+                                <span style="color: rgba(255,255,255,0.6); display: block; margin-bottom: 0.25rem;">Bio</span>
+                                <span id="djProfileBio" style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Mode -->
+                    <div id="djProfileEdit" style="display: none;">
+                        <div style="display: grid; gap: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">DJ Name</label>
+                                <input type="text" id="djEditName" class="form-input" placeholder="Your DJ name" maxlength="100" style="background: var(--pure-black); border: 1px solid var(--border-dark);">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">Base Fee ($1 - $100)</label>
+                                <input type="number" id="djEditFee" class="form-input" min="1" max="100" step="0.50" placeholder="5.00" style="background: var(--pure-black); border: 1px solid var(--border-dark);">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">Bio (optional)</label>
+                                <textarea id="djEditBio" class="form-input" rows="2" maxlength="500" placeholder="Tell fans about your style..." style="background: var(--pure-black); border: 1px solid var(--border-dark); resize: none;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem;">
+                                <button class="btn" style="flex: 1; background: transparent; border: 1px solid var(--border-dark); color: rgba(255,255,255,0.6);" onclick="toggleDJProfileEdit()">Cancel</button>
+                                <button class="btn btn-primary" style="flex: 1;" onclick="saveDJProfile()">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Session Controls -->
                 <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">Session Control</h3>
@@ -3869,6 +3917,9 @@
                     const playedEl = document.getElementById('djSongsPlayed');
                     if (playedEl) playedEl.textContent = data.dj.totalSongsPlayed || 0;
 
+                    // Update profile display
+                    updateDJProfileDisplay(data.dj);
+
                     // Update session status
                     const sessionBtn = document.getElementById('djSessionBtn');
                     const sessionStatus = document.getElementById('djSessionStatus');
@@ -3912,6 +3963,79 @@
                 console.error('Error loading DJ dashboard:', err);
                 showToast('Error loading dashboard', 'error');
             }
+        }
+
+        // Toggle DJ profile edit mode
+        function toggleDJProfileEdit() {
+            const displayEl = document.getElementById('djProfileDisplay');
+            const editEl = document.getElementById('djProfileEdit');
+            const editBtn = document.getElementById('djProfileEditBtn');
+
+            if (editEl.style.display === 'none') {
+                // Switch to edit mode - populate fields
+                if (state.currentDJ) {
+                    document.getElementById('djEditName').value = state.currentDJ.name || '';
+                    document.getElementById('djEditFee').value = (state.currentDJ.baseFee / 100).toFixed(2);
+                    document.getElementById('djEditBio').value = state.currentDJ.bio || '';
+                }
+                displayEl.style.display = 'none';
+                editEl.style.display = 'block';
+                editBtn.textContent = 'Cancel';
+                editBtn.style.borderColor = 'var(--danger-red)';
+                editBtn.style.color = 'var(--danger-red)';
+            } else {
+                // Switch back to display mode
+                displayEl.style.display = 'block';
+                editEl.style.display = 'none';
+                editBtn.textContent = 'Edit';
+                editBtn.style.borderColor = 'var(--electric-purple)';
+                editBtn.style.color = 'var(--electric-purple)';
+            }
+        }
+
+        // Save DJ profile
+        async function saveDJProfile() {
+            const name = document.getElementById('djEditName').value.trim();
+            const bio = document.getElementById('djEditBio').value.trim();
+            const baseFeeInput = parseFloat(document.getElementById('djEditFee').value);
+
+            if (!name || name.length < 1) {
+                showToast('Please enter your DJ name', 'error');
+                return;
+            }
+
+            if (name.length > 100) {
+                showToast('Name is too long (max 100 characters)', 'error');
+                return;
+            }
+
+            if (isNaN(baseFeeInput) || baseFeeInput < 1 || baseFeeInput > 100) {
+                showToast('Base fee must be between $1 and $100', 'error');
+                return;
+            }
+
+            const baseFee = Math.round(baseFeeInput * 100); // Convert to cents
+
+            try {
+                const data = await updateDJProfile(name, bio, baseFee);
+                state.currentDJ = data.dj;
+                showToast('Profile updated!', 'success');
+                toggleDJProfileEdit();
+                updateDJProfileDisplay(data.dj);
+            } catch (err) {
+                showToast(err.message || 'Failed to update profile', 'error');
+            }
+        }
+
+        // Update DJ profile display
+        function updateDJProfileDisplay(dj) {
+            const nameEl = document.getElementById('djProfileName');
+            const feeEl = document.getElementById('djProfileFee');
+            const bioEl = document.getElementById('djProfileBio');
+
+            if (nameEl) nameEl.textContent = dj.name || '-';
+            if (feeEl) feeEl.textContent = '$' + ((dj.baseFee || 500) / 100).toFixed(2);
+            if (bioEl) bioEl.textContent = dj.bio || 'No bio set';
         }
 
         async function handleStartDJSession(venueId) {
@@ -5959,6 +6083,14 @@
         // Get DJ profile
         async function getDJProfile() {
             return await apiCall('/api/v1/lightning/dj/profile');
+        }
+
+        // Update DJ profile
+        async function updateDJProfile(name, bio, baseFee) {
+            return await apiCall('/api/v1/lightning/dj/profile', {
+                method: 'PUT',
+                body: JSON.stringify({ name, bio, baseFee })
+            });
         }
 
         // Create DJ Stripe Connect account
