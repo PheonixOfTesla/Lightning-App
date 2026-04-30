@@ -74,6 +74,12 @@
         async function init(){
             if(!djId||djId==='dj'){showNotFound();return}
             try{
+                // Fetch Stripe key from config
+                const configRes=await fetch(`${API}/config`);
+                const configData=await configRes.json();
+                STRIPE_KEY=configData.stripePublishableKey;
+                if(!STRIPE_KEY){console.error('Stripe key not configured');showNotFound();return}
+
                 const r=await fetch(`${API}/dj/${djId}/public`);
                 if(!r.ok){showNotFound();return}
                 const d=await r.json();
@@ -160,7 +166,7 @@
         }
 
         let isSubmitting = false;
-        const STRIPE_KEY = 'pk_live_51KO7dKJfvGiPMW1cqmGqPVgbKnmnPxPJhkGcdl9H4eLY9F23Shl0Dg8j7yN7gKg8HwT5QmfBvJWxRqLH5M8qQk7r00xGhLz8Vr';
+        let STRIPE_KEY = null; // Fetched from API
 
         async function submit(e){
             e.preventDefault();
