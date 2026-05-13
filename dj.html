@@ -234,6 +234,16 @@
             btn.textContent='Processing...';
             err.style.display='none';
 
+            // Check Stripe is initialized
+            if (!stripe || !cardElement) {
+                err.textContent = 'Payment system not loaded. Please refresh the page.';
+                err.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '⚡ Pay';
+                isSubmitting = false;
+                return;
+            }
+
             try{
                 const r=await fetch(`${API}/dj/request/create-intent`,{
                     method:'POST',
