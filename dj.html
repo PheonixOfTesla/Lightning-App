@@ -98,7 +98,7 @@
 
         function showForm(){
             document.getElementById('content').innerHTML=`
-                <form id="form" onsubmit="submit(event)">
+                <form id="form" onsubmit="handleSubmit(event)">
                     <div class="form-section">
                         <div class="section-title">🎵 Song Request</div>
                         <div class="form-group"><label>Song Title *</label><input type="text" id="song" required placeholder="Enter song name"></div>
@@ -196,7 +196,7 @@
         let stripe = null;
         let cardElement = null;
 
-        async function submit(e){
+        async function handleSubmit(e){
             e.preventDefault();
 
             // Prevent double submission
