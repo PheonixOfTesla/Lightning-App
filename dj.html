@@ -236,11 +236,13 @@
 
             // Check Stripe is initialized
             if (!stripe || !cardElement) {
-                err.textContent = 'Payment system not loaded. Please refresh the page.';
+                const initErr = 'Payment system not loaded. Please refresh the page.';
+                err.textContent = initErr;
                 err.style.display = 'block';
                 btn.disabled = false;
                 btn.textContent = '⚡ Pay';
                 isSubmitting = false;
+                alert(initErr);
                 return;
             }
 
@@ -297,11 +299,14 @@
                 location.href = location.pathname + '?success=1';
             }catch(x){
                 console.error('Payment error:', x);
-                err.textContent=x.message || 'Payment failed. Please try again.';
+                const errorMsg = x.message || 'Payment failed. Please try again.';
+                err.textContent = errorMsg;
                 err.style.display='block';
                 btn.disabled=false;
                 isSubmitting=false;
                 update();
+                // Alert for mobile debugging
+                alert('Payment Error: ' + errorMsg);
             }
         }
 
