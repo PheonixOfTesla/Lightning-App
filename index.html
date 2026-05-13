@@ -6361,25 +6361,27 @@
             });
         }
 
-        // Load DJ queue (DJ/Venue dashboard) - accepted requests only
-        async function loadDJQueue(sessionId) {
-            const data = await apiCall(`/api/v1/lightning/dj/queue/${sessionId}`);
-            state.djQueue = data.queue;
-            if (typeof renderDJQueue === 'function') renderDJQueue(data.queue);
-            return data.queue;
-        }
-
-        // Fetch DJ queue (alias for refresh)
-        async function fetchDJQueue(sessionId) {
-            return loadDJQueue(sessionId);
-        }
-
-        // Load pending requests (awaiting DJ approval)
-        async function fetchDJPendingRequests(sessionId) {
-            const data = await apiCall(`/api/v1/lightning/dj/pending/${sessionId}`);
+        // Load ALL DJ requests (pending + queued, any session)
+        async function loadAllDJRequests() {
+            const data = await apiCall('/api/v1/lightning/dj/all-requests');
             state.djPending = data.pending;
+            state.djQueue = data.queued;
             if (typeof renderPendingRequests === 'function') renderPendingRequests(data.pending);
-            return data.pending;
+            if (typeof renderDJQueue === 'function') renderDJQueue(data.queued);
+            return data;
+        }
+
+        // Legacy aliases for compatibility
+        async function loadDJQueue(sessionId) {
+            return loadAllDJRequests();
+        }
+
+        async function fetchDJQueue(sessionId) {
+            return loadAllDJRequests();
+        }
+
+        async function fetchDJPendingRequests(sessionId) {
+            return loadAllDJRequests();
         }
 
         // Accept a DJ request (moves to queue)
