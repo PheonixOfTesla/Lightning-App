@@ -312,7 +312,16 @@
 
         if(location.search.includes('success')){
             document.getElementById('djName').textContent='';
-            document.getElementById('content').innerHTML='<div class="success-screen"><div class="success-icon">🎉</div><h2 class="success-title">Request Submitted!</h2><p class="success-message">Your song is in the queue!</p><button class="submit-btn" onclick="location.href=location.pathname">Another Request</button></div>';
+            document.getElementById('content').innerHTML=`
+                <div class="success-screen">
+                    <div class="success-icon">🎉</div>
+                    <h2 class="success-title">Request Submitted!</h2>
+                    <p class="success-message">Your request has been sent to the DJ for approval.</p>
+                    <p style="color: var(--gray); font-size: 13px; margin-bottom: 24px;">
+                        The DJ will accept or decline your request. If not reviewed within 24 hours, you'll receive an automatic refund.
+                    </p>
+                    <button class="submit-btn" onclick="location.href=location.pathname">Another Request</button>
+                </div>`;
         }else init();
     </script>
 </body>
