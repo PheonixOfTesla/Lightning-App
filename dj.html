@@ -128,6 +128,11 @@
                         <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="your@email.com"></div>
                         <div class="form-group"><label>Name</label><input type="text" id="name" placeholder="Your name"></div>
                     </div>
+                    <div class="form-section">
+                        <div class="section-title">💳 Payment</div>
+                        <div id="card-element" style="background: white; padding: 14px 16px; border-radius: 10px;"></div>
+                        <div id="card-errors" style="color: #ff4466; font-size: 13px; margin-top: 8px;"></div>
+                    </div>
                     <div class="summary">
                         <div class="summary-row"><span>Base</span><span id="sBase">$${(baseFee/100).toFixed(2)}</span></div>
                         <div class="summary-row" id="sBoltRow" style="display:none"><span id="sBoltL">Priority</span><span id="sBolt"></span></div>
@@ -137,6 +142,27 @@
                     <div id="error" class="error-message" style="display:none"></div>
                     <button type="submit" class="submit-btn" id="btn">⚡ Pay $${(baseFee/100).toFixed(2)}</button>
                 </form>`;
+
+            // Initialize Stripe and mount card element
+            if (STRIPE_KEY) {
+                stripe = Stripe(STRIPE_KEY);
+                const elements = stripe.elements();
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#1a1a2e',
+                            '::placeholder': { color: '#aab7c4' }
+                        },
+                        invalid: { color: '#ff4466' }
+                    }
+                });
+                cardElement.mount('#card-element');
+                cardElement.on('change', (e) => {
+                    const errDiv = document.getElementById('card-errors');
+                    errDiv.textContent = e.error ? e.error.message : '';
+                });
+            }
         }
 
         function setBolt(t){
@@ -167,6 +193,8 @@
 
         let isSubmitting = false;
         let STRIPE_KEY = null; // Fetched from API
+        let stripe = null;
+        let cardElement = null;
 
         async function submit(e){
             e.preventDefault();
@@ -224,15 +252,39 @@
                 const d=await r.json();
                 if(!d.success) throw new Error(d.error || 'Failed to create payment');
 
-                const stripe=Stripe(STRIPE_KEY);
-                const{error}=await stripe.confirmPayment({
-                    clientSecret:d.clientSecret,
-                    confirmParams:{
-                        return_url:location.origin+'/dj/'+djId+'?success=1',
-                        receipt_email: email || undefined
+                // Confirm payment with card element
+                const{error, paymentIntent}=await stripe.confirmCardPayment(d.clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: name || undefined,
+                            email: email || undefined
+                        }
                     }
                 });
                 if(error) throw new Error(error.message);
+
+                // Payment succeeded - confirm with backend
+                const confirmRes = await fetch(`${API}/dj/request/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentIntentId: paymentIntent.id,
+                        djId,
+                        songTitle,
+                        artist,
+                        comment,
+                        boltTier: selectedBolt,
+                        tipAmount: selectedTip/100,
+                        customerName: name,
+                        customerEmail: email
+                    })
+                });
+                const confirmData = await confirmRes.json();
+                if (!confirmData.success) throw new Error(confirmData.error || 'Failed to confirm request');
+
+                // Show success
+                location.href = location.pathname + '?success=1';
             }catch(x){
                 console.error('Payment error:', x);
                 err.textContent=x.message || 'Payment failed. Please try again.';
