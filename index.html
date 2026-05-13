@@ -3403,16 +3403,23 @@
 
             if (token && user) {
                 state.token = token;
+                const parsedUser = JSON.parse(user);
 
-                // Verify token and get fresh user data from backend
+                // Verify token using role-appropriate endpoint
                 try {
-                    const response = await fetch(`${API_BASE}/api/v1/lightning/venues/by-owner`, {
+                    let verifyUrl = `${API_BASE}/api/v1/lightning/venues/by-owner`;
+                    if (parsedUser.role === 'dj') {
+                        verifyUrl = `${API_BASE}/api/v1/lightning/dj/profile`;
+                    } else if (parsedUser.role === 'admin') {
+                        verifyUrl = `${API_BASE}/api/v1/lightning/admin/djs/stripe`;
+                    }
+
+                    const response = await fetch(verifyUrl, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
 
                     if (response.ok) {
                         // Token is valid, use cached user data but refresh it
-                        const parsedUser = JSON.parse(user);
                         state.user = parsedUser;
 
                         // If venue owner, fetch fresh venue status to update venuePending flag
