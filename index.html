@@ -1605,11 +1605,10 @@
                     </button>
                 </div>
 
-                <!-- Stripe Connect Prompt -->
-                <div id="djStripePrompt" style="display: none; background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-                    <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">💳 Connect Your Bank Account</h3>
-                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Connect Stripe to receive payments from song requests</p>
-                    <button class="btn btn-primary" onclick="handleDJStripeConnect()">Connect Stripe</button>
+                <!-- Payment Info -->
+                <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="color: var(--neon-green); margin-bottom: 0.5rem;">💳 Payments Active</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 0;">All song request payments are processed through Lightning Pass. Start a session to begin accepting requests!</p>
                 </div>
 
                 <!-- DJ Profile Settings -->
@@ -4005,12 +4004,6 @@
                         }
                     }
 
-                    // Show Stripe Connect prompt if not connected
-                    const stripePrompt = document.getElementById('djStripePrompt');
-                    if (stripePrompt) {
-                        stripePrompt.style.display = stripeStatus.connected ? 'none' : 'block';
-                    }
-
                     // Wire up Digital Assets links
                     const djId = data.dj._id || data.dj.id;
                     const assetsLink = document.getElementById('djAssetsLink');
@@ -6376,11 +6369,7 @@
             return await apiCall('/api/v1/lightning/dj/connect/status');
         }
 
-        // Render DJ queue (placeholder - implement based on UI needs)
-        function renderDJQueue(queue) {
-            console.log('DJ Queue:', queue);
-            // TODO: Implement queue rendering based on your UI
-        }
+        // renderDJQueue is defined earlier in the file (line ~4219) with full implementation
 
         // ===== CUSTOMER REFUND FUNCTIONS =====
         let selectedPassForRefund = null;
