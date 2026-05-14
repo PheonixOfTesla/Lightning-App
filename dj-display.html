@@ -769,6 +769,11 @@
                 fetchQueue();
             });
 
+            socket.on('dj:request:accepted', (data) => {
+                console.log('Request accepted:', data);
+                fetchQueue();
+            });
+
             socket.on('dj:request:played', (data) => {
                 console.log('Request played:', data);
                 // Update now playing with the played song
