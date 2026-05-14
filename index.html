@@ -1719,6 +1719,16 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- All Requests History -->
+                <div style="background: var(--card-black); border: 2px solid var(--electric-purple); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--electric-purple);">📋 All Requests</h3>
+                    <div id="djAllRequestsList">
+                        <div style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">
+                            No requests yet this session
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -3494,6 +3504,9 @@
                     } else if (state.user.role === 'venue' && state.user.venueId) {
                         state.socket.emit('join:venue', state.user.venueId);
                         console.log('📡 Joined venue room:', state.user.venueId);
+                    } else if (state.user.role === 'dj' && state.currentDJ?._id) {
+                        state.socket.emit('join:dj', state.currentDJ._id);
+                        console.log('📡 DJ joined dj room:', state.currentDJ._id);
                     }
                 }
             });
@@ -4019,9 +4032,13 @@
                             state.currentVenueId = data.dj.currentVenueId;
                             if (sessionStatus) sessionStatus.innerHTML = `<span style="color: var(--neon-green);">✓ Session Active</span>`;
 
-                            // Join venue room for real-time updates
+                            // Join venue room and DJ room for real-time updates
                             if (state.socket && data.dj.currentVenueId) {
                                 state.socket.emit('join:venue', data.dj.currentVenueId);
+                            }
+                            if (state.socket && data.dj._id) {
+                                state.socket.emit('join:dj', data.dj._id);
+                                console.log('📡 DJ joined dj room:', data.dj._id);
                             }
 
                             // Load both pending and accepted requests
@@ -4127,9 +4144,11 @@
                 state.djSession = data.sessionId;
                 state.currentVenueId = venueId;
 
-                // Join venue room for real-time updates
+                // Join DJ room and venue room for real-time updates
                 if (state.socket) {
+                    state.socket.emit('join:dj', state.currentDJ._id);
                     state.socket.emit('join:venue', venueId);
+                    console.log('📡 DJ joined dj room:', state.currentDJ._id);
                     console.log('📡 DJ joined venue room:', venueId);
                 }
 
@@ -4291,10 +4310,64 @@
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
                         <button onclick="handlePlayRequest('${req._id}')" class="btn btn-small" style="background: var(--neon-green); color: black; padding: 0.5rem 1rem;">✓ Played</button>
-                        <button onclick="handleRejectRequest('${req._id}')" class="btn btn-small" style="background: var(--danger-red); padding: 0.5rem 1rem;">✗</button>
+                        <button onclick="handleRemoveFromQueue('${req._id}')" class="btn btn-small" style="background: var(--danger-red); padding: 0.5rem 1rem;">✗</button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Render all requests history with status tags
+        function renderAllRequests(allRequests) {
+            const container = document.getElementById('djAllRequestsList');
+            if (!container) return;
+
+            if (!allRequests || allRequests.length === 0) {
+                container.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">No requests yet this session</div>';
+                return;
+            }
+
+            container.innerHTML = allRequests.map(req => {
+                const status = req.status || 'pending';
+                let statusTag = '';
+                let refundBtn = '';
+
+                if (status === 'played') {
+                    statusTag = '<span style="background: var(--neon-green); color: black; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">PLAYED</span>';
+                    if (!req.refunded) {
+                        refundBtn = `<button onclick="handleRefundRequest('${req._id}')" class="btn btn-small" style="background: var(--lightning-yellow); color: black; padding: 0.4rem 0.75rem; font-size: 0.75rem;">Refund</button>`;
+                    } else {
+                        refundBtn = '<span style="color: rgba(255,255,255,0.5); font-size: 0.75rem;">Refunded</span>';
+                    }
+                } else if (status === 'accepted' || status === 'queued') {
+                    statusTag = '<span style="background: var(--electric-blue); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">ACCEPTED</span>';
+                    if (!req.refunded) {
+                        refundBtn = `<button onclick="handleRefundRequest('${req._id}')" class="btn btn-small" style="background: var(--lightning-yellow); color: black; padding: 0.4rem 0.75rem; font-size: 0.75rem;">Refund</button>`;
+                    } else {
+                        refundBtn = '<span style="color: rgba(255,255,255,0.5); font-size: 0.75rem;">Refunded</span>';
+                    }
+                } else if (status === 'rejected') {
+                    statusTag = '<span style="background: var(--danger-red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">REJECTED</span>';
+                    refundBtn = '<span style="color: rgba(255,255,255,0.5); font-size: 0.75rem;">Auto-refunded</span>';
+                } else if (status === 'pending') {
+                    statusTag = '<span style="background: var(--lightning-yellow); color: black; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">PENDING</span>';
+                }
+
+                return `
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="font-weight: 600; color: white;">${req.songTitle}</span>
+                                ${statusTag}
+                            </div>
+                            <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${req.artist || 'Unknown Artist'}</div>
+                            <div style="font-size: 0.75rem; color: var(--neon-green);">$${((req.amount || 0) / 100).toFixed(2)}</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            ${refundBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function handleAcceptRequest(requestId) {
@@ -4302,9 +4375,9 @@
                 await acceptDJRequest(requestId);
                 showToast('Request accepted and added to queue!', 'success');
                 // Refresh both lists
-                if (state.dj?.currentSessionId) {
-                    fetchDJPendingRequests(state.dj.currentSessionId);
-                    fetchDJQueue(state.dj.currentSessionId);
+                if (state.djSession) {
+                    fetchDJPendingRequests(state.djSession);
+                    loadDJQueue(state.djSession);
                 }
             } catch (err) {
                 showToast(err.message, 'error');
@@ -4316,8 +4389,8 @@
                 await markDJRequestPlayed(requestId);
                 showToast('Song marked as played!', 'success');
                 // Refresh queue
-                if (state.dj?.currentSessionId) {
-                    fetchDJQueue(state.dj.currentSessionId);
+                if (state.djSession) {
+                    loadDJQueue(state.djSession);
                 }
             } catch (err) {
                 showToast(err.message, 'error');
@@ -4330,9 +4403,36 @@
                 await rejectDJRequest(requestId, reason || 'Request rejected');
                 showToast('Request rejected and refunded', 'info');
                 // Refresh both lists
-                if (state.dj?.currentSessionId) {
-                    fetchDJPendingRequests(state.dj.currentSessionId);
-                    fetchDJQueue(state.dj.currentSessionId);
+                if (state.djSession) {
+                    fetchDJPendingRequests(state.djSession);
+                    loadDJQueue(state.djSession);
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleRemoveFromQueue(requestId) {
+            try {
+                await rejectDJRequest(requestId, 'Removed from queue');
+                showToast('Song removed from queue', 'info');
+                // Refresh queue
+                if (state.djSession) {
+                    loadDJQueue(state.djSession);
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleRefundRequest(requestId) {
+            if (!confirm('Are you sure you want to refund this request?')) return;
+            try {
+                await refundDJRequest(requestId);
+                showToast('Request refunded successfully', 'success');
+                // Refresh all lists
+                if (state.djSession) {
+                    loadAllDJRequests();
                 }
             } catch (err) {
                 showToast(err.message, 'error');
@@ -6368,6 +6468,9 @@
             state.djQueue = data.queued;
             if (typeof renderPendingRequests === 'function') renderPendingRequests(data.pending);
             if (typeof renderDJQueue === 'function') renderDJQueue(data.queued);
+            // Render all requests history (combine all statuses)
+            const allRequests = data.all || [...(data.pending || []), ...(data.queued || []), ...(data.played || []), ...(data.rejected || [])];
+            if (typeof renderAllRequests === 'function') renderAllRequests(allRequests);
             return data;
         }
 
@@ -6402,6 +6505,13 @@
         // Mark DJ request as played
         async function markDJRequestPlayed(requestId) {
             return await apiCall(`/api/v1/lightning/dj/request/${requestId}/played`, {
+                method: 'POST'
+            });
+        }
+
+        // Refund a DJ request
+        async function refundDJRequest(requestId) {
+            return await apiCall(`/api/v1/lightning/dj/request/${requestId}/refund`, {
                 method: 'POST'
             });
         }
