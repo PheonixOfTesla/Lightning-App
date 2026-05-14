@@ -4309,8 +4309,8 @@
                         ${req.comment ? `<div style="font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem; margin-left: 32px; font-style: italic;">"${req.comment}"</div>` : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button onclick="handlePlayRequest('${req._id}')" class="btn btn-small" style="background: var(--neon-green); color: black; padding: 0.5rem 1rem;">✓ Played</button>
-                        <button onclick="handleRemoveFromQueue('${req._id}')" class="btn btn-small" style="background: var(--danger-red); padding: 0.5rem 1rem;">✗</button>
+                        <button onclick="handlePlayRequest('${req._id}')" class="btn btn-small" style="background: var(--neon-green); color: black; padding: 0.5rem 1rem;">▶ Playing Now</button>
+                        <button onclick="handleRemoveFromQueue('${req._id}')" class="btn btn-small" style="background: var(--danger-red); padding: 0.5rem 1rem;">✗ Remove</button>
                     </div>
                 </div>
             `).join('');
@@ -4360,7 +4360,7 @@
                                 ${statusTag}
                             </div>
                             <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${req.artist || 'Unknown Artist'}</div>
-                            <div style="font-size: 0.75rem; color: var(--neon-green);">$${((req.amount || 0) / 100).toFixed(2)}</div>
+                            <div style="font-size: 0.75rem; color: var(--neon-green);">$${((req.totalAmount || 0) / 100).toFixed(2)}</div>
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             ${refundBtn}
