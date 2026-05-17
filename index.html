@@ -4040,11 +4040,11 @@
                 const bankBtn = document.getElementById('djBankBtn');
                 if (bankBtn) {
                     if (stripeStatus?.connected) {
-                        // DJ is connected - hide button or show connected state
+                        // DJ is connected - hide button
                         bankBtn.style.display = 'none';
                     } else {
-                        // Not connected - show connect button
-                        bankBtn.style.display = 'block';
+                        // Not connected - show connect button (same as venue logic)
+                        bankBtn.style.display = 'inline-block';
                     }
                 }
 
