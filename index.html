@@ -1600,14 +1600,14 @@
                     <h1 style="margin: 0; background: linear-gradient(90deg, var(--electric-purple), var(--electric-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         🎧 DJ Dashboard
                     </h1>
-                    <button class="btn" onclick="showModal('djInfoModal')" style="background: transparent; border: 1px solid var(--electric-purple); color: var(--electric-purple);">
-                        ℹ️ How It Works
-                    </button>
-                </div>
-
-                <!-- Payment Info / Stripe Connect Status -->
-                <div id="djStripeStatus" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-                    <h3 style="color: rgba(255,255,255,0.5); margin-bottom: 0.5rem;">💳 Loading payment status...</h3>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button id="djBankBtn" class="btn" onclick="showModal('djStripeConnectModal')" style="background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); display: none;">
+                            🏦 Connect Bank
+                        </button>
+                        <button class="btn" onclick="showModal('djInfoModal')" style="background: transparent; border: 1px solid var(--electric-purple); color: var(--electric-purple);">
+                            ℹ️ How It Works
+                        </button>
+                    </div>
                 </div>
 
                 <!-- DJ Profile Settings -->
@@ -4036,28 +4036,15 @@
                 // Check Stripe Connect status
                 const stripeStatus = await getDJStripeStatus();
 
-                // Update Stripe Connect status UI
-                const stripeStatusEl = document.getElementById('djStripeStatus');
-                if (stripeStatusEl) {
+                // Update Stripe Connect button visibility
+                const bankBtn = document.getElementById('djBankBtn');
+                if (bankBtn) {
                     if (stripeStatus?.connected) {
-                        // DJ is connected - show success state
-                        stripeStatusEl.style.background = 'rgba(57, 255, 20, 0.1)';
-                        stripeStatusEl.style.borderColor = 'var(--neon-green)';
-                        stripeStatusEl.innerHTML = `
-                            <h3 style="color: var(--neon-green); margin-bottom: 0.5rem;">💳 Payments Active</h3>
-                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 0;">All song request payments are processed through Lightning Pass. Start a session to begin accepting requests!</p>
-                        `;
+                        // DJ is connected - hide button or show connected state
+                        bankBtn.style.display = 'none';
                     } else {
                         // Not connected - show connect button
-                        stripeStatusEl.style.background = 'rgba(255, 221, 0, 0.1)';
-                        stripeStatusEl.style.borderColor = 'var(--lightning-yellow)';
-                        stripeStatusEl.innerHTML = `
-                            <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">🏦 Connect Your Bank</h3>
-                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Connect your bank account to receive payments for song requests.</p>
-                            <button class="btn btn-success" onclick="showModal('djStripeConnectModal')" style="background: var(--neon-green); border: none;">
-                                🏦 Connect Bank Account
-                            </button>
-                        `;
+                        bankBtn.style.display = 'block';
                     }
                 }
 
