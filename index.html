@@ -1605,10 +1605,13 @@
                     </button>
                 </div>
 
-                <!-- Payment Info -->
-                <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-                    <h3 style="color: var(--neon-green); margin-bottom: 0.5rem;">💳 Payments Active</h3>
-                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 0;">All song request payments are processed through Lightning Pass. Start a session to begin accepting requests!</p>
+                <!-- Payment Info / Stripe Connect Status -->
+                <div id="djStripeStatus" style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">🏦 Connect Your Bank</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Connect your bank account to receive payments for song requests.</p>
+                    <button class="btn btn-success" onclick="showModal('djStripeConnectModal')" style="background: var(--neon-green); border: none;">
+                        🏦 Connect Bank Account
+                    </button>
                 </div>
 
                 <!-- DJ Profile Settings -->
@@ -1728,6 +1731,42 @@
                             No requests yet this session
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DJ Stripe Connect Modal -->
+        <div id="djStripeConnectModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <h2 style="background: linear-gradient(90deg, var(--neon-green), var(--electric-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; text-align: center;">
+                    🏦 Connect Your Bank Account
+                </h2>
+
+                <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--neon-green); margin-bottom: 0.75rem;">💰 Get Paid Directly</h4>
+                    <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.9rem;">
+                        Connect your bank account through Stripe to receive song request payments directly. Money goes straight to your account!
+                    </p>
+                </div>
+
+                <div style="background: rgba(0, 212, 255, 0.1); border: 1px solid var(--electric-blue); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--electric-blue); margin-bottom: 0.75rem;">📋 What You'll Need</h4>
+                    <ul style="color: rgba(255,255,255,0.8); margin: 0; padding-left: 1.25rem; font-size: 0.9rem;">
+                        <li>Your personal info (name, address)</li>
+                        <li>Last 4 digits of SSN</li>
+                        <li>Bank account details</li>
+                    </ul>
+                </div>
+
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; text-align: center; margin-bottom: 1.5rem;">
+                    You'll be redirected to Stripe's secure onboarding page
+                </p>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" style="flex: 1; background: transparent; border: 1px solid var(--border-dark); color: rgba(255,255,255,0.6);" onclick="hideModal('djStripeConnectModal')">Cancel</button>
+                    <button class="btn btn-success" style="flex: 1; background: var(--neon-green); border: none;" onclick="connectDJStripeAccount()">
+                        Continue to Stripe →
+                    </button>
                 </div>
             </div>
         </div>
@@ -4001,6 +4040,31 @@
                 // Check Stripe Connect status
                 const stripeStatus = await getDJStripeStatus();
 
+                // Update Stripe Connect status UI
+                const stripeStatusEl = document.getElementById('djStripeStatus');
+                if (stripeStatusEl) {
+                    if (stripeStatus?.connected) {
+                        // DJ is connected - show success state
+                        stripeStatusEl.style.background = 'rgba(57, 255, 20, 0.1)';
+                        stripeStatusEl.style.borderColor = 'var(--neon-green)';
+                        stripeStatusEl.innerHTML = `
+                            <h3 style="color: var(--neon-green); margin-bottom: 0.5rem;">💳 Payments Active</h3>
+                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 0;">All song request payments are processed through Lightning Pass. Start a session to begin accepting requests!</p>
+                        `;
+                    } else {
+                        // Not connected - show connect button
+                        stripeStatusEl.style.background = 'rgba(255, 221, 0, 0.1)';
+                        stripeStatusEl.style.borderColor = 'var(--lightning-yellow)';
+                        stripeStatusEl.innerHTML = `
+                            <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">🏦 Connect Your Bank</h3>
+                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Connect your bank account to receive payments for song requests.</p>
+                            <button class="btn btn-success" onclick="showModal('djStripeConnectModal')" style="background: var(--neon-green); border: none;">
+                                🏦 Connect Bank Account
+                            </button>
+                        `;
+                    }
+                }
+
                 // Load and populate venue selector for starting sessions
                 await populateDJVenueSelector();
 
@@ -5311,9 +5375,43 @@
                     window.history.replaceState({}, '', '/');
                 }, 2000);
             }
+
+            // Handle DJ Stripe Connect return
+            if (path.includes('/dj/connect/return')) {
+                try {
+                    showToast('✅ Bank account connected successfully!', 'success');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Reload DJ dashboard to update Stripe status
+                    if (state.user?.role === 'dj') {
+                        await loadDJDashboard();
+                    }
+
+                    window.history.replaceState({}, '', '/');
+                } catch (error) {
+                    console.error('Error handling DJ Stripe callback:', error);
+                    showToast('⚠️ Connected, but unable to refresh status. Please refresh the page.', 'warning');
+                    setTimeout(() => {
+                        window.history.replaceState({}, '', '/');
+                    }, 3000);
+                }
+            }
+
+            // Handle DJ Stripe Connect refresh (expired session)
+            if (path.includes('/dj/connect/refresh')) {
+                showToast('⚠️ Onboarding session expired. Please try again.', 'error');
+                setTimeout(() => {
+                    window.history.replaceState({}, '', '/');
+                }, 2000);
+            }
         }
 
         async function connectStripeAccount() {
+            // Detect DJ role and route to DJ-specific function
+            if (state.user?.role === 'dj' || state.user?.djId) {
+                return connectDJStripeAccount();
+            }
+
             const venueId = state.currentVenueId || state.user?.venueId;
             const email = state.user?.email;
 
@@ -5346,6 +5444,28 @@
                 }
             } catch (error) {
                 showToast('❌ Failed to connect: ' + error.message, 'error');
+            }
+        }
+
+        // DJ Stripe Connect - Individual/Personal account
+        async function connectDJStripeAccount() {
+            try {
+                showToast('Creating Stripe Connect account...', 'info');
+                hideModal('djStripeConnectModal');
+
+                const data = await apiCall('/api/v1/lightning/dj/connect/create', {
+                    method: 'POST',
+                    body: JSON.stringify({})
+                });
+
+                if (data.onboardingUrl) {
+                    showToast('Redirecting to Stripe...', 'success');
+                    setTimeout(() => window.location.href = data.onboardingUrl, 1000);
+                } else {
+                    showToast('Error: No onboarding URL received', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to connect: ' + error.message, 'error');
             }
         }
 
