@@ -2978,18 +2978,18 @@
             }
         }
 
-        // ===== ULTRA-REALISTIC LIGHTNING STORM =====
+        // ===== HYPER-REALISTIC LIGHTNING STORM =====
         (function initLightning() {
             const canvas = document.getElementById('lightningCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
-            // Screen flash overlay element
+            // Screen flash overlay
             let flashOverlay = document.getElementById('lightningFlash');
             if (!flashOverlay) {
                 flashOverlay = document.createElement('div');
                 flashOverlay.id = 'lightningFlash';
-                flashOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;background:white;opacity:0;z-index:9998;transition:opacity 0.05s ease-out;';
+                flashOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0;z-index:9998;';
                 document.body.appendChild(flashOverlay);
             }
 
@@ -3007,276 +3007,235 @@
             const W = () => window.innerWidth;
             const H = () => window.innerHeight;
 
-            // Generate fractal lightning path with Bezier curves
-            function generateBoltPath(startX, startY, endX, endY, displacement, detail) {
-                if (displacement < detail) {
-                    return [{ x: startX, y: startY }, { x: endX, y: endY }];
+            // Generate highly jagged lightning path (real lightning is very erratic)
+            function generateJaggedPath(x1, y1, x2, y2, displace, minLength) {
+                const points = [{ x: x1, y: y1 }];
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < minLength) {
+                    points.push({ x: x2, y: y2 });
+                    return points;
                 }
-                const midX = (startX + endX) / 2 + (Math.random() - 0.5) * displacement;
-                const midY = (startY + endY) / 2 + (Math.random() - 0.5) * displacement * 0.3;
-                const left = generateBoltPath(startX, startY, midX, midY, displacement / 2, detail);
-                const right = generateBoltPath(midX, midY, endX, endY, displacement / 2, detail);
-                return left.slice(0, -1).concat(right);
+
+                // More segments for more jagged appearance
+                const segments = Math.max(8, Math.floor(dist / 30));
+
+                for (let i = 1; i <= segments; i++) {
+                    const t = i / segments;
+                    // Base position along the line
+                    let px = x1 + dx * t;
+                    let py = y1 + dy * t;
+
+                    // Add perpendicular displacement (decreases toward end)
+                    if (i < segments) {
+                        const perpX = -dy / dist;
+                        const perpY = dx / dist;
+                        const jitter = (Math.random() - 0.5) * displace * (1 - t * 0.5);
+                        // Also add some forward/back jitter for more chaos
+                        const forwardJitter = (Math.random() - 0.5) * displace * 0.3;
+                        px += perpX * jitter + (dx / dist) * forwardJitter;
+                        py += perpY * jitter + (dy / dist) * forwardJitter;
+                    }
+
+                    points.push({ x: px, y: py });
+                }
+
+                return points;
             }
 
-            // Convert points to smooth Bezier curve
-            function drawSmoothPath(points) {
+            // Draw path with sharp angles (no smoothing - real lightning is sharp)
+            function drawSharpPath(points) {
                 if (points.length < 2) return;
                 ctx.beginPath();
                 ctx.moveTo(points[0].x, points[0].y);
-                for (let i = 1; i < points.length - 1; i++) {
-                    const xc = (points[i].x + points[i + 1].x) / 2;
-                    const yc = (points[i].y + points[i + 1].y) / 2;
-                    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
                 }
-                const last = points[points.length - 1];
-                ctx.lineTo(last.x, last.y);
             }
 
-            // Recursive fractal branch drawing (Lichtenberg patterns)
-            function drawFractalBranch(x, y, angle, length, thickness, brightness, depth, maxDepth) {
-                if (depth > maxDepth || length < 10 || thickness < 0.5 || brightness < 0.05) return;
+            // Draw a single bolt with realistic glow layers
+            function drawBolt(points, thickness, intensity, isMain) {
+                if (points.length < 2) return;
 
-                const endX = x + Math.cos(angle) * length;
-                const endY = y + Math.sin(angle) * length;
-
-                // Generate jagged path for this branch
-                const displacement = length * 0.3;
-                const points = generateBoltPath(x, y, endX, endY, displacement, 8);
-
-                // Draw multi-layer glow for branch
-                const glowLayers = [
-                    { color: [138, 43, 226], size: thickness + 20, alpha: brightness * 0.08 },  // Purple outer
-                    { color: [65, 105, 225], size: thickness + 12, alpha: brightness * 0.12 }, // Blue
-                    { color: [100, 200, 255], size: thickness + 6, alpha: brightness * 0.2 },  // Cyan
-                    { color: [200, 230, 255], size: thickness + 2, alpha: brightness * 0.5 },  // Light blue
-                    { color: [255, 255, 255], size: thickness, alpha: brightness }             // White core
-                ];
-
-                glowLayers.forEach(layer => {
-                    drawSmoothPath(points);
-                    ctx.strokeStyle = `rgba(${layer.color[0]}, ${layer.color[1]}, ${layer.color[2]}, ${layer.alpha})`;
-                    ctx.lineWidth = layer.size;
+                // Outer atmospheric glow (very wide, very faint purple/blue)
+                if (isMain && intensity > 0.5) {
+                    drawSharpPath(points);
+                    const gradient = ctx.createLinearGradient(points[0].x, points[0].y,
+                        points[points.length-1].x, points[points.length-1].y);
+                    gradient.addColorStop(0, `rgba(147, 112, 219, ${intensity * 0.08})`);
+                    gradient.addColorStop(0.5, `rgba(100, 149, 237, ${intensity * 0.1})`);
+                    gradient.addColorStop(1, `rgba(147, 112, 219, ${intensity * 0.05})`);
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = thickness + 60;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
                     ctx.stroke();
-                });
-
-                // Spawn sub-branches with decreasing probability
-                const branchProb = 0.4 * Math.pow(0.7, depth);
-                const numBranches = Math.floor(Math.random() * 3);
-
-                for (let i = 0; i < numBranches; i++) {
-                    if (Math.random() < branchProb) {
-                        const branchPoint = points[Math.floor(Math.random() * (points.length - 2)) + 1];
-                        const branchAngle = angle + (Math.random() - 0.5) * 1.2;
-                        const branchLength = length * (0.3 + Math.random() * 0.4);
-                        const branchThickness = thickness * 0.6;
-                        const branchBrightness = brightness * 0.7;
-
-                        drawFractalBranch(
-                            branchPoint.x, branchPoint.y,
-                            branchAngle, branchLength,
-                            branchThickness, branchBrightness,
-                            depth + 1, maxDepth
-                        );
-                    }
                 }
-            }
 
-            // Main bolt with full fractal branching
-            function drawMainBolt(startX, startY, endX, endY, thickness, brightness, isBackground) {
-                const dx = endX - startX;
-                const dy = endY - startY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                // Generate main bolt path
-                const displacement = isBackground ? 40 : 80;
-                const detail = isBackground ? 15 : 8;
-                const points = generateBoltPath(startX, startY, endX, endY, displacement, detail);
-
-                // Multi-layer glow system
-                const layers = isBackground ? [
-                    { color: [100, 120, 180], size: thickness + 8, alpha: brightness * 0.1 },
-                    { color: [150, 180, 220], size: thickness + 3, alpha: brightness * 0.3 },
-                    { color: [200, 220, 255], size: thickness, alpha: brightness }
-                ] : [
-                    { color: [128, 0, 255], size: thickness + 40, alpha: brightness * 0.04 },   // Purple bloom
-                    { color: [138, 43, 226], size: thickness + 28, alpha: brightness * 0.06 }, // Violet
-                    { color: [65, 105, 225], size: thickness + 18, alpha: brightness * 0.1 },  // Royal blue
-                    { color: [100, 149, 237], size: thickness + 12, alpha: brightness * 0.15 },// Cornflower
-                    { color: [135, 206, 250], size: thickness + 7, alpha: brightness * 0.25 }, // Light sky blue
-                    { color: [200, 230, 255], size: thickness + 3, alpha: brightness * 0.5 },  // Pale blue
-                    { color: [255, 255, 255], size: thickness, alpha: brightness }              // Pure white core
+                // Glow layers from outside in
+                const layers = [
+                    { color: `rgba(138, 43, 226, ${intensity * 0.15})`, width: thickness + 35 },  // Purple haze
+                    { color: `rgba(65, 105, 225, ${intensity * 0.2})`, width: thickness + 25 },   // Royal blue
+                    { color: `rgba(100, 180, 255, ${intensity * 0.3})`, width: thickness + 15 },  // Electric blue
+                    { color: `rgba(180, 220, 255, ${intensity * 0.5})`, width: thickness + 8 },   // Pale blue
+                    { color: `rgba(220, 240, 255, ${intensity * 0.7})`, width: thickness + 4 },   // Near white
+                    { color: `rgba(255, 255, 255, ${intensity * 0.95})`, width: thickness + 1 },  // White glow
+                    { color: `rgba(255, 255, 255, ${intensity})`, width: thickness }              // Pure white core
                 ];
 
                 layers.forEach(layer => {
-                    drawSmoothPath(points);
-                    ctx.strokeStyle = `rgba(${layer.color[0]}, ${layer.color[1]}, ${layer.color[2]}, ${layer.alpha})`;
-                    ctx.lineWidth = layer.size;
+                    drawSharpPath(points);
+                    ctx.strokeStyle = layer.color;
+                    ctx.lineWidth = layer.width;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
                     ctx.stroke();
                 });
+            }
 
-                // Fractal branches (Lichtenberg pattern)
-                if (!isBackground) {
-                    const mainAngle = Math.atan2(dy, dx);
-                    const branchCount = 4 + Math.floor(Math.random() * 4);
+            // Create branching bolt recursively
+            function drawBranch(x, y, angle, length, thickness, intensity, depth, maxDepth) {
+                if (depth > maxDepth || length < 15 || intensity < 0.1) return;
 
-                    for (let i = 0; i < branchCount; i++) {
-                        const idx = Math.floor((i + 1) * points.length / (branchCount + 1));
-                        if (idx < points.length) {
-                            const pt = points[idx];
-                            const side = Math.random() > 0.5 ? 1 : -1;
-                            const branchAngle = mainAngle + side * (0.3 + Math.random() * 0.8);
-                            const branchLength = 80 + Math.random() * 180;
+                // Branches angle more downward (gravity effect)
+                const downwardBias = 0.3;
+                const adjustedAngle = angle + (Math.PI/2 - angle) * downwardBias * 0.2;
 
-                            drawFractalBranch(
-                                pt.x, pt.y,
-                                branchAngle, branchLength,
-                                thickness * 0.5, brightness * 0.7,
-                                0, 3 // max 3 levels of recursion
-                            );
-                        }
+                const endX = x + Math.cos(adjustedAngle) * length;
+                const endY = y + Math.sin(adjustedAngle) * length;
+
+                const points = generateJaggedPath(x, y, endX, endY, length * 0.4, 10);
+                drawBolt(points, thickness, intensity, false);
+
+                // Sub-branches
+                if (depth < maxDepth && Math.random() < 0.6) {
+                    const numSub = 1 + Math.floor(Math.random() * 2);
+                    for (let i = 0; i < numSub; i++) {
+                        const branchIdx = Math.floor(Math.random() * (points.length - 2)) + 1;
+                        const pt = points[branchIdx];
+                        const side = Math.random() > 0.5 ? 1 : -1;
+                        const subAngle = adjustedAngle + side * (0.4 + Math.random() * 0.6);
+                        const subLength = length * (0.4 + Math.random() * 0.3);
+
+                        drawBranch(pt.x, pt.y, subAngle, subLength,
+                            thickness * 0.6, intensity * 0.65, depth + 1, maxDepth);
                     }
                 }
             }
 
-            // Animated stepped leader effect
-            function animateSteppedLeader(startX, startY, endX, endY, thickness, onComplete) {
-                const dx = endX - startX;
-                const dy = endY - startY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const steps = 8;
-                const stepDuration = 15; // ms per step
-                let currentStep = 0;
+            // Main lightning bolt with branches
+            function drawMainLightning(startX, endX, thickness, intensity) {
+                const h = H();
+                const mainPoints = generateJaggedPath(startX, -20, endX, h + 20, 120, 15);
 
-                // Pre-generate the full path
-                const fullPath = generateBoltPath(startX, startY, endX, endY, 80, 8);
+                // Draw main bolt
+                drawBolt(mainPoints, thickness, intensity, true);
 
-                function drawStep() {
-                    if (currentStep >= steps) {
-                        if (onComplete) onComplete(fullPath);
-                        return;
+                // Add branches along main bolt
+                const numBranches = 5 + Math.floor(Math.random() * 5);
+                for (let i = 0; i < numBranches; i++) {
+                    const idx = Math.floor((i + 1) * mainPoints.length / (numBranches + 2));
+                    if (idx < mainPoints.length - 1) {
+                        const pt = mainPoints[idx];
+                        const side = Math.random() > 0.5 ? 1 : -1;
+                        // Branches angle outward and slightly down
+                        const branchAngle = (Math.PI / 2) + side * (0.3 + Math.random() * 0.7);
+                        const branchLength = 60 + Math.random() * 150;
+
+                        drawBranch(pt.x, pt.y, branchAngle, branchLength,
+                            thickness * 0.5, intensity * 0.7, 0, 3);
                     }
-
-                    const progress = (currentStep + 1) / steps;
-                    const pointIndex = Math.floor(progress * (fullPath.length - 1));
-                    const partialPath = fullPath.slice(0, pointIndex + 1);
-
-                    // Draw partial bolt with dim glow
-                    const dimBrightness = 0.3 + currentStep * 0.05;
-
-                    drawSmoothPath(partialPath);
-                    ctx.strokeStyle = `rgba(200, 220, 255, ${dimBrightness * 0.3})`;
-                    ctx.lineWidth = thickness + 10;
-                    ctx.lineCap = 'round';
-                    ctx.stroke();
-
-                    drawSmoothPath(partialPath);
-                    ctx.strokeStyle = `rgba(220, 240, 255, ${dimBrightness})`;
-                    ctx.lineWidth = thickness;
-                    ctx.stroke();
-
-                    currentStep++;
-                    setTimeout(drawStep, stepDuration);
                 }
-
-                drawStep();
             }
 
-            // Return stroke flash animation
-            function returnStrokeFlash(intensity, duration) {
-                flashOverlay.style.transition = 'none';
-                flashOverlay.style.opacity = intensity;
+            // Screen flash effect
+            function screenFlash(intensity) {
+                // Create radial gradient flash (brighter in center)
+                flashOverlay.style.background = `radial-gradient(ellipse at 50% 30%,
+                    rgba(255, 255, 255, ${intensity}) 0%,
+                    rgba(200, 220, 255, ${intensity * 0.7}) 30%,
+                    rgba(147, 112, 219, ${intensity * 0.3}) 60%,
+                    transparent 100%)`;
+                flashOverlay.style.opacity = 1;
 
-                // Rapid decay
+                // Quick fade
                 setTimeout(() => {
-                    flashOverlay.style.transition = `opacity ${duration}ms ease-out`;
+                    flashOverlay.style.transition = 'opacity 120ms ease-out';
                     flashOverlay.style.opacity = 0;
-                }, 16);
+                    setTimeout(() => {
+                        flashOverlay.style.transition = '';
+                    }, 120);
+                }, 30);
             }
 
-            // Complete lightning strike with all effects
+            // Complete strike sequence
             function createStrike() {
-                const w = W(), h = H();
+                const w = W();
+                const h = H();
+
+                // Starting position (vary across screen)
+                const startX = w * 0.15 + Math.random() * w * 0.7;
+                const endX = startX + (Math.random() - 0.5) * 250;
+
+                // Clear canvas
                 ctx.clearRect(0, 0, w, h);
 
-                // Background bolts (atmospheric perspective - dimmer, simpler)
-                const bgBolts = 1 + Math.floor(Math.random() * 2);
-                for (let i = 0; i < bgBolts; i++) {
-                    const bx = Math.random() * w;
-                    drawMainBolt(bx, -30, bx + (Math.random() - 0.5) * 100, h + 30, 1.5, 0.3, true);
-                }
+                // Stepped leader (dim pre-flash)
+                const leaderPoints = generateJaggedPath(startX, -20, endX, h + 20, 100, 20);
+                drawBolt(leaderPoints, 2, 0.3, false);
 
-                // Main foreground bolt with stepped leader animation
-                const mainX = w * 0.2 + Math.random() * w * 0.6;
-                const mainEndX = mainX + (Math.random() - 0.5) * 300;
-
-                animateSteppedLeader(mainX, -30, mainEndX, h + 30, 5, (path) => {
-                    // Clear and redraw with full brightness (return stroke)
+                // Main strike after brief delay
+                setTimeout(() => {
                     ctx.clearRect(0, 0, w, h);
 
-                    // Redraw background bolts
-                    for (let i = 0; i < bgBolts; i++) {
-                        const bx = Math.random() * w;
-                        drawMainBolt(bx, -30, bx + (Math.random() - 0.5) * 100, h + 30, 1.5, 0.25, true);
-                    }
+                    // Draw main bolt at full intensity
+                    drawMainLightning(startX, endX, 3 + Math.random() * 2, 1.0);
 
-                    // Main bolt at full power
-                    drawMainBolt(mainX, -30, mainEndX, h + 30, 4 + Math.random() * 3, 1.0, false);
+                    // Bright flash
+                    screenFlash(0.4);
 
-                    // Additional foreground bolts
-                    const extraBolts = Math.floor(Math.random() * 2);
-                    for (let i = 0; i < extraBolts; i++) {
-                        const ex = Math.random() * w;
-                        drawMainBolt(ex, -30, ex + (Math.random() - 0.5) * 200, h + 30, 3 + Math.random() * 2, 0.8, false);
-                    }
+                    // Re-illumination flickers (realistic multi-stroke)
+                    const flickerTimes = [80, 150, 250, 380];
+                    const flickerIntensities = [0.7, 0.5, 0.8, 0.4];
 
-                    // Return stroke screen flash
-                    returnStrokeFlash(0.25, 150);
-
-                    // Flicker sequence (3-4 rapid flickers)
-                    const flickerPattern = [
-                        { delay: 70, clear: true },
-                        { delay: 120, draw: true, intensity: 0.6 },
-                        { delay: 160, clear: true },
-                        { delay: 200, draw: true, intensity: 0.8 },
-                        { delay: 280, clear: true },
-                        { delay: 320, draw: true, intensity: 0.5 },
-                        { delay: 420, clear: true }
-                    ];
-
-                    flickerPattern.forEach(step => {
+                    flickerTimes.forEach((time, i) => {
                         setTimeout(() => {
-                            if (step.clear) {
+                            if (Math.random() < 0.8) { // 80% chance of each flicker
                                 ctx.clearRect(0, 0, w, h);
+                                if (flickerIntensities[i] > 0.3) {
+                                    // Slight position variation
+                                    const fx = startX + (Math.random() - 0.5) * 30;
+                                    const fex = endX + (Math.random() - 0.5) * 30;
+                                    drawMainLightning(fx, fex, 2 + Math.random() * 2, flickerIntensities[i]);
+                                    screenFlash(flickerIntensities[i] * 0.25);
+                                }
                             }
-                            if (step.draw) {
-                                // Redraw with flicker intensity
-                                const fx = mainX + (Math.random() - 0.5) * 50;
-                                drawMainBolt(fx, -30, fx + (Math.random() - 0.5) * 150, h + 30,
-                                    3 + Math.random() * 2, step.intensity, false);
-                                returnStrokeFlash(step.intensity * 0.15, 100);
-                            }
-                        }, step.delay);
+                        }, time);
                     });
-                });
+
+                    // Final fade out
+                    setTimeout(() => {
+                        ctx.clearRect(0, 0, w, h);
+                    }, 500);
+
+                }, 60);
             }
 
-            // Storm timing - random intervals between strikes
-            function scheduleNextStrike() {
-                const delay = 2000 + Math.random() * 3000; // 2-5 seconds between strikes
+            // Schedule strikes with natural timing
+            function scheduleStrike() {
+                // Random delay 1.5-4 seconds
+                const delay = 1500 + Math.random() * 2500;
                 setTimeout(() => {
                     createStrike();
-                    scheduleNextStrike();
+                    scheduleStrike();
                 }, delay);
             }
 
-            // Initial strike after short delay
-            setTimeout(createStrike, 500);
-            scheduleNextStrike();
+            // Start storm
+            setTimeout(createStrike, 800);
+            scheduleStrike();
         })();
 
         // ===== SPLASH SCREEN ENTRY =====
