@@ -1255,9 +1255,9 @@
             margin-bottom: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 0.15em;
+            text-align: center;
             animation: shimmer 3s linear infinite;
-            text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
-            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.3));
         }
 
         @keyframes shimmer {
@@ -1320,11 +1320,13 @@
             font-size: 3.2rem;
             font-weight: 800;
             letter-spacing: 0.02em;
-            text-shadow:
-                0 0 10px rgba(255, 215, 0, 0.5),
-                0 0 20px rgba(255, 215, 0, 0.3),
-                0 0 40px rgba(168, 85, 247, 0.2);
-            animation: textGlow 3s ease-in-out infinite alternate;
+            background: linear-gradient(135deg, #ffd700 0%, #06b6d4 25%, #a855f7 50%, #ff8c00 75%, #ffd700 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
         }
 
         .tagline-tonight {
@@ -1332,17 +1334,14 @@
             font-weight: 800;
             letter-spacing: 0.02em;
             margin-top: 0.25rem;
-            text-shadow:
-                0 0 10px rgba(255, 140, 0, 0.5),
-                0 0 20px rgba(255, 140, 0, 0.3),
-                0 0 40px rgba(255, 215, 0, 0.2);
-            animation: textGlow 3s ease-in-out infinite alternate;
+            background: linear-gradient(135deg, #ff8c00 0%, #ffd700 25%, #a855f7 50%, #06b6d4 75%, #ff8c00 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
             animation-delay: 0.5s;
-        }
-
-        @keyframes textGlow {
-            0% { filter: brightness(1); }
-            100% { filter: brightness(1.2); }
+            filter: drop-shadow(0 0 15px rgba(255, 140, 0, 0.4)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
         }
 
         .splash-subtitle {
@@ -1424,12 +1423,8 @@
         <div class="splash-content">
         <h1 class="splash-title">Lightning Pass</h1>
         <div class="splash-tagline">
-            <span class="tagline-main">
-                <span style="color: #FFD700;">S</span><span style="color: #4A90D9;">k</span><span style="color: #FFD700;">i</span><span style="color: #D4A5D9;">p</span><span style="color: #E8E8E8;"> the Line</span>
-            </span>
-            <span class="tagline-tonight">
-                <span style="color: #FFD700;">T</span><span style="color: #FFA500;">onight</span>
-            </span>
+            <span class="tagline-main">Skip the Line</span>
+            <span class="tagline-tonight">Tonight</span>
         </div>
         <p class="splash-subtitle">Get instant access to the hottest venues</p>
         <button class="splash-enter">Tap to Enter</button>
