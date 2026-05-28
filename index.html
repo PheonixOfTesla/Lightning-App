@@ -3271,17 +3271,25 @@
         function enterApp() {
             // Hide splash screen
             document.getElementById('splashScreen').classList.add('hidden');
-            // Show landing page
-            document.getElementById('landingPage').style.display = 'flex';
-
-            // Start video (user interaction allows autoplay now)
-            const video = document.getElementById('video-background');
-            if (video) {
-                video.play().catch(e => console.log('Video play failed:', e));
-            }
+            // Hide landing page (no longer needed)
+            document.getElementById('landingPage').style.display = 'none';
 
             // Start music
             startMusic();
+
+            // Go directly to browse venues (guest mode)
+            // Set up guest navigation if not logged in
+            if (!state.user) {
+                const navLinks = document.getElementById('navLinks');
+                navLinks.innerHTML = `
+                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Venues</a>
+                    <a href="login.html" class="btn btn-primary">LOGIN</a>
+                `;
+                navLinks.style.display = 'flex';
+            }
+
+            showView('customer');
+            loadVenues();
         }
 
         // Auto-play music when page loads (will work if browser allows)
