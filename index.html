@@ -1191,12 +1191,34 @@
             width: 100vw;
             height: 100vh;
             z-index: 99999;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            background: radial-gradient(ellipse at 50% 30%, #1a1a3e 0%, #0d0d1a 50%, #000 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            overflow: hidden;
+        }
+
+        #splashScreen::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+            animation: ambientFloat 15s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes ambientFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, -2%) rotate(1deg); }
+            66% { transform: translate(-1%, 1%) rotate(-1deg); }
         }
 
         #splashScreen.hidden {
@@ -1219,81 +1241,176 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 2rem;
         }
 
         .splash-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(90deg, #a855f7, #06b6d4, #ffd700);
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 25%, #a855f7 50%, #06b6d4 75%, #ffd700 100%);
+            background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.15em;
+            animation: shimmer 3s linear infinite;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
         }
 
         .splash-enter {
-            padding: 1rem 3rem;
-            font-size: 1.2rem;
+            padding: 1.2rem 3.5rem;
+            font-size: 1.1rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.15em;
-            background: transparent;
-            border: 2px solid #ffd700;
+            letter-spacing: 0.2em;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 140, 0, 0.1) 100%);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #ffd700, #ff8c00, #ffd700) 1;
             color: #ffd700;
-            border-radius: 50px;
+            border-radius: 0;
             cursor: pointer;
-            transition: all 0.3s ease;
-            animation: pulse 2s infinite;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        .splash-enter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+            animation: btnShine 2s ease-in-out infinite;
+        }
+
+        @keyframes btnShine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
         }
 
         .splash-enter:hover {
-            background: #ffd700;
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
             color: #000;
             transform: scale(1.05);
+            box-shadow:
+                0 0 30px rgba(255, 215, 0, 0.6),
+                0 0 60px rgba(255, 140, 0, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
         .splash-tagline {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .tagline-main {
-            font-size: 3rem;
+            font-size: 3.2rem;
             font-weight: 800;
             letter-spacing: 0.02em;
+            text-shadow:
+                0 0 10px rgba(255, 215, 0, 0.5),
+                0 0 20px rgba(255, 215, 0, 0.3),
+                0 0 40px rgba(168, 85, 247, 0.2);
+            animation: textGlow 3s ease-in-out infinite alternate;
         }
 
         .tagline-tonight {
-            font-size: 3rem;
+            font-size: 3.2rem;
             font-weight: 800;
             letter-spacing: 0.02em;
             margin-top: 0.25rem;
+            text-shadow:
+                0 0 10px rgba(255, 140, 0, 0.5),
+                0 0 20px rgba(255, 140, 0, 0.3),
+                0 0 40px rgba(255, 215, 0, 0.2);
+            animation: textGlow 3s ease-in-out infinite alternate;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes textGlow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.2); }
         }
 
         .splash-subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.15rem;
+            margin-bottom: 2rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        /* Floating orbs */
+        .splash-orb {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.6;
+            filter: blur(1px);
+        }
+
+        .splash-orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
+            top: 10%;
+            left: -5%;
+            animation: orbFloat1 8s ease-in-out infinite;
+        }
+
+        .splash-orb-2 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, transparent 70%);
+            bottom: 15%;
+            right: -5%;
+            animation: orbFloat2 10s ease-in-out infinite;
+        }
+
+        .splash-orb-3 {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
+            top: 50%;
+            right: 20%;
+            animation: orbFloat3 6s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 20px) scale(1.1); }
+        }
+
+        @keyframes orbFloat2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-20px, -30px) scale(1.15); }
+        }
+
+        @keyframes orbFloat3 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+            50% { transform: translate(-15px, 25px) scale(0.9); opacity: 0.8; }
         }
 
         @media (max-width: 768px) {
-            .tagline-main, .tagline-tonight { font-size: 2rem; }
-            .splash-subtitle { font-size: 0.9rem; }
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
-            50% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
-        }
-
-        @media (max-width: 768px) {
-            .splash-title { font-size: 1.8rem; }
-            .splash-enter { padding: 0.8rem 2rem; font-size: 1rem; }
+            .tagline-main, .tagline-tonight { font-size: 2.2rem; }
+            .splash-subtitle { font-size: 0.85rem; }
+            .splash-title { font-size: 2rem; }
+            .splash-enter { padding: 1rem 2.5rem; font-size: 0.95rem; }
+            .splash-orb { display: none; }
         }
     </style>
 </head>
@@ -1301,6 +1418,9 @@
     <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
     <div id="splashScreen" onclick="enterApp()">
         <canvas id="lightningCanvas"></canvas>
+        <div class="splash-orb splash-orb-1"></div>
+        <div class="splash-orb splash-orb-2"></div>
+        <div class="splash-orb splash-orb-3"></div>
         <div class="splash-content">
         <h1 class="splash-title">Lightning Pass</h1>
         <div class="splash-tagline">
@@ -3023,11 +3143,15 @@
             }
         }
 
-        // ===== ELECTRIC STORM - MULTIPLE STRIKES WITH STATIC =====
+        // ===== DISTANT STORM - ATMOSPHERIC LIGHTNING =====
         (function initLightning() {
             const canvas = document.getElementById('lightningCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
+
+            // Apply blur for distant atmospheric effect
+            canvas.style.filter = 'blur(1.5px)';
+            canvas.style.opacity = '0.7';
 
             // Screen flash overlay
             let flashOverlay = document.getElementById('lightningFlash');
@@ -3052,15 +3176,15 @@
             const W = () => window.innerWidth;
             const H = () => window.innerHeight;
 
-            // Generate ultra-jagged static-like path
-            function generateStaticPath(x1, y1, x2, y2, chaos) {
+            // Generate smoother, more distant path
+            function generateDistantPath(x1, y1, x2, y2, chaos) {
                 const points = [{ x: x1, y: y1 }];
                 const dx = x2 - x1;
                 const dy = y2 - y1;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // More segments = more static/jagged
-                const segments = Math.max(12, Math.floor(dist / 20));
+                // Fewer segments = smoother, more distant look
+                const segments = Math.max(8, Math.floor(dist / 40));
 
                 for (let i = 1; i <= segments; i++) {
                     const t = i / segments;
@@ -3068,11 +3192,10 @@
                     let py = y1 + dy * t;
 
                     if (i < segments) {
-                        // Perpendicular offset for zig-zag
                         const perpX = -dy / dist;
                         const perpY = dx / dist;
-                        // Random sharp jitter
-                        const jitter = (Math.random() - 0.5) * chaos * 2;
+                        // Reduced jitter for smoother, distant look
+                        const jitter = (Math.random() - 0.5) * chaos * 1.2;
                         px += perpX * jitter;
                         py += perpY * jitter;
                     }
@@ -3091,17 +3214,18 @@
                 }
             }
 
-            // Draw bolt with electric glow
+            // Draw bolt with diffuse atmospheric glow
             function drawBolt(points, thickness, intensity) {
                 if (points.length < 2) return;
 
-                // Glow layers - electric blue/white
+                // More diffuse glow layers for distant effect
                 const layers = [
-                    { color: `rgba(100, 150, 255, ${intensity * 0.1})`, width: thickness + 20 },
-                    { color: `rgba(150, 200, 255, ${intensity * 0.2})`, width: thickness + 12 },
-                    { color: `rgba(200, 230, 255, ${intensity * 0.4})`, width: thickness + 6 },
-                    { color: `rgba(230, 245, 255, ${intensity * 0.7})`, width: thickness + 3 },
-                    { color: `rgba(255, 255, 255, ${intensity})`, width: thickness }
+                    { color: `rgba(120, 140, 180, ${intensity * 0.05})`, width: thickness + 40 },
+                    { color: `rgba(140, 160, 200, ${intensity * 0.08})`, width: thickness + 25 },
+                    { color: `rgba(160, 180, 220, ${intensity * 0.12})`, width: thickness + 15 },
+                    { color: `rgba(180, 200, 240, ${intensity * 0.25})`, width: thickness + 8 },
+                    { color: `rgba(200, 220, 255, ${intensity * 0.5})`, width: thickness + 3 },
+                    { color: `rgba(230, 240, 255, ${intensity * 0.7})`, width: thickness }
                 ];
 
                 layers.forEach(layer => {
@@ -3109,60 +3233,53 @@
                     ctx.strokeStyle = layer.color;
                     ctx.lineWidth = layer.width;
                     ctx.lineCap = 'round';
-                    ctx.lineJoin = 'bevel';
+                    ctx.lineJoin = 'round';
                     ctx.stroke();
                 });
             }
 
-            // Draw static sparks (tiny branches)
-            function drawStaticSparks(points, intensity) {
-                const numSparks = Math.floor(points.length * 0.6);
+            // Minimal distant sparks
+            function drawDistantSparks(points, intensity) {
+                const numSparks = Math.floor(points.length * 0.2);
                 for (let i = 0; i < numSparks; i++) {
                     const idx = Math.floor(Math.random() * (points.length - 1));
                     const pt = points[idx];
                     const angle = Math.random() * Math.PI * 2;
-                    const len = 5 + Math.random() * 25;
+                    const len = 3 + Math.random() * 12;
 
                     const endX = pt.x + Math.cos(angle) * len;
                     const endY = pt.y + Math.sin(angle) * len;
 
-                    // Tiny static spark
                     ctx.beginPath();
                     ctx.moveTo(pt.x, pt.y);
-                    // Add one jag
-                    const midX = (pt.x + endX) / 2 + (Math.random() - 0.5) * 10;
-                    const midY = (pt.y + endY) / 2 + (Math.random() - 0.5) * 10;
-                    ctx.lineTo(midX, midY);
                     ctx.lineTo(endX, endY);
 
-                    ctx.strokeStyle = `rgba(200, 230, 255, ${intensity * 0.5})`;
-                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = `rgba(180, 200, 240, ${intensity * 0.3})`;
+                    ctx.lineWidth = 0.5;
                     ctx.stroke();
                 }
             }
 
-            // Draw branching from main bolt
+            // Fewer, subtler branches
             function drawBranches(points, thickness, intensity, depth) {
-                if (depth > 4 || intensity < 0.15) return;
+                if (depth > 2 || intensity < 0.2) return;
 
-                const numBranches = 3 + Math.floor(Math.random() * 4);
+                const numBranches = 1 + Math.floor(Math.random() * 2);
                 for (let i = 0; i < numBranches; i++) {
                     const idx = Math.floor(Math.random() * (points.length - 2)) + 1;
                     const pt = points[idx];
                     const side = Math.random() > 0.5 ? 1 : -1;
-                    const angle = (Math.PI / 2) + side * (0.3 + Math.random() * 0.9);
-                    const len = 30 + Math.random() * 100;
+                    const angle = (Math.PI / 2) + side * (0.4 + Math.random() * 0.6);
+                    const len = 20 + Math.random() * 60;
 
                     const endX = pt.x + Math.cos(angle) * len;
                     const endY = pt.y + Math.sin(angle) * len;
 
-                    const branchPoints = generateStaticPath(pt.x, pt.y, endX, endY, 15 + Math.random() * 20);
-                    drawBolt(branchPoints, thickness * 0.5, intensity * 0.6);
-                    drawStaticSparks(branchPoints, intensity * 0.4);
+                    const branchPoints = generateDistantPath(pt.x, pt.y, endX, endY, 10 + Math.random() * 10);
+                    drawBolt(branchPoints, thickness * 0.4, intensity * 0.5);
 
-                    // Sub-branches
-                    if (Math.random() < 0.5) {
-                        drawBranches(branchPoints, thickness * 0.4, intensity * 0.5, depth + 1);
+                    if (Math.random() < 0.3) {
+                        drawBranches(branchPoints, thickness * 0.3, intensity * 0.4, depth + 1);
                     }
                 }
             }
@@ -3170,86 +3287,77 @@
             // Draw single complete lightning bolt
             function drawLightningBolt(startX, endX, thickness, intensity) {
                 const h = H();
-                const mainPoints = generateStaticPath(startX, -10, endX, h + 10, 40 + Math.random() * 40);
+                const mainPoints = generateDistantPath(startX, -10, endX, h + 10, 25 + Math.random() * 20);
 
-                // Main bolt
                 drawBolt(mainPoints, thickness, intensity);
-
-                // Static sparks along main
-                drawStaticSparks(mainPoints, intensity);
-
-                // Branches
+                drawDistantSparks(mainPoints, intensity);
                 drawBranches(mainPoints, thickness, intensity, 0);
             }
 
-            // Screen flash
+            // Subtle atmospheric flash
             function screenFlash(intensity) {
                 flashOverlay.style.background = `radial-gradient(ellipse at 50% 40%,
-                    rgba(255, 255, 255, ${intensity}) 0%,
-                    rgba(180, 210, 255, ${intensity * 0.6}) 40%,
-                    rgba(100, 130, 200, ${intensity * 0.2}) 70%,
+                    rgba(200, 210, 240, ${intensity * 0.6}) 0%,
+                    rgba(150, 170, 210, ${intensity * 0.3}) 40%,
+                    rgba(100, 120, 160, ${intensity * 0.1}) 70%,
                     transparent 100%)`;
                 flashOverlay.style.opacity = 1;
 
                 setTimeout(() => {
-                    flashOverlay.style.transition = 'opacity 100ms ease-out';
+                    flashOverlay.style.transition = 'opacity 150ms ease-out';
                     flashOverlay.style.opacity = 0;
-                    setTimeout(() => { flashOverlay.style.transition = ''; }, 100);
-                }, 20);
+                    setTimeout(() => { flashOverlay.style.transition = ''; }, 150);
+                }, 30);
             }
 
-            // Create storm with multiple simultaneous strikes
+            // Create distant storm
             function createStorm() {
                 const w = W();
                 const h = H();
 
                 ctx.clearRect(0, 0, w, h);
 
-                // Number of simultaneous bolts (2-4)
-                const numBolts = 2 + Math.floor(Math.random() * 3);
+                // 1-3 bolts, less dense
+                const numBolts = 1 + Math.floor(Math.random() * 3);
 
-                // Generate bolt positions spread across screen
                 const bolts = [];
                 for (let i = 0; i < numBolts; i++) {
                     const section = w / numBolts;
                     const startX = section * i + Math.random() * section;
-                    const endX = startX + (Math.random() - 0.5) * 150;
-                    const thickness = 2 + Math.random() * 2;
-                    const intensity = 0.7 + Math.random() * 0.3;
+                    const endX = startX + (Math.random() - 0.5) * 100;
+                    // Thinner bolts for distance
+                    const thickness = 1 + Math.random() * 1.5;
+                    // Lower intensity for atmospheric effect
+                    const intensity = 0.5 + Math.random() * 0.3;
                     bolts.push({ startX, endX, thickness, intensity });
                 }
 
-                // Draw all bolts
                 bolts.forEach(bolt => {
                     drawLightningBolt(bolt.startX, bolt.endX, bolt.thickness, bolt.intensity);
                 });
 
-                // Big flash
-                screenFlash(0.5);
+                screenFlash(0.3);
 
-                // Flicker sequence
+                // Softer flicker sequence
                 const flickers = [
-                    { time: 50, intensity: 0.3 },
-                    { time: 100, intensity: 0.8 },
-                    { time: 140, intensity: 0 },
-                    { time: 180, intensity: 0.6 },
-                    { time: 220, intensity: 0 },
-                    { time: 280, intensity: 0.9 },
-                    { time: 320, intensity: 0.4 },
-                    { time: 400, intensity: 0 }
+                    { time: 60, intensity: 0.2 },
+                    { time: 120, intensity: 0.5 },
+                    { time: 180, intensity: 0 },
+                    { time: 250, intensity: 0.4 },
+                    { time: 350, intensity: 0.15 },
+                    { time: 450, intensity: 0 }
                 ];
 
                 flickers.forEach(f => {
                     setTimeout(() => {
                         ctx.clearRect(0, 0, w, h);
                         if (f.intensity > 0) {
-                            // Redraw with slight variation
                             bolts.forEach(bolt => {
-                                const fx = bolt.startX + (Math.random() - 0.5) * 20;
-                                const fex = bolt.endX + (Math.random() - 0.5) * 20;
-                                drawLightningBolt(fx, fex, bolt.thickness * 0.8, f.intensity);
+                                const fx = bolt.startX + (Math.random() - 0.5) * 15;
+                                const fex = bolt.endX + (Math.random() - 0.5) * 15;
+                                drawLightningBolt(fx, fex, bolt.thickness * 0.7, f.intensity);
                             });
-                            screenFlash(f.intensity * 0.3);
+                            screenFlash(f.intensity * 0.2);
                         }
                     }, f.time);
                 });
