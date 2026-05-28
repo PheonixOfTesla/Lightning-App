@@ -1283,11 +1283,11 @@
             <p class="landing-subtitle">Skip the Line. Live the Night.</p>
 
             <div class="landing-buttons">
-                <button type="button" class="landing-btn landing-btn-login" onclick="showLoginFromLanding()" autocomplete="off">
-                    Login
+                <button type="button" class="landing-btn landing-btn-signup" onclick="browseVenuesFromLanding()" autocomplete="off">
+                    Browse Venues
                 </button>
-                <button type="button" class="landing-btn landing-btn-signup" onclick="showSignupFromLanding()" autocomplete="off">
-                    Sign Up
+                <button type="button" class="landing-btn landing-btn-login" onclick="goToLogin()" autocomplete="off">
+                    Login
                 </button>
             </div>
         </div>
@@ -1574,9 +1574,14 @@
                 </p>
             </div>
 
-            <!-- MY PASSES SECTION -->
-            <div class="section" style="margin-bottom: 2rem;">
-                <h2 class="section-title">🎫 My Passes</h2>
+            <!-- MY PASSES SECTION (hidden for guests) -->
+            <div id="myPassesSection" class="section" style="margin-bottom: 2rem; display: none;">
+                <h2 class="section-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                        <path d="M22 10V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4"/><rect x="2" y="10" width="20" height="10" rx="2"/><circle cx="12" cy="15" r="2"/>
+                    </svg>
+                    My Passes
+                </h2>
                 <div id="customerPassesList">
                     <div class="loading">Loading your passes...</div>
                 </div>
@@ -2421,7 +2426,7 @@
             <div id="purchaseStatus" style="display: none; margin-top: 1rem;"></div>
 
             <p style="text-align: center; margin-top: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
-                <a href="#" onclick="showLoginFromLanding(); closeModal('purchaseModal');" style="color: var(--electric-blue);">Sign in</a> to view all your purchases
+                <a href="login.html" style="color: var(--electric-blue);">Sign in</a> to view all your purchases
             </p>
         </div>
     </div>
@@ -2652,30 +2657,32 @@
             }
         }
 
-        function showLoginFromLanding() {
-            // Music keeps playing throughout the app - toggle always visible
-            // Hide landing page
+        function goToLogin() {
+            // Redirect to login page
+            window.location.href = 'login.html';
+        }
+
+        function goToSignup() {
+            // Redirect to login page with register mode
+            window.location.href = 'login.html?mode=register';
+        }
+
+        function browseVenuesFromLanding() {
+            // Hide landing page and show venues
             document.getElementById('landingPage').classList.add('hidden');
-            // Show auth view
-            showView('auth');
-            // Show login section, hide register section
-            document.getElementById('loginSection').style.display = 'block';
-            document.getElementById('registerSection').style.display = 'none';
-            // Scroll to login
-            document.getElementById('loginSection').scrollIntoView({ behavior: 'smooth' });
+            // Show customer view with venues (works for guests too)
+            showView('customer');
+            // Load venues
+            loadVenues();
+        }
+
+        // Legacy functions for backwards compatibility
+        function showLoginFromLanding() {
+            goToLogin();
         }
 
         function showSignupFromLanding() {
-            // Music keeps playing throughout the app - toggle always visible
-            // Hide landing page
-            document.getElementById('landingPage').classList.add('hidden');
-            // Show auth view
-            showView('auth');
-            // Hide login section, show register section
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('registerSection').style.display = 'block';
-            // Scroll to register
-            document.getElementById('registerSection').scrollIntoView({ behavior: 'smooth' });
+            goToSignup();
         }
 
         // ===== ENERGETIC BACKGROUND MUSIC ENGINE (Web Audio API) =====
@@ -3534,10 +3541,11 @@
 
                         handleAuthSuccess(state.user);
                     } else {
-                        // Token invalid, clear and show login
+                        // Token invalid, clear and show guest mode
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
-                        showView('auth');
+                        // Redirect to login page
+                        window.location.href = 'login.html';
                     }
                 } catch (error) {
                     console.error('Auth verification failed:', error);
@@ -3546,7 +3554,15 @@
                     handleAuthSuccess(state.user);
                 }
             } else {
-                showView('auth');
+                // Guest mode - show venues without login
+                // Update nav for guest
+                const navLinks = document.getElementById('navLinks');
+                navLinks.innerHTML = `
+                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Venues</a>
+                    <a href="login.html" class="btn btn-primary">LOGIN</a>
+                `;
+                navLinks.style.display = 'flex';
+                // Don't auto-show customer view here - let landing page handle it
             }
         }
 
@@ -4041,6 +4057,12 @@
 
         function handleAuthSuccess(user) {
             updateNavigation(user);
+
+            // Show "My Passes" section for logged in customers
+            const myPassesSection = document.getElementById('myPassesSection');
+            if (myPassesSection) {
+                myPassesSection.style.display = (user.role === 'customer') ? 'block' : 'none';
+            }
 
             if (user.role === 'admin') {
                 showView('admin');
@@ -4618,32 +4640,56 @@
             localStorage.removeItem('user');
             state.token = null;
             state.user = null;
-            
-            document.getElementById('navLinks').style.display = 'none';
-            showView('auth');
-            showToast('✅ Logged out successfully', 'success');
+
+            // Hide "My Passes" section for guests
+            const myPassesSection = document.getElementById('myPassesSection');
+            if (myPassesSection) {
+                myPassesSection.style.display = 'none';
+            }
+
+            // Update nav for guest mode
+            const navLinks = document.getElementById('navLinks');
+            navLinks.innerHTML = `
+                <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Venues</a>
+                <a href="login.html" class="btn btn-primary">LOGIN</a>
+            `;
+            navLinks.style.display = 'flex';
+
+            showView('customer');
+            loadVenues();
+            showToast('Logged out successfully', 'success');
         }
 
         function goHome() {
             if (state.user) {
                 if (state.user.role === 'admin') showView('admin');
                 else if (state.user.role === 'venue') showView('venue');
+                else if (state.user.role === 'dj') showView('dj');
                 else showView('customer');
+            } else {
+                // Guest - show customer/venues view
+                showView('customer');
             }
         }
 
         // ===== VIEW MANAGEMENT =====
         function showView(view) {
+            // Redirect to login.html if trying to show auth view
+            if (view === 'auth') {
+                window.location.href = 'login.html';
+                return;
+            }
+
             // Role-based view access guard
             const roleViewAccess = {
-                'admin': ['auth', 'admin'],
-                'venue': ['auth', 'venue', 'scanner'],
-                'customer': ['auth', 'customer'],
-                'dj': ['auth', 'dj']
+                'admin': ['admin'],
+                'venue': ['venue', 'scanner'],
+                'customer': ['customer'],
+                'dj': ['dj']
             };
             const userRole = state.user?.role;
-            if (userRole && view !== 'auth') {
-                const allowed = roleViewAccess[userRole] || ['auth'];
+            if (userRole) {
+                const allowed = roleViewAccess[userRole] || ['customer'];
                 if (!allowed.includes(view)) {
                     console.warn('Access denied: ' + userRole + ' cannot access ' + view);
                     return;
@@ -4652,8 +4698,12 @@
 
             state.currentView = view;
 
-            const views = ['auth', 'customer', 'venue', 'admin', 'scanner', 'dj'];
+            const views = ['customer', 'venue', 'admin', 'scanner', 'dj'];
             const nav = document.querySelector('nav');
+
+            // Always hide authView since login is now on separate page
+            const authView = document.getElementById('authView');
+            if (authView) authView.classList.add('hidden');
 
             views.forEach(v => {
                 const element = document.getElementById(v + 'View');
@@ -4666,12 +4716,8 @@
                 }
             });
 
-            // Hide nav on auth view, show on all other views
-            if (view === 'auth') {
-                nav.classList.add('auth-hidden');
-            } else {
-                nav.classList.remove('auth-hidden');
-            }
+            // Show nav on all views
+            nav.classList.remove('auth-hidden');
         }
 
         // ===== CUSTOMER FUNCTIONS =====
