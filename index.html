@@ -1254,6 +1254,38 @@
             transform: scale(1.05);
         }
 
+        .splash-tagline {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .tagline-main {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .tagline-tonight {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            margin-top: 0.25rem;
+        }
+
+        .splash-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 768px) {
+            .tagline-main, .tagline-tonight { font-size: 2rem; }
+            .splash-subtitle { font-size: 0.9rem; }
+        }
+
         @keyframes pulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
             50% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
@@ -1271,6 +1303,15 @@
         <canvas id="lightningCanvas"></canvas>
         <div class="splash-content">
         <h1 class="splash-title">Lightning Pass</h1>
+        <div class="splash-tagline">
+            <span class="tagline-main">
+                <span style="color: #FFD700;">S</span><span style="color: #4A90D9;">k</span><span style="color: #FFD700;">i</span><span style="color: #D4A5D9;">p</span><span style="color: #E8E8E8;"> the Line</span>
+            </span>
+            <span class="tagline-tonight">
+                <span style="color: #FFD700;">T</span><span style="color: #FFA500;">onight</span>
+            </span>
+        </div>
+        <p class="splash-subtitle">Get instant access to the hottest venues</p>
         <button class="splash-enter">Tap to Enter</button>
         </div>
     </div>
@@ -5855,6 +5896,7 @@
                     document.getElementById('pendingAlert').style.display = 'none';
                 }
 
+                adminVenuesCache = allVenues;
                 renderAllVenues(allVenues);
 
                 // Load promotional discount setting
@@ -6103,11 +6145,162 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-secondary" onclick="editVenueAdmin('${venue._id}')">Edit</button>
                         <button class="btn btn-danger" onclick="deleteVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Delete</button>
                     </div>
                 `;
                 list.appendChild(card);
             });
+        }
+
+        // Store venues for editing
+        let adminVenuesCache = [];
+
+        async function editVenueAdmin(venueId) {
+            const venue = adminVenuesCache.find(v => v._id === venueId);
+            if (!venue) {
+                showToast('Venue not found', 'error');
+                return;
+            }
+
+            // Create/show edit modal
+            let modal = document.getElementById('editVenueModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'editVenueModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 500px;">
+                        <div class="modal-header">
+                            <h2>Edit Venue</h2>
+                            <button class="modal-close" onclick="closeModal('editVenueModal')">&times;</button>
+                        </div>
+                        <form id="editVenueForm" onsubmit="saveVenueEdit(event)">
+                            <input type="hidden" id="editVenueId">
+                            <div class="form-group">
+                                <label>Venue Name</label>
+                                <input type="text" id="editVenueName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Address</label>
+                                <input type="text" id="editVenueAddress" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <input type="text" id="editVenueType" placeholder="Nightclub, Bar, etc.">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label>Base Price ($)</label>
+                                    <input type="number" id="editVenueBasePrice" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label>Current Price ($)</label>
+                                    <input type="number" id="editVenueCurrentPrice" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label>Capacity</label>
+                                    <input type="number" id="editVenueCapacity" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Available Passes</label>
+                                    <input type="number" id="editVenueAvailable" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Tonight's Tagline</label>
+                                <input type="text" id="editVenueTagline" placeholder="What's happening tonight?">
+                            </div>
+                            <div class="form-group">
+                                <label>Owner Email</label>
+                                <input type="email" id="editVenueOwnerEmail">
+                            </div>
+                            <div class="form-group">
+                                <label>Owner Phone</label>
+                                <input type="tel" id="editVenueOwnerPhone">
+                            </div>
+                            <div class="form-group">
+                                <label>Stripe Connect ID</label>
+                                <input type="text" id="editVenueStripeId" placeholder="acct_...">
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="editVenueActive"> Active
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="editVenueTrending"> Trending
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="editVenueStatus">
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+                        </form>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // Populate form
+            document.getElementById('editVenueId').value = venue._id;
+            document.getElementById('editVenueName').value = venue.name || '';
+            document.getElementById('editVenueAddress').value = venue.address || '';
+            document.getElementById('editVenueType').value = venue.type || '';
+            document.getElementById('editVenueBasePrice').value = venue.basePrice || '';
+            document.getElementById('editVenueCurrentPrice').value = venue.currentPrice || '';
+            document.getElementById('editVenueCapacity').value = venue.capacity || '';
+            document.getElementById('editVenueAvailable').value = venue.availablePasses || '';
+            document.getElementById('editVenueTagline').value = venue.tonightTagline || '';
+            document.getElementById('editVenueOwnerEmail').value = venue.ownerEmail || '';
+            document.getElementById('editVenueOwnerPhone').value = venue.ownerPhone || '';
+            document.getElementById('editVenueStripeId').value = venue.stripeConnectId || '';
+            document.getElementById('editVenueActive').checked = venue.isActive;
+            document.getElementById('editVenueTrending').checked = venue.trending;
+            document.getElementById('editVenueStatus').value = venue.status || 'medium';
+
+            modal.classList.add('active');
+        }
+
+        async function saveVenueEdit(event) {
+            event.preventDefault();
+
+            const venueId = document.getElementById('editVenueId').value;
+            const updates = {
+                name: document.getElementById('editVenueName').value,
+                address: document.getElementById('editVenueAddress').value,
+                type: document.getElementById('editVenueType').value,
+                basePrice: parseFloat(document.getElementById('editVenueBasePrice').value) || 0,
+                currentPrice: parseFloat(document.getElementById('editVenueCurrentPrice').value) || 0,
+                capacity: parseInt(document.getElementById('editVenueCapacity').value) || 0,
+                availablePasses: parseInt(document.getElementById('editVenueAvailable').value) || 0,
+                tonightTagline: document.getElementById('editVenueTagline').value,
+                ownerEmail: document.getElementById('editVenueOwnerEmail').value,
+                ownerPhone: document.getElementById('editVenueOwnerPhone').value,
+                stripeConnectId: document.getElementById('editVenueStripeId').value,
+                isActive: document.getElementById('editVenueActive').checked,
+                trending: document.getElementById('editVenueTrending').checked,
+                status: document.getElementById('editVenueStatus').value
+            };
+
+            try {
+                await apiCall(`/api/v1/lightning/venues/${venueId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updates)
+                });
+
+                showToast('Venue updated successfully', 'success');
+                closeModal('editVenueModal');
+                await loadAdminStats();
+            } catch (error) {
+                showToast('Failed to update venue: ' + error.message, 'error');
+            }
         }
 
         function showPendingApprovals() {
