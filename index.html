@@ -1322,7 +1322,15 @@
     <nav>
         <div class="nav-container">
             <div class="logo" onclick="goHome()">
-                <span>⚡</span>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 0 6px rgba(255, 221, 0, 0.6));">
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ffdd00"/>
+                            <stop offset="100%" stop-color="#ff8c00"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="url(#logoGradient)"/>
+                </svg>
                 <span>Lightning Pass</span>
             </div>
             <div class="nav-links" id="navLinks">
