@@ -2343,17 +2343,36 @@
         </div>
     </main>
 
-    <!-- Purchase Modal -->
+    <!-- Purchase Modal - Guest Checkout Enabled -->
     <div id="purchaseModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Purchase Lightning Pass</h2>
                 <button class="close-btn" onclick="closeModal('purchaseModal')">&times;</button>
             </div>
-            
+
             <div id="selectedVenueInfo"></div>
 
             <form onsubmit="processPurchase(event)" id="purchaseForm">
+                <!-- Guest Checkout Contact Info -->
+                <div id="guestCheckoutFields" style="background: rgba(0, 212, 255, 0.05); border: 1px solid var(--electric-blue); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 1rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                        Enter your email or phone to receive your ticket
+                    </p>
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="guestEmail" placeholder="your@email.com">
+                    </div>
+                    <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 0.5rem 0;">OR</div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" id="guestPhone" placeholder="+1 (555) 555-5555">
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Pass Type</label>
                     <select class="form-input" id="passTypeSelect" onchange="showPassTypeDetails(); updateTotal();">
@@ -2380,17 +2399,30 @@
 
                 <!-- Stripe Card Element -->
                 <div class="form-group">
-                    <label class="form-label">💳 Payment Information</label>
+                    <label class="form-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                            <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                        Payment Information
+                    </label>
                     <div id="card-element" style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></div>
                     <div id="card-errors" role="alert" style="color: var(--danger-red); font-size: 0.875rem; margin-top: 0.5rem;"></div>
                 </div>
 
                 <button type="submit" class="btn btn-secondary" id="purchaseBtn" style="width: 100%;">
-                    ⚡ COMPLETE PURCHASE
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.5rem;">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    COMPLETE PURCHASE
                 </button>
             </form>
-            
+
             <div id="purchaseStatus" style="display: none; margin-top: 1rem;"></div>
+
+            <p style="text-align: center; margin-top: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
+                <a href="#" onclick="showLoginFromLanding(); closeModal('purchaseModal');" style="color: var(--electric-blue);">Sign in</a> to view all your purchases
+            </p>
         </div>
     </div>
 
@@ -4670,14 +4702,27 @@
                         </div>
                         <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1rem;">${venue.address || ''}</p>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
-                            <span>👥 ${venue.inLine || 0} in line</span>
-                            <span>🎫 ${venue.availablePasses || 0} passes</span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                                ${venue.inLine || 0} in line
+                            </span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                </svg>
+                                ${venue.availablePasses || 0} passes
+                            </span>
                         </div>
                         <div style="font-size: 2rem; font-weight: bold; color: var(--lightning-yellow); margin-bottom: 1rem;">
                             $${venue.currentPrice || 35}
                         </div>
                         <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue('${venue._id}')">
-                            ⚡ GET PASS
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            GET PASS
                         </button>
                     `;
                     grid.appendChild(card);
@@ -4702,10 +4747,26 @@
                         <h3 style="color: var(--electric-purple);">${state.selectedVenue.name}</h3>
                         <p style="color: rgba(255, 255, 255, 0.7);">${state.selectedVenue.address || ''}</p>
                         <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
-                            <span>⏱️ Wait: ${state.selectedVenue.waitTime || 0} min</span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                Wait: ${state.selectedVenue.waitTime || 0} min
+                            </span>
                         </div>
                     </div>
                 `;
+
+                // Prefill guest checkout fields if user is logged in
+                const guestEmailField = document.getElementById('guestEmail');
+                const guestPhoneField = document.getElementById('guestPhone');
+                if (state.user) {
+                    if (guestEmailField && state.user.email) guestEmailField.value = state.user.email;
+                    if (guestPhoneField && state.user.phone) guestPhoneField.value = state.user.phone;
+                } else {
+                    if (guestEmailField) guestEmailField.value = '';
+                    if (guestPhoneField) guestPhoneField.value = '';
+                }
 
                 updateTotal();
                 document.getElementById('purchaseStatus').style.display = 'none';
@@ -4797,17 +4858,19 @@
             document.getElementById('purchaseTotal').textContent = `$${total}`;
         }
 
-        // ✅ REAL 2-STEP PAYMENT FLOW
+        // REAL 2-STEP PAYMENT FLOW - Supports Guest Checkout
         async function processPurchase(event) {
             event.preventDefault();
 
-            if (!state.user) {
-                showToast('Please login first', 'error');
-                return;
-            }
+            // Get contact info from guest checkout fields OR logged-in user
+            const guestEmail = document.getElementById('guestEmail')?.value?.trim();
+            const guestPhone = document.getElementById('guestPhone')?.value?.trim();
+            const email = guestEmail || state.user?.email;
+            const phone = guestPhone || state.user?.phone;
 
-            if (!state.user.phone) {
-                showToast('Please update your profile with a phone number', 'error');
+            // Require at least email OR phone
+            if (!email && !phone) {
+                showToast('Please enter your email or phone number', 'error');
                 return;
             }
 
@@ -4830,7 +4893,7 @@
 
             // Disable button
             purchaseBtn.disabled = true;
-            purchaseBtn.textContent = 'PROCESSING...';
+            purchaseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; vertical-align: middle;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> PROCESSING...';
             statusDiv.style.display = 'block';
             statusDiv.className = 'loading';
             statusDiv.textContent = 'Creating payment...';
@@ -4841,13 +4904,11 @@
 
                 const paymentPayload = {
                     venueId: state.selectedVenue._id,
-                    email: state.user.email,
-                    phone: state.user.phone,
                     numPasses
                 };
-                if (templateId) {
-                    paymentPayload.templateId = templateId;
-                }
+                if (email) paymentPayload.email = email;
+                if (phone) paymentPayload.phone = phone;
+                if (templateId) paymentPayload.templateId = templateId;
 
                 const paymentData = await apiCall('/api/v1/lightning/passes/create-payment', {
                     method: 'POST',
@@ -4859,12 +4920,14 @@
                 // STEP 2: Confirm payment with Stripe using real card
                 statusDiv.textContent = 'Step 2/3: Processing payment...';
 
+                const billingDetails = {};
+                if (email) billingDetails.email = email;
+                if (phone) billingDetails.phone = phone;
+
                 const {error, paymentIntent} = await state.stripe.confirmCardPayment(paymentData.clientSecret, {
                     payment_method: {
                         card: state.cardElement,
-                        billing_details: {
-                            email: state.user.email
-                        }
+                        billing_details: billingDetails
                     }
                 });
 
@@ -4882,13 +4945,11 @@
                 const confirmPayload = {
                     paymentIntentId: state.paymentIntentId,
                     venueId: state.selectedVenue._id,
-                    email: state.user.email,
-                    phone: state.user.phone,
                     numPasses
                 };
-                if (templateId) {
-                    confirmPayload.templateId = templateId;
-                }
+                if (email) confirmPayload.email = email;
+                if (phone) confirmPayload.phone = phone;
+                if (templateId) confirmPayload.templateId = templateId;
 
                 const confirmData = await apiCall('/api/v1/lightning/passes/confirm-payment', {
                     method: 'POST',
@@ -4896,17 +4957,30 @@
                 });
 
                 // Success!
+                const confirmationMethod = phone ? 'SMS' : 'email';
+                const confirmationDest = phone || email;
                 statusDiv.className = 'alert alert-success';
                 statusDiv.innerHTML = `
-                    <h3>✅ Purchase Successful!</h3>
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2.5">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Purchase Successful!
+                    </h3>
                     <p><strong>Pass Type:</strong> ${passName}</p>
                     <p><strong>Pass ID:</strong> ${confirmData.passId}</p>
                     <p><strong>Amount:</strong> $${(price * numPasses).toFixed(2)}</p>
                     ${tagline ? `<p style="color: var(--electric-purple); font-style: italic;">"${tagline}"</p>` : ''}
-                    <p>Check your phone for SMS confirmation with QR code!</p>
+                    <p>Confirmation sent via ${confirmationMethod} to ${confirmationDest}</p>
+                    <a href="https://lightning-backend-production.up.railway.app/api/v1/lightning/passes/${confirmData.passId}/view"
+                       target="_blank"
+                       style="display: inline-block; margin-top: 0.5rem; color: var(--electric-blue);">
+                        View Your Ticket
+                    </a>
                 `;
 
-                showToast('✅ Pass purchased successfully!', 'success');
+                showToast('Pass purchased successfully!', 'success');
 
                 // Wait 3 seconds then close modal and reload
                 setTimeout(async () => {
@@ -4918,12 +4992,19 @@
                 console.error('Purchase error:', error);
                 statusDiv.className = 'alert alert-error';
                 statusDiv.innerHTML = `
-                    <h3>❌ Purchase Failed</h3>
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger-red)" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                        Purchase Failed
+                    </h3>
                     <p>${error.message}</p>
                 `;
-                showToast('❌ ' + error.message, 'error');
+                showToast(error.message, 'error');
                 purchaseBtn.disabled = false;
-                purchaseBtn.textContent = '⚡ COMPLETE PURCHASE';
+                purchaseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.5rem;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> COMPLETE PURCHASE';
             }
         }
 
