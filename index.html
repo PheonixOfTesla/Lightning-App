@@ -6317,9 +6317,23 @@
                                     <input type="number" id="editVenueAvailable" min="0">
                                 </div>
                             </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label>Wait Time (mins)</label>
+                                    <input type="number" id="editVenueWaitTime" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>In Line</label>
+                                    <input type="number" id="editVenueInLine" min="0">
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label>Tonight's Tagline</label>
                                 <input type="text" id="editVenueTagline" placeholder="What's happening tonight?">
+                            </div>
+                            <div class="form-group">
+                                <label>Owner Name</label>
+                                <input type="text" id="editVenueOwnerName">
                             </div>
                             <div class="form-group">
                                 <label>Owner Email</label>
@@ -6333,6 +6347,14 @@
                                 <label>Stripe Connect ID</label>
                                 <input type="text" id="editVenueStripeId" placeholder="acct_...">
                             </div>
+                            <div class="form-group">
+                                <label>Approval Status</label>
+                                <select id="editVenueApproval">
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
                             <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
                                 <label style="display: flex; align-items: center; gap: 0.5rem;">
                                     <input type="checkbox" id="editVenueActive"> Active
@@ -6342,14 +6364,17 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label>Status</label>
+                                <label>Crowd Status</label>
                                 <select id="editVenueStatus">
                                     <option value="low">Low</option>
                                     <option value="medium">Medium</option>
                                     <option value="high">High</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+                                <button type="button" class="btn btn-danger" onclick="deleteVenueFromModal()">Delete</button>
+                            </div>
                         </form>
                     </div>
                 `;
@@ -6365,15 +6390,27 @@
             document.getElementById('editVenueCurrentPrice').value = venue.currentPrice || '';
             document.getElementById('editVenueCapacity').value = venue.capacity || '';
             document.getElementById('editVenueAvailable').value = venue.availablePasses || '';
+            document.getElementById('editVenueWaitTime').value = venue.waitTime || 0;
+            document.getElementById('editVenueInLine').value = venue.inLine || 0;
             document.getElementById('editVenueTagline').value = venue.tonightTagline || '';
+            document.getElementById('editVenueOwnerName').value = venue.ownerName || '';
             document.getElementById('editVenueOwnerEmail').value = venue.ownerEmail || '';
             document.getElementById('editVenueOwnerPhone').value = venue.ownerPhone || '';
             document.getElementById('editVenueStripeId').value = venue.stripeConnectId || '';
+            document.getElementById('editVenueApproval').value = venue.approvalStatus || 'pending';
             document.getElementById('editVenueActive').checked = venue.isActive;
             document.getElementById('editVenueTrending').checked = venue.trending;
             document.getElementById('editVenueStatus').value = venue.status || 'medium';
 
             modal.classList.add('active');
+        }
+
+        function deleteVenueFromModal() {
+            const venueId = document.getElementById('editVenueId').value;
+            const venue = adminVenuesCache.find(v => v._id === venueId);
+            const venueName = venue ? venue.name : 'this venue';
+            closeModal('editVenueModal');
+            deleteVenue(venueId, venueName);
         }
 
         async function saveVenueEdit(event) {
@@ -6388,10 +6425,14 @@
                 currentPrice: parseFloat(document.getElementById('editVenueCurrentPrice').value) || 0,
                 capacity: parseInt(document.getElementById('editVenueCapacity').value) || 0,
                 availablePasses: parseInt(document.getElementById('editVenueAvailable').value) || 0,
+                waitTime: parseInt(document.getElementById('editVenueWaitTime').value) || 0,
+                inLine: parseInt(document.getElementById('editVenueInLine').value) || 0,
                 tonightTagline: document.getElementById('editVenueTagline').value,
+                ownerName: document.getElementById('editVenueOwnerName').value,
                 ownerEmail: document.getElementById('editVenueOwnerEmail').value,
                 ownerPhone: document.getElementById('editVenueOwnerPhone').value,
                 stripeConnectId: document.getElementById('editVenueStripeId').value,
+                approvalStatus: document.getElementById('editVenueApproval').value,
                 isActive: document.getElementById('editVenueActive').checked,
                 trending: document.getElementById('editVenueTrending').checked,
                 status: document.getElementById('editVenueStatus').value
