@@ -6571,18 +6571,35 @@
             }
         }
 
-        async function deleteVenue(venueId, venueName) {
-            if (!confirm(`DELETE ${venueName}? This cannot be undone.`)) return;
+        async function deleteVenue(venueId, venueName, force = false) {
+            const confirmMsg = force
+                ? `FORCE DELETE ${venueName}?\n\nThis will CANCEL all active passes and cannot be undone.`
+                : `DELETE ${venueName}? This cannot be undone.`;
+
+            if (!confirm(confirmMsg)) return;
 
             try {
-                await apiCall(`/api/v1/lightning/venues/${venueId}`, {
-                    method: 'DELETE'
-                });
+                const url = force
+                    ? `/api/v1/lightning/venues/${venueId}?force=true`
+                    : `/api/v1/lightning/venues/${venueId}`;
 
-                showToast(`${venueName} deleted`, 'success');
+                const result = await apiCall(url, { method: 'DELETE' });
+
+                if (result.cancelledPasses > 0) {
+                    showToast(`${venueName} deleted (${result.cancelledPasses} passes cancelled)`, 'success');
+                } else {
+                    showToast(`${venueName} deleted`, 'success');
+                }
                 await loadAdminStats();
             } catch (error) {
-                showToast('❌ Deletion failed: ' + error.message, 'error');
+                // If failed due to active passes, offer force delete
+                if (error.message.includes('active passes')) {
+                    if (confirm(`${error.message}\n\nDo you want to FORCE DELETE and cancel all active passes?`)) {
+                        deleteVenue(venueId, venueName, true);
+                    }
+                } else {
+                    showToast('❌ Deletion failed: ' + error.message, 'error');
+                }
             }
         }
 
