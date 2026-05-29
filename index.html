@@ -595,6 +595,37 @@
             box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
         }
 
+        /* Style all inputs in modals consistently */
+        .modal input[type="text"],
+        .modal input[type="email"],
+        .modal input[type="tel"],
+        .modal input[type="number"],
+        .modal input[type="password"],
+        .modal select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--pure-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .modal input:focus,
+        .modal select:focus {
+            outline: none;
+            border-color: var(--electric-purple);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
+        }
+
+        .modal label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -876,6 +907,11 @@
                 grid-template-columns: 1fr !important;
             }
 
+            /* Also handle "1fr 1fr" grids in modals */
+            [style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+
             /* Mobile-friendly buttons */
             .btn {
                 padding: 0.75rem 1rem;
@@ -892,6 +928,47 @@
                 width: 40px;
                 height: 40px;
                 font-size: 1.5rem;
+            }
+
+            /* Admin venue card mobile layout */
+            .venue-card-layout {
+                flex-direction: column !important;
+                gap: 1rem;
+            }
+
+            .venue-card-right {
+                text-align: left !important;
+            }
+
+            /* Full-width buttons on mobile */
+            .venue-card-buttons {
+                flex-direction: column !important;
+            }
+
+            .venue-card-buttons .btn {
+                width: 100%;
+            }
+
+            /* Modal improvements */
+            .modal-content {
+                padding: 1.5rem;
+                max-height: 85vh;
+            }
+
+            /* Modal buttons stack on mobile */
+            .modal-buttons {
+                flex-direction: column !important;
+            }
+
+            .modal-buttons .btn {
+                width: 100% !important;
+                min-width: auto !important;
+            }
+
+            /* Modal inputs prevent iOS zoom */
+            .modal input,
+            .modal select {
+                font-size: 16px !important;
             }
         }
         /* Video Landing Page Styles */
@@ -2368,6 +2445,7 @@
                 <button class="btn" id="tabDJs" onclick="showAdminTab('djs')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎧 DJs</button>
                 <button class="btn" id="tabUsers" onclick="showAdminTab('users')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">👥 Users</button>
                 <button class="btn" id="tabTransactions" onclick="showAdminTab('transactions')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">💳 Transactions</button>
+                <button class="btn" id="tabTicketSales" onclick="showAdminTab('ticketSales')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎟️ Ticket Sales</button>
                 <button class="btn btn-primary" onclick="loadAdminStats()" style="margin-left: auto;">🔄 REFRESH</button>
             </div>
 
@@ -2474,6 +2552,42 @@
                         </select>
                     </div>
                     <div id="adminTransactionsList" style="max-height: 600px; overflow-y: auto;">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Sales Tab (Embed Widget Purchases) -->
+            <div id="adminTabTicketSales" style="display: none;">
+                <div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Ticket Sales</div>
+                        <div class="stat-value" id="ticketSalesTotal" style="color: var(--neon-green);">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Revenue</div>
+                        <div class="stat-value" id="ticketSalesRevenue" style="color: var(--lightning-yellow);">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Today's Sales</div>
+                        <div class="stat-value" id="ticketSalesToday" style="color: var(--electric-blue);">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Today's Revenue</div>
+                        <div class="stat-value" id="ticketSalesTodayRevenue" style="color: var(--electric-purple);">$0</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">🎟️ Recent Ticket Purchases</h2>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;">
+                        <select class="form-select" id="ticketEventFilter" onchange="loadTicketSales()" style="max-width: 250px;">
+                            <option value="">All Events</option>
+                            <option value="sunset-bash">Sunset Bash</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="loadTicketSales()">🔄 Refresh</button>
+                    </div>
+                    <div id="ticketSalesList" style="max-height: 600px; overflow-y: auto;">
                         <div class="empty-state">Loading...</div>
                     </div>
                 </div>
@@ -5949,9 +6063,10 @@
             document.getElementById('adminTabDJs').style.display = 'none';
             document.getElementById('adminTabUsers').style.display = 'none';
             document.getElementById('adminTabTransactions').style.display = 'none';
+            document.getElementById('adminTabTicketSales').style.display = 'none';
 
             // Reset all tab buttons
-            ['tabVenues', 'tabDJs', 'tabUsers', 'tabTransactions'].forEach(id => {
+            ['tabVenues', 'tabDJs', 'tabUsers', 'tabTransactions', 'tabTicketSales'].forEach(id => {
                 const btn = document.getElementById(id);
                 btn.style.background = 'transparent';
                 btn.style.borderColor = 'var(--border-dark)';
@@ -5975,6 +6090,9 @@
             } else if (tab === 'transactions') {
                 document.getElementById('adminTabTransactions').style.display = 'block';
                 loadAdminTransactions();
+            } else if (tab === 'ticketSales') {
+                document.getElementById('adminTabTicketSales').style.display = 'block';
+                loadTicketSales();
             }
         }
 
@@ -6188,6 +6306,61 @@
             }
         }
 
+        async function loadTicketSales() {
+            const list = document.getElementById('ticketSalesList');
+            list.innerHTML = '<div class="empty-state">Loading...</div>';
+
+            try {
+                const eventSlug = document.getElementById('ticketEventFilter').value;
+                const params = eventSlug ? `?eventSlug=${eventSlug}` : '';
+
+                // Load stats
+                const statsRes = await apiCall(`/api/v1/embed/purchases/stats${params}`);
+                document.getElementById('ticketSalesTotal').textContent = statsRes.totalPurchases || 0;
+                document.getElementById('ticketSalesRevenue').textContent = `$${(statsRes.totalRevenue || 0).toFixed(2)}`;
+                document.getElementById('ticketSalesToday').textContent = statsRes.todayPurchases || 0;
+                document.getElementById('ticketSalesTodayRevenue').textContent = `$${(statsRes.todayRevenue || 0).toFixed(2)}`;
+
+                // Load purchases
+                const data = await apiCall(`/api/v1/embed/purchases${params}`);
+                const purchases = data.purchases || [];
+
+                if (purchases.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No ticket purchases yet</div>';
+                    return;
+                }
+
+                list.innerHTML = purchases.map(p => `
+                    <div style="background: var(--bg-dark); border: 1px solid var(--border-dark); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600; color: white;">${p.guestName}</div>
+                                <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${p.email}</div>
+                                ${p.phone ? `<div style="font-size: 0.875rem; color: rgba(255,255,255,0.5);">${p.phone}</div>` : ''}
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 700; color: var(--neon-green);">$${(p.amount || 0).toFixed(2)}</div>
+                                <div style="font-size: 0.75rem; color: var(--electric-purple);">${p.ticketName}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-dark);">
+                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+                                ${new Date(p.purchasedAt).toLocaleString()}
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(57, 255, 20, 0.1); color: var(--neon-green); border-radius: 4px;">${p.status}</span>
+                                <a href="${p.viewUrl}" target="_blank" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(0, 212, 255, 0.1); color: var(--electric-blue); border-radius: 4px; text-decoration: none;">View Pass</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('Error loading ticket sales:', err);
+                list.innerHTML = '<div class="empty-state">Error loading ticket sales. Make sure you\'re logged in as admin.</div>';
+            }
+        }
+
         async function loadPromotionalDiscount() {
             try {
                 const data = await apiCall('/api/v1/lightning/system/settings');
@@ -6233,23 +6406,23 @@
                 const card = document.createElement('div');
                 card.style.cssText = 'background: rgba(157, 78, 221, 0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;';
                 card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div>
-                            <h3 style="color: var(--electric-purple);">${venue.name}</h3>
-                            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.address}</p>
-                            <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem; margin-top: 0.5rem;">
-                                📧 ${venue.ownerEmail || 'N/A'} ${venue.ownerPhone ? `| 📞 ${venue.ownerPhone}` : ''}
+                    <div class="venue-card-layout" style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <h3 style="color: var(--electric-purple); word-break: break-word;">${venue.name}</h3>
+                            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem; word-break: break-word;">${venue.address}</p>
+                            <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem; margin-top: 0.5rem; word-break: break-word;">
+                                📧 ${venue.ownerEmail || 'N/A'} ${venue.ownerPhone ? `<br>📞 ${venue.ownerPhone}` : ''}
                             </p>
-                            ${venue.approvalStatus === 'pending' ? '<span class="badge badge-pending">PENDING</span>' : ''}
+                            ${venue.approvalStatus === 'pending' ? '<span class="badge badge-pending" style="margin-top: 0.5rem;">PENDING</span>' : ''}
                         </div>
-                        <div style="text-align: right;">
+                        <div class="venue-card-right" style="text-align: right; flex-shrink: 0;">
                             <p style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">$${venue.currentPrice}</p>
                             <span class="badge ${venue.isActive ? 'badge-approved' : 'badge-pending'}">
                                 ${venue.isActive ? 'ACTIVE' : 'INACTIVE'}
                             </span>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="venue-card-buttons" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                         <button class="btn btn-secondary" onclick="editVenueAdmin('${venue._id}')">Edit</button>
                         <button class="btn btn-danger" onclick="deleteVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Delete</button>
                     </div>
@@ -6368,9 +6541,9 @@
                                     <option value="high">High</option>
                                 </select>
                             </div>
-                            <div style="display: flex; gap: 1rem;">
-                                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
-                                <button type="button" class="btn btn-danger" onclick="deleteVenueFromModal()">Delete</button>
+                            <div class="modal-buttons" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1; min-width: 150px;">Save Changes</button>
+                                <button type="button" class="btn btn-danger" style="min-width: 100px;" onclick="deleteVenueFromModal()">Delete</button>
                             </div>
                         </form>
                     </div>
@@ -6572,11 +6745,10 @@
         }
 
         async function deleteVenue(venueId, venueName, force = false) {
-            const confirmMsg = force
-                ? `FORCE DELETE ${venueName}?\n\nThis will CANCEL all active passes and cannot be undone.`
-                : `DELETE ${venueName}? This cannot be undone.`;
-
-            if (!confirm(confirmMsg)) return;
+            // Only show confirmation on first call (not on force retry)
+            if (!force) {
+                if (!confirm(`DELETE ${venueName}? This cannot be undone.`)) return;
+            }
 
             try {
                 const url = force
@@ -6595,7 +6767,7 @@
                 // If failed due to active passes, offer force delete
                 if (error.message.includes('active passes')) {
                     if (confirm(`${error.message}\n\nDo you want to FORCE DELETE and cancel all active passes?`)) {
-                        deleteVenue(venueId, venueName, true);
+                        return await deleteVenue(venueId, venueName, true);
                     }
                 } else {
                     showToast('❌ Deletion failed: ' + error.message, 'error');
