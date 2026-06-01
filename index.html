@@ -745,6 +745,26 @@
         .venue-type-badge.restaurant { background: rgba(239, 68, 68, 0.3); color: #f87171; }
         .venue-type-badge.default { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); }
 
+        /* Spotlight Event Cards */
+        .venue-card.spotlight {
+            border: 2px solid var(--lightning-yellow);
+            box-shadow: 0 0 20px rgba(255, 221, 0, 0.3);
+            position: relative;
+        }
+        .venue-card.spotlight::before {
+            content: '⚡ SPOTLIGHT';
+            position: absolute;
+            top: -10px;
+            left: 1rem;
+            background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green));
+            color: #000;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            letter-spacing: 0.5px;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -5041,19 +5061,22 @@
             try {
                 const data = await apiCall('/api/v1/lightning/venues');
                 state.venues = data.venues || [];
-                
+
+                // Sort spotlight venues first
+                state.venues.sort((a, b) => (b.isSpotlight ? 1 : 0) - (a.isSpotlight ? 1 : 0));
+
                 const grid = document.getElementById('customerVenuesGrid');
-                
+
                 if (state.venues.length === 0) {
                     grid.innerHTML = '<div class="empty-state">No active venues available right now</div>';
                     return;
                 }
-                
+
                 grid.innerHTML = '';
-                
+
                 state.venues.forEach(venue => {
                     const card = document.createElement('div');
-                    card.className = 'venue-card';
+                    card.className = venue.isSpotlight ? 'venue-card spotlight' : 'venue-card';
                     card.dataset.type = venue.type || 'Venue';
                     const typeClass = (venue.type || 'default').toLowerCase().replace(/\s+/g, '-').replace('rooftop-bar', 'rooftop');
                     card.innerHTML = `
@@ -6637,6 +6660,13 @@
                                 <label>Stripe Connect ID</label>
                                 <input type="text" id="editVenueStripeId" placeholder="acct_...">
                             </div>
+                            <div class="form-group" style="background: linear-gradient(90deg, rgba(255,221,0,0.1), rgba(57,255,20,0.1)); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; margin: 0;">
+                                    <input type="checkbox" id="editVenueSpotlight" style="width: 1.25rem; height: 1.25rem; accent-color: var(--lightning-yellow);">
+                                    <span style="font-weight: 600;">⚡ Spotlight Event</span>
+                                    <span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">(Featured placement)</span>
+                                </label>
+                            </div>
                             <div class="form-group">
                                 <label>Approval Status</label>
                                 <select id="editVenueApproval">
@@ -6687,6 +6717,7 @@
             document.getElementById('editVenueOwnerEmail').value = venue.ownerEmail || '';
             document.getElementById('editVenueOwnerPhone').value = venue.ownerPhone || '';
             document.getElementById('editVenueStripeId').value = venue.stripeConnectId || '';
+            document.getElementById('editVenueSpotlight').checked = venue.isSpotlight || false;
             document.getElementById('editVenueApproval').value = venue.approvalStatus || 'pending';
             document.getElementById('editVenueActive').checked = venue.isActive;
             document.getElementById('editVenueTrending').checked = venue.trending;
@@ -6722,6 +6753,7 @@
                 ownerEmail: document.getElementById('editVenueOwnerEmail').value,
                 ownerPhone: document.getElementById('editVenueOwnerPhone').value,
                 stripeConnectId: document.getElementById('editVenueStripeId').value,
+                isSpotlight: document.getElementById('editVenueSpotlight').checked,
                 approvalStatus: document.getElementById('editVenueApproval').value,
                 isActive: document.getElementById('editVenueActive').checked,
                 trending: document.getElementById('editVenueTrending').checked,
