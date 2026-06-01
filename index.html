@@ -704,6 +704,47 @@
             border: 1px solid var(--neon-green);
         }
 
+        /* Filter Chips */
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid var(--border-dark);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .filter-chip:hover {
+            border-color: var(--electric-purple);
+            color: white;
+        }
+        .filter-chip.active {
+            background: var(--electric-purple);
+            border-color: var(--electric-purple);
+            color: white;
+        }
+
+        /* Venue Type Badges */
+        .venue-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .venue-type-badge.nightclub { background: rgba(157, 78, 221, 0.3); color: #c084fc; }
+        .venue-type-badge.bar { background: rgba(59, 130, 246, 0.3); color: #60a5fa; }
+        .venue-type-badge.lounge { background: rgba(236, 72, 153, 0.3); color: #f472b6; }
+        .venue-type-badge.concert { background: rgba(245, 158, 11, 0.3); color: #fbbf24; }
+        .venue-type-badge.festival { background: rgba(16, 185, 129, 0.3); color: #34d399; }
+        .venue-type-badge.rooftop { background: rgba(6, 182, 212, 0.3); color: #22d3ee; }
+        .venue-type-badge.restaurant { background: rgba(239, 68, 68, 0.3); color: #f87171; }
+        .venue-type-badge.default { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); }
+
         .modal {
             display: none;
             position: fixed;
@@ -1856,6 +1897,17 @@
                     </svg>
                     Host an Event
                 </a>
+            </div>
+
+            <!-- Venue Type Filter Bar -->
+            <div id="venueFilterBar" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                <button class="filter-chip active" data-filter="all" onclick="filterVenues('all')">All</button>
+                <button class="filter-chip" data-filter="Nightclub" onclick="filterVenues('Nightclub')">Nightclub</button>
+                <button class="filter-chip" data-filter="Bar" onclick="filterVenues('Bar')">Bar</button>
+                <button class="filter-chip" data-filter="Lounge" onclick="filterVenues('Lounge')">Lounge</button>
+                <button class="filter-chip" data-filter="Concert" onclick="filterVenues('Concert')">Concert</button>
+                <button class="filter-chip" data-filter="Festival" onclick="filterVenues('Festival')">Festival</button>
+                <button class="filter-chip" data-filter="Rooftop Bar" onclick="filterVenues('Rooftop Bar')">Rooftop</button>
             </div>
 
             <div class="venues-grid" id="customerVenuesGrid">
@@ -4996,11 +5048,13 @@
                 state.venues.forEach(venue => {
                     const card = document.createElement('div');
                     card.className = 'venue-card';
+                    card.dataset.type = venue.type || 'Venue';
+                    const typeClass = (venue.type || 'default').toLowerCase().replace(/\s+/g, '-').replace('rooftop-bar', 'rooftop');
                     card.innerHTML = `
                         <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                             <div>
                                 <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${venue.name}</h3>
-                                <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;">${venue.type || 'Venue'}</p>
+                                <span class="venue-type-badge ${typeClass}">${venue.type || 'Venue'}</span>
                             </div>
                             <span class="badge badge-approved">${venue.waitTime || 0} MIN</span>
                         </div>
@@ -5033,8 +5087,39 @@
                 });
             } catch (error) {
                 console.error('Error loading venues:', error);
-                document.getElementById('customerVenuesGrid').innerHTML = 
+                document.getElementById('customerVenuesGrid').innerHTML =
                     '<div class="empty-state">Error loading venues. Please refresh the page.</div>';
+            }
+        }
+
+        function filterVenues(type) {
+            // Update active filter chip
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.filter === type);
+            });
+
+            // Filter venue cards
+            const cards = document.querySelectorAll('#customerVenuesGrid .venue-card');
+            cards.forEach(card => {
+                if (type === 'all' || card.dataset.type === type) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show empty state if no matches
+            const visibleCards = document.querySelectorAll('#customerVenuesGrid .venue-card:not([style*="display: none"])');
+            let emptyState = document.querySelector('#customerVenuesGrid .filter-empty-state');
+            if (visibleCards.length === 0) {
+                if (!emptyState) {
+                    emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state filter-empty-state';
+                    emptyState.textContent = `No ${type} venues available`;
+                    document.getElementById('customerVenuesGrid').appendChild(emptyState);
+                }
+            } else if (emptyState) {
+                emptyState.remove();
             }
         }
 
