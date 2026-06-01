@@ -2667,8 +2667,20 @@
                             <textarea class="form-input" id="spotlightDescription" rows="2" placeholder="What makes this event special?"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Image URL (optional)</label>
-                            <input type="text" class="form-input" id="spotlightImage" placeholder="https://...">
+                            <label class="form-label">Event Image (optional)</label>
+                            <input type="hidden" id="spotlightImageUrl">
+                            <div id="spotlightImagePreview" style="display: none; margin-bottom: 0.5rem;">
+                                <img id="spotlightImagePreviewImg" src="" style="max-width: 100%; max-height: 150px; border-radius: 8px; object-fit: cover;">
+                            </div>
+                            <label class="btn btn-secondary" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span id="spotlightUploadText">Upload Image</span>
+                                <input type="file" id="spotlightImageFile" accept="image/*" style="display: none;" onchange="uploadSpotlightImage(this, 'create')">
+                            </label>
                         </div>
 
                         <!-- Ticket Tiers -->
@@ -6431,6 +6443,51 @@
             return tiers.length > 0 ? tiers : [{ type: 'general', name: 'General Admission', price: 0, available: -1, sold: 0 }];
         }
 
+        // Upload spotlight event image
+        async function uploadSpotlightImage(input, mode) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const prefix = mode === 'edit' ? 'editSpotlight' : 'spotlight';
+            const uploadText = document.getElementById(prefix + 'UploadText');
+            const previewContainer = document.getElementById(prefix + 'ImagePreview');
+            const previewImg = document.getElementById(prefix + 'ImagePreviewImg');
+            const hiddenInput = document.getElementById(prefix + 'ImageUrl');
+
+            uploadText.textContent = 'Uploading...';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const response = await fetch(API_BASE + '/api/v1/lightning/upload-image', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const data = await response.json();
+                hiddenInput.value = data.imageUrl;
+
+                // Show preview
+                previewImg.src = data.imageUrl;
+                previewContainer.style.display = 'block';
+                uploadText.textContent = 'Change Image';
+
+                showToast('Image uploaded!', 'success');
+            } catch (error) {
+                console.error('Upload error:', error);
+                showToast('Failed to upload image', 'error');
+                uploadText.textContent = 'Upload Image';
+            }
+        }
+
         async function createSpotlightEvent(e) {
             e.preventDefault();
             try {
@@ -6441,7 +6498,7 @@
                 const date = document.getElementById('spotlightDate').value;
                 const endDate = document.getElementById('spotlightEndDate').value;
                 const description = document.getElementById('spotlightDescription').value;
-                const imageUrl = document.getElementById('spotlightImage').value;
+                const imageUrl = document.getElementById('spotlightImageUrl').value;
                 const tickets = collectTicketTiers();
 
                 await apiCall('/api/v1/lightning/spotlight-events', {
@@ -6561,8 +6618,20 @@
                                 <textarea class="form-input" id="editSpotlightDescription" rows="2"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Image URL</label>
-                                <input type="text" class="form-input" id="editSpotlightImage">
+                                <label>Event Image</label>
+                                <input type="hidden" id="editSpotlightImageUrl">
+                                <div id="editSpotlightImagePreview" style="display: none; margin-bottom: 0.5rem;">
+                                    <img id="editSpotlightImagePreviewImg" src="" style="max-width: 100%; max-height: 150px; border-radius: 8px; object-fit: cover;">
+                                </div>
+                                <label class="btn btn-secondary" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    <span id="editSpotlightUploadText">Upload Image</span>
+                                    <input type="file" id="editSpotlightImageFile" accept="image/*" style="display: none;" onchange="uploadSpotlightImage(this, 'edit')">
+                                </label>
                             </div>
                             <button type="submit" class="btn btn-secondary" style="width: 100%;">Save Changes</button>
                         </form>
@@ -6577,7 +6646,19 @@
             document.getElementById('editSpotlightType').value = event.eventType || 'General';
             document.getElementById('editSpotlightLocation').value = event.location || '';
             document.getElementById('editSpotlightDescription').value = event.description || '';
-            document.getElementById('editSpotlightImage').value = event.imageUrl || '';
+            document.getElementById('editSpotlightImageUrl').value = event.imageUrl || '';
+
+            // Show existing image preview
+            const previewContainer = document.getElementById('editSpotlightImagePreview');
+            const previewImg = document.getElementById('editSpotlightImagePreviewImg');
+            if (event.imageUrl) {
+                previewImg.src = event.imageUrl;
+                previewContainer.style.display = 'block';
+                document.getElementById('editSpotlightUploadText').textContent = 'Change Image';
+            } else {
+                previewContainer.style.display = 'none';
+                document.getElementById('editSpotlightUploadText').textContent = 'Upload Image';
+            }
 
             // Format dates for datetime-local input (local time, not UTC)
             if (event.date) {
@@ -6609,7 +6690,7 @@
                 date: dateVal ? new Date(dateVal).toISOString() : null,
                 endDate: endDateVal ? new Date(endDateVal).toISOString() : null,
                 description: document.getElementById('editSpotlightDescription').value,
-                imageUrl: document.getElementById('editSpotlightImage').value
+                imageUrl: document.getElementById('editSpotlightImageUrl').value
             };
 
             try {
@@ -6721,11 +6802,16 @@
                             </div>
 
                             <div id="eventPaymentSection" style="display: none;">
+                                <div id="event-payment-request-btn" style="border: 2px solid rgba(255,255,255,0.8); border-radius: 8px; padding: 2px; overflow: hidden; margin-bottom: 0.5rem;"></div>
+                                <div id="event-payment-divider" style="display: none; text-align: center; color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 1rem 0; position: relative;">
+                                    <span style="background: #111; padding: 0 1rem; position: relative; z-index: 1;">or pay with card</span>
+                                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.2); z-index: 0;"></div>
+                                </div>
                                 <div id="event-card-element" style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1rem;"></div>
                                 <div id="event-card-errors" style="color: var(--danger-red); font-size: 0.875rem; margin-bottom: 1rem;"></div>
                             </div>
 
-                            <button type="submit" class="btn btn-secondary" id="eventPurchaseBtn" style="width: 100%;">
+                            <button type="submit" class="btn btn-secondary" id="eventPurchaseBtn" style="width: 100%; display: none;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
                                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                                 </svg>
@@ -6784,9 +6870,11 @@
 
             if (total === 0) {
                 paymentSection.style.display = 'none';
+                purchaseBtn.style.display = 'block';
                 purchaseBtn.textContent = '🎟️ GET FREE TICKET';
             } else {
                 paymentSection.style.display = 'block';
+                purchaseBtn.style.display = 'block';
                 purchaseBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> PAY $' + total.toFixed(2);
 
                 // Initialize Stripe card element if not already done
@@ -6795,7 +6883,110 @@
                     state.eventCardElement = elements.create('card', { style: { base: { fontSize: '16px', color: '#32325d' } } });
                     state.eventCardElement.mount('#event-card-element');
                 }
+
+                // Initialize Apple Pay / Google Pay for events
+                initEventPaymentRequest(ticket.price, ticket.name);
             }
+        }
+
+        // Apple Pay / Google Pay for Event Tickets
+        let eventPaymentRequest = null;
+        let eventPrButton = null;
+
+        function initEventPaymentRequest(priceInCents, ticketName) {
+            if (!state.stripe) return;
+
+            // Clear previous button
+            const prBtnContainer = document.getElementById('event-payment-request-btn');
+            const divider = document.getElementById('event-payment-divider');
+            if (prBtnContainer) prBtnContainer.innerHTML = '';
+            if (divider) divider.style.display = 'none';
+
+            eventPaymentRequest = state.stripe.paymentRequest({
+                country: 'US',
+                currency: 'usd',
+                total: {
+                    label: `${selectedEvent.name} - ${ticketName}`,
+                    amount: priceInCents
+                },
+                requestPayerName: true,
+                requestPayerEmail: true,
+                requestPayerPhone: true
+            });
+
+            const elements = state.stripe.elements();
+            eventPrButton = elements.create('paymentRequestButton', {
+                paymentRequest: eventPaymentRequest,
+                style: {
+                    paymentRequestButton: {
+                        type: 'default',
+                        theme: 'dark',
+                        height: '48px'
+                    }
+                }
+            });
+
+            eventPaymentRequest.canMakePayment().then((result) => {
+                if (result) {
+                    if (prBtnContainer) {
+                        eventPrButton.mount('#event-payment-request-btn');
+                    }
+                    if (divider) {
+                        divider.style.display = 'block';
+                    }
+                }
+            });
+
+            eventPaymentRequest.on('paymentmethod', async (ev) => {
+                try {
+                    const selectedTier = document.querySelector('input[name="ticketTier"]:checked');
+                    const ticket = selectedEvent.tickets[parseInt(selectedTier.value)];
+
+                    // Create payment intent
+                    const intentResponse = await apiCall('/api/v1/embed/create-intent', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            eventSlug: selectedEvent.slug,
+                            ticketType: ticket.type,
+                            email: ev.payerEmail
+                        })
+                    });
+
+                    // Confirm payment with Stripe
+                    const { error, paymentIntent } = await state.stripe.confirmCardPayment(
+                        intentResponse.clientSecret,
+                        { payment_method: ev.paymentMethod.id },
+                        { handleActions: false }
+                    );
+
+                    if (error) {
+                        ev.complete('fail');
+                        showToast('Payment failed: ' + error.message, 'error');
+                        return;
+                    }
+
+                    ev.complete('success');
+
+                    // Confirm with backend
+                    await apiCall('/api/v1/embed/confirm', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            eventSlug: selectedEvent.slug,
+                            ticketType: ticket.type,
+                            guestName: ev.payerName,
+                            email: ev.payerEmail,
+                            phone: ev.payerPhone || '',
+                            paymentIntentId: paymentIntent.id
+                        })
+                    });
+
+                    showToast('🎟️ Ticket purchased! Check your email.', 'success');
+                    closeModal('eventTicketModal');
+                } catch (error) {
+                    ev.complete('fail');
+                    showToast('Failed: ' + error.message, 'error');
+                }
+            });
         }
 
         async function processEventTicketPurchase(e) {
