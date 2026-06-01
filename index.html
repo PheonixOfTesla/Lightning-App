@@ -2727,13 +2727,16 @@
                         Enter your email or phone to receive your ticket
                     </p>
                     <div class="form-group" style="margin-bottom: 0.75rem;">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-input" id="guestEmail" placeholder="your@email.com">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-input" id="guestName" name="name" autocomplete="name" placeholder="Your name">
                     </div>
-                    <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 0.5rem 0;">OR</div>
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="guestEmail" name="email" autocomplete="email" placeholder="your@email.com">
+                    </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">Phone</label>
-                        <input type="tel" class="form-input" id="guestPhone" placeholder="+1 (555) 555-5555">
+                        <input type="tel" class="form-input" id="guestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555">
                     </div>
                 </div>
 
