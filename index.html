@@ -6579,14 +6579,16 @@
             document.getElementById('editSpotlightDescription').value = event.description || '';
             document.getElementById('editSpotlightImage').value = event.imageUrl || '';
 
-            // Format dates for datetime-local input
+            // Format dates for datetime-local input (local time, not UTC)
             if (event.date) {
                 const d = new Date(event.date);
-                document.getElementById('editSpotlightDate').value = d.toISOString().slice(0, 16);
+                const localDatetime = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('editSpotlightDate').value = localDatetime;
             }
             if (event.endDate) {
                 const d = new Date(event.endDate);
-                document.getElementById('editSpotlightEndDate').value = d.toISOString().slice(0, 16);
+                const localDatetime = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('editSpotlightEndDate').value = localDatetime;
             }
 
             modal.classList.add('active');
@@ -6596,12 +6598,16 @@
             e.preventDefault();
             const eventId = document.getElementById('editSpotlightId').value;
 
+            // Convert datetime-local values to proper ISO dates
+            const dateVal = document.getElementById('editSpotlightDate').value;
+            const endDateVal = document.getElementById('editSpotlightEndDate').value;
+
             const updates = {
                 name: document.getElementById('editSpotlightName').value,
                 eventType: document.getElementById('editSpotlightType').value,
                 location: document.getElementById('editSpotlightLocation').value,
-                date: document.getElementById('editSpotlightDate').value,
-                endDate: document.getElementById('editSpotlightEndDate').value || null,
+                date: dateVal ? new Date(dateVal).toISOString() : null,
+                endDate: endDateVal ? new Date(endDateVal).toISOString() : null,
                 description: document.getElementById('editSpotlightDescription').value,
                 imageUrl: document.getElementById('editSpotlightImage').value
             };
