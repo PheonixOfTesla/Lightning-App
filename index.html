@@ -2666,15 +2666,26 @@
                             <label class="form-label">Description</label>
                             <textarea class="form-input" id="spotlightDescription" rows="2" placeholder="What makes this event special?"></textarea>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label class="form-label">Ticket Price ($)</label>
-                                <input type="number" class="form-input" id="spotlightPrice" min="0" step="0.01" value="0" placeholder="0 for free">
+                        <div class="form-group">
+                            <label class="form-label">Image URL (optional)</label>
+                            <input type="text" class="form-input" id="spotlightImage" placeholder="https://...">
+                        </div>
+
+                        <!-- Ticket Tiers -->
+                        <div class="form-group" style="background: rgba(157,78,221,0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem;">
+                            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>🎟️ Ticket Tiers</span>
+                                <button type="button" class="btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="addTicketTier()">+ Add Tier</button>
+                            </label>
+                            <div id="ticketTiersContainer">
+                                <div class="ticket-tier" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
+                                    <input type="text" class="form-input ticket-name" placeholder="General Admission" style="font-size: 0.875rem;">
+                                    <input type="number" class="form-input ticket-price" placeholder="$0" min="0" step="0.01" style="font-size: 0.875rem;">
+                                    <input type="number" class="form-input ticket-qty" placeholder="∞" min="-1" style="font-size: 0.875rem;" title="-1 for unlimited">
+                                    <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: var(--danger-red); cursor: pointer; font-size: 1.25rem;">&times;</button>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Image URL (optional)</label>
-                                <input type="text" class="form-input" id="spotlightImage" placeholder="https://...">
-                            </div>
+                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem;">Leave quantity blank or -1 for unlimited</p>
                         </div>
                         <button type="submit" class="btn" style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; border: none; font-weight: 700;">
                             ⚡ Create Spotlight Event
@@ -6387,6 +6398,39 @@
             }
         }
 
+        function addTicketTier() {
+            const container = document.getElementById('ticketTiersContainer');
+            const tier = document.createElement('div');
+            tier.className = 'ticket-tier';
+            tier.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;';
+            tier.innerHTML = `
+                <input type="text" class="form-input ticket-name" placeholder="VIP, Early Bird, etc." style="font-size: 0.875rem;">
+                <input type="number" class="form-input ticket-price" placeholder="$0" min="0" step="0.01" style="font-size: 0.875rem;">
+                <input type="number" class="form-input ticket-qty" placeholder="∞" min="-1" style="font-size: 0.875rem;" title="-1 for unlimited">
+                <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: var(--danger-red); cursor: pointer; font-size: 1.25rem;">&times;</button>
+            `;
+            container.appendChild(tier);
+        }
+
+        function collectTicketTiers() {
+            const tiers = [];
+            document.querySelectorAll('#ticketTiersContainer .ticket-tier').forEach((tier, i) => {
+                const name = tier.querySelector('.ticket-name').value.trim();
+                const price = parseFloat(tier.querySelector('.ticket-price').value) || 0;
+                const qty = parseInt(tier.querySelector('.ticket-qty').value);
+                if (name) {
+                    tiers.push({
+                        type: i === 0 ? 'general' : 'tier' + i,
+                        name: name,
+                        price: Math.round(price * 100),
+                        available: isNaN(qty) ? -1 : qty,
+                        sold: 0
+                    });
+                }
+            });
+            return tiers.length > 0 ? tiers : [{ type: 'general', name: 'General Admission', price: 0, available: -1, sold: 0 }];
+        }
+
         async function createSpotlightEvent(e) {
             e.preventDefault();
             try {
@@ -6397,14 +6441,13 @@
                 const date = document.getElementById('spotlightDate').value;
                 const endDate = document.getElementById('spotlightEndDate').value;
                 const description = document.getElementById('spotlightDescription').value;
-                const price = parseFloat(document.getElementById('spotlightPrice').value) || 0;
                 const imageUrl = document.getElementById('spotlightImage').value;
+                const tickets = collectTicketTiers();
 
                 await apiCall('/api/v1/lightning/spotlight-events', {
                     method: 'POST',
                     body: JSON.stringify({
-                        name, slug, eventType, location, date, endDate, description, imageUrl,
-                        tickets: [{ type: 'general', name: 'General Admission', price: Math.round(price * 100), available: -1, sold: 0 }]
+                        name, slug, eventType, location, date, endDate, description, imageUrl, tickets
                     })
                 });
 
@@ -6613,8 +6656,8 @@
                             </div>
                             ${event.description ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin: 0.75rem 0;">${event.description}</p>` : ''}
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">${price}</div>
-                                <button class="btn btn-secondary" onclick="alert('Coming soon: Purchase tickets for ${event.name}')">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">${price}${event.tickets?.length > 1 ? '+' : ''}</div>
+                                <button class="btn btn-secondary" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
                                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                                     </svg>
@@ -6627,6 +6670,206 @@
             } catch (error) {
                 console.error('Error loading homepage spotlight events:', error);
                 document.getElementById('spotlightEventsSection').style.display = 'none';
+            }
+        }
+
+        // Event Ticket Purchase
+        let selectedEvent = null;
+
+        function openEventTicketModal(event) {
+            selectedEvent = event;
+
+            let modal = document.getElementById('eventTicketModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'eventTicketModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 450px;">
+                        <div class="modal-header">
+                            <h2 id="eventTicketTitle">Get Tickets</h2>
+                            <button class="modal-close" onclick="closeModal('eventTicketModal')">&times;</button>
+                        </div>
+                        <div id="eventTicketInfo"></div>
+                        <form onsubmit="processEventTicketPurchase(event)" id="eventTicketForm">
+                            <div id="eventTicketTiers"></div>
+
+                            <div id="eventGuestFields" style="background: rgba(0, 212, 255, 0.05); border: 1px solid var(--electric-blue); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0;">
+                                <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 1rem;">Enter your details to receive tickets</p>
+                                <div class="form-group" style="margin-bottom: 0.75rem;">
+                                    <input type="text" class="form-input" id="eventGuestName" name="name" autocomplete="name" placeholder="Your name" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0.75rem;">
+                                    <input type="email" class="form-input" id="eventGuestEmail" name="email" autocomplete="email" placeholder="your@email.com" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="tel" class="form-input" id="eventGuestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555">
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; color: var(--lightning-yellow);">
+                                    <span>Total</span>
+                                    <span id="eventTicketTotal">$0</span>
+                                </div>
+                            </div>
+
+                            <div id="eventPaymentSection" style="display: none;">
+                                <div id="event-card-element" style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1rem;"></div>
+                                <div id="event-card-errors" style="color: var(--danger-red); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+                            </div>
+
+                            <button type="submit" class="btn btn-secondary" id="eventPurchaseBtn" style="width: 100%;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                </svg>
+                                GET TICKETS
+                            </button>
+                        </form>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // Populate event info
+            const eventDate = new Date(event.date);
+            document.getElementById('eventTicketTitle').textContent = event.name;
+            document.getElementById('eventTicketInfo').innerHTML = `
+                <div style="background: rgba(157,78,221,0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                    <p style="color: var(--lightning-yellow); font-weight: 600;">📅 ${eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at ${eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">📍 ${event.location || 'TBA'}</p>
+                </div>
+            `;
+
+            // Populate ticket tiers
+            const tiersHtml = event.tickets?.map((ticket, i) => `
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="radio" name="ticketTier" value="${i}" ${i === 0 ? 'checked' : ''} onchange="updateEventTicketTotal()" style="accent-color: var(--electric-purple);">
+                            <div>
+                                <div style="font-weight: 600; color: white;">${ticket.name}</div>
+                                ${ticket.description ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">${ticket.description}</div>` : ''}
+                            </div>
+                        </div>
+                        <div style="font-weight: bold; color: var(--lightning-yellow);">${ticket.price === 0 ? 'FREE' : '$' + (ticket.price / 100).toFixed(2)}</div>
+                    </label>
+                </div>
+            `).join('') || '<p style="color: rgba(255,255,255,0.5);">No tickets available</p>';
+
+            document.getElementById('eventTicketTiers').innerHTML = tiersHtml;
+            updateEventTicketTotal();
+
+            modal.classList.add('active');
+        }
+
+        function updateEventTicketTotal() {
+            if (!selectedEvent) return;
+            const selectedTier = document.querySelector('input[name="ticketTier"]:checked');
+            if (!selectedTier) return;
+
+            const ticket = selectedEvent.tickets[parseInt(selectedTier.value)];
+            const total = ticket.price / 100;
+            document.getElementById('eventTicketTotal').textContent = total === 0 ? 'FREE' : '$' + total.toFixed(2);
+
+            // Show/hide payment section based on price
+            const paymentSection = document.getElementById('eventPaymentSection');
+            const purchaseBtn = document.getElementById('eventPurchaseBtn');
+
+            if (total === 0) {
+                paymentSection.style.display = 'none';
+                purchaseBtn.textContent = '🎟️ GET FREE TICKET';
+            } else {
+                paymentSection.style.display = 'block';
+                purchaseBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> PAY $' + total.toFixed(2);
+
+                // Initialize Stripe card element if not already done
+                if (state.stripe && !state.eventCardElement) {
+                    const elements = state.stripe.elements();
+                    state.eventCardElement = elements.create('card', { style: { base: { fontSize: '16px', color: '#32325d' } } });
+                    state.eventCardElement.mount('#event-card-element');
+                }
+            }
+        }
+
+        async function processEventTicketPurchase(e) {
+            e.preventDefault();
+            if (!selectedEvent) return;
+
+            const name = document.getElementById('eventGuestName').value.trim();
+            const email = document.getElementById('eventGuestEmail').value.trim();
+            const phone = document.getElementById('eventGuestPhone').value.trim();
+            const selectedTier = document.querySelector('input[name="ticketTier"]:checked');
+
+            if (!name || !email) {
+                showToast('Please enter your name and email', 'error');
+                return;
+            }
+
+            const ticket = selectedEvent.tickets[parseInt(selectedTier.value)];
+            const btn = document.getElementById('eventPurchaseBtn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+                if (ticket.price === 0) {
+                    // Free ticket - just register
+                    const response = await apiCall('/api/v1/embed/confirm', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            eventSlug: selectedEvent.slug,
+                            ticketType: ticket.type,
+                            guestName: name,
+                            email: email,
+                            phone: phone,
+                            paymentIntentId: 'free_' + Date.now()
+                        })
+                    });
+
+                    showToast('🎟️ Ticket confirmed! Check your email.', 'success');
+                    closeModal('eventTicketModal');
+                } else {
+                    // Paid ticket - create payment intent
+                    const intentResponse = await apiCall('/api/v1/embed/create-intent', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            eventSlug: selectedEvent.slug,
+                            ticketType: ticket.type,
+                            email: email
+                        })
+                    });
+
+                    // Confirm payment with Stripe
+                    const { error, paymentIntent } = await state.stripe.confirmCardPayment(
+                        intentResponse.clientSecret,
+                        { payment_method: { card: state.eventCardElement, billing_details: { name, email } } }
+                    );
+
+                    if (error) {
+                        throw new Error(error.message);
+                    }
+
+                    // Confirm with backend
+                    await apiCall('/api/v1/embed/confirm', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            eventSlug: selectedEvent.slug,
+                            ticketType: ticket.type,
+                            guestName: name,
+                            email: email,
+                            phone: phone,
+                            paymentIntentId: paymentIntent.id
+                        })
+                    });
+
+                    showToast('🎟️ Ticket purchased! Check your email.', 'success');
+                    closeModal('eventTicketModal');
+                }
+            } catch (error) {
+                showToast('Failed: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                updateEventTicketTotal();
             }
         }
 
