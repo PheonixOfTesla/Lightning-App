@@ -6370,6 +6370,7 @@
                                 <button class="btn ${event.isSpotlight ? '' : ''}" style="${event.isSpotlight ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleEventSpotlight('${event._id}', ${!event.isSpotlight})">
                                     ⚡ ${event.isSpotlight ? 'Remove Spotlight' : 'Make Spotlight'}
                                 </button>
+                                <button class="btn btn-secondary" onclick="editSpotlightEvent('${event._id}')">Edit</button>
                                 <button class="btn" style="border-color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'}; color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'};" onclick="toggleEventActive('${event._id}', ${!event.isActive})">
                                     ${event.isActive ? 'Deactivate' : 'Activate'}
                                 </button>
@@ -6451,6 +6452,126 @@
                 loadHomepageSpotlightEvents();
             } catch (error) {
                 showToast('Failed to delete: ' + error.message, 'error');
+            }
+        }
+
+        // Store events for editing
+        let spotlightEventsCache = [];
+
+        async function editSpotlightEvent(eventId) {
+            // Find event in cache or fetch it
+            const data = await apiCall('/api/v1/lightning/events');
+            const event = data.events.find(e => e._id === eventId);
+            if (!event) {
+                showToast('Event not found', 'error');
+                return;
+            }
+
+            // Create edit modal if it doesn't exist
+            let modal = document.getElementById('editSpotlightModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'editSpotlightModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 500px;">
+                        <div class="modal-header">
+                            <h2>Edit Spotlight Event</h2>
+                            <button class="modal-close" onclick="closeModal('editSpotlightModal')">&times;</button>
+                        </div>
+                        <form id="editSpotlightForm" onsubmit="saveSpotlightEventEdit(event)">
+                            <input type="hidden" id="editSpotlightId">
+                            <div class="form-group">
+                                <label>Event Name</label>
+                                <input type="text" class="form-input" id="editSpotlightName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Event Type</label>
+                                <select class="form-input" id="editSpotlightType">
+                                    <option value="Nightclub">Nightclub Night</option>
+                                    <option value="Concert">Concert</option>
+                                    <option value="Festival">Festival</option>
+                                    <option value="Party">Party</option>
+                                    <option value="Meetup">Meetup</option>
+                                    <option value="Special">Special Event</option>
+                                    <option value="General">General</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" class="form-input" id="editSpotlightLocation">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label>Date & Time</label>
+                                    <input type="datetime-local" class="form-input" id="editSpotlightDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>End Time</label>
+                                    <input type="datetime-local" class="form-input" id="editSpotlightEndDate">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea class="form-input" id="editSpotlightDescription" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Image URL</label>
+                                <input type="text" class="form-input" id="editSpotlightImage">
+                            </div>
+                            <button type="submit" class="btn btn-secondary" style="width: 100%;">Save Changes</button>
+                        </form>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // Populate form
+            document.getElementById('editSpotlightId').value = event._id;
+            document.getElementById('editSpotlightName').value = event.name || '';
+            document.getElementById('editSpotlightType').value = event.eventType || 'General';
+            document.getElementById('editSpotlightLocation').value = event.location || '';
+            document.getElementById('editSpotlightDescription').value = event.description || '';
+            document.getElementById('editSpotlightImage').value = event.imageUrl || '';
+
+            // Format dates for datetime-local input
+            if (event.date) {
+                const d = new Date(event.date);
+                document.getElementById('editSpotlightDate').value = d.toISOString().slice(0, 16);
+            }
+            if (event.endDate) {
+                const d = new Date(event.endDate);
+                document.getElementById('editSpotlightEndDate').value = d.toISOString().slice(0, 16);
+            }
+
+            modal.classList.add('active');
+        }
+
+        async function saveSpotlightEventEdit(e) {
+            e.preventDefault();
+            const eventId = document.getElementById('editSpotlightId').value;
+
+            const updates = {
+                name: document.getElementById('editSpotlightName').value,
+                eventType: document.getElementById('editSpotlightType').value,
+                location: document.getElementById('editSpotlightLocation').value,
+                date: document.getElementById('editSpotlightDate').value,
+                endDate: document.getElementById('editSpotlightEndDate').value || null,
+                description: document.getElementById('editSpotlightDescription').value,
+                imageUrl: document.getElementById('editSpotlightImage').value
+            };
+
+            try {
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updates)
+                });
+                showToast('Event updated!', 'success');
+                closeModal('editSpotlightModal');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to update: ' + error.message, 'error');
             }
         }
 
