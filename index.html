@@ -1904,9 +1904,16 @@
                 </div>
             </div>
 
-            <div style="margin-bottom: 0.75rem;">
-                <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #000;">⚡ Spotlight Events</span>
+            <!-- Spotlight Events Section -->
+            <div id="spotlightEventsSection" style="margin-bottom: 2rem; display: none;">
+                <div style="margin-bottom: 0.75rem;">
+                    <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #000;">⚡ Spotlight Events</span>
+                </div>
+                <div id="homepageSpotlightEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <!-- Spotlight events load here -->
+                </div>
             </div>
+
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                 <h2 style="font-size: 2rem; margin: 0;">
                     <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
@@ -2531,6 +2538,7 @@
             <!-- Admin Navigation Tabs -->
             <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem;">
                 <button class="btn" id="tabVenues" onclick="showAdminTab('venues')" style="background: var(--electric-purple); color: white; border-color: var(--electric-purple);">🏢 Venues</button>
+                <button class="btn" id="tabSpotlight" onclick="showAdminTab('spotlight')" style="background: transparent; border-color: var(--lightning-yellow); color: var(--lightning-yellow);">⚡ Spotlight</button>
                 <button class="btn" id="tabDJs" onclick="showAdminTab('djs')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎧 DJs</button>
                 <button class="btn" id="tabUsers" onclick="showAdminTab('users')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">👥 Users</button>
                 <button class="btn" id="tabTransactions" onclick="showAdminTab('transactions')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">💳 Transactions</button>
@@ -2610,6 +2618,77 @@
                 </div>
             </div>
             </div><!-- End Venues Tab -->
+
+            <!-- Spotlight Events Tab -->
+            <div id="adminTabSpotlight" style="display: none;">
+                <div class="section" style="background: linear-gradient(135deg, rgba(255,221,0,0.05), rgba(57,255,20,0.02)); border: 2px solid var(--lightning-yellow);">
+                    <h2 class="section-title" style="color: var(--lightning-yellow);">⚡ Create Spotlight Event</h2>
+                    <p style="color: rgba(255,255,255,0.6); margin-bottom: 1.5rem;">Featured events with specific dates and times. These appear prominently at the top of the homepage.</p>
+                    <form id="createSpotlightForm" onsubmit="createSpotlightEvent(event)">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Event Name *</label>
+                                <input type="text" class="form-input" id="spotlightName" placeholder="Saturday Night at The Lux" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">URL Slug *</label>
+                                <input type="text" class="form-input" id="spotlightSlug" placeholder="saturday-night-lux" required>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Event Type</label>
+                                <select class="form-input" id="spotlightType">
+                                    <option value="Nightclub">Nightclub Night</option>
+                                    <option value="Concert">Concert</option>
+                                    <option value="Festival">Festival</option>
+                                    <option value="Party">Party</option>
+                                    <option value="Meetup">Meetup</option>
+                                    <option value="Special">Special Event</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Location *</label>
+                                <input type="text" class="form-input" id="spotlightLocation" placeholder="123 Main St, Sarasota FL" required>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Date & Time *</label>
+                                <input type="datetime-local" class="form-input" id="spotlightDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">End Time (optional)</label>
+                                <input type="datetime-local" class="form-input" id="spotlightEndDate">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input" id="spotlightDescription" rows="2" placeholder="What makes this event special?"></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Ticket Price ($)</label>
+                                <input type="number" class="form-input" id="spotlightPrice" min="0" step="0.01" value="0" placeholder="0 for free">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Image URL (optional)</label>
+                                <input type="text" class="form-input" id="spotlightImage" placeholder="https://...">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; border: none; font-weight: 700;">
+                            ⚡ Create Spotlight Event
+                        </button>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">⚡ Active Spotlight Events</h2>
+                    <div id="spotlightEventsList">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+            </div>
 
             <!-- DJs Tab -->
             <div id="adminTabDJs" style="display: none;">
@@ -3067,8 +3146,9 @@
             document.getElementById('landingPage').classList.add('hidden');
             // Show customer view with venues (works for guests too)
             showView('customer');
-            // Load venues
+            // Load venues and spotlight events
             loadVenues();
+            loadHomepageSpotlightEvents();
         }
 
         // Legacy functions for backwards compatibility
@@ -6203,27 +6283,39 @@
         function showAdminTab(tab) {
             // Hide all tabs
             document.getElementById('adminTabVenues').style.display = 'none';
+            document.getElementById('adminTabSpotlight').style.display = 'none';
             document.getElementById('adminTabDJs').style.display = 'none';
             document.getElementById('adminTabUsers').style.display = 'none';
             document.getElementById('adminTabTransactions').style.display = 'none';
             document.getElementById('adminTabTicketSales').style.display = 'none';
 
             // Reset all tab buttons
-            ['tabVenues', 'tabDJs', 'tabUsers', 'tabTransactions', 'tabTicketSales'].forEach(id => {
+            ['tabVenues', 'tabSpotlight', 'tabDJs', 'tabUsers', 'tabTransactions', 'tabTicketSales'].forEach(id => {
                 const btn = document.getElementById(id);
-                btn.style.background = 'transparent';
-                btn.style.borderColor = 'var(--border-dark)';
-                btn.style.color = 'rgba(255,255,255,0.6)';
+                if (btn) {
+                    btn.style.background = 'transparent';
+                    btn.style.borderColor = id === 'tabSpotlight' ? 'var(--lightning-yellow)' : 'var(--border-dark)';
+                    btn.style.color = id === 'tabSpotlight' ? 'var(--lightning-yellow)' : 'rgba(255,255,255,0.6)';
+                }
             });
 
             // Show selected tab and highlight button
             const activeBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
-            activeBtn.style.background = 'var(--electric-purple)';
-            activeBtn.style.borderColor = 'var(--electric-purple)';
-            activeBtn.style.color = 'white';
+            if (tab === 'spotlight') {
+                activeBtn.style.background = 'linear-gradient(90deg, var(--lightning-yellow), var(--neon-green))';
+                activeBtn.style.borderColor = 'var(--lightning-yellow)';
+                activeBtn.style.color = '#000';
+            } else {
+                activeBtn.style.background = 'var(--electric-purple)';
+                activeBtn.style.borderColor = 'var(--electric-purple)';
+                activeBtn.style.color = 'white';
+            }
 
             if (tab === 'venues') {
                 document.getElementById('adminTabVenues').style.display = 'block';
+            } else if (tab === 'spotlight') {
+                document.getElementById('adminTabSpotlight').style.display = 'block';
+                loadSpotlightEvents();
             } else if (tab === 'djs') {
                 document.getElementById('adminTabDJs').style.display = 'block';
                 loadAdminDJs();
@@ -6236,6 +6328,182 @@
             } else if (tab === 'ticketSales') {
                 document.getElementById('adminTabTicketSales').style.display = 'block';
                 loadTicketSales();
+            }
+        }
+
+        // ===== SPOTLIGHT EVENTS FUNCTIONS =====
+        async function loadSpotlightEvents() {
+            try {
+                const data = await apiCall('/api/v1/lightning/events');
+                const list = document.getElementById('spotlightEventsList');
+
+                if (!data.events || data.events.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No spotlight events yet. Create one above!</div>';
+                    return;
+                }
+
+                list.innerHTML = data.events.map(event => {
+                    const eventDate = new Date(event.date);
+                    const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const isPast = eventDate < new Date();
+
+                    return `
+                        <div style="background: ${event.isSpotlight ? 'linear-gradient(135deg, rgba(255,221,0,0.1), rgba(57,255,20,0.05))' : 'rgba(157,78,221,0.05)'}; border: ${event.isSpotlight ? '2px solid var(--lightning-yellow)' : '1px solid var(--border-dark)'}; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; ${isPast ? 'opacity: 0.5;' : ''}">
+                            <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <h3 style="color: var(--electric-purple); margin: 0;">${event.name}</h3>
+                                        ${event.isSpotlight ? '<span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">⚡ SPOTLIGHT</span>' : ''}
+                                        ${isPast ? '<span style="background: rgba(255,0,0,0.2); color: #ff6b6b; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">PAST</span>' : ''}
+                                    </div>
+                                    <p style="color: var(--lightning-yellow); font-weight: 600; margin-bottom: 0.25rem;">📅 ${dateStr} at ${timeStr}</p>
+                                    <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">📍 ${event.location || 'TBA'}</p>
+                                    ${event.description ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 0.5rem;">${event.description}</p>` : ''}
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="badge ${event.isActive ? 'badge-approved' : 'badge-pending'}">${event.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
+                                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">${event.eventType || 'General'}</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                                <button class="btn ${event.isSpotlight ? '' : ''}" style="${event.isSpotlight ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleEventSpotlight('${event._id}', ${!event.isSpotlight})">
+                                    ⚡ ${event.isSpotlight ? 'Remove Spotlight' : 'Make Spotlight'}
+                                </button>
+                                <button class="btn" style="border-color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'}; color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'};" onclick="toggleEventActive('${event._id}', ${!event.isActive})">
+                                    ${event.isActive ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteSpotlightEvent('${event._id}')">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading spotlight events:', error);
+                document.getElementById('spotlightEventsList').innerHTML = '<div class="empty-state">Error loading events</div>';
+            }
+        }
+
+        async function createSpotlightEvent(e) {
+            e.preventDefault();
+            try {
+                const name = document.getElementById('spotlightName').value;
+                const slug = document.getElementById('spotlightSlug').value.toLowerCase().replace(/\s+/g, '-');
+                const eventType = document.getElementById('spotlightType').value;
+                const location = document.getElementById('spotlightLocation').value;
+                const date = document.getElementById('spotlightDate').value;
+                const endDate = document.getElementById('spotlightEndDate').value;
+                const description = document.getElementById('spotlightDescription').value;
+                const price = parseFloat(document.getElementById('spotlightPrice').value) || 0;
+                const imageUrl = document.getElementById('spotlightImage').value;
+
+                await apiCall('/api/v1/lightning/spotlight-events', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name, slug, eventType, location, date, endDate, description, imageUrl,
+                        tickets: [{ type: 'general', name: 'General Admission', price: Math.round(price * 100), available: -1, sold: 0 }]
+                    })
+                });
+
+                showToast('⚡ Spotlight Event created!', 'success');
+                document.getElementById('createSpotlightForm').reset();
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents(); // Refresh homepage
+            } catch (error) {
+                showToast('Failed to create event: ' + error.message, 'error');
+            }
+        }
+
+        async function toggleEventSpotlight(eventId, makeSpotlight) {
+            try {
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ isSpotlight: makeSpotlight })
+                });
+                showToast(makeSpotlight ? '⚡ Event is now Spotlight!' : 'Spotlight removed', 'success');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to update: ' + error.message, 'error');
+            }
+        }
+
+        async function toggleEventActive(eventId, makeActive) {
+            try {
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ isActive: makeActive })
+                });
+                showToast(makeActive ? 'Event activated!' : 'Event deactivated', 'success');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to update: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteSpotlightEvent(eventId) {
+            if (!confirm('Delete this spotlight event?')) return;
+            try {
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, { method: 'DELETE' });
+                showToast('Event deleted', 'success');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to delete: ' + error.message, 'error');
+            }
+        }
+
+        // Load Spotlight Events on Homepage
+        async function loadHomepageSpotlightEvents() {
+            try {
+                const data = await apiCall('/api/v1/lightning/spotlight-events');
+                const container = document.getElementById('homepageSpotlightEvents');
+                const section = document.getElementById('spotlightEventsSection');
+
+                if (!data.events || data.events.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                container.innerHTML = data.events.map(event => {
+                    const eventDate = new Date(event.date);
+                    const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
+                    const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
+
+                    return `
+                        <div class="venue-card spotlight" style="position: relative; overflow: visible;">
+                            <div style="display: flex; gap: 1rem;">
+                                <div style="background: linear-gradient(135deg, var(--lightning-yellow), var(--neon-green)); border-radius: 0.5rem; padding: 0.75rem; text-align: center; min-width: 70px;">
+                                    <div style="font-size: 0.7rem; font-weight: 700; color: #000; text-transform: uppercase;">${dayName}</div>
+                                    <div style="font-size: 1.5rem; font-weight: 800; color: #000;">${monthDay.split(' ')[1]}</div>
+                                    <div style="font-size: 0.65rem; font-weight: 600; color: #000;">${monthDay.split(' ')[0]}</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h3 style="color: var(--electric-purple); margin-bottom: 0.25rem;">${event.name}</h3>
+                                    <p style="color: var(--lightning-yellow); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">🕐 ${timeStr}</p>
+                                    <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">📍 ${event.location || 'TBA'}</p>
+                                </div>
+                            </div>
+                            ${event.description ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin: 0.75rem 0;">${event.description}</p>` : ''}
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">${price}</div>
+                                <button class="btn btn-secondary" onclick="alert('Coming soon: Purchase tickets for ${event.name}')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                    </svg>
+                                    GET TICKETS
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading homepage spotlight events:', error);
+                document.getElementById('spotlightEventsSection').style.display = 'none';
             }
         }
 
