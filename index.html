@@ -3690,7 +3690,7 @@
             if (!state.user) {
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Events</a>
+                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
                     <a href="login.html" class="btn btn-primary">LOGIN</a>
                 `;
                 navLinks.style.display = 'flex';
@@ -3698,6 +3698,7 @@
 
             showView('customer');
             loadVenues();
+            loadHomepageSpotlightEvents();
         }
 
         // Auto-play music when page loads (will work if browser allows)
@@ -3974,7 +3975,7 @@
                 // Update nav for guest
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Events</a>
+                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
                     <a href="login.html" class="btn btn-primary">LOGIN</a>
                 `;
                 navLinks.style.display = 'flex';
@@ -5066,13 +5067,14 @@
             // Update nav for guest mode
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
-                <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Events</a>
+                <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
                 <a href="login.html" class="btn btn-primary">LOGIN</a>
             `;
             navLinks.style.display = 'flex';
 
             showView('customer');
             loadVenues();
+            loadHomepageSpotlightEvents();
             showToast('Logged out successfully', 'success');
         }
 
