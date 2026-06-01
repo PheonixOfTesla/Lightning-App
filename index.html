@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Lightning Pass - Skip the Line</title>
+    <title>Lightning Pass - Your Pass to Everything</title>
 
     <!-- Favicon - Lightning Bolt SVG -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
@@ -16,13 +16,13 @@
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://thelightningpass.com">
-    <meta property="og:title" content="Lightning Pass - Skip the Line">
+    <meta property="og:title" content="Lightning Pass - Your Pass to Everything">
     <meta property="og:description" content="Skip the line at top nightclubs. Buy your pass, show the QR code, walk in.">
     <meta property="og:image" content="https://thelightningpass.com/og-image.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Lightning Pass - Skip the Line">
+    <meta name="twitter:title" content="Lightning Pass - Your Pass to Everything">
     <meta name="twitter:description" content="Skip the line at top nightclubs. Buy your pass, show the QR code, walk in.">
     <meta name="twitter:image" content="https://thelightningpass.com/og-image.png">
 
@@ -1502,10 +1502,10 @@
         <div class="splash-content">
         <h1 class="splash-title">Lightning Pass</h1>
         <div class="splash-tagline">
-            <span class="tagline-main">Skip the Line</span>
-            <span class="tagline-tonight">Tonight</span>
+            <span class="tagline-main">Your Pass</span>
+            <span class="tagline-tonight">To Everything</span>
         </div>
-        <p class="splash-subtitle">Instant access to the hottest<br>venues & DJs in your area</p>
+        <p class="splash-subtitle">Events, venues, and experiences<br>— all in one tap</p>
         <button class="splash-enter">Tap to Enter</button>
         </div>
     </div>
@@ -1523,11 +1523,11 @@
         <!-- Landing Content -->
         <div class="landing-content">
             <h1 class="landing-title">Lightning App</h1>
-            <p class="landing-subtitle">Skip the Line. Live the Night.</p>
+            <p class="landing-subtitle">One pass. Instant access.</p>
 
             <div class="landing-buttons">
                 <button type="button" class="landing-btn landing-btn-signup" onclick="browseVenuesFromLanding()" autocomplete="off">
-                    Browse Venues
+                    Browse Events
                 </button>
                 <button type="button" class="landing-btn landing-btn-login" onclick="goToLogin()" autocomplete="off">
                     Login
@@ -1819,9 +1819,9 @@
         <!-- CUSTOMER VIEW -->
         <div id="customerView" class="container hidden">
             <div class="hero">
-                <h1>Skip the Line Tonight</h1>
+                <h1>One Pass. Instant Access.</h1>
                 <p style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
-                    Instant access to the hottest<br>venues & DJs in your area
+                    Discover local events and get in instantly
                 </p>
             </div>
 
@@ -1840,7 +1840,7 @@
 
             <h2 style="margin-bottom: 2rem; font-size: 2rem;">
                 <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                    Live Venues Near You
+                    Live Events Near You
                 </span>
             </h2>
 
@@ -3503,7 +3503,7 @@
             if (!state.user) {
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Venues</a>
+                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Events</a>
                     <a href="login.html" class="btn btn-primary">LOGIN</a>
                 `;
                 navLinks.style.display = 'flex';
@@ -3787,7 +3787,7 @@
                 // Update nav for guest
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Venues</a>
+                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Events</a>
                     <a href="login.html" class="btn btn-primary">LOGIN</a>
                 `;
                 navLinks.style.display = 'flex';
@@ -4856,7 +4856,7 @@
                 `;
             } else {
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer')">Browse Venues</a>
+                    <a href="#" class="nav-link" onclick="showView('customer')">Browse Events</a>
                     <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
                 `;
             }
@@ -4879,7 +4879,7 @@
             // Update nav for guest mode
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
-                <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Venues</a>
+                <a href="#" class="nav-link" onclick="showView('customer'); loadVenues();">Browse Events</a>
                 <a href="login.html" class="btn btn-primary">LOGIN</a>
             `;
             navLinks.style.display = 'flex';
