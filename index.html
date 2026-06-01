@@ -1767,6 +1767,11 @@
                                     <option value="Nightclub">Nightclub</option>
                                     <option value="Bar">Bar</option>
                                     <option value="Lounge">Lounge</option>
+                                    <option value="Concert">Concert</option>
+                                    <option value="Festival">Festival</option>
+                                    <option value="Conference">Conference</option>
+                                    <option value="Meetup">Meetup</option>
+                                    <option value="Private Event">Private Event</option>
                                     <option value="Restaurant">Restaurant</option>
                                     <option value="Event Space">Event Space</option>
                                 </select>
@@ -1838,11 +1843,20 @@
                 </div>
             </div>
 
-            <h2 style="margin-bottom: 2rem; font-size: 2rem;">
-                <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                    Live Events Near You
-                </span>
-            </h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 style="font-size: 2rem; margin: 0;">
+                    <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Live Events Near You
+                    </span>
+                </h2>
+                <a href="mailto:host@thelightningpass.com?subject=Host an Event on Lightning Pass" class="btn" style="border-color: var(--neon-green); color: var(--neon-green); font-size: 0.875rem; padding: 0.5rem 1.25rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Host an Event
+                </a>
+            </div>
 
             <div class="venues-grid" id="customerVenuesGrid">
                 <div class="empty-state">Loading venues...</div>
@@ -2479,6 +2493,11 @@
                                 <option>Nightclub</option>
                                 <option>Bar</option>
                                 <option>Lounge</option>
+                                <option>Concert</option>
+                                <option>Festival</option>
+                                <option>Conference</option>
+                                <option>Meetup</option>
+                                <option>Private Event</option>
                                 <option>Rooftop Bar</option>
                             </select>
                         </div>
@@ -2687,6 +2706,15 @@
                     <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; color: var(--lightning-yellow);">
                         <span>Total</span>
                         <span id="purchaseTotal">$0</span>
+                    </div>
+                </div>
+
+                <!-- Apple Pay / Google Pay Button -->
+                <div id="payment-request-container" style="margin-bottom: 1rem;">
+                    <div id="payment-request-btn"></div>
+                    <div id="payment-divider" style="display: none; text-align: center; color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 1rem 0; position: relative;">
+                        <span style="background: var(--card-black); padding: 0 1rem; position: relative; z-index: 1;">or pay with card</span>
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.2); z-index: 0;"></div>
                     </div>
                 </div>
 
@@ -2919,6 +2947,7 @@
             stripe: null,
             cardElement: null,
             paymentIntentId: null,
+            paymentRequestInitialized: false,
             approvalCheckInterval: null,
             approvedVenueCount: 0,
             socket: null,  // Socket.IO connection
@@ -7112,6 +7141,119 @@
                             }
                         });
                     }
+
+                    // Initialize Apple Pay / Google Pay Payment Request Button
+                    if (state.stripe && !state.paymentRequestInitialized && state.selectedVenue) {
+                        const priceInCents = Math.round((state.selectedVenue.currentPrice || 35) * 100);
+
+                        const paymentRequest = state.stripe.paymentRequest({
+                            country: 'US',
+                            currency: 'usd',
+                            total: {
+                                label: `${state.selectedVenue.name} - Lightning Pass`,
+                                amount: priceInCents
+                            },
+                            requestPayerName: true,
+                            requestPayerEmail: true,
+                            requestPayerPhone: true
+                        });
+
+                        const elements = state.stripe.elements();
+                        const prButton = elements.create('paymentRequestButton', {
+                            paymentRequest: paymentRequest,
+                            style: {
+                                paymentRequestButton: {
+                                    type: 'default',
+                                    theme: 'dark',
+                                    height: '48px'
+                                }
+                            }
+                        });
+
+                        // Check if Apple Pay or Google Pay is available
+                        paymentRequest.canMakePayment().then((result) => {
+                            if (result) {
+                                const prBtnContainer = document.getElementById('payment-request-btn');
+                                const divider = document.getElementById('payment-divider');
+                                if (prBtnContainer) {
+                                    prButton.mount('#payment-request-btn');
+                                }
+                                if (divider) {
+                                    divider.style.display = 'block';
+                                }
+                            } else {
+                                // Hide the container if no wallet payment available
+                                const container = document.getElementById('payment-request-container');
+                                if (container) container.style.display = 'none';
+                            }
+                        });
+
+                        // Handle payment method from Apple Pay / Google Pay
+                        paymentRequest.on('paymentmethod', async (ev) => {
+                            try {
+                                const guestName = document.getElementById('guestName').value;
+                                const email = document.getElementById('guestEmail').value;
+                                const phone = document.getElementById('guestPhone').value;
+
+                                // Create payment intent
+                                const intentResponse = await fetch(`${CONFIG.API_BASE}/lightning/passes/create-payment`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        venueId: state.selectedVenue._id,
+                                        email: email,
+                                        phone: phone,
+                                        guestName: guestName
+                                    })
+                                });
+
+                                const intentData = await intentResponse.json();
+
+                                // Confirm the payment with the payment method from wallet
+                                const { error: confirmError, paymentIntent } = await state.stripe.confirmCardPayment(
+                                    intentData.clientSecret,
+                                    { payment_method: ev.paymentMethod.id },
+                                    { handleActions: false }
+                                );
+
+                                if (confirmError) {
+                                    ev.complete('fail');
+                                    showToast(confirmError.message, 'error');
+                                    return;
+                                }
+
+                                ev.complete('success');
+
+                                // Confirm with backend
+                                const confirmResponse = await fetch(`${CONFIG.API_BASE}/lightning/passes/confirm-payment`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        paymentIntentId: paymentIntent.id,
+                                        venueId: state.selectedVenue._id,
+                                        email: email,
+                                        phone: phone,
+                                        guestName: guestName
+                                    })
+                                });
+
+                                const result = await confirmResponse.json();
+
+                                if (result.pass) {
+                                    closeModal('purchaseModal');
+                                    showToast('Pass purchased! Check your SMS/email.', 'success');
+                                    if (result.pass.viewUrl) {
+                                        window.open(result.pass.viewUrl, '_blank');
+                                    }
+                                }
+                            } catch (error) {
+                                ev.complete('fail');
+                                showToast('Payment failed. Please try again.', 'error');
+                            }
+                        });
+
+                        state.paymentRequestInitialized = true;
+                    }
                 }, 100);
             }
         }
@@ -7120,6 +7262,12 @@
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.classList.remove('active');
+            }
+            // Reset payment request state so it re-initializes with correct price next time
+            if (modalId === 'purchaseModal') {
+                state.paymentRequestInitialized = false;
+                const prBtnContainer = document.getElementById('payment-request-btn');
+                if (prBtnContainer) prBtnContainer.innerHTML = '';
             }
         }
 
