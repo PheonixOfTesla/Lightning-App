@@ -6547,11 +6547,17 @@
             
             venues.forEach(venue => {
                 const card = document.createElement('div');
-                card.style.cssText = 'background: rgba(157, 78, 221, 0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;';
+                const isSpotlight = venue.isSpotlight;
+                card.style.cssText = isSpotlight
+                    ? 'background: linear-gradient(135deg, rgba(255,221,0,0.1), rgba(57,255,20,0.05)); border: 2px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;'
+                    : 'background: rgba(157, 78, 221, 0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;';
                 card.innerHTML = `
                     <div class="venue-card-layout" style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
                         <div style="flex: 1; min-width: 200px;">
-                            <h3 style="color: var(--electric-purple); word-break: break-word;">${venue.name}</h3>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                <h3 style="color: var(--electric-purple); word-break: break-word; margin: 0;">${venue.name}</h3>
+                                ${isSpotlight ? '<span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">⚡ SPOTLIGHT</span>' : ''}
+                            </div>
                             <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem; word-break: break-word;">${venue.address}</p>
                             <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem; margin-top: 0.5rem; word-break: break-word;">
                                 📧 ${venue.ownerEmail || 'N/A'} ${venue.ownerPhone ? `<br>📞 ${venue.ownerPhone}` : ''}
@@ -6565,13 +6571,29 @@
                             </span>
                         </div>
                     </div>
-                    <div class="venue-card-buttons" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="venue-card-buttons" style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                        <button class="btn ${isSpotlight ? 'btn-warning' : ''}" style="${isSpotlight ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleSpotlight('${venue._id}', ${!isSpotlight})">
+                            ⚡ ${isSpotlight ? 'Remove Spotlight' : 'Make Spotlight'}
+                        </button>
                         <button class="btn btn-secondary" onclick="editVenueAdmin('${venue._id}')">Edit</button>
                         <button class="btn btn-danger" onclick="deleteVenue('${venue._id}', '${venue.name.replace(/'/g, "\\'")}')">Delete</button>
                     </div>
                 `;
                 list.appendChild(card);
             });
+        }
+
+        async function toggleSpotlight(venueId, makeSpotlight) {
+            try {
+                await apiCall(`/api/v1/lightning/venues/${venueId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ isSpotlight: makeSpotlight })
+                });
+                showToast(makeSpotlight ? '⚡ Venue is now a Spotlight Event!' : 'Spotlight removed', 'success');
+                await loadAdminStats();
+            } catch (error) {
+                showToast('Failed to update spotlight: ' + error.message, 'error');
+            }
         }
 
         // Store venues for editing
