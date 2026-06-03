@@ -1932,6 +1932,12 @@
             <!-- Venue Type Filter Bar -->
             <div id="venueFilterBar" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
                 <button class="filter-chip active" data-filter="all" onclick="filterVenues('all')">All</button>
+                <button class="filter-chip" data-filter="lightning" onclick="filterVenues('lightning')" style="background: linear-gradient(135deg, var(--lightning-yellow), var(--neon-green)); color: #000; border: none;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.25rem;">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    Lightning
+                </button>
                 <button class="filter-chip" data-filter="Nightclub" onclick="filterVenues('Nightclub')">Nightclub</button>
                 <button class="filter-chip" data-filter="Bar" onclick="filterVenues('Bar')">Bar</button>
                 <button class="filter-chip" data-filter="Lounge" onclick="filterVenues('Lounge')">Lounge</button>
@@ -5231,6 +5237,21 @@
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 chip.classList.toggle('active', chip.dataset.filter === type);
             });
+
+            // Handle Lightning Events filter - scroll to spotlight section
+            if (type === 'lightning') {
+                const spotlightSection = document.getElementById('spotlightEventsSection');
+                if (spotlightSection && spotlightSection.style.display !== 'none') {
+                    spotlightSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Flash highlight effect
+                    spotlightSection.style.transition = 'box-shadow 0.3s ease';
+                    spotlightSection.style.boxShadow = '0 0 30px var(--lightning-yellow)';
+                    setTimeout(() => spotlightSection.style.boxShadow = '', 1500);
+                } else {
+                    showToast('No Lightning Events available right now', 'info');
+                }
+                return;
+            }
 
             // Filter venue cards
             const cards = document.querySelectorAll('#customerVenuesGrid .venue-card');
