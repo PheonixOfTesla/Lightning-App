@@ -6456,6 +6456,13 @@
 
             uploadText.textContent = 'Uploading...';
 
+            // Reset any previous success styling
+            const uploadBtn = uploadText.closest('label.btn');
+            if (uploadBtn) {
+                uploadBtn.style.borderColor = '';
+                uploadBtn.style.color = '';
+            }
+
             try {
                 const formData = new FormData();
                 formData.append('image', file);
@@ -6478,13 +6485,27 @@
                 // Show preview
                 previewImg.src = data.imageUrl;
                 previewContainer.style.display = 'block';
-                uploadText.textContent = 'Change Image';
+                uploadText.innerHTML = '<span style="color: #10b981;">✓</span> Image Updated';
+
+                // Add success styling to parent button
+                const uploadBtn = uploadText.closest('label.btn');
+                if (uploadBtn) {
+                    uploadBtn.style.borderColor = '#10b981';
+                    uploadBtn.style.color = '#10b981';
+                }
 
                 showToast('Image uploaded!', 'success');
             } catch (error) {
                 console.error('Upload error:', error);
                 showToast('Failed to upload image', 'error');
                 uploadText.textContent = 'Upload Image';
+
+                // Reset button styling on error
+                const uploadBtn = uploadText.closest('label.btn');
+                if (uploadBtn) {
+                    uploadBtn.style.borderColor = '';
+                    uploadBtn.style.color = '';
+                }
             }
         }
 
