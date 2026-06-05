@@ -6894,7 +6894,10 @@
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.25rem;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                                         LIGHTNING EVENT
                                     </span>
-                                    <span style="background: rgba(57,255,20,0.2); color: #39FF14; padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700; border: 1px solid #39FF14;">FEATURED</span>
+                                    ${event.status === 'pending'
+                                        ? `<span style="background: rgba(255,165,0,0.2); color: #FFA500; padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700; border: 1px solid #FFA500; animation: pending-blink 1.5s ease-in-out infinite;">PENDING</span>
+                                           <style>@keyframes pending-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }</style>`
+                                        : `<span style="background: rgba(57,255,20,0.2); color: #39FF14; padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700; border: 1px solid #39FF14;">FEATURED</span>`}
                                 </div>
                                 <div style="display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;">
                                     <div style="background: linear-gradient(135deg, #9D4EDD, #00D4FF); border-radius: 0.75rem; padding: 1rem 1.25rem; text-align: center; min-width: 90px;">
