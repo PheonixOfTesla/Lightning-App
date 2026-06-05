@@ -7151,13 +7151,23 @@
                     const selectedTier = document.querySelector('input[name="ticketTier"]:checked');
                     const ticket = selectedEvent.tickets[parseInt(selectedTier.value)];
 
+                    // Parse payer name into first/last
+                    const payerNameParts = (ev.payerName || '').trim().split(' ');
+                    const payerFirstName = payerNameParts[0] || 'Guest';
+                    const payerLastName = payerNameParts.slice(1).join(' ') || payerFirstName;
+
                     // Create payment intent
                     const intentResponse = await apiCall('/api/v1/embed/create-intent', {
                         method: 'POST',
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
-                            email: ev.payerEmail
+                            guest: {
+                                firstName: payerFirstName,
+                                lastName: payerLastName,
+                                email: ev.payerEmail,
+                                phone: ev.payerPhone || ''
+                            }
                         })
                     });
 
@@ -7182,9 +7192,12 @@
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
-                            guestName: ev.payerName,
-                            email: ev.payerEmail,
-                            phone: ev.payerPhone || '',
+                            guest: {
+                                firstName: payerFirstName,
+                                lastName: payerLastName,
+                                email: ev.payerEmail,
+                                phone: ev.payerPhone || ''
+                            },
                             paymentIntentId: paymentIntent.id
                         })
                     });
@@ -7218,6 +7231,11 @@
             btn.textContent = 'Processing...';
 
             try {
+                // Parse name into first/last
+                const nameParts = name.trim().split(' ');
+                const firstName = nameParts[0] || name;
+                const lastName = nameParts.slice(1).join(' ') || firstName;
+
                 if (ticket.price === 0) {
                     // Free ticket - just register
                     const response = await apiCall('/api/v1/embed/confirm', {
@@ -7225,9 +7243,12 @@
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
-                            guestName: name,
-                            email: email,
-                            phone: phone,
+                            guest: {
+                                firstName: firstName,
+                                lastName: lastName,
+                                email: email,
+                                phone: phone
+                            },
                             paymentIntentId: 'free_' + Date.now()
                         })
                     });
@@ -7241,7 +7262,12 @@
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
-                            email: email
+                            guest: {
+                                firstName: firstName,
+                                lastName: lastName,
+                                email: email,
+                                phone: phone
+                            }
                         })
                     });
 
@@ -7261,9 +7287,12 @@
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
-                            guestName: name,
-                            email: email,
-                            phone: phone,
+                            guest: {
+                                firstName: firstName,
+                                lastName: lastName,
+                                email: email,
+                                phone: phone
+                            },
                             paymentIntentId: paymentIntent.id
                         })
                     });
