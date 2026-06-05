@@ -6854,16 +6854,37 @@
                 }
 
                 section.style.display = 'block';
-                container.innerHTML = data.events.map(event => {
+
+                // Sort: Lightning Events first (priority), then by date
+                const sortedEvents = data.events.sort((a, b) => {
+                    if (a.isLightningEvent && !b.isLightningEvent) return -1;
+                    if (!a.isLightningEvent && b.isLightningEvent) return 1;
+                    if ((a.priority || 0) !== (b.priority || 0)) return (b.priority || 0) - (a.priority || 0);
+                    return new Date(a.date) - new Date(b.date);
+                });
+
+                container.innerHTML = sortedEvents.map(event => {
                     const eventDate = new Date(event.date);
                     const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
                     const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                     const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
 
+                    // Badge based on event type
+                    const isLightning = event.isLightningEvent;
+                    const isPending = event.status === 'pending';
+                    const badgeStyle = isLightning
+                        ? 'background: linear-gradient(90deg, #9D4EDD, #00D4FF); color: #fff;'
+                        : 'background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000;';
+                    const badgeText = isLightning ? '⚡ LIGHTNING' : '⚡ SPOTLIGHT';
+
                     return `
-                        <div class="venue-card spotlight" style="position: relative; overflow: visible; display: flex; flex-direction: column;">
-                            <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem;">
+                        <div class="venue-card ${isLightning ? 'lightning' : 'spotlight'}" style="position: relative; overflow: visible; display: flex; flex-direction: column; ${isLightning ? 'border-color: var(--electric-purple);' : ''}">
+                            <div style="position: absolute; top: -10px; left: 12px; display: flex; gap: 0.5rem;">
+                                <span style="${badgeStyle} padding: 0.2rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">${badgeText}</span>
+                                ${isPending ? '<span style="background: rgba(255,165,0,0.2); color: #FFA500; padding: 0.2rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700;">PENDING</span>' : ''}
+                            </div>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; margin-top: 0.5rem;">
                                 <div style="background: linear-gradient(135deg, var(--lightning-yellow), var(--neon-green)); border-radius: 0.5rem; padding: 0.75rem; text-align: center; min-width: 70px; height: fit-content;">
                                     <div style="font-size: 0.7rem; font-weight: 700; color: #000; text-transform: uppercase;">${dayName}</div>
                                     <div style="font-size: 1.5rem; font-weight: 800; color: #000;">${monthDay.split(' ')[1]}</div>
