@@ -5190,39 +5190,70 @@
                     card.className = venue.isSpotlight ? 'venue-card spotlight' : 'venue-card';
                     card.dataset.type = venue.type || 'Venue';
                     const typeClass = (venue.type || 'default').toLowerCase().replace(/\s+/g, '-').replace('rooftop-bar', 'rooftop');
-                    card.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                            <div>
-                                <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${venue.name}</h3>
-                                <span class="venue-type-badge ${typeClass}">${venue.type || 'Venue'}</span>
+
+                    // Check if this is a showcase venue (VIP invite only - no pass sales)
+                    const isShowcase = venue.isShowcase === true;
+
+                    if (isShowcase) {
+                        // VIP Showcase venue - call to reserve
+                        card.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${venue.name}</h3>
+                                    <span class="venue-type-badge ${typeClass}" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: #000;">${venue.type || 'Venue'}</span>
+                                </div>
+                                <span class="badge" style="background: linear-gradient(135deg, #FFD700, #B8860B); color: #000; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 2rem; font-size: 0.7rem;">VIP</span>
                             </div>
-                            <span class="badge badge-approved">${venue.waitTime || 0} MIN</span>
-                        </div>
-                        <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1rem;">${venue.address || ''}</p>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
-                            <span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 0.75rem;">${venue.address || ''}</p>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 0.5rem;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                                 </svg>
-                                ${venue.inLine || 0} in line
-                            </span>
-                            <span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
-                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                <span style="color: #FFD700; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;">INVITE ONLY • RSVP REQUIRED</span>
+                            </div>
+                            <a href="tel:${venue.phone || ''}" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; font-weight: 700; text-decoration: none; ${!venue.phone ? 'pointer-events: none; opacity: 0.5;' : ''}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                                 </svg>
-                                ${venue.availablePasses || 0} passes
-                            </span>
-                        </div>
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--lightning-yellow); margin-bottom: 1rem;">
-                            $${venue.currentPrice || 35}
-                        </div>
-                        <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue('${venue._id}')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
-                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                            </svg>
-                            GET PASS
-                        </button>
-                    `;
+                                CALL FOR RESERVATIONS
+                            </a>
+                        `;
+                    } else {
+                        // Standard Lightning Pass venue
+                        card.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${venue.name}</h3>
+                                    <span class="venue-type-badge ${typeClass}">${venue.type || 'Venue'}</span>
+                                </div>
+                                <span class="badge badge-approved">${venue.waitTime || 0} MIN</span>
+                            </div>
+                            <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1rem;">${venue.address || ''}</p>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
+                                <span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    </svg>
+                                    ${venue.inLine || 0} in line
+                                </span>
+                                <span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                    </svg>
+                                    ${venue.availablePasses || 0} passes
+                                </span>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--lightning-yellow); margin-bottom: 1rem;">
+                                $${venue.currentPrice || 35}
+                            </div>
+                            <button class="btn btn-secondary" style="width: 100%;" onclick="selectVenue('${venue._id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                </svg>
+                                GET PASS
+                            </button>
+                        `;
+                    }
                     grid.appendChild(card);
                 });
             } catch (error) {
