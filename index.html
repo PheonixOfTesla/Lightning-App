@@ -77,18 +77,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(255, 221, 0, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(157, 78, 221, 0.03) 0%, transparent 50%);
-            animation: pulseGlow 8s ease-in-out infinite;
+            background: radial-gradient(ellipse at 50% 0%, rgba(255, 221, 0, 0.02) 0%, transparent 60%);
             pointer-events: none;
             z-index: 1;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
         }
 
         nav {
@@ -125,13 +116,8 @@
         }
 
         .logo span:first-child {
-            font-size: 2rem;
-            animation: electricPulse 2s infinite;
-        }
-
-        @keyframes electricPulse {
-            0%, 100% { color: var(--lightning-yellow); }
-            50% { color: var(--electric-purple); }
+            font-size: 1.75rem;
+            color: var(--lightning-yellow);
         }
 
         .nav-links {
@@ -192,65 +178,41 @@
         .btn-primary {
             border-color: var(--electric-blue);
             color: var(--electric-blue);
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0);
         }
 
         .btn-primary:hover {
             background: var(--electric-blue);
             color: var(--pure-black);
-            transform: translateY(-2px) scale(1.02);
-            box-shadow:
-                0 0 20px rgba(0, 212, 255, 0.4),
-                0 0 40px rgba(0, 212, 255, 0.2),
-                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn-success {
             border-color: var(--neon-green);
             color: var(--neon-green);
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0);
         }
 
         .btn-success:hover {
             background: var(--neon-green);
             color: var(--pure-black);
-            transform: translateY(-2px) scale(1.02);
-            box-shadow:
-                0 0 20px rgba(57, 255, 20, 0.4),
-                0 0 40px rgba(57, 255, 20, 0.2),
-                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn-danger {
             border-color: var(--danger-red);
             color: var(--danger-red);
-            box-shadow: 0 0 20px rgba(255, 0, 68, 0);
         }
 
         .btn-danger:hover {
             background: var(--danger-red);
             color: var(--white);
-            transform: translateY(-2px) scale(1.02);
-            box-shadow:
-                0 0 20px rgba(255, 0, 68, 0.4),
-                0 0 40px rgba(255, 0, 68, 0.2),
-                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn-secondary {
             border-color: var(--lightning-yellow);
             color: var(--lightning-yellow);
-            box-shadow: 0 0 20px rgba(255, 221, 0, 0);
         }
 
         .btn-secondary:hover {
             background: var(--lightning-yellow);
             color: var(--pure-black);
-            transform: translateY(-2px) scale(1.02);
-            box-shadow:
-                0 0 20px rgba(255, 221, 0, 0.4),
-                0 0 40px rgba(255, 221, 0, 0.2),
-                0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         .btn:disabled {
@@ -277,27 +239,19 @@
         }
 
         .hero {
-            padding: 4rem 2rem;
+            padding: 3.5rem 2rem;
             text-align: center;
-            background: radial-gradient(circle at center, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
-            border: 1px solid var(--border-dark);
+            background: transparent;
+            border: 1px solid #222;
             border-radius: 1rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
         }
 
         .hero h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple), var(--electric-blue));
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient 3s linear infinite;
-        }
-
-        @keyframes gradient {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+            color: var(--lightning-yellow);
+            font-weight: 700;
         }
 
         /* Premium Lightning Effect with SVG */
@@ -430,39 +384,30 @@
             height: 100%;
             background: linear-gradient(to bottom,
                 transparent 0%,
-                rgba(255, 221, 0, 0.05) 20%,
-                rgba(0, 212, 255, 0.05) 50%,
-                rgba(157, 78, 221, 0.05) 80%,
+                rgba(255, 221, 0, 0.03) 30%,
+                rgba(255, 221, 0, 0.03) 70%,
                 transparent 100%
             );
             transform-origin: top center;
-            animation: rotate-ray 20s linear infinite;
-            filter: blur(2px);
+            animation: rotate-ray 25s linear infinite;
+            filter: blur(3px);
         }
 
+        /* Only 2 subtle rays */
         .light-ray:nth-child(1) {
-            left: 10%;
+            left: 25%;
             animation-delay: 0s;
         }
 
         .light-ray:nth-child(2) {
-            left: 30%;
-            animation-delay: -5s;
+            left: 75%;
+            animation-delay: -12s;
         }
 
-        .light-ray:nth-child(3) {
-            left: 50%;
-            animation-delay: -10s;
-        }
-
-        .light-ray:nth-child(4) {
-            left: 70%;
-            animation-delay: -15s;
-        }
-
+        .light-ray:nth-child(3),
+        .light-ray:nth-child(4),
         .light-ray:nth-child(5) {
-            left: 90%;
-            animation-delay: -8s;
+            display: none;
         }
 
         @keyframes rotate-ray {
@@ -471,26 +416,9 @@
             100% { transform: rotate(-5deg); opacity: 0.3; }
         }
 
-        /* Circuit Grid Overlay */
+        /* Circuit Grid Overlay - DISABLED for cleaner aesthetic */
         .circuit-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0.03;
-            background-image:
-                linear-gradient(rgba(157, 78, 221, 0.5) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(157, 78, 221, 0.5) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: grid-pulse 3s ease-in-out infinite;
-        }
-
-        @keyframes grid-pulse {
-            0%, 100% { opacity: 0.02; }
-            50% { opacity: 0.06; }
+            display: none;
         }
 
         .section {
@@ -677,9 +605,8 @@
         }
 
         .venue-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--electric-purple);
-            box-shadow: 0 10px 40px rgba(157, 78, 221, 0.3);
+            transform: translateY(-2px);
+            border-color: rgba(255, 221, 0, 0.3);
         }
 
         .badge {
@@ -712,22 +639,22 @@
         .filter-chip {
             padding: 0.5rem 1rem;
             border-radius: 2rem;
-            border: 1px solid var(--border-dark);
+            border: 1px solid #333;
             background: transparent;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
         }
         .filter-chip:hover {
-            border-color: var(--electric-purple);
+            border-color: rgba(255, 221, 0, 0.4);
             color: white;
         }
         .filter-chip.active {
-            background: var(--electric-purple);
-            border-color: var(--electric-purple);
-            color: white;
+            background: rgba(255, 221, 0, 0.1);
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
         }
 
         /* Venue Type Badges */
@@ -749,24 +676,13 @@
         .venue-type-badge.restaurant { background: rgba(239, 68, 68, 0.3); color: #f87171; }
         .venue-type-badge.default { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); }
 
-        /* Spotlight Event Cards */
+        /* Spotlight Event Cards - Clean design */
         .venue-card.spotlight {
-            border: 2px solid var(--lightning-yellow);
-            box-shadow: 0 0 20px rgba(255, 221, 0, 0.3);
+            border: 1px solid #222;
             position: relative;
         }
-        .venue-card.spotlight::before {
-            content: '⚡ SPOTLIGHT';
-            position: absolute;
-            top: -10px;
-            left: 1rem;
-            background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green));
-            color: #000;
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.25rem;
-            letter-spacing: 0.5px;
+        .venue-card.spotlight:hover {
+            border-color: rgba(255, 221, 0, 0.3);
         }
 
         .modal {
@@ -1333,7 +1249,7 @@
             width: 100vw;
             height: 100vh;
             z-index: 99999;
-            background: radial-gradient(ellipse at 50% 30%, #1a1a3e 0%, #0d0d1a 50%, #000 100%);
+            background: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -1345,22 +1261,12 @@
         #splashScreen::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background:
-                radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
-            animation: ambientFloat 15s ease-in-out infinite;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 50% 30%, rgba(255, 221, 0, 0.03) 0%, transparent 60%);
             pointer-events: none;
-        }
-
-        @keyframes ambientFloat {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(2%, -2%) rotate(1deg); }
-            66% { transform: translate(-1%, 1%) rotate(-1deg); }
         }
 
         #splashScreen.hidden {
@@ -1368,13 +1274,7 @@
         }
 
         #lightningCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 5;
-            pointer-events: none;
+            display: none; /* Disabled for clean aesthetic */
         }
 
         .splash-content {
@@ -1387,68 +1287,32 @@
         }
 
         .splash-title {
-            font-size: 2.8rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 25%, #a855f7 50%, #06b6d4 75%, #ffd700 100%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
             margin-bottom: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 0.15em;
             text-align: center;
-            animation: shimmer 3s linear infinite;
-            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.3));
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
         }
 
         .splash-enter {
-            padding: 1.2rem 3.5rem;
-            font-size: 1.1rem;
-            font-weight: 700;
+            padding: 1rem 3rem;
+            font-size: 0.9rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 140, 0, 0.1) 100%);
-            border: 2px solid;
-            border-image: linear-gradient(135deg, #ffd700, #ff8c00, #ffd700) 1;
-            color: #ffd700;
+            letter-spacing: 0.15em;
+            background: transparent;
+            border: 1px solid var(--lightning-yellow);
+            color: var(--lightning-yellow);
             border-radius: 0;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-        }
-
-        .splash-enter::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
-            animation: btnShine 2s ease-in-out infinite;
-        }
-
-        @keyframes btnShine {
-            0% { left: -100%; }
-            50%, 100% { left: 100%; }
+            transition: all 0.3s ease;
         }
 
         .splash-enter:hover {
-            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            background: var(--lightning-yellow);
             color: #000;
-            transform: scale(1.05);
-            box-shadow:
-                0 0 30px rgba(255, 215, 0, 0.6),
-                0 0 60px rgba(255, 140, 0, 0.4),
-                inset 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
         .splash-tagline {
@@ -1459,101 +1323,41 @@
         }
 
         .tagline-main {
-            font-size: 3.2rem;
-            font-weight: 800;
+            font-size: 2.8rem;
+            font-weight: 700;
             letter-spacing: 0.02em;
-            background: linear-gradient(135deg, #ffd700 0%, #06b6d4 25%, #a855f7 50%, #ff8c00 75%, #ffd700 100%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s linear infinite;
-            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
+            color: var(--lightning-yellow);
         }
 
         .tagline-tonight {
-            font-size: 3.2rem;
-            font-weight: 800;
+            font-size: 2.8rem;
+            font-weight: 700;
             letter-spacing: 0.02em;
             margin-top: 0.25rem;
-            background: linear-gradient(135deg, #ff8c00 0%, #ffd700 25%, #a855f7 50%, #06b6d4 75%, #ff8c00 100%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s linear infinite;
-            animation-delay: 0.5s;
-            filter: drop-shadow(0 0 15px rgba(255, 140, 0, 0.4)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
+            color: #fff;
         }
 
         .splash-subtitle {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.95rem;
+            margin-bottom: 2.5rem;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            font-weight: 300;
+            font-weight: 400;
             text-align: center;
             line-height: 1.6;
         }
 
-        /* Floating orbs */
+        /* Floating orbs - disabled for clean aesthetic */
         .splash-orb {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            opacity: 0.6;
-            filter: blur(1px);
-        }
-
-        .splash-orb-1 {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
-            top: 10%;
-            left: -5%;
-            animation: orbFloat1 8s ease-in-out infinite;
-        }
-
-        .splash-orb-2 {
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, transparent 70%);
-            bottom: 15%;
-            right: -5%;
-            animation: orbFloat2 10s ease-in-out infinite;
-        }
-
-        .splash-orb-3 {
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
-            top: 50%;
-            right: 20%;
-            animation: orbFloat3 6s ease-in-out infinite;
-        }
-
-        @keyframes orbFloat1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, 20px) scale(1.1); }
-        }
-
-        @keyframes orbFloat2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-20px, -30px) scale(1.15); }
-        }
-
-        @keyframes orbFloat3 {
-            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
-            50% { transform: translate(-15px, 25px) scale(0.9); opacity: 0.8; }
+            display: none;
         }
 
         @media (max-width: 768px) {
-            .tagline-main, .tagline-tonight { font-size: 2.2rem; }
-            .splash-subtitle { font-size: 0.85rem; }
-            .splash-title { font-size: 2rem; }
-            .splash-enter { padding: 1rem 2.5rem; font-size: 0.95rem; }
-            .splash-orb { display: none; }
+            .tagline-main, .tagline-tonight { font-size: 2rem; }
+            .splash-subtitle { font-size: 0.8rem; }
+            .splash-title { font-size: 1.6rem; }
+            .splash-enter { padding: 0.9rem 2rem; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -1910,25 +1714,19 @@
 
             <!-- Spotlight Events Section -->
             <div id="spotlightEventsSection" style="margin-bottom: 2rem; display: none;">
-                <div style="margin-bottom: 0.75rem;">
-                    <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #000;">⚡ Spotlight Events</span>
+                <div style="margin-bottom: 1rem;">
+                    <h2 style="font-size: 1.1rem; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.5px; margin: 0;">Events</h2>
                 </div>
                 <div id="homepageSpotlightEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <!-- Spotlight events load here -->
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                <h2 style="font-size: 2rem; margin: 0;">
-                    <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                        Live Events Near You
-                    </span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 600; margin: 0; color: #fff;">
+                    Venues
                 </h2>
-                <a href="mailto:host@thelightningpass.com?subject=Host an Event on Lightning Pass" class="btn" style="border-color: var(--neon-green); color: var(--neon-green); font-size: 0.875rem; padding: 0.5rem 1.25rem;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
+                <a href="mailto:host@thelightningpass.com?subject=Host an Event on Lightning Pass" class="btn" style="border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); font-size: 0.8rem; padding: 0.4rem 1rem;">
                     Host an Event
                 </a>
             </div>
@@ -1936,12 +1734,7 @@
             <!-- Venue Type Filter Bar -->
             <div id="venueFilterBar" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
                 <button class="filter-chip active" data-filter="all" onclick="filterVenues('all')">All</button>
-                <button class="filter-chip" data-filter="lightning" onclick="filterVenues('lightning')" style="background: linear-gradient(135deg, var(--lightning-yellow), var(--neon-green)); color: #000; border: none;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.25rem;">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                    Lightning
-                </button>
+                <button class="filter-chip" data-filter="lightning" onclick="filterVenues('lightning')">Lightning</button>
                 <button class="filter-chip" data-filter="Nightclub" onclick="filterVenues('Nightclub')">Nightclub</button>
                 <button class="filter-chip" data-filter="Bar" onclick="filterVenues('Bar')">Bar</button>
                 <button class="filter-chip" data-filter="Lounge" onclick="filterVenues('Lounge')">Lounge</button>
@@ -6879,87 +6672,63 @@
                     const isLightning = event.isLightningEvent;
                     const isPending = event.status === 'pending';
 
-                    // LIGHTNING EVENT - Super spotlight with premium branding
+                    // LIGHTNING EVENT - Clean, confident design
                     if (isLightning) {
                         return `
-                            <div class="venue-card lightning-featured" style="grid-column: 1 / -1; position: relative; overflow: visible; display: flex; flex-direction: column; border: 3px solid; border-image: linear-gradient(135deg, #9D4EDD, #00D4FF, #39FF14) 1; background: linear-gradient(135deg, rgba(157,78,221,0.15), rgba(0,212,255,0.1), rgba(57,255,20,0.05)); box-shadow: 0 0 40px rgba(157,78,221,0.4), inset 0 0 60px rgba(157,78,221,0.1); animation: lightning-pulse 3s ease-in-out infinite;">
-                                <style>
-                                    @keyframes lightning-pulse {
-                                        0%, 100% { box-shadow: 0 0 40px rgba(157,78,221,0.4), inset 0 0 60px rgba(157,78,221,0.1); }
-                                        50% { box-shadow: 0 0 60px rgba(157,78,221,0.6), 0 0 80px rgba(0,212,255,0.3), inset 0 0 80px rgba(157,78,221,0.15); }
-                                    }
-                                </style>
-                                <div style="position: absolute; top: -12px; left: 12px; display: flex; gap: 0.5rem; align-items: center;">
-                                    <span style="background: linear-gradient(135deg, #9D4EDD, #00D4FF); color: #fff; padding: 0.35rem 1rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(157,78,221,0.5);">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.25rem;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                                        LIGHTNING EVENT
-                                    </span>
-                                    ${event.status === 'pending'
-                                        ? `<span style="background: rgba(255,165,0,0.2); color: #FFA500; padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700; border: 1px solid #FFA500; animation: pending-blink 1.5s ease-in-out infinite;">PENDING</span>
-                                           <style>@keyframes pending-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }</style>`
-                                        : `<span style="background: rgba(57,255,20,0.2); color: #39FF14; padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700; border: 1px solid #39FF14;">FEATURED</span>`}
-                                </div>
-                                <div style="display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;">
-                                    <div style="background: linear-gradient(135deg, #9D4EDD, #00D4FF); border-radius: 0.75rem; padding: 1rem 1.25rem; text-align: center; min-width: 90px;">
-                                        <div style="font-size: 0.8rem; font-weight: 700; color: #fff; text-transform: uppercase;">${dayName}</div>
-                                        <div style="font-size: 2.5rem; font-weight: 900; color: #fff; line-height: 1;">${monthDay.split(' ')[1]}</div>
-                                        <div style="font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.9);">${monthDay.split(' ')[0]}</div>
+                            <div class="venue-card lightning-featured" style="grid-column: 1 / -1; position: relative; overflow: visible; display: flex; flex-direction: column; border: 1px solid rgba(255,221,0,0.3); background: rgba(17,17,17,0.95);">
+                                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                                    <div style="background: #1a1a1a; border: 1px solid rgba(255,221,0,0.2); border-radius: 0.5rem; padding: 1rem 1.25rem; text-align: center; min-width: 80px;">
+                                        <div style="font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase;">${dayName}</div>
+                                        <div style="font-size: 2.25rem; font-weight: 800; color: #fff; line-height: 1;">${monthDay.split(' ')[1]}</div>
+                                        <div style="font-size: 0.7rem; font-weight: 500; color: rgba(255,255,255,0.6);">${monthDay.split(' ')[0]}</div>
                                     </div>
                                     <div style="flex: 1; min-width: 200px;">
                                         <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                                            ${event.imageUrl ? `<div style="width: 50px; height: 50px; border-radius: 50%; border: 3px solid #9D4EDD; flex-shrink: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 20px rgba(157,78,221,0.5);"><img src="${event.imageUrl}" alt="" style="max-width: 85%; max-height: 85%; object-fit: contain;"></div>` : ''}
+                                            ${event.imageUrl ? `<div style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(255,221,0,0.3); flex-shrink: 0; background: #0a0a0a; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${event.imageUrl}" alt="" style="max-width: 85%; max-height: 85%; object-fit: contain;"></div>` : ''}
                                             <div>
-                                                <h3 style="color: #fff; margin: 0; font-size: 1.5rem; line-height: 1.2; text-shadow: 0 0 20px rgba(157,78,221,0.5);">${event.name}</h3>
-                                                <p style="color: #00D4FF; font-weight: 700; font-size: 1rem; margin: 0.25rem 0 0 0;">🕐 ${timeStr}</p>
+                                                <h3 style="color: #fff; margin: 0; font-size: 1.4rem; font-weight: 700; line-height: 1.2;">${event.name}</h3>
+                                                <p style="color: rgba(255,255,255,0.6); font-weight: 500; font-size: 0.9rem; margin: 0.25rem 0 0 0;">${timeStr}</p>
                                             </div>
                                         </div>
-                                        <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin: 0.5rem 0;">📍 ${event.location || 'TBA'}</p>
-                                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0.75rem 0 0 0; line-height: 1.5;">${event.description || ''}</p>
+                                        <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0.5rem 0;">${event.location || 'TBA'}</p>
+                                        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin: 0.5rem 0 0 0; line-height: 1.5;">${event.description || ''}</p>
                                     </div>
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; min-width: 150px;">
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; min-width: 140px;">
                                         <div style="text-align: right;">
-                                            <div style="font-size: 2rem; font-weight: 900; color: #39FF14; text-shadow: 0 0 20px rgba(57,255,20,0.5);">${price}${event.tickets?.length > 1 ? '+' : ''}</div>
+                                            <div style="font-size: 1.75rem; font-weight: 800; color: #fff;">${price}</div>
+                                            ${event.status === 'pending' ? '<div style="font-size: 0.65rem; color: rgba(255,165,0,0.8); margin-top: 0.25rem;">PENDING</div>' : ''}
                                         </div>
-                                        <button class="btn" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'  style="background: linear-gradient(135deg, #9D4EDD, #00D4FF); border: none; color: #fff; font-weight: 700; padding: 0.75rem 2rem; font-size: 1rem; box-shadow: 0 4px 20px rgba(157,78,221,0.5);">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.5rem;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                        <button class="btn" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'  style="background: transparent; border: 1px solid var(--lightning-yellow); color: var(--lightning-yellow); font-weight: 600; padding: 0.65rem 1.75rem; font-size: 0.9rem;">
                                             GET TICKETS
                                         </button>
-                                        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Presented by Lightning Pass</div>
                                     </div>
                                 </div>
                             </div>
                         `;
                     }
 
-                    // SPOTLIGHT EVENT - Partner events (standard card)
+                    // SPOTLIGHT EVENT - Clean card design
                     return `
-                        <div class="venue-card spotlight" style="position: relative; overflow: visible; display: flex; flex-direction: column;">
-                            <div style="position: absolute; top: -10px; left: 12px; display: flex; gap: 0.5rem;">
-                                <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; padding: 0.2rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">⚡ SPOTLIGHT</span>
-                                ${isPending ? '<span style="background: rgba(255,165,0,0.2); color: #FFA500; padding: 0.2rem 0.6rem; border-radius: 2rem; font-size: 0.6rem; font-weight: 700;">PENDING</span>' : ''}
-                            </div>
-                            <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; margin-top: 0.5rem;">
-                                <div style="background: linear-gradient(135deg, var(--lightning-yellow), var(--neon-green)); border-radius: 0.5rem; padding: 0.75rem; text-align: center; min-width: 70px; height: fit-content;">
-                                    <div style="font-size: 0.7rem; font-weight: 700; color: #000; text-transform: uppercase;">${dayName}</div>
-                                    <div style="font-size: 1.5rem; font-weight: 800; color: #000;">${monthDay.split(' ')[1]}</div>
-                                    <div style="font-size: 0.65rem; font-weight: 600; color: #000;">${monthDay.split(' ')[0]}</div>
+                        <div class="venue-card spotlight" style="position: relative; overflow: visible; display: flex; flex-direction: column; border: 1px solid #222; background: rgba(17,17,17,0.95);">
+                            <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem;">
+                                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 0.5rem; padding: 0.65rem 0.75rem; text-align: center; min-width: 60px; height: fit-content;">
+                                    <div style="font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase;">${dayName}</div>
+                                    <div style="font-size: 1.4rem; font-weight: 800; color: #fff;">${monthDay.split(' ')[1]}</div>
+                                    <div style="font-size: 0.6rem; font-weight: 500; color: rgba(255,255,255,0.5);">${monthDay.split(' ')[0]}</div>
                                 </div>
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                        ${event.imageUrl ? `<div style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--lightning-yellow); flex-shrink: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${event.imageUrl}" alt="" style="max-width: 85%; max-height: 85%; object-fit: contain;"></div>` : ''}
-                                        <h3 style="color: var(--electric-purple); margin: 0; line-height: 1.2;">${event.name}</h3>
+                                        ${event.imageUrl ? `<div style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #333; flex-shrink: 0; background: #0a0a0a; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${event.imageUrl}" alt="" style="max-width: 85%; max-height: 85%; object-fit: contain;"></div>` : ''}
+                                        <h3 style="color: #fff; margin: 0; font-weight: 600; line-height: 1.2;">${event.name}</h3>
                                     </div>
-                                    <p style="color: var(--lightning-yellow); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">🕐 ${timeStr}</p>
-                                    <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem; line-height: 1.3;">📍 ${event.location || 'TBA'}</p>
+                                    <p style="color: rgba(255,255,255,0.5); font-weight: 500; font-size: 0.85rem; margin-bottom: 0.2rem;">${timeStr}</p>
+                                    <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem; line-height: 1.3;">${event.location || 'TBA'}</p>
                                 </div>
                             </div>
-                            <p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin: 0; flex: 1; line-height: 1.4;">${event.description || ''}</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--lightning-yellow);">${price}${event.tickets?.length > 1 ? '+' : ''}</div>
-                                <button class="btn btn-secondary" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 0.25rem;">
-                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                                    </svg>
+                            <p style="color: rgba(255,255,255,0.35); font-size: 0.8rem; margin: 0; flex: 1; line-height: 1.4;">${event.description || ''}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #222;">
+                                <div style="font-size: 1.25rem; font-weight: 700; color: #fff;">${price}</div>
+                                <button class="btn" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'  style="background: transparent; border: 1px solid var(--lightning-yellow); color: var(--lightning-yellow); font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.8rem;">
                                     GET TICKETS
                                 </button>
                             </div>
@@ -8984,12 +8753,12 @@
                 reset() {
                     this.x = Math.random() * canvas.width;
                     this.y = canvas.height + 10;
-                    this.vx = (Math.random() - 0.5) * 0.5;
-                    this.vy = -(Math.random() * 2 + 1);
-                    this.size = Math.random() * 2 + 1;
-                    this.alpha = Math.random() * 0.5 + 0.5;
-                    this.decay = Math.random() * 0.01 + 0.005;
-                    this.color = ['255,221,0', '0,212,255', '157,78,221', '57,255,20'][Math.floor(Math.random() * 4)];
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = -(Math.random() * 1.5 + 0.5);
+                    this.size = Math.random() * 1.5 + 0.5;
+                    this.alpha = Math.random() * 0.2 + 0.1;
+                    this.decay = Math.random() * 0.008 + 0.003;
+                    this.color = '255,221,0'; // Gold only
                 }
 
                 update() {
@@ -9006,8 +8775,6 @@
                     ctx.save();
                     ctx.globalAlpha = this.alpha;
                     ctx.fillStyle = `rgb(${this.color})`;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = `rgb(${this.color})`;
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fill();
@@ -9017,8 +8784,8 @@
 
             function init() {
                 resizeCanvas();
-                // Reduce particles on mobile for performance
-                const particleCount = window.innerWidth < 768 ? 30 : 80;
+                // Minimal particles for clean aesthetic
+                const particleCount = window.innerWidth < 768 ? 12 : 20;
                 particles = Array.from({ length: particleCount }, () => new Particle());
             }
 
