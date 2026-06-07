@@ -6107,6 +6107,7 @@
         }
 
         function applySplashSettings(settings) {
+            // Update splash screen logo
             const splashLogo = document.querySelector('#splashScreen .splash-content > div');
             if (splashLogo) {
                 splashLogo.style.width = settings.size + 'px';
@@ -6114,9 +6115,19 @@
                 const img = splashLogo.querySelector('img');
                 if (img) {
                     img.src = settings.url;
-                    img.style.transform = `scale(${settings.scale}) translate(${settings.positionX || 0}px, ${settings.position}px)`;
+                    img.style.transform = `scale(${settings.scale}) translate(${settings.positionX || 0}px, ${settings.positionY || settings.position || 0}px)`;
                 }
             }
+
+            // Update header logo to match
+            const headerLogo = document.querySelector('.logo img');
+            if (headerLogo) {
+                headerLogo.src = settings.url;
+                headerLogo.style.transform = `scale(${settings.scale}) translate(${settings.positionX || 0}px, ${settings.positionY || settings.position || 0}px)`;
+            }
+
+            // Cache in localStorage
+            localStorage.setItem('splashSettings', JSON.stringify(settings));
         }
 
         function previewSplash() {
@@ -6132,7 +6143,19 @@
         }
 
         // Apply saved settings on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Fetch from API (public endpoint, no auth needed)
+                const response = await fetch(`${API_BASE}/api/v1/lightning/system/splash`);
+                if (response.ok) {
+                    const settings = await response.json();
+                    applySplashSettings(settings);
+                    return;
+                }
+            } catch (e) {
+                console.log('Using cached splash settings');
+            }
+            // Fallback to localStorage cache
             const settings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
             if (settings.url || settings.scale || settings.position || settings.size || settings.positionX) {
                 applySplashSettings(settings);
