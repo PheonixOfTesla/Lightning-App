@@ -48,8 +48,8 @@
         }
 
         :root {
-            --pure-black: #000000;
-            --card-black: #111111;
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
             --border-dark: #1a1a1a;
             --lightning-yellow: #ffdd00;
             --electric-blue: #00d4ff;
@@ -176,12 +176,12 @@
         }
 
         .btn-primary {
-            border-color: var(--electric-blue);
-            color: var(--electric-blue);
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
         }
 
         .btn-primary:hover {
-            background: var(--electric-blue);
+            background: var(--lightning-yellow);
             color: var(--pure-black);
         }
 
@@ -1702,9 +1702,6 @@
         <div id="customerView" class="container hidden">
             <div class="hero">
                 <h1>Skip the line. <span>Own the night.</span></h1>
-                <p style="font-size: 1rem; color: rgba(255, 255, 255, 0.5); font-weight: 300; letter-spacing: 0.03em;">
-                    Sarasota's premier events and nightlife
-                </p>
             </div>
 
             <!-- MY PASSES SECTION (hidden for guests) -->
@@ -5004,8 +5001,8 @@
                         card.innerHTML = `
                             <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                                 <div>
-                                    <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${venue.name}</h3>
-                                    <span class="venue-type-badge ${typeClass}" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: #000;">${venue.type || 'Venue'}</span>
+                                    <h3 style="color: #1a1a1a; margin-bottom: 0.5rem; font-weight: 600;">${venue.name}</h3>
+                                    <span class="venue-type-badge ${typeClass}" style="background: #1a1a1a; color: #fff; font-size: 0.65rem; padding: 0.3rem 0.6rem; border-radius: 0.25rem;">${venue.type || 'Venue'}</span>
                                 </div>
                                 <span class="badge" style="background: linear-gradient(135deg, #FFD700, #B8860B); color: #000; font-weight: 700; padding: 0.5rem 0.75rem; border-radius: 2rem; font-size: 0.7rem;">VIP</span>
                             </div>
@@ -5029,8 +5026,8 @@
                         card.innerHTML = `
                             <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                                 <div>
-                                    <h3 style="color: var(--electric-purple); margin-bottom: 0.5rem;">${venue.name}</h3>
-                                    <span class="venue-type-badge ${typeClass}">${venue.type || 'Venue'}</span>
+                                    <h3 style="color: #1a1a1a; margin-bottom: 0.5rem; font-weight: 600;">${venue.name}</h3>
+                                    <span class="venue-type-badge ${typeClass}" style="background: #1a1a1a; color: #fff; font-size: 0.65rem; padding: 0.3rem 0.6rem; border-radius: 0.25rem;">${venue.type || 'Venue'}</span>
                                 </div>
                                 <span class="badge badge-approved">${venue.waitTime || 0} MIN</span>
                             </div>
@@ -6688,7 +6685,7 @@
                                     <div style="flex: 1; min-width: 280px;">
                                         <p style="color: #999; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
                                         <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f8f8f8;">` : ''}
+                                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227;">` : ''}
                                             <h3 style="color: #1a1a1a; margin: 0; font-size: 1.35rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em;">${event.name}</h3>
                                         </div>
                                         <p style="color: #1a1a1a; font-size: 0.85rem; font-weight: 400; margin: 0 0 0.5rem 0;">${event.location || ''}</p>
@@ -6713,7 +6710,7 @@
                         <div class="venue-card spotlight" style="position: relative; display: flex; flex-direction: column; background: #fff; border-radius: 1rem;">
                             <p style="color: #999; font-size: 0.75rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.6rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
                             <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;">
-                                ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 32px; height: 32px; border-radius: 6px; object-fit: contain; background: #f8f8f8;">` : ''}
+                                ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 32px; height: 32px; border-radius: 6px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227;">` : ''}
                                 <h3 style="color: #1a1a1a; margin: 0; font-weight: 600; font-size: 1.05rem; line-height: 1.25;">${event.name}</h3>
                             </div>
                             <p style="color: #1a1a1a; font-size: 0.8rem; font-weight: 400; margin: 0 0 0.4rem 0;">${event.location || ''}</p>
