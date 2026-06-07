@@ -2611,7 +2611,18 @@
 
                     <div style="display: grid; gap: 1.5rem; max-width: 500px;">
                         <div class="form-group">
-                            <label class="form-label">Logo Image URL</label>
+                            <label class="form-label">Upload Logo Image</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <label style="cursor: pointer; padding: 0.75rem 1.5rem; background: var(--electric-purple); border-radius: 0.5rem; color: white; font-weight: 500;">
+                                    📷 Choose Photo
+                                    <input type="file" id="splashLogoFile" accept="image/*" style="display: none;" onchange="handleSplashUpload(event)">
+                                </label>
+                                <span id="uploadStatus" style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">No file chosen</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Or enter URL</label>
                             <input type="text" class="form-input" id="splashLogoUrl" placeholder="https://... or splash-bolt.png">
                         </div>
 
@@ -6024,6 +6035,22 @@
         }
 
         // ===== SPLASH SETTINGS FUNCTIONS =====
+        function handleSplashUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('uploadStatus').textContent = 'Uploading...';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                document.getElementById('splashLogoUrl').value = dataUrl;
+                document.getElementById('uploadStatus').textContent = '✅ ' + file.name;
+                updateSplashPreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
         function loadSplashSettings() {
             const settings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
             document.getElementById('splashLogoUrl').value = settings.url || 'splash-bolt.png';
