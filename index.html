@@ -6442,8 +6442,8 @@
                                 <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start;">
                                     <div style="flex: 1; min-width: 280px;">
                                         <p style="color: #999; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
-                                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227;">` : ''}
+                                        <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227; flex-shrink: 0;">` : ''}
                                             <h3 style="color: #1a1a1a; margin: 0; font-size: 1.35rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em;">${event.name}</h3>
                                         </div>
                                         <p style="color: #1a1a1a; font-size: 0.85rem; font-weight: 400; margin: 0 0 0.5rem 0;">${event.location || ''}</p>
@@ -6467,8 +6467,8 @@
                     return `
                         <div class="venue-card spotlight" style="position: relative; display: flex; flex-direction: column; background: #fff; border-radius: 1rem;">
                             <p style="color: #999; font-size: 0.75rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.6rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
-                            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;">
-                                ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 32px; height: 32px; border-radius: 6px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227;">` : ''}
+                            <div style="display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.5rem;">
+                                ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 32px; height: 32px; border-radius: 6px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227; flex-shrink: 0;">` : ''}
                                 <h3 style="color: #1a1a1a; margin: 0; font-weight: 600; font-size: 1.05rem; line-height: 1.25;">${event.name}</h3>
                             </div>
                             <p style="color: #1a1a1a; font-size: 0.8rem; font-weight: 400; margin: 0 0 0.4rem 0;">${event.location || ''}</p>
