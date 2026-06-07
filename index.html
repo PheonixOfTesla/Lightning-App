@@ -1386,7 +1386,7 @@
         <div class="splash-orb splash-orb-3"></div>
         <div class="splash-content">
         <div style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid white; margin-bottom: 1.5rem; overflow: hidden;">
-            <img src="splash-bolt.png" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.12) translateY(3px);">
+            <img src="splash-bolt.png" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.12) translate(0px, 3px);">
         </div>
         <h1 class="splash-title">Lightning Pass</h1>
         <div class="splash-tagline">
@@ -2637,6 +2637,11 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label">Horizontal Position: <span id="positionXValue">0</span>px</label>
+                            <input type="range" id="splashLogoPositionX" min="-20" max="20" step="1" value="0" style="width: 100%;" oninput="updateSplashPreview()">
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label">Circle Size: <span id="sizeValue">100</span>px</label>
                             <input type="range" id="splashLogoSize" min="60" max="200" step="5" value="100" style="width: 100%;" oninput="updateSplashPreview()">
                         </div>
@@ -2652,7 +2657,7 @@
                             <strong>Preview:</strong>
                         </p>
                         <div id="splashLogoPreview" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid white; margin: 1rem auto; overflow: hidden; background: var(--deep-navy);">
-                            <img src="splash-bolt.png" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.12) translateY(3px);">
+                            <img src="splash-bolt.png" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.12) translate(0px, 3px);">
                         </div>
                     </div>
                 </div>
@@ -6056,6 +6061,7 @@
             document.getElementById('splashLogoUrl').value = settings.url || 'splash-bolt.png';
             document.getElementById('splashLogoScale').value = settings.scale || 1.12;
             document.getElementById('splashLogoPosition').value = settings.position || 3;
+            document.getElementById('splashLogoPositionX').value = settings.positionX || 0;
             document.getElementById('splashLogoSize').value = settings.size || 100;
             updateSplashPreview();
         }
@@ -6063,17 +6069,19 @@
         function updateSplashPreview() {
             const scale = document.getElementById('splashLogoScale').value;
             const position = document.getElementById('splashLogoPosition').value;
+            const positionX = document.getElementById('splashLogoPositionX').value;
             const size = document.getElementById('splashLogoSize').value;
             const url = document.getElementById('splashLogoUrl').value || 'splash-bolt.png';
 
             document.getElementById('scaleValue').textContent = scale;
             document.getElementById('positionValue').textContent = position;
+            document.getElementById('positionXValue').textContent = positionX;
             document.getElementById('sizeValue').textContent = size;
 
             const preview = document.getElementById('splashLogoPreview');
             preview.style.width = size + 'px';
             preview.style.height = size + 'px';
-            preview.innerHTML = `<img src="${url}" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(${scale}) translateY(${position}px);">`;
+            preview.innerHTML = `<img src="${url}" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(${scale}) translate(${positionX}px, ${position}px);">`;
         }
 
         function saveSplashSettings() {
@@ -6081,6 +6089,7 @@
                 url: document.getElementById('splashLogoUrl').value || 'splash-bolt.png',
                 scale: parseFloat(document.getElementById('splashLogoScale').value),
                 position: parseInt(document.getElementById('splashLogoPosition').value),
+                positionX: parseInt(document.getElementById('splashLogoPositionX').value),
                 size: parseInt(document.getElementById('splashLogoSize').value)
             };
             localStorage.setItem('splashSettings', JSON.stringify(settings));
@@ -6096,7 +6105,7 @@
                 const img = splashLogo.querySelector('img');
                 if (img) {
                     img.src = settings.url;
-                    img.style.transform = `scale(${settings.scale}) translateY(${settings.position}px)`;
+                    img.style.transform = `scale(${settings.scale}) translate(${settings.positionX || 0}px, ${settings.position}px)`;
                 }
             }
         }
@@ -6106,6 +6115,7 @@
                 url: document.getElementById('splashLogoUrl').value || 'splash-bolt.png',
                 scale: parseFloat(document.getElementById('splashLogoScale').value),
                 position: parseInt(document.getElementById('splashLogoPosition').value),
+                positionX: parseInt(document.getElementById('splashLogoPositionX').value),
                 size: parseInt(document.getElementById('splashLogoSize').value)
             };
             applySplashSettings(settings);
