@@ -2354,6 +2354,7 @@
                 <button class="btn" id="tabUsers" onclick="showAdminTab('users')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">👥 Users</button>
                 <button class="btn" id="tabTransactions" onclick="showAdminTab('transactions')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">💳 Transactions</button>
                 <button class="btn" id="tabTicketSales" onclick="showAdminTab('ticketSales')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎟️ Ticket Sales</button>
+                <button class="btn" id="tabSettings" onclick="showAdminTab('settings')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">⚙️ Settings</button>
                 <button class="btn btn-primary" onclick="loadAdminStats()" style="margin-left: auto;">🔄 REFRESH</button>
             </div>
 
@@ -2596,6 +2597,52 @@
                     </div>
                     <div id="ticketSalesList" style="max-height: 600px; overflow-y: auto;">
                         <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="adminTabSettings" style="display: none;">
+                <div class="section">
+                    <h2 class="section-title">⚡ Splash Logo Settings</h2>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem;">
+                        Customize the lightning bolt logo on the splash screen.
+                    </p>
+
+                    <div style="display: grid; gap: 1.5rem; max-width: 500px;">
+                        <div class="form-group">
+                            <label class="form-label">Logo Image URL</label>
+                            <input type="text" class="form-input" id="splashLogoUrl" placeholder="https://... or splash-bolt.png">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Scale: <span id="scaleValue">1.12</span></label>
+                            <input type="range" id="splashLogoScale" min="0.5" max="3" step="0.01" value="1.12" style="width: 100%;" oninput="updateSplashPreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Vertical Position: <span id="positionValue">3</span>px</label>
+                            <input type="range" id="splashLogoPosition" min="-20" max="20" step="1" value="3" style="width: 100%;" oninput="updateSplashPreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Circle Size: <span id="sizeValue">100</span>px</label>
+                            <input type="range" id="splashLogoSize" min="60" max="200" step="5" value="100" style="width: 100%;" oninput="updateSplashPreview()">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-success" onclick="saveSplashSettings()">💾 Save Settings</button>
+                            <button class="btn btn-secondary" onclick="previewSplash()">👁️ Preview</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">
+                            <strong>Preview:</strong>
+                        </p>
+                        <div id="splashLogoPreview" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid white; margin: 1rem auto; overflow: hidden; background: var(--deep-navy);">
+                            <img src="splash-bolt.png" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.12) translateY(3px);">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5929,9 +5976,10 @@
             document.getElementById('adminTabUsers').style.display = 'none';
             document.getElementById('adminTabTransactions').style.display = 'none';
             document.getElementById('adminTabTicketSales').style.display = 'none';
+            document.getElementById('adminTabSettings').style.display = 'none';
 
             // Reset all tab buttons
-            ['tabVenues', 'tabSpotlight', 'tabDJs', 'tabUsers', 'tabTransactions', 'tabTicketSales'].forEach(id => {
+            ['tabVenues', 'tabSpotlight', 'tabDJs', 'tabUsers', 'tabTransactions', 'tabTicketSales', 'tabSettings'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) {
                     btn.style.background = 'transparent';
@@ -5969,8 +6017,81 @@
             } else if (tab === 'ticketSales') {
                 document.getElementById('adminTabTicketSales').style.display = 'block';
                 loadTicketSales();
+            } else if (tab === 'settings') {
+                document.getElementById('adminTabSettings').style.display = 'block';
+                loadSplashSettings();
             }
         }
+
+        // ===== SPLASH SETTINGS FUNCTIONS =====
+        function loadSplashSettings() {
+            const settings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
+            document.getElementById('splashLogoUrl').value = settings.url || 'splash-bolt.png';
+            document.getElementById('splashLogoScale').value = settings.scale || 1.12;
+            document.getElementById('splashLogoPosition').value = settings.position || 3;
+            document.getElementById('splashLogoSize').value = settings.size || 100;
+            updateSplashPreview();
+        }
+
+        function updateSplashPreview() {
+            const scale = document.getElementById('splashLogoScale').value;
+            const position = document.getElementById('splashLogoPosition').value;
+            const size = document.getElementById('splashLogoSize').value;
+            const url = document.getElementById('splashLogoUrl').value || 'splash-bolt.png';
+
+            document.getElementById('scaleValue').textContent = scale;
+            document.getElementById('positionValue').textContent = position;
+            document.getElementById('sizeValue').textContent = size;
+
+            const preview = document.getElementById('splashLogoPreview');
+            preview.style.width = size + 'px';
+            preview.style.height = size + 'px';
+            preview.innerHTML = `<img src="${url}" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(${scale}) translateY(${position}px);">`;
+        }
+
+        function saveSplashSettings() {
+            const settings = {
+                url: document.getElementById('splashLogoUrl').value || 'splash-bolt.png',
+                scale: parseFloat(document.getElementById('splashLogoScale').value),
+                position: parseInt(document.getElementById('splashLogoPosition').value),
+                size: parseInt(document.getElementById('splashLogoSize').value)
+            };
+            localStorage.setItem('splashSettings', JSON.stringify(settings));
+            applySplashSettings(settings);
+            showToast('✅ Splash settings saved!', 'success');
+        }
+
+        function applySplashSettings(settings) {
+            const splashLogo = document.querySelector('#splashScreen .splash-content > div');
+            if (splashLogo) {
+                splashLogo.style.width = settings.size + 'px';
+                splashLogo.style.height = settings.size + 'px';
+                const img = splashLogo.querySelector('img');
+                if (img) {
+                    img.src = settings.url;
+                    img.style.transform = `scale(${settings.scale}) translateY(${settings.position}px)`;
+                }
+            }
+        }
+
+        function previewSplash() {
+            const settings = {
+                url: document.getElementById('splashLogoUrl').value || 'splash-bolt.png',
+                scale: parseFloat(document.getElementById('splashLogoScale').value),
+                position: parseInt(document.getElementById('splashLogoPosition').value),
+                size: parseInt(document.getElementById('splashLogoSize').value)
+            };
+            applySplashSettings(settings);
+            document.getElementById('splashScreen').classList.remove('hidden');
+        }
+
+        // Apply saved settings on page load
+        (function() {
+            const settings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
+            if (settings.url || settings.scale || settings.position || settings.size) {
+                setTimeout(() => applySplashSettings(settings), 100);
+            }
+        })();
 
         // ===== SPOTLIGHT EVENTS FUNCTIONS =====
         async function loadSpotlightEvents() {
