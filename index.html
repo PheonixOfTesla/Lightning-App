@@ -876,12 +876,20 @@
         }
 
         @media (max-width: 768px) {
-            .nav-links {
+            .nav-links .nav-link:not(.btn) {
                 display: none;
             }
 
+            .logo span {
+                font-size: 1rem;
+            }
+
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2rem;
+            }
+
+            .hero h1 span {
+                display: inline;
             }
 
             .venues-grid {
