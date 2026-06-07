@@ -1385,7 +1385,25 @@
         <div class="splash-orb splash-orb-2"></div>
         <div class="splash-orb splash-orb-3"></div>
         <div class="splash-content">
-        <img src="logo.png" alt="" style="width: 140px; height: 140px; border-radius: 50%; margin-bottom: 1.5rem; object-fit: cover;">
+        <div style="width: 140px; height: 140px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+            <svg width="70" height="90" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="boltGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffd700"/>
+                        <stop offset="50%" stop-color="#ffb800"/>
+                        <stop offset="100%" stop-color="#ff8c00"/>
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <path d="M55 5L10 65h30L25 125l65-75H55L75 5z" fill="url(#boltGradient)" filter="url(#glow)"/>
+            </svg>
+        </div>
         <h1 class="splash-title">Lightning Pass</h1>
         <div class="splash-tagline">
             <span class="tagline-main">Your Pass</span>
