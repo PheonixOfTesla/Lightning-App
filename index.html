@@ -6440,25 +6440,21 @@
                     if (isLightning) {
                         return `
                             <div class="venue-card lightning-featured" style="grid-column: 1 / -1; position: relative; display: flex; flex-direction: column; background: #fff; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
-                                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start;">
-                                    <div style="flex: 1; min-width: 280px;">
-                                        <p style="color: #999; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
-                                        <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227; flex-shrink: 0;">` : ''}
-                                            <h3 style="color: #1a1a1a; margin: 0; font-size: 1.35rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em;">${event.name}</h3>
-                                        </div>
-                                        ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #1a1a1a; font-size: 0.85rem; font-weight: 400; margin: 0 0 0.5rem 0; display: block; text-decoration: underline;">${event.location}</a>` : ''}
-                                        <p style="color: #996b13; font-size: 0.85rem; font-weight: 500; margin: 0; line-height: 1.6;">${event.description || ''}</p>
+                                <p style="color: #999; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                    ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227; flex-shrink: 0;">` : ''}
+                                    <h3 style="color: #1a1a1a; margin: 0; font-size: 1.35rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em;">${event.name}</h3>
+                                </div>
+                                ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #1a1a1a; font-size: 0.85rem; font-weight: 400; margin: 0 0 0.5rem 0; display: block; text-decoration: underline;">${event.location}</a>` : ''}
+                                <p style="color: #996b13; font-size: 0.85rem; font-weight: 500; margin: 0; line-height: 1.6;">${event.description || ''}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f0f0f0;">
+                                    <div>
+                                        <div style="font-size: 1.1rem; font-weight: 500; color: #1a1a1a;">${price}</div>
+                                        ${event.status === 'pending' ? '<div style="font-size: 0.65rem; color: #e09800; font-weight: 500; margin-top: 0.15rem; letter-spacing: 0.05em;">PENDING</div>' : ''}
                                     </div>
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 1rem; min-width: 120px;">
-                                        <div style="text-align: right;">
-                                            <div style="font-size: 1.5rem; font-weight: 500; color: #1a1a1a; letter-spacing: -0.02em;">${price}</div>
-                                            ${event.status === 'pending' ? '<div style="font-size: 0.7rem; color: #e09800; font-weight: 500; margin-top: 0.25rem; letter-spacing: 0.05em;">PENDING</div>' : ''}
-                                        </div>
-                                        <button class="btn card-btn" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'  style="background: #1a1a1a; border: none; color: #fff; font-weight: 500; padding: 0.7rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; transition: all 0.2s; letter-spacing: 0.02em;">
-                                            Get Tickets
-                                        </button>
-                                    </div>
+                                    <button class="btn card-btn" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'  style="background: #1a1a1a; border: none; color: #fff; font-weight: 500; padding: 0.55rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; transition: all 0.2s; letter-spacing: 0.02em;">
+                                        Get Tickets
+                                    </button>
                                 </div>
                             </div>
                         `;
