@@ -835,6 +835,15 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        @keyframes zoomIn {
+            from { transform: scale(1.08); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .zoom-enter {
+            animation: zoomIn 0.5s ease-out forwards;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -3355,6 +3364,11 @@
             showView('customer');
             loadVenues();
             loadHomepageSpotlightEvents();
+
+            // Zoom-in entrance effect
+            const customerView = document.getElementById('customerView');
+            customerView.classList.add('zoom-enter');
+            setTimeout(() => customerView.classList.remove('zoom-enter'), 500);
         }
 
         // Auto-play music when page loads (will work if browser allows)
