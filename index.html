@@ -2663,6 +2663,47 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Header Logo Settings -->
+                <div class="section" style="margin-top: 2rem;">
+                    <h2 class="section-title">🔝 Header Logo Settings</h2>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem;">
+                        Customize the logo in the navigation header.
+                    </p>
+
+                    <div style="display: grid; gap: 1.5rem; max-width: 500px;">
+                        <div class="form-group">
+                            <label class="form-label">Logo Image URL</label>
+                            <input type="text" class="form-input" id="headerLogoUrl" placeholder="logo.png" value="logo.png">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Logo Size: <span id="headerSizeValue">40</span>px</label>
+                            <input type="range" id="headerLogoSize" min="24" max="60" step="2" value="40" style="width: 100%;" oninput="updateHeaderPreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Scale: <span id="headerScaleValue">1</span></label>
+                            <input type="range" id="headerLogoScale" min="0.5" max="1.5" step="0.05" value="1" style="width: 100%;" oninput="updateHeaderPreview()">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-success" onclick="saveHeaderSettings()">💾 Save Header</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">
+                            <strong>Preview:</strong>
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+                            <div id="headerLogoPreview" style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;">
+                                <img src="logo.png" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <span style="font-weight: 500;">Lightning Pass</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -6144,23 +6185,93 @@
             document.getElementById('splashScreen').classList.remove('hidden');
         }
 
+        // ===== HEADER LOGO SETTINGS =====
+        function updateHeaderPreview() {
+            const size = document.getElementById('headerLogoSize').value;
+            const scale = document.getElementById('headerLogoScale').value;
+            const url = document.getElementById('headerLogoUrl').value || 'logo.png';
+
+            document.getElementById('headerSizeValue').textContent = size;
+            document.getElementById('headerScaleValue').textContent = scale;
+
+            const preview = document.getElementById('headerLogoPreview');
+            preview.style.width = size + 'px';
+            preview.style.height = size + 'px';
+            preview.innerHTML = `<img src="${url}" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(${scale});">`;
+        }
+
+        async function saveHeaderSettings() {
+            const settings = {
+                url: document.getElementById('headerLogoUrl').value || 'logo.png',
+                size: parseInt(document.getElementById('headerLogoSize').value),
+                scale: parseFloat(document.getElementById('headerLogoScale').value)
+            };
+
+            try {
+                await apiCall('/api/v1/lightning/system/header', {
+                    method: 'PUT',
+                    body: JSON.stringify(settings)
+                });
+                applyHeaderSettings(settings);
+                showToast('✅ Header settings saved!', 'success');
+            } catch (error) {
+                console.error('Failed to save header settings:', error);
+                showToast('❌ Failed to save settings', 'error');
+            }
+        }
+
+        function applyHeaderSettings(settings) {
+            const headerLogoContainer = document.querySelector('.logo > div');
+            if (headerLogoContainer) {
+                headerLogoContainer.style.width = settings.size + 'px';
+                headerLogoContainer.style.height = settings.size + 'px';
+                const img = headerLogoContainer.querySelector('img');
+                if (img) {
+                    img.src = settings.url;
+                    img.style.transform = `scale(${settings.scale})`;
+                }
+            }
+            localStorage.setItem('headerSettings', JSON.stringify(settings));
+        }
+
+        function loadHeaderSettings() {
+            const settings = JSON.parse(localStorage.getItem('headerSettings') || '{}');
+            if (settings.url) document.getElementById('headerLogoUrl').value = settings.url;
+            if (settings.size) document.getElementById('headerLogoSize').value = settings.size;
+            if (settings.scale) document.getElementById('headerLogoScale').value = settings.scale;
+            updateHeaderPreview();
+        }
+
         // Apply saved settings on page load
         document.addEventListener('DOMContentLoaded', async function() {
+            // Load splash settings
             try {
-                // Fetch from API (public endpoint, no auth needed)
                 const response = await fetch(`${API_BASE}/api/v1/lightning/system/splash`);
                 if (response.ok) {
                     const settings = await response.json();
                     applySplashSettings(settings);
-                    return;
                 }
             } catch (e) {
                 console.log('Using cached splash settings');
+                const settings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
+                if (settings.url || settings.scale || settings.position || settings.size || settings.positionX) {
+                    applySplashSettings(settings);
+                }
             }
-            // Fallback to localStorage cache
-            const settings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
-            if (settings.url || settings.scale || settings.position || settings.size || settings.positionX) {
-                applySplashSettings(settings);
+
+            // Load header settings
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/system/header`);
+                if (response.ok) {
+                    const settings = await response.json();
+                    applyHeaderSettings(settings);
+                }
+            } catch (e) {
+                console.log('Using cached header settings');
+                const settings = JSON.parse(localStorage.getItem('headerSettings') || '{}');
+                if (settings.url || settings.size || settings.scale) {
+                    applyHeaderSettings(settings);
+                }
             }
         });
 
