@@ -598,7 +598,7 @@
         }
 
         .venue-card {
-            background: #f0f0f0;
+            background: #e8e8e8;
             border: none;
             border-radius: 1rem;
             padding: 1.5rem;
@@ -607,7 +607,6 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
         }
 
         .venue-card:hover {
@@ -4997,9 +4996,9 @@
                                     <h3 style="color: #1a1a1a; margin-bottom: 0.5rem; font-weight: 600;">${venue.name}</h3>
                                     <span class="venue-type-badge ${typeClass}" style="background: #0d1b2a; color: #fff; font-size: 0.65rem; padding: 0.3rem 0.6rem; border-radius: 0.25rem;">${venue.type || 'Venue'}</span>
                                 </div>
-                                <span class="badge" style="background: #888; border: 2px solid #1a1a1a; color: #fff; font-weight: 600; padding: 0.5rem 0.75rem; border-radius: 2rem; font-size: 0.7rem;">VIP</span>
+                                <span class="badge" style="background: #1a1a1a; color: #ffdd00; font-weight: 600; padding: 0.5rem 0.75rem; border-radius: 2rem; font-size: 0.7rem;">VIP</span>
                             </div>
-                            <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 0.75rem;">${venue.address || ''}</p>
+                            <p style="color: #666; margin-bottom: 0.75rem; font-size: 0.85rem;">${venue.address || ''}</p>
                             <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 0.5rem;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2">
                                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -5024,7 +5023,7 @@
                                 </div>
                                 <span class="badge badge-approved">${venue.waitTime || 0} MIN</span>
                             </div>
-                            <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1rem;">${venue.address || ''}</p>
+                            <p style="color: #666; margin-bottom: 1rem; font-size: 0.85rem;">${venue.address || ''}</p>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
                                 <span>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
