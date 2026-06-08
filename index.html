@@ -1400,6 +1400,46 @@
         </div>
     </div>
 
+    <!-- IMMEDIATE SETTINGS APPLICATION (no network delay) -->
+    <script>
+    (function() {
+        // Apply cached splash settings immediately
+        var splashSettings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
+        if (splashSettings.url) {
+            var splashLogo = document.querySelector('#splashScreen .splash-content > div');
+            if (splashLogo) {
+                if (splashSettings.size) {
+                    splashLogo.style.width = splashSettings.size + 'px';
+                    splashLogo.style.height = splashSettings.size + 'px';
+                }
+                var img = splashLogo.querySelector('img');
+                if (img) {
+                    img.src = splashSettings.url;
+                    img.style.transform = 'scale(' + (splashSettings.scale || 1.02) + ') translate(' + (splashSettings.positionX || 0) + 'px, ' + (splashSettings.positionY || splashSettings.position || 1) + 'px)';
+                }
+            }
+        }
+        // Apply cached header settings immediately
+        var headerSettings = JSON.parse(localStorage.getItem('headerSettings') || '{}');
+        if (headerSettings.url) {
+            var headerContainer = document.querySelector('.logo > div');
+            if (headerContainer) {
+                if (headerSettings.size) {
+                    headerContainer.style.width = headerSettings.size + 'px';
+                    headerContainer.style.height = headerSettings.size + 'px';
+                }
+                var headerImg = headerContainer.querySelector('img');
+                if (headerImg) {
+                    headerImg.src = headerSettings.url;
+                    if (headerSettings.scale) {
+                        headerImg.style.transform = 'scale(' + headerSettings.scale + ')';
+                    }
+                }
+            }
+        }
+    })();
+    </script>
+
     <!-- VIDEO LANDING PAGE -->
     <div id="landingPage" autocomplete="off" style="display: none;">
         <!-- Video Background - Continuous Loop -->
