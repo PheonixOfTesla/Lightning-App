@@ -2890,7 +2890,7 @@
             <div id="purchaseStatus" style="display: none; margin-top: 1rem;"></div>
 
             <p style="text-align: center; margin-top: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
-                <a href="login.html" style="color: var(--electric-blue);">Sign in</a> to view all your purchases
+                <a href="/login" style="color: var(--electric-blue);">Sign in</a> to view all your purchases
             </p>
         </div>
     </div>
@@ -3124,12 +3124,12 @@
 
         function goToLogin() {
             // Redirect to login page
-            window.location.href = 'login.html';
+            window.location.href = '/login';
         }
 
         function goToSignup() {
             // Redirect to login page with register mode
-            window.location.href = 'login.html?mode=register';
+            window.location.href = '/login?mode=register';
         }
 
         function browseVenuesFromLanding() {
@@ -3440,7 +3440,8 @@
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
-                    <a href="login.html" class="btn btn-primary">LOGIN</a>
+                    <a href="/partners" class="nav-link">Partners</a>
+                    <a href="/login" class="btn btn-primary">LOGIN</a>
                 `;
                 navLinks.style.display = 'flex';
             }
@@ -3711,7 +3712,7 @@
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
                         // Redirect to login page
-                        window.location.href = 'login.html';
+                        window.location.href = '/login';
                     }
                 } catch (error) {
                     console.error('Auth verification failed:', error);
@@ -3725,7 +3726,8 @@
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
-                    <a href="login.html" class="btn btn-primary">LOGIN</a>
+                    <a href="/partners" class="nav-link">Partners</a>
+                    <a href="/login" class="btn btn-primary">LOGIN</a>
                 `;
                 navLinks.style.display = 'flex';
                 // Don't auto-show customer view here - let landing page handle it
@@ -4817,7 +4819,8 @@
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
                 <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
-                <a href="login.html" class="btn btn-primary">LOGIN</a>
+                <a href="/partners" class="nav-link">Partners</a>
+                <a href="/login" class="btn btn-primary">LOGIN</a>
             `;
             navLinks.style.display = 'flex';
 
@@ -4841,9 +4844,9 @@
 
         // ===== VIEW MANAGEMENT =====
         function showView(view) {
-            // Redirect to login.html if trying to show auth view
+            // Redirect to /login if trying to show auth view
             if (view === 'auth') {
-                window.location.href = 'login.html';
+                window.location.href = '/login';
                 return;
             }
 

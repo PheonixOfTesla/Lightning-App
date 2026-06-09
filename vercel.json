@@ -1,6 +1,8 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/partners", "destination": "/partners.html" },
+    { "source": "/login", "destination": "/login.html" },
     { "source": "/dj/:djId", "destination": "/dj.html" },
     { "source": "/dj-display/:djId", "destination": "/dj-display.html" },
     { "source": "/dj-banner/:djId", "destination": "/dj-banner.html" },

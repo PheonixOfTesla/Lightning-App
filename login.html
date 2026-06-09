@@ -326,7 +326,7 @@
 
     <div class="container" style="padding-top: 4rem;">
         <div class="logo">
-            <a href="index.html">
+            <a href="/">
                 <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;"><img src="logo.png" alt="Lightning Pass" style="width: 100%; height: 100%; object-fit: cover;"></div>
                 <span>Lightning Pass</span>
             </a>
@@ -507,7 +507,7 @@
         </div>
 
         <div class="back-link">
-            <a href="index.html">
+            <a href="/">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.25rem;">
                     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
                 </svg>
@@ -590,7 +590,7 @@
         const existingUser = localStorage.getItem('user');
         if (existingToken && existingUser) {
             // Already logged in, redirect to main app
-            window.location.href = 'index.html';
+            window.location.href = '/';
         }
 
         // Check URL params for mode
@@ -701,7 +701,7 @@
 
                 // Redirect to main app
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = '/';
                 }, 500);
 
             } catch (error) {
@@ -832,7 +832,7 @@
                 showToast('Registration successful!', 'success');
 
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = '/';
                 }, 500);
 
             } catch (error) {
