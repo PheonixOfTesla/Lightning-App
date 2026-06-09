@@ -28,6 +28,7 @@
         :root {
             --pure-black: #0d1b2a;
             --card-black: #1b2838;
+            --border-dark: #2d3748;
             --lightning-yellow: #ffdd00;
             --electric-blue: #00d4ff;
             --electric-purple: #9d4edd;
@@ -45,6 +46,27 @@
             min-height: 100vh;
         }
 
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(255, 221, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 221, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 221, 0, 0.02) 0%, transparent 50%);
+            animation: pulseGlow 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
         /* Navigation */
         nav {
             background: var(--pure-black);
@@ -53,12 +75,11 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 1rem 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0.875rem 2rem;
         }
 
         .nav-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -67,35 +88,61 @@
 
         .logo {
             font-size: 1.25rem;
-            font-weight: 600;
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             text-decoration: none;
             color: var(--white);
+            letter-spacing: -0.01em;
         }
 
-        .logo span:first-child {
-            font-size: 1.5rem;
-            color: var(--lightning-yellow);
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .logo-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 2rem;
             align-items: center;
         }
 
         .nav-link {
             color: var(--white);
             text-decoration: none;
-            opacity: 0.8;
-            transition: opacity 0.2s;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            padding: 0.5rem 0;
         }
 
         .nav-link:hover {
-            opacity: 1;
             color: var(--lightning-yellow);
+        }
+
+        .nav-link.btn-login {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--lightning-yellow);
+            border-radius: 0.5rem;
+            color: var(--lightning-yellow);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+        }
+
+        .nav-link.btn-login:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
         }
 
         /* Hero Section */
@@ -533,11 +580,12 @@
     <nav>
         <div class="nav-container">
             <a href="/" class="logo">
-                <span>⚡</span> Lightning Pass
+                <div class="logo-img"><img src="logo.png" alt="Lightning Pass"></div>
+                Lightning Pass
             </a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="#" class="nav-link" id="nav-login">Login</a>
+                <a href="/" class="nav-link">Browse Events</a>
+                <a href="#" class="nav-link btn-login" id="nav-login">LOGIN</a>
             </div>
         </div>
     </nav>
