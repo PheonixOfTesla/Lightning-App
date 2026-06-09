@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning Pass - Partners | Earn Passive Income</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Lightning Pass Partners - Earn Passive Income">
+    <meta property="og:description" content="Refer venues to Lightning Pass and earn 10% of their revenue. Forever.">
+    <meta property="og:image" content="https://thelightningpass.com/logo.png">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--pure-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--white);
+        }
+
+        .logo span:first-child {
+            font-size: 1.5rem;
+            color: var(--lightning-yellow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .nav-link:hover {
+            opacity: 1;
+            color: var(--lightning-yellow);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--neon-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+        }
+
+        .hero-highlight {
+            font-size: 2rem;
+            color: var(--neon-green);
+            font-weight: 700;
+            margin: 2rem 0;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--lightning-yellow);
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Example Box */
+        .example-box {
+            background: var(--card-black);
+            border: 1px solid rgba(255,221,0,0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 3rem auto;
+            max-width: 600px;
+        }
+
+        .example-box h3 {
+            color: var(--lightning-yellow);
+            margin-bottom: 1rem;
+        }
+
+        .example-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .example-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            color: var(--neon-green);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 4rem 2rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 2px solid;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255,221,0,0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--white);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--white);
+            color: var(--pure-black);
+        }
+
+        /* Auth Forms */
+        .auth-container {
+            display: none;
+            padding: 2rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .auth-container.active {
+            display: block;
+        }
+
+        .auth-container h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: var(--card-black);
+            color: var(--white);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+
+        .error-message {
+            color: var(--danger-red);
+            text-align: center;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--neon-green);
+            text-align: center;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            padding: 6rem 2rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .partner-code {
+            background: var(--card-black);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--lightning-yellow);
+        }
+
+        .partner-code-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .partner-code-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+            font-family: monospace;
+        }
+
+        /* Role Tabs */
+        .role-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+        }
+
+        .role-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--white);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .role-tab:hover {
+            border-color: var(--lightning-yellow);
+        }
+
+        .role-tab.active {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+            font-weight: 600;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-black);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-card-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .stat-card-value.green {
+            color: var(--neon-green);
+        }
+
+        .stat-card-value.yellow {
+            color: var(--lightning-yellow);
+        }
+
+        /* Venues Table */
+        .venues-section {
+            background: var(--card-black);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .venues-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .venue-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .venue-row:last-child {
+            border-bottom: none;
+        }
+
+        .venue-name {
+            font-weight: 600;
+        }
+
+        .venue-stats {
+            text-align: right;
+        }
+
+        .venue-revenue {
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        .venue-status {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .empty-state h4 {
+            margin-bottom: 0.5rem;
+            color: var(--white);
+        }
+
+        /* Stripe Connect Button */
+        .stripe-connect-btn {
+            background: #635bff;
+            border-color: #635bff;
+            color: white;
+        }
+
+        .stripe-connect-btn:hover {
+            background: #5851db;
+            border-color: #5851db;
+            transform: translateY(-2px);
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .how-it-works h2 {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .steps {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content p {
+            color: var(--gray);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .stats-row {
+                gap: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.75rem;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span>⚡</span> Lightning Pass
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="#" class="nav-link" id="nav-login">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Section (shown when not logged in) -->
+    <section class="landing" id="landing-section">
+        <div class="hero">
+            <h1>Earn Money While You Sleep</h1>
+            <p>Refer venues to Lightning Pass and earn 10% of their revenue. Forever.</p>
+
+            <div class="hero-highlight">
+                One referral could pay you $24,000/year
+            </div>
+
+            <div class="stats-row">
+                <div class="stat">
+                    <div class="stat-value">10%</div>
+                    <div class="stat-label">Commission Rate</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">Forever</div>
+                    <div class="stat-label">Recurring Revenue</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">$0</div>
+                    <div class="stat-label">Cost to Join</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <h3>Real Example: Beach Club</h3>
+            <div class="example-row">
+                <span>Venue Annual Revenue</span>
+                <span>$244,000</span>
+            </div>
+            <div class="example-row">
+                <span>Lightning's Cut (20%)</span>
+                <span>$48,800</span>
+            </div>
+            <div class="example-row">
+                <span>Your Cut (10% of Lightning)</span>
+                <span>$4,880/year</span>
+            </div>
+            <div class="example-row">
+                <span>Refer 5 venues like this...</span>
+                <span>$24,400/year</span>
+            </div>
+        </div>
+
+        <div class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Sign Up (Free)</h4>
+                        <p>Create your partner account and get your unique referral code.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Connect Stripe</h4>
+                        <p>Link your personal bank account to receive payouts. Takes 5 minutes.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Refer Venues</h4>
+                        <p>Share your code with bars, clubs, hotels, event spaces. Anyone you know.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Get Paid Forever</h4>
+                        <p>Every time your venues make money, you make money. Automatic payouts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <button class="btn btn-primary" id="show-signup">Become a Partner</button>
+            <button class="btn btn-secondary" id="show-login">Already a partner? Log in</button>
+        </div>
+    </section>
+
+    <!-- Signup Form -->
+    <div class="auth-container" id="signup-form">
+        <h2>Become a Partner</h2>
+        <div class="error-message" id="signup-error"></div>
+        <div class="success-message" id="signup-success"></div>
+        <form id="signup-form-el">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="signup-name" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="signup-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="signup-phone" placeholder="+1 (555) 123-4567" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signup-password" placeholder="Min 6 characters" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Partner Account</button>
+            <button type="button" class="btn btn-secondary" id="back-to-landing">Back</button>
+        </form>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-container" id="login-form">
+        <h2>Partner Login</h2>
+        <div class="error-message" id="login-error"></div>
+        <form id="login-form-el">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="login-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Log In</button>
+            <button type="button" class="btn btn-secondary" id="back-to-landing-2">Back</button>
+        </form>
+    </div>
+
+    <!-- Dashboard (shown when logged in) -->
+    <section class="dashboard" id="dashboard">
+        <div class="dashboard-header">
+            <div>
+                <h2>Partner Dashboard</h2>
+                <p style="color: var(--gray);">Welcome back, <span id="partner-name"></span></p>
+            </div>
+            <div class="partner-code">
+                <div class="partner-code-label">Your Referral Code</div>
+                <div class="partner-code-value" id="partner-code-display"></div>
+            </div>
+        </div>
+
+        <!-- Role Tabs -->
+        <div class="role-tabs" id="role-tabs">
+            <!-- Populated by JS based on user roles -->
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-label">Total Venues</div>
+                <div class="stat-card-value yellow" id="stat-venues">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-label">Venue Revenue</div>
+                <div class="stat-card-value" id="stat-revenue">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-label">Your Earnings</div>
+                <div class="stat-card-value green" id="stat-earnings">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-label">Pending Payout</div>
+                <div class="stat-card-value green" id="stat-pending">$0</div>
+            </div>
+        </div>
+
+        <!-- Stripe Connect -->
+        <div id="stripe-section" style="margin-bottom: 2rem;">
+            <button class="btn stripe-connect-btn" id="connect-stripe">
+                Connect Stripe to Get Paid
+            </button>
+            <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.5rem;">
+                Link your bank account to receive automatic payouts
+            </p>
+        </div>
+
+        <!-- Venues Section -->
+        <div class="venues-section">
+            <h3>Your Referred Venues</h3>
+            <div id="venues-list">
+                <div class="empty-state">
+                    <h4>No venues yet</h4>
+                    <p>Share your referral code with venues to start earning</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button class="btn btn-secondary" id="logout-btn">Log Out</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>Lightning Pass Partners &copy; 2026</p>
+    </footer>
+
+    <script>
+        const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/referral';
+        // const API_URL = 'http://localhost:3000/api/v1/referral'; // Dev
+
+        // State
+        let token = localStorage.getItem('partnerToken');
+        let user = JSON.parse(localStorage.getItem('partnerUser') || 'null');
+
+        // Elements
+        const landingSection = document.getElementById('landing-section');
+        const signupForm = document.getElementById('signup-form');
+        const loginForm = document.getElementById('login-form');
+        const dashboard = document.getElementById('dashboard');
+
+        // Check if logged in
+        function checkAuth() {
+            if (token && user) {
+                showDashboard();
+                loadDashboard();
+            } else {
+                showLanding();
+            }
+        }
+
+        // Show/hide sections
+        function showLanding() {
+            landingSection.style.display = 'block';
+            signupForm.classList.remove('active');
+            loginForm.classList.remove('active');
+            dashboard.classList.remove('active');
+            document.getElementById('nav-login').textContent = 'Login';
+        }
+
+        function showSignup() {
+            landingSection.style.display = 'none';
+            signupForm.classList.add('active');
+            loginForm.classList.remove('active');
+            dashboard.classList.remove('active');
+        }
+
+        function showLogin() {
+            landingSection.style.display = 'none';
+            signupForm.classList.remove('active');
+            loginForm.classList.add('active');
+            dashboard.classList.remove('active');
+        }
+
+        function showDashboard() {
+            landingSection.style.display = 'none';
+            signupForm.classList.remove('active');
+            loginForm.classList.remove('active');
+            dashboard.classList.add('active');
+            document.getElementById('nav-login').textContent = 'Dashboard';
+        }
+
+        // Event listeners
+        document.getElementById('show-signup').addEventListener('click', showSignup);
+        document.getElementById('show-login').addEventListener('click', showLogin);
+        document.getElementById('back-to-landing').addEventListener('click', showLanding);
+        document.getElementById('back-to-landing-2').addEventListener('click', showLanding);
+        document.getElementById('nav-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (token) {
+                showDashboard();
+                loadDashboard();
+            } else {
+                showLogin();
+            }
+        });
+
+        // Signup
+        document.getElementById('signup-form-el').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('signup-error');
+            const successEl = document.getElementById('signup-success');
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const phone = document.getElementById('signup-phone').value;
+            const password = document.getElementById('signup-password').value;
+
+            try {
+                const res = await fetch(`${API_URL}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Signup failed');
+                }
+
+                // Save token and user
+                token = data.token;
+                user = data.user;
+                localStorage.setItem('partnerToken', token);
+                localStorage.setItem('partnerUser', JSON.stringify(user));
+
+                successEl.textContent = 'Account created! Your code: ' + data.partnerCode;
+                successEl.style.display = 'block';
+
+                setTimeout(() => {
+                    showDashboard();
+                    loadDashboard();
+                }, 1500);
+
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.style.display = 'block';
+            }
+        });
+
+        // Login
+        document.getElementById('login-form-el').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById('login-error');
+            errorEl.style.display = 'none';
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                // Save token and user
+                token = data.token;
+                user = data.user;
+                localStorage.setItem('partnerToken', token);
+                localStorage.setItem('partnerUser', JSON.stringify(user));
+
+                showDashboard();
+                loadDashboard();
+
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.style.display = 'block';
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            token = null;
+            user = null;
+            localStorage.removeItem('partnerToken');
+            localStorage.removeItem('partnerUser');
+            showLanding();
+        });
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const res = await fetch(`${API_URL}/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401 || res.status === 403) {
+                    // Token expired
+                    token = null;
+                    user = null;
+                    localStorage.removeItem('partnerToken');
+                    localStorage.removeItem('partnerUser');
+                    showLanding();
+                    return;
+                }
+
+                const data = await res.json();
+
+                // Update UI
+                document.getElementById('partner-name').textContent = data.partner.name || 'Partner';
+                document.getElementById('partner-code-display').textContent = data.partner.code;
+                document.getElementById('stat-venues').textContent = data.summary.totalVenues;
+                document.getElementById('stat-revenue').textContent = '$' + data.summary.totalVenueRevenue.toLocaleString();
+                document.getElementById('stat-earnings').textContent = '$' + data.summary.totalEarnings.toLocaleString();
+                document.getElementById('stat-pending').textContent = '$' + data.summary.pendingPayout.toLocaleString();
+
+                // Stripe section
+                const stripeSection = document.getElementById('stripe-section');
+                if (data.partner.stripeOnboarded) {
+                    stripeSection.innerHTML = '<p style="color: var(--neon-green);">✓ Stripe connected - you\'ll receive automatic payouts</p>';
+                }
+
+                // Venues list
+                const venuesList = document.getElementById('venues-list');
+                if (data.venues.length === 0) {
+                    venuesList.innerHTML = `
+                        <div class="empty-state">
+                            <h4>No venues yet</h4>
+                            <p>Share your referral code with venues to start earning</p>
+                        </div>
+                    `;
+                } else {
+                    venuesList.innerHTML = data.venues.map(v => `
+                        <div class="venue-row">
+                            <div>
+                                <div class="venue-name">${v.name}</div>
+                                <div class="venue-status">${v.status} - ${v.isActive ? 'Active' : 'Inactive'}</div>
+                            </div>
+                            <div class="venue-stats">
+                                <div class="venue-revenue">+$${v.revenue.yourCut.toLocaleString()}</div>
+                                <div class="venue-status">from $${v.revenue.total.toLocaleString()} revenue</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Role tabs
+                const roleTabs = document.getElementById('role-tabs');
+                const roles = user.roles || ['partner'];
+                roleTabs.innerHTML = roles.map(role => `
+                    <button class="role-tab ${role === 'partner' ? 'active' : ''}" data-role="${role}">
+                        ${role.charAt(0).toUpperCase() + role.slice(1)}
+                    </button>
+                `).join('');
+
+            } catch (err) {
+                console.error('Dashboard error:', err);
+            }
+        }
+
+        // Connect Stripe
+        document.getElementById('connect-stripe').addEventListener('click', async () => {
+            try {
+                const res = await fetch(`${API_URL}/stripe/connect`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+
+                if (data.onboardingUrl) {
+                    window.location.href = data.onboardingUrl;
+                }
+            } catch (err) {
+                console.error('Stripe connect error:', err);
+                alert('Failed to connect Stripe. Please try again.');
+            }
+        });
+
+        // Check for Stripe return
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('stripe') === 'success') {
+            // Reload dashboard to reflect Stripe status
+            setTimeout(() => {
+                loadDashboard();
+                history.replaceState({}, '', '/partners.html');
+            }, 500);
+        }
+
+        // Init
+        checkAuth();
+    </script>
+</body>
+</html>
