@@ -54,17 +54,10 @@
             right: 0;
             bottom: 0;
             background:
-                radial-gradient(circle at 20% 50%, rgba(255, 221, 0, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 221, 0, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(255, 221, 0, 0.02) 0%, transparent 50%);
-            animation: pulseGlow 8s ease-in-out infinite;
+                radial-gradient(ellipse at 50% 30%, rgba(0, 150, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 60%, rgba(0, 120, 200, 0.05) 0%, transparent 40%);
             pointer-events: none;
             z-index: 1;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
         }
 
         /* Particle System */
@@ -168,7 +161,7 @@
             font-size: 3rem;
             font-weight: 800;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--lightning-yellow), var(--neon-green));
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--lightning-yellow));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -182,7 +175,7 @@
 
         .hero-highlight {
             font-size: 2rem;
-            color: var(--neon-green);
+            color: var(--lightning-yellow);
             font-weight: 700;
             margin: 2rem 0;
         }
@@ -236,7 +229,7 @@
         .example-row:last-child {
             border-bottom: none;
             font-weight: 700;
-            color: var(--neon-green);
+            color: var(--lightning-yellow);
         }
 
         /* CTA Section */
@@ -439,7 +432,7 @@
         }
 
         .stat-card-value.green {
-            color: var(--neon-green);
+            color: var(--lightning-yellow);
         }
 
         .stat-card-value.yellow {
@@ -479,7 +472,7 @@
         }
 
         .venue-revenue {
-            color: var(--neon-green);
+            color: var(--lightning-yellow);
             font-weight: 600;
         }
 
