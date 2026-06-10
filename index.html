@@ -2208,7 +2208,7 @@
                 <h2 class="section-title">📋 Manage Sold Passes</h2>
 
                 <div style="margin-bottom: 1.5rem;">
-                    <button class="btn btn-primary" onclick="loadSoldPasses()">🔄 Refresh Passes</button>
+                    <button class="btn btn-primary" onclick="loadSoldPasses()">Refresh Passes</button>
                 </div>
 
                 <div id="soldPassesList">
@@ -2403,7 +2403,7 @@
                 <button class="btn" id="tabTransactions" onclick="showAdminTab('transactions')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">💳 Transactions</button>
                 <button class="btn" id="tabTicketSales" onclick="showAdminTab('ticketSales')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎟️ Ticket Sales</button>
                 <button class="btn" id="tabSettings" onclick="showAdminTab('settings')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">⚙️ Settings</button>
-                <button class="btn btn-primary" onclick="loadAdminStats()" style="margin-left: auto;">🔄 REFRESH</button>
+                <button class="btn btn-primary" onclick="loadAdminStats()" style="margin-left: auto;">REFRESH</button>
             </div>
 
             <!-- Venues Tab -->
@@ -2526,7 +2526,7 @@
                             <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
                                 <input type="checkbox" id="spotlightRecurring" style="width: 20px; height: 20px; cursor: pointer;">
                                 <span>
-                                    <strong style="color: var(--electric-blue);">🔄 Recurring Weekly</strong>
+                                    <strong style="color: var(--electric-blue); display: inline-flex; align-items: center; gap: 0.4rem;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> Recurring Weekly</strong>
                                     <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Event repeats every week on the same day. Date auto-advances when passed.</div>
                                 </span>
                             </label>
@@ -2650,7 +2650,7 @@
                             <option value="">All Events</option>
                             <option value="sunset-bash">Sunset Bash</option>
                         </select>
-                        <button class="btn btn-secondary" onclick="loadTicketSales()">🔄 Refresh</button>
+                        <button class="btn btn-secondary" onclick="loadTicketSales()">Refresh</button>
                     </div>
                     <div id="ticketSalesList" style="max-height: 600px; overflow-y: auto;">
                         <div class="empty-state">Loading...</div>
@@ -6397,11 +6397,11 @@
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
                                         <h3 style="color: var(--electric-purple); margin: 0;">${event.name}</h3>
                                         ${event.isSpotlight ? '<span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">⚡ SPOTLIGHT</span>' : ''}
-                                        ${event.isRecurring ? '<span style="background: rgba(0, 212, 255, 0.2); color: var(--electric-blue); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">🔄 WEEKLY</span>' : ''}
+                                        ${event.isRecurring ? '<span style="background: rgba(0, 212, 255, 0.2); color: var(--electric-blue); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem; display: inline-flex; align-items: center; gap: 0.2rem;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> WEEKLY</span>' : ''}
                                         ${isPast && !event.isRecurring ? '<span style="background: rgba(255,0,0,0.2); color: #ff6b6b; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">PAST</span>' : ''}
                                     </div>
-                                    <p style="color: var(--lightning-yellow); font-weight: 600; margin-bottom: 0.25rem;">📅 ${dateStr} at ${timeStr}</p>
-                                    <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">📍 ${event.location || 'TBA'}</p>
+                                    <p style="color: var(--lightning-yellow); font-weight: 600; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${dateStr} at ${timeStr}</p>
+                                    <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem; display: flex; align-items: center; gap: 0.4rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${event.location || 'TBA'}</p>
                                     ${event.description ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 0.5rem;">${event.description}</p>` : ''}
                                 </div>
                                 <div style="text-align: right;">
@@ -6414,7 +6414,7 @@
                                     ⚡ ${event.isSpotlight ? 'Remove Spotlight' : 'Make Spotlight'}
                                 </button>
                                 <button class="btn" style="${event.isRecurring ? 'background: var(--electric-blue); color: #000; border-color: var(--electric-blue);' : 'border-color: var(--electric-blue); color: var(--electric-blue);'}" onclick="toggleEventRecurring('${event._id}', ${!event.isRecurring})">
-                                    🔄 ${event.isRecurring ? 'Weekly ON' : 'Make Weekly'}
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle;"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> ${event.isRecurring ? 'Weekly ON' : 'Make Weekly'}
                                 </button>
                                 <button class="btn btn-secondary" onclick="editSpotlightEvent('${event._id}')">Edit</button>
                                 <button class="btn" style="border-color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'}; color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'};" onclick="toggleEventActive('${event._id}', ${!event.isActive})">
@@ -6637,7 +6637,7 @@
                     method: 'PUT',
                     body: JSON.stringify({ isRecurring: makeRecurring })
                 });
-                showToast(makeRecurring ? '🔄 Event set to weekly recurring!' : 'Recurring disabled', 'success');
+                showToast(makeRecurring ? 'Event set to weekly recurring' : 'Recurring disabled', 'success');
                 loadSpotlightEvents();
                 loadHomepageSpotlightEvents();
             } catch (error) {
@@ -6870,7 +6870,7 @@
                                 <h3 style="color: #fff; margin: 0 0 0.4rem 0; font-weight: 600; font-size: 1.05rem; line-height: 1.25;">${event.name}</h3>
                                 ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.7); font-size: 0.8rem; font-weight: 400; margin: 0 0 0.4rem 0; display: block; text-decoration: underline;">${event.location}</a>` : ''}
                                 <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem; font-weight: 400; margin: 0; flex: 1; line-height: 1.5;">${event.description || ''}</p>
-                                ${event.isRecurring ? '<p style="color: #00d4ff; font-size: 0.7rem; margin-top: 0.75rem; font-weight: 500;">🔄 Recurring weekly</p>' : ''}
+                                ${event.isRecurring ? '<p style="color: #00d4ff; font-size: 0.7rem; margin-top: 0.75rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> Recurring weekly</p>' : ''}
                             </div>
                         `;
                     }
@@ -6992,8 +6992,8 @@
             document.getElementById('eventTicketTitle').textContent = event.name;
             document.getElementById('eventTicketInfo').innerHTML = `
                 <div style="background: rgba(157,78,221,0.1); border: 1px solid var(--electric-purple); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
-                    <p style="color: var(--lightning-yellow); font-weight: 600;">📅 ${eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at ${eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
-                    <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">📍 ${event.location || 'TBA'}</p>
+                    <p style="color: var(--lightning-yellow); font-weight: 600; display: flex; align-items: center; gap: 0.4rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at ${eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem; display: flex; align-items: center; gap: 0.4rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${event.location || 'TBA'}</p>
                 </div>
             `;
 
