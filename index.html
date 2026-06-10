@@ -1097,6 +1097,30 @@
                 font-size: 16px !important;
             }
         }
+
+        @media (max-width: 480px) {
+            nav {
+                padding: 0.75rem 1rem;
+            }
+
+            .logo-text {
+                display: none !important;
+            }
+
+            .nav-links {
+                gap: 0.5rem;
+            }
+
+            .nav-link {
+                font-size: 0.75rem;
+            }
+
+            .nav-link.btn {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.7rem;
+            }
+        }
+
         /* Video Landing Page Styles */
         #landingPage {
             position: fixed;
@@ -1388,8 +1412,12 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
             z-index: 99999;
             background: var(--pure-black);
             display: flex;
@@ -1397,6 +1425,16 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            overflow: hidden;
+        }
+
+        /* Hide everything behind splash when visible */
+        body:has(#splashScreen:not(.hidden)) {
+            overflow: hidden;
+        }
+
+        /* Fallback for browsers without :has() */
+        body.splash-active {
             overflow: hidden;
         }
 
@@ -1507,7 +1545,7 @@
         }
     </style>
 </head>
-<body>
+<body class="splash-active">
     <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
     <div id="splashScreen" onclick="enterApp()">
         <canvas id="lightningCanvas"></canvas>
@@ -1620,7 +1658,7 @@
         <div class="nav-container">
             <div class="logo" onclick="goHome()">
                 <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;"><img src="logo.png" alt="Lightning Pass" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                <span style="font-weight: 500; letter-spacing: -0.01em;">Lightning Pass</span>
+                <span class="logo-text" style="font-weight: 500; letter-spacing: -0.01em;">Lightning Pass</span>
             </div>
             <div class="nav-links" id="navLinks">
                 <!-- Will be populated based on auth state -->
@@ -3623,6 +3661,8 @@
         function enterApp() {
             // Hide splash screen
             document.getElementById('splashScreen').classList.add('hidden');
+            // Remove splash-active class from body (allows scrolling)
+            document.body.classList.remove('splash-active');
             // Hide landing page (no longer needed)
             document.getElementById('landingPage').style.display = 'none';
 
