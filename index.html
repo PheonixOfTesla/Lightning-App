@@ -3597,6 +3597,25 @@
             scheduleStorm();
         })();
 
+        // ===== SMART BROWSE - scroll if already viewing, load if not =====
+        function browseEvents() {
+            const customerView = document.getElementById('customerView');
+            if (customerView && customerView.style.display !== 'none') {
+                // Already viewing events - scroll to spotlight section
+                const spotlightSection = document.getElementById('spotlightEventsSection');
+                if (spotlightSection) {
+                    spotlightSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            } else {
+                // Not in customer view - load it
+                showView('customer');
+                loadVenues();
+                loadHomepageSpotlightEvents();
+            }
+        }
+
         // ===== SPLASH SCREEN ENTRY =====
         function enterApp() {
             // Hide splash screen
@@ -3612,7 +3631,7 @@
             if (!state.user) {
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
+                    <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
@@ -3660,14 +3679,24 @@
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
             const existingToken = localStorage.getItem('token');
+            const urlParams = new URLSearchParams(window.location.search);
+            const skipSplash = urlParams.has('browse') || urlParams.has('events');
 
-            if (existingToken) {
-                // User logged in - hide splash and landing, go to app
+            if (existingToken || skipSplash) {
+                // User logged in OR coming from another page - skip splash, go straight to events
                 document.getElementById('splashScreen').classList.add('hidden');
                 document.getElementById('landingPage').style.display = 'none';
+
+                // If skip splash, also enter the app directly
+                if (skipSplash && !existingToken) {
+                    showView('customer');
+                    loadVenues();
+                    loadHomepageSpotlightEvents();
+                    // Clean URL
+                    window.history.replaceState({}, '', window.location.pathname);
+                }
             }
-            // If not logged in, splash screen shows by default, landing is hidden
-            // User taps "Enter" -> enterApp() shows landing with video/music
+            // If not logged in and no skip param, splash screen shows by default
 
             // ===== BULLETPROOF VIDEO LOOP =====
             const video = document.getElementById('video-background');
@@ -3900,7 +3929,7 @@
                 // Update nav for guest
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
+                    <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
@@ -4972,7 +5001,7 @@
                 `;
             } else {
                 navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('customer')">Browse Events</a>
+                    <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
                     <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
                 `;
             }
@@ -4995,7 +5024,7 @@
             // Update nav for guest mode
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
-                <a href="#" class="nav-link" onclick="showView('customer'); loadVenues(); loadHomepageSpotlightEvents();">Browse Events</a>
+                <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/login" class="btn btn-primary">LOGIN</a>
             `;
