@@ -6971,6 +6971,9 @@
             }
         }
 
+        // Store all events for URL param handling
+        let allLoadedEvents = [];
+
         // Load Events on Homepage - Separated into Spotlight and Community sections
         async function loadHomepageSpotlightEvents() {
             try {
@@ -6981,6 +6984,9 @@
                     document.getElementById('communityEventsSection').style.display = 'none';
                     return;
                 }
+
+                // Store for URL param handling
+                allLoadedEvents = data.events;
 
                 // Separate spotlight/lightning events from community events
                 const spotlightEvents = data.events.filter(e => e.eventType !== 'community');
@@ -7017,6 +7023,18 @@
                     communityContainer.innerHTML = communityEvents.slice(0, 6).map(event => renderCommunityCard(event)).join('');
                 } else {
                     communitySection.style.display = 'none';
+                }
+
+                // Check URL params for direct event link
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventSlug = urlParams.get('event');
+                if (eventSlug) {
+                    const event = allLoadedEvents.find(e => e.slug === eventSlug);
+                    if (event && event.eventType !== 'community') {
+                        setTimeout(() => openEventTicketModal(event), 300);
+                        // Clear URL param after opening
+                        window.history.replaceState({}, '', window.location.pathname);
+                    }
                 }
 
             } catch (error) {
