@@ -159,6 +159,23 @@
             color: var(--lightning-yellow);
         }
 
+        .nav-link.btn-login {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--lightning-yellow);
+            border-radius: 0.5rem;
+            color: var(--lightning-yellow);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+
+        .nav-link.btn-login:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
         /* Hero Section */
         .hero {
             min-height: 100vh;
@@ -642,6 +659,7 @@
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link active">About</a>
+                <a href="/login" class="nav-link btn-login">LOGIN</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span>
