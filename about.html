@@ -783,16 +783,20 @@
             document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
         }
 
-        // Apply founder settings from localStorage
+        // Apply founder settings from localStorage (only if settings exist)
         document.addEventListener('DOMContentLoaded', function() {
             const settings = JSON.parse(localStorage.getItem('founderSettings') || '{}');
-            const scale = settings.scale || 1;
-            const posX = settings.positionX || 0;
-            const posY = settings.positionY || 0;
 
-            document.querySelectorAll('.founder-avatar img').forEach(img => {
-                img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
-            });
+            // Only apply if there are actual saved settings, otherwise let CSS handle it
+            if (settings.scale || settings.positionX || settings.positionY) {
+                const scale = settings.scale || 1.5;
+                const posX = settings.positionX || 0;
+                const posY = settings.positionY || 20;
+
+                document.querySelectorAll('.founder-avatar img').forEach(img => {
+                    img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
+                });
+            }
         });
 
         // Scroll to top on page load
