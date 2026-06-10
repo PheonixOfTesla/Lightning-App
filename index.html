@@ -6828,7 +6828,7 @@
         // Load Spotlight Events on Homepage
         async function loadHomepageSpotlightEvents() {
             try {
-                const data = await apiCall('/api/v1/lightning/spotlight-events');
+                const data = await apiCall('/api/v1/lightning/public-events');
                 const container = document.getElementById('homepageSpotlightEvents');
                 const section = document.getElementById('spotlightEventsSection');
 
@@ -6856,7 +6856,24 @@
 
                     // Badge based on event type
                     const isLightning = event.isLightningEvent;
+                    const isCommunity = event.eventType === 'community';
                     const isPending = event.status === 'pending';
+
+                    // COMMUNITY EVENT - Clean, informational design
+                    if (isCommunity) {
+                        return `
+                            <div class="venue-card community" style="position: relative; display: flex; flex-direction: column; background: linear-gradient(135deg, #1a1a2e, #0d1b2a); border-radius: 1rem; border: 1px solid rgba(0, 212, 255, 0.3);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.02em; margin: 0;">${dayName}, ${monthDay} · ${timeStr}</p>
+                                    <span style="background: rgba(0, 212, 255, 0.15); color: #00d4ff; font-size: 0.6rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 1rem; letter-spacing: 0.05em;">COMMUNITY</span>
+                                </div>
+                                <h3 style="color: #fff; margin: 0 0 0.4rem 0; font-weight: 600; font-size: 1.05rem; line-height: 1.25;">${event.name}</h3>
+                                ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.7); font-size: 0.8rem; font-weight: 400; margin: 0 0 0.4rem 0; display: block; text-decoration: underline;">${event.location}</a>` : ''}
+                                <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem; font-weight: 400; margin: 0; flex: 1; line-height: 1.5;">${event.description || ''}</p>
+                                ${event.isRecurring ? '<p style="color: #00d4ff; font-size: 0.7rem; margin-top: 0.75rem; font-weight: 500;">🔄 Recurring weekly</p>' : ''}
+                            </div>
+                        `;
+                    }
 
                     // LIGHTNING EVENT - Quiet luxury design
                     if (isLightning) {
