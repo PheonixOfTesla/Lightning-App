@@ -425,7 +425,7 @@
         const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/lightning';
 
         let allEvents = [];
-        let selectedDate = new Date();
+        let selectedFilter = 'all'; // 'all' or a date string
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -433,7 +433,7 @@
             loadEvents();
         });
 
-        // Build date navigation (7 days)
+        // Build date navigation (ALL + 7 days)
         function buildDateNav() {
             const nav = document.getElementById('dateNav');
             const days = [];
@@ -445,24 +445,31 @@
                 days.push(date);
             }
 
-            nav.innerHTML = days.map((date, index) => {
+            // Add "ALL" button first
+            let html = `<button class="date-btn active" data-date="all">
+                <span class="day-name">VIEW</span>
+                <span class="day-num">ALL</span>
+            </button>`;
+
+            html += days.map((date) => {
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
                 const dayNum = date.getDate();
-                const isActive = index === 0 ? 'active' : '';
                 return `
-                    <button class="date-btn ${isActive}" data-date="${date.toISOString().split('T')[0]}">
+                    <button class="date-btn" data-date="${date.toISOString().split('T')[0]}">
                         <span class="day-name">${dayName}</span>
                         <span class="day-num">${dayNum}</span>
                     </button>
                 `;
             }).join('');
 
+            nav.innerHTML = html;
+
             // Add click handlers
             nav.querySelectorAll('.date-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     nav.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    selectedDate = new Date(btn.dataset.date);
+                    selectedFilter = btn.dataset.date;
                     renderEvents();
                 });
             });
@@ -485,26 +492,33 @@
             }
         }
 
-        // Render events for selected date
+        // Render events
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
-            const selectedDateStr = selectedDate.toISOString().split('T')[0];
 
-            // Filter events for selected date
-            const dayEvents = allEvents.filter(event => {
-                const eventDate = new Date(event.date);
-                const eventDateStr = eventDate.toISOString().split('T')[0];
+            // Get events to display
+            let eventsToShow = [];
 
-                // For recurring events, check if it's the same day of week
-                if (event.isRecurring) {
-                    return eventDate.getDay() === selectedDate.getDay();
-                }
+            if (selectedFilter === 'all') {
+                // Show all events, sorted by date
+                eventsToShow = [...allEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+            } else {
+                // Filter by selected date
+                const selectedDate = new Date(selectedFilter);
+                eventsToShow = allEvents.filter(event => {
+                    const eventDate = new Date(event.date);
+                    const eventDateStr = eventDate.toISOString().split('T')[0];
 
-                return eventDateStr === selectedDateStr;
-            });
+                    // For recurring events, check if it's the same day of week
+                    if (event.isRecurring) {
+                        return eventDate.getDay() === selectedDate.getDay();
+                    }
 
-            if (dayEvents.length === 0) {
-                const dateStr = selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                    return eventDateStr === selectedFilter;
+                });
+            }
+
+            if (eventsToShow.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -513,34 +527,29 @@
                             <line x1="8" y1="2" x2="8" y2="6"/>
                             <line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
-                        <p>No events on ${dateStr}</p>
-                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Check another day or <a href="/" style="color: var(--lightning-yellow);">browse all events</a></p>
+                        <p>No events found</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Check back soon for new events</p>
                     </div>
                 `;
                 return;
             }
 
-            // Group by time of day
-            const morning = dayEvents.filter(e => new Date(e.date).getHours() < 12);
-            const afternoon = dayEvents.filter(e => {
-                const h = new Date(e.date).getHours();
-                return h >= 12 && h < 17;
+            // Group events by date
+            const eventsByDate = {};
+            eventsToShow.forEach(event => {
+                const eventDate = new Date(event.date);
+                const dateKey = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                if (!eventsByDate[dateKey]) {
+                    eventsByDate[dateKey] = [];
+                }
+                eventsByDate[dateKey].push(event);
             });
-            const evening = dayEvents.filter(e => new Date(e.date).getHours() >= 17);
 
             let html = '';
-
-            if (morning.length > 0) {
-                html += renderSection('Morning', morning);
-            }
-            if (afternoon.length > 0) {
-                html += renderSection('Afternoon', afternoon);
-            }
-            if (evening.length > 0) {
-                html += renderSection('Evening', evening);
+            for (const [dateStr, events] of Object.entries(eventsByDate)) {
+                html += renderSection(dateStr, events);
             }
 
-            // If all events are at same time or times don't fit categories
             if (html === '') {
                 html = renderSection('Events', dayEvents);
             }
