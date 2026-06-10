@@ -377,8 +377,8 @@
         }
 
         .founder-avatar {
-            width: 120px;
-            height: 120px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             margin: 0 auto 2rem;
             position: relative;
@@ -390,6 +390,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transform: scale(1.1) translate(0px, 13px);
         }
 
         .founder-name {
@@ -782,26 +783,6 @@
             document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
         }
 
-        // Apply founder avatar settings from admin panel
-        (function() {
-            const settings = JSON.parse(localStorage.getItem('founderSettings') || '{}');
-            if (settings.size || settings.scale || settings.positionX !== undefined || settings.positionY !== undefined) {
-                const avatars = document.querySelectorAll('.founder-avatar');
-                avatars.forEach(avatar => {
-                    if (settings.size) {
-                        avatar.style.width = settings.size + 'px';
-                        avatar.style.height = settings.size + 'px';
-                    }
-                    const img = avatar.querySelector('img');
-                    if (img) {
-                        const scale = settings.scale || 1;
-                        const posX = settings.positionX || 0;
-                        const posY = settings.positionY || 0;
-                        img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
-                    }
-                });
-            }
-        })();
     </script>
 </body>
 </html>
