@@ -7062,7 +7062,7 @@
                                 <p style="color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
                                 <h3 style="color: #fff; margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2;">${event.name}</h3>
                             </div>
-                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 2px solid var(--lightning-yellow);">` : ''}
+                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 48px; height: 48px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px;">` : ''}
                         </div>
                         ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; display: block; margin-bottom: 0.75rem; text-decoration: underline;">${event.location}</a>` : ''}
                         <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0 0 1.25rem 0; line-height: 1.5;">${event.description || ''}</p>
@@ -7081,7 +7081,7 @@
                 <div class="venue-card" style="background: #fff; border-radius: 1rem; border: 1px solid #e0e0e0; padding: 1.25rem;">
                     <p style="color: #888; font-size: 0.75rem; font-weight: 500; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
                     <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.5rem;">
-                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 36px; height: 36px; border-radius: 6px; object-fit: cover; flex-shrink: 0;">` : ''}
+                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f5f5f5; padding: 4px; flex-shrink: 0;">` : ''}
                         <h3 style="color: #1a1a1a; margin: 0; font-weight: 600; font-size: 1.1rem; line-height: 1.25;">${event.name}</h3>
                     </div>
                     ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 0.4rem; text-decoration: underline;">${event.location}</a>` : ''}
