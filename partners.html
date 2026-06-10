@@ -36,6 +36,7 @@
             --danger-red: #ff0044;
             --white: #ffffff;
             --gray: #888;
+            --champagne-gold: #d4af37;
         }
 
         body {
@@ -204,33 +205,29 @@
             font-size: 0.9rem;
         }
 
-        /* Example Box */
-        .example-box {
-            background: var(--white);
-            border: 2px solid var(--lightning-yellow);
-            border-radius: 1rem;
-            padding: 2rem;
-            margin: 3rem auto;
-            max-width: 600px;
-        }
-
-        .example-box h3 {
-            color: #b8860b;
-            margin-bottom: 1rem;
-        }
-
-        .example-row {
+        /* Pillars */
+        .pillars {
             display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            color: var(--pure-black);
+            justify-content: center;
+            gap: 3rem;
+            margin: 3rem 0;
         }
 
-        .example-row:last-child {
-            border-bottom: none;
+        .pillar {
+            text-align: center;
+        }
+
+        .pillar-title {
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #b8860b;
+            color: var(--champagne-gold);
+            letter-spacing: 3px;
+            margin-bottom: 0.5rem;
+        }
+
+        .pillar-desc {
+            color: var(--gray);
+            font-size: 0.9rem;
         }
 
         /* CTA Section */
@@ -602,26 +599,22 @@
     <section class="landing" id="landing-section">
         <div class="hero">
             <h1>Lightning Partners</h1>
-            <p>Grow with us.</p>
+            <p>By invitation.</p>
+            <p style="color: var(--gray); font-size: 1rem; margin-top: 0.5rem;">Join our network of premier venues.</p>
         </div>
 
-        <div class="example-box">
-            <h3>Real Example: Beach Club</h3>
-            <div class="example-row">
-                <span>Venue Annual Revenue</span>
-                <span>$244,000</span>
+        <div class="pillars">
+            <div class="pillar">
+                <div class="pillar-title">REFER</div>
+                <div class="pillar-desc">Connect venues to our ecosystem</div>
             </div>
-            <div class="example-row">
-                <span>Lightning's Cut (20%)</span>
-                <span>$48,800</span>
+            <div class="pillar">
+                <div class="pillar-title">EARN</div>
+                <div class="pillar-desc">10% of platform revenue. Forever.</div>
             </div>
-            <div class="example-row">
-                <span>Your Cut (10% of Lightning)</span>
-                <span>$4,880/year</span>
-            </div>
-            <div class="example-row">
-                <span>Refer 5 venues like this...</span>
-                <span>$24,400/year</span>
+            <div class="pillar">
+                <div class="pillar-title">GROW</div>
+                <div class="pillar-desc">Scale your network statewide</div>
             </div>
         </div>
 
@@ -660,7 +653,7 @@
         </div>
 
         <div class="cta-section">
-            <button class="btn btn-primary" id="show-signup">Become a Partner</button>
+            <button class="btn btn-primary" id="show-signup">Request Access</button>
             <button class="btn btn-secondary" id="show-login">Already a partner? Log in</button>
         </div>
     </section>

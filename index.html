@@ -1796,6 +1796,12 @@
             <div class="venues-grid" id="customerVenuesGrid">
                 <div class="empty-state">Loading venues...</div>
             </div>
+
+            <div class="notify-section" style="text-align: center; padding: 3rem 2rem; margin: 2rem 0; background: rgba(255, 221, 0, 0.05); border: 1px solid rgba(255, 221, 0, 0.2); border-radius: 1rem;">
+                <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem; font-size: 1.25rem; letter-spacing: 2px;">MORE EVENTS DROPPING SOON</h3>
+                <p style="color: rgba(255,255,255,0.6); margin-bottom: 1.5rem;">Be the first to know when new events launch.</p>
+                <button onclick="showNotifyModal()" class="btn btn-primary" style="padding: 0.75rem 2rem;">NOTIFY ME</button>
+            </div>
         </div>
 
         <!-- DJ DASHBOARD -->
@@ -2516,6 +2522,15 @@
                                 <input type="datetime-local" class="form-input" id="spotlightEndDate">
                             </div>
                         </div>
+                        <div class="form-group" style="background: rgba(0, 212, 255, 0.1); border: 1px solid var(--electric-blue); border-radius: 0.5rem; padding: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                                <input type="checkbox" id="spotlightRecurring" style="width: 20px; height: 20px; cursor: pointer;">
+                                <span>
+                                    <strong style="color: var(--electric-blue);">🔄 Recurring Weekly</strong>
+                                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Event repeats every week on the same day. Date auto-advances when passed.</div>
+                                </span>
+                            </label>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Description</label>
                             <textarea class="form-input" id="spotlightDescription" rows="2" placeholder="What makes this event special?"></textarea>
@@ -3073,6 +3088,19 @@
                     Back
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Notify Modal -->
+    <div id="notifyModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <span class="modal-title">Get Notified</span>
+                <button class="close-btn" onclick="closeNotifyModal()">&times;</button>
+            </div>
+            <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">Enter your phone number to get texts when new events drop.</p>
+            <input type="tel" id="notifyPhone" class="form-input" placeholder="+1 (555) 123-4567" style="margin-bottom: 1rem;">
+            <button onclick="submitNotify()" class="btn btn-primary" style="width: 100%;">SUBSCRIBE</button>
         </div>
     </div>
 
@@ -6366,10 +6394,11 @@
                         <div style="background: ${event.isSpotlight ? 'linear-gradient(135deg, rgba(255,221,0,0.1), rgba(57,255,20,0.05))' : 'rgba(157,78,221,0.05)'}; border: ${event.isSpotlight ? '2px solid var(--lightning-yellow)' : '1px solid var(--border-dark)'}; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; ${isPast ? 'opacity: 0.5;' : ''}">
                             <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
                                 <div>
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
                                         <h3 style="color: var(--electric-purple); margin: 0;">${event.name}</h3>
                                         ${event.isSpotlight ? '<span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">⚡ SPOTLIGHT</span>' : ''}
-                                        ${isPast ? '<span style="background: rgba(255,0,0,0.2); color: #ff6b6b; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">PAST</span>' : ''}
+                                        ${event.isRecurring ? '<span style="background: rgba(0, 212, 255, 0.2); color: var(--electric-blue); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">🔄 WEEKLY</span>' : ''}
+                                        ${isPast && !event.isRecurring ? '<span style="background: rgba(255,0,0,0.2); color: #ff6b6b; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">PAST</span>' : ''}
                                     </div>
                                     <p style="color: var(--lightning-yellow); font-weight: 600; margin-bottom: 0.25rem;">📅 ${dateStr} at ${timeStr}</p>
                                     <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">📍 ${event.location || 'TBA'}</p>
@@ -6383,6 +6412,9 @@
                             <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
                                 <button class="btn ${event.isSpotlight ? '' : ''}" style="${event.isSpotlight ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleEventSpotlight('${event._id}', ${!event.isSpotlight})">
                                     ⚡ ${event.isSpotlight ? 'Remove Spotlight' : 'Make Spotlight'}
+                                </button>
+                                <button class="btn" style="${event.isRecurring ? 'background: var(--electric-blue); color: #000; border-color: var(--electric-blue);' : 'border-color: var(--electric-blue); color: var(--electric-blue);'}" onclick="toggleEventRecurring('${event._id}', ${!event.isRecurring})">
+                                    🔄 ${event.isRecurring ? 'Weekly ON' : 'Make Weekly'}
                                 </button>
                                 <button class="btn btn-secondary" onclick="editSpotlightEvent('${event._id}')">Edit</button>
                                 <button class="btn" style="border-color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'}; color: ${event.isActive ? 'var(--danger-red)' : 'var(--neon-green)'};" onclick="toggleEventActive('${event._id}', ${!event.isActive})">
@@ -6552,12 +6584,13 @@
                 const endDate = document.getElementById('spotlightEndDate').value;
                 const description = document.getElementById('spotlightDescription').value;
                 const imageUrl = document.getElementById('spotlightImageUrl').value;
+                const isRecurring = document.getElementById('spotlightRecurring').checked;
                 const tickets = collectTicketTiers();
 
                 await apiCall('/api/v1/lightning/spotlight-events', {
                     method: 'POST',
                     body: JSON.stringify({
-                        name, slug, eventType, location, date, endDate, description, imageUrl, tickets
+                        name, slug, eventType, location, date, endDate, description, imageUrl, isRecurring, tickets
                     })
                 });
 
@@ -6591,6 +6624,20 @@
                     body: JSON.stringify({ isActive: makeActive })
                 });
                 showToast(makeActive ? 'Event activated!' : 'Event deactivated', 'success');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to update: ' + error.message, 'error');
+            }
+        }
+
+        async function toggleEventRecurring(eventId, makeRecurring) {
+            try {
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ isRecurring: makeRecurring })
+                });
+                showToast(makeRecurring ? '🔄 Event set to weekly recurring!' : 'Recurring disabled', 'success');
                 loadSpotlightEvents();
                 loadHomepageSpotlightEvents();
             } catch (error) {
@@ -8952,6 +8999,21 @@
             setTimeout(() => setInterval(triggerFlash, 6000), 2000);
             setTimeout(() => setInterval(triggerFlash, 6000), 4000);
         })();
+
+        // ===== NOTIFY MODAL FUNCTIONS =====
+        function showNotifyModal() {
+            document.getElementById('notifyModal').classList.add('active');
+        }
+        function closeNotifyModal() {
+            document.getElementById('notifyModal').classList.remove('active');
+        }
+        async function submitNotify() {
+            const phone = document.getElementById('notifyPhone').value;
+            if (!phone) return alert('Please enter your phone number');
+            // For now just show success - backend integration later
+            showToast('You\'re on the list! We\'ll text you when new events drop.', 'success');
+            closeNotifyModal();
+        }
 
         // Note for QR Scanner: Will be added after UI polish is complete
     </script>
