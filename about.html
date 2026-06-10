@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>About Lightning Pass | Josh Lerner & Ben Jacobs | Sarasota Events Platform</title>
+    <meta name="description" content="Lightning Pass was founded by Josh Lerner and Ben Jacobs to connect Sarasota with the best events, nightlife, and experiences. Learn about our mission to make every night unforgettable.">
+    <meta name="keywords" content="Lightning Pass founders, Josh Lerner, Ben Jacobs, Sarasota startup, Sarasota events company, Southwest Florida tech">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://thelightningpass.com/about">
+
+    <!-- Geographic Meta Tags -->
+    <meta name="geo.region" content="US-FL">
+    <meta name="geo.placename" content="Sarasota">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thelightningpass.com/about">
+    <meta property="og:title" content="About Lightning Pass | Sarasota Events Platform">
+    <meta property="og:description" content="Founded by Josh Lerner and Ben Jacobs to connect Sarasota with the best events and nightlife.">
+    <meta property="og:image" content="https://thelightningpass.com/logo.png">
+    <meta property="og:site_name" content="Lightning Pass">
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        "mainEntity": {
+            "@type": "Organization",
+            "name": "Lightning Pass",
+            "url": "https://thelightningpass.com",
+            "logo": "https://thelightningpass.com/logo.png",
+            "description": "Event ticketing and nightlife access platform for Sarasota and Southwest Florida",
+            "foundingDate": "2026",
+            "foundingLocation": {
+                "@type": "Place",
+                "name": "Sarasota, Florida"
+            },
+            "founder": [
+                {
+                    "@type": "Person",
+                    "name": "Josh Lerner",
+                    "jobTitle": "Creator"
+                },
+                {
+                    "@type": "Person",
+                    "name": "Ben Jacobs",
+                    "jobTitle": "Founder"
+                }
+            ],
+            "areaServed": {
+                "@type": "City",
+                "name": "Sarasota",
+                "containedInPlace": {
+                    "@type": "State",
+                    "name": "Florida"
+                }
+            }
+        }
+    }
+    </script>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --champagne-gold: #d4af37;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--pure-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.875rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--white);
+            letter-spacing: -0.01em;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .logo-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover {
+            color: var(--lightning-yellow);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 8rem 2rem 4rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--gray);
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--lightning-yellow);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        /* Founders Section */
+        .founders {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .founder-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .founder-card:hover {
+            border-color: var(--champagne-gold);
+            transform: translateY(-4px);
+        }
+
+        .founder-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--champagne-gold));
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--pure-black);
+        }
+
+        .founder-name {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 0.25rem;
+        }
+
+        .founder-title {
+            font-size: 0.9rem;
+            color: var(--champagne-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .founder-bio {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Mission Statement */
+        .mission-box {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255, 221, 0, 0.05));
+            border: 1px solid var(--champagne-gold);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .mission-box p {
+            font-size: 1.25rem;
+            color: var(--white);
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        /* Values */
+        .values {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .value {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .value-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            color: var(--lightning-yellow);
+        }
+
+        .value h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--white);
+        }
+
+        .value p {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        /* CTA */
+        .cta-section {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid var(--lightning-yellow);
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: transparent;
+            color: var(--lightning-yellow);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        footer a {
+            color: var(--lightning-yellow);
+            text-decoration: none;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            main {
+                padding: 6rem 1.5rem 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-img"><img src="logo.png" alt="Lightning Pass"></div>
+                Lightning Pass
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Events</a>
+                <a href="/partners" class="nav-link">Partners</a>
+                <a href="/about" class="nav-link" style="color: var(--lightning-yellow);">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="hero">
+            <h1>Built for Sarasota</h1>
+            <p>We created Lightning Pass to connect our community with unforgettable experiences.</p>
+        </div>
+
+        <section class="section">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Our Story
+            </h2>
+            <p>Lightning Pass started with a simple question: why is it so hard to find out what's happening in Sarasota tonight?</p>
+            <p>We saw a city full of incredible venues, talented DJs, and amazing events - but no central place to discover them all. So we built one.</p>
+            <p>Today, Lightning Pass is Sarasota's home for events, nightlife, and experiences. From the Siesta Key Drum Circle to downtown rooftop parties, we're your pass to everything.</p>
+        </section>
+
+        <div class="mission-box">
+            <p>"Skip the line. Own the night."</p>
+        </div>
+
+        <section class="section">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                The Founders
+            </h2>
+            <div class="founders">
+                <div class="founder-card">
+                    <div class="founder-avatar">JL</div>
+                    <div class="founder-name">Josh Lerner</div>
+                    <div class="founder-title">Creator</div>
+                    <p class="founder-bio">Visionary behind Lightning Pass. Passionate about building technology that brings people together and makes Sarasota's nightlife accessible to everyone.</p>
+                </div>
+                <div class="founder-card">
+                    <div class="founder-avatar">BJ</div>
+                    <div class="founder-name">Ben Jacobs</div>
+                    <div class="founder-title">Founder</div>
+                    <p class="founder-bio">Driving the growth and partnerships at Lightning Pass. Focused on connecting Sarasota's best venues with the community that loves them.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                What We Believe
+            </h2>
+            <div class="values">
+                <div class="value">
+                    <svg class="value-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <h3>Local First</h3>
+                    <p>Built in Sarasota, for Sarasota</p>
+                </div>
+                <div class="value">
+                    <svg class="value-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <h3>Trust</h3>
+                    <p>Secure payments, real events</p>
+                </div>
+                <div class="value">
+                    <svg class="value-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <h3>Instant</h3>
+                    <p>Tickets on your phone, instantly</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Based in Sarasota, Florida
+            </h2>
+            <p>Lightning Pass is proudly based in Sarasota, serving Southwest Florida including Siesta Key, Lakewood Ranch, Bradenton, and the surrounding areas.</p>
+            <p>We're building the go-to platform for discovering events, buying tickets, and experiencing the best of Florida's Gulf Coast.</p>
+        </section>
+
+        <div class="cta-section">
+            <a href="/" class="btn">Explore Events</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>Lightning Pass &copy; 2026 | <a href="/">Events</a> | <a href="/partners">Partners</a> | <a href="/about">About</a></p>
+        <p style="margin-top: 0.5rem;">Sarasota, Florida</p>
+    </footer>
+</body>
+</html>
