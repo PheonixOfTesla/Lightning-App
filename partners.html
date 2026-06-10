@@ -586,26 +586,78 @@
             }
         }
 
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--white);
+            transition: all 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 27, 42, 0.98);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .mobile-menu a:hover,
+        .mobile-menu a.active {
+            color: var(--lightning-yellow);
+        }
+
         @media (max-width: 480px) {
             nav {
                 padding: 0.75rem 1rem;
             }
 
-            .logo-text {
-                display: none !important;
-            }
-
             .nav-links {
-                gap: 0.5rem;
+                display: none;
             }
 
-            .nav-link {
-                font-size: 0.75rem;
-            }
-
-            .nav-link.btn-login {
-                padding: 0.4rem 0.75rem;
-                font-size: 0.7rem;
+            .hamburger {
+                display: flex;
             }
         }
     </style>
@@ -628,8 +680,22 @@
                 <a href="/about" class="nav-link">About</a>
                 <a href="#" class="nav-link btn-login" id="nav-login">LOGIN</a>
             </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/?browse=1">Events</a>
+        <a href="/partners" class="active">Partners</a>
+        <a href="/calendar">Calendar</a>
+        <a href="/about">About</a>
+        <a href="#" id="mobile-login">Login</a>
+    </div>
 
     <!-- Landing Section (shown when not logged in) -->
     <section class="landing" id="landing-section">
@@ -1145,6 +1211,13 @@
             init();
             animate();
         })();
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            document.querySelector('.hamburger').classList.toggle('active');
+            document.getElementById('mobileMenu').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
+        }
     </script>
 </body>
 </html>
