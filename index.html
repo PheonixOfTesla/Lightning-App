@@ -3021,24 +3021,21 @@
                     </p>
 
                     <div style="display: grid; gap: 1.5rem; max-width: 500px;">
-                        <div class="form-group">
-                            <label class="form-label">Avatar Size: <span id="founderSizeValue">150</span>px</label>
-                            <input type="range" id="founderAvatarSize" min="60" max="250" step="5" value="150" style="width: 100%;" oninput="updateFounderPreview()">
-                        </div>
+                        <p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-bottom: 0.5rem;">Circle size locked at 150px</p>
 
                         <div class="form-group">
                             <label class="form-label">Scale: <span id="founderScaleValue">1</span></label>
-                            <input type="range" id="founderAvatarScale" min="0.8" max="2" step="0.05" value="1" style="width: 100%;" oninput="updateFounderPreview()">
+                            <input type="range" id="founderAvatarScale" min="0.5" max="3" step="0.05" value="1" style="width: 100%;" oninput="updateFounderPreview()">
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Horizontal Position: <span id="founderPosXValue">0</span>px</label>
-                            <input type="range" id="founderPositionX" min="-50" max="50" step="1" value="0" style="width: 100%;" oninput="updateFounderPreview()">
+                            <input type="range" id="founderPositionX" min="-200" max="200" step="1" value="0" style="width: 100%;" oninput="updateFounderPreview()">
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Vertical Position: <span id="founderPosYValue">0</span>px</label>
-                            <input type="range" id="founderPositionY" min="-50" max="50" step="1" value="0" style="width: 100%;" oninput="updateFounderPreview()">
+                            <input type="range" id="founderPositionY" min="-500" max="500" step="1" value="0" style="width: 100%;" oninput="updateFounderPreview()">
                         </div>
 
                         <div style="display: flex; gap: 1rem;">
@@ -6725,12 +6722,10 @@
 
         // ===== FOUNDER AVATAR SETTINGS =====
         function updateFounderPreview() {
-            const size = document.getElementById('founderAvatarSize').value;
             const scale = document.getElementById('founderAvatarScale').value;
             const posX = document.getElementById('founderPositionX').value;
             const posY = document.getElementById('founderPositionY').value;
 
-            document.getElementById('founderSizeValue').textContent = size;
             document.getElementById('founderScaleValue').textContent = scale;
             document.getElementById('founderPosXValue').textContent = posX;
             document.getElementById('founderPosYValue').textContent = posY;
@@ -6739,8 +6734,6 @@
             const preview2 = document.getElementById('founderPreview2');
 
             [preview1, preview2].forEach(preview => {
-                preview.style.width = size + 'px';
-                preview.style.height = size + 'px';
                 const img = preview.querySelector('img');
                 if (img) img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
             });
@@ -6748,19 +6741,17 @@
 
         function saveFounderSettings() {
             const settings = {
-                size: parseInt(document.getElementById('founderAvatarSize').value),
                 scale: parseFloat(document.getElementById('founderAvatarScale').value),
                 positionX: parseInt(document.getElementById('founderPositionX').value),
                 positionY: parseInt(document.getElementById('founderPositionY').value)
             };
 
             localStorage.setItem('founderSettings', JSON.stringify(settings));
-            showToast('✅ Founder avatar settings saved!', 'success');
+            showToast('Founder avatar settings saved!', 'success');
         }
 
         function loadFounderSettings() {
             const settings = JSON.parse(localStorage.getItem('founderSettings') || '{}');
-            if (settings.size) document.getElementById('founderAvatarSize').value = settings.size;
             if (settings.scale) document.getElementById('founderAvatarScale').value = settings.scale;
             if (settings.positionX !== undefined) document.getElementById('founderPositionX').value = settings.positionX;
             if (settings.positionY !== undefined) document.getElementById('founderPositionY').value = settings.positionY;

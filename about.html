@@ -782,6 +782,18 @@
             document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
         }
 
+        // Apply founder settings from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const settings = JSON.parse(localStorage.getItem('founderSettings') || '{}');
+            const scale = settings.scale || 1;
+            const posX = settings.positionX || 0;
+            const posY = settings.positionY || 0;
+
+            document.querySelectorAll('.founder-avatar img').forEach(img => {
+                img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
+            });
+        });
+
     </script>
 </body>
 </html>
