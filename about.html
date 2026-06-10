@@ -685,5 +685,25 @@
         </div>
         <p>Lightning Pass &copy; 2026 &middot; Sarasota, FL</p>
     </footer>
+
+    <script>
+        // Apply founder avatar settings from admin panel
+        (function() {
+            const settings = JSON.parse(localStorage.getItem('founderSettings') || '{}');
+            if (settings.size || settings.scale) {
+                const avatars = document.querySelectorAll('.founder-avatar');
+                avatars.forEach(avatar => {
+                    if (settings.size) {
+                        avatar.style.width = settings.size + 'px';
+                        avatar.style.height = settings.size + 'px';
+                    }
+                    if (settings.scale) {
+                        const img = avatar.querySelector('img');
+                        if (img) img.style.transform = `scale(${settings.scale})`;
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
