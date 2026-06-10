@@ -6769,16 +6769,45 @@
                 positionY: parseInt(document.getElementById('founderPositionY').value)
             };
 
-            localStorage.setItem('founderSettings', JSON.stringify(settings));
+            applyFounderSettings(settings);
             showToast('Founder avatar settings saved!', 'success');
+        }
+
+        function applyFounderSettings(settings) {
+            // Apply to admin preview
+            const preview1 = document.getElementById('founderPreview1');
+            const preview2 = document.getElementById('founderPreview2');
+
+            [preview1, preview2].forEach(preview => {
+                if (preview) {
+                    const img = preview.querySelector('img');
+                    if (img) img.style.transform = `scale(${settings.scale || 1}) translate(${settings.positionX || 0}px, ${settings.positionY || 0}px)`;
+                }
+            });
+
+            // Cache in localStorage (like splash does)
+            localStorage.setItem('founderSettings', JSON.stringify(settings));
         }
 
         function loadFounderSettings() {
             const settings = JSON.parse(localStorage.getItem('founderSettings') || '{}');
-            if (settings.scale) document.getElementById('founderAvatarScale').value = settings.scale;
-            if (settings.positionX !== undefined) document.getElementById('founderPositionX').value = settings.positionX;
-            if (settings.positionY !== undefined) document.getElementById('founderPositionY').value = settings.positionY;
-            updateFounderPreview();
+
+            // Update slider values
+            if (settings.scale) {
+                document.getElementById('founderAvatarScale').value = settings.scale;
+                document.getElementById('founderScaleValue').textContent = settings.scale;
+            }
+            if (settings.positionX !== undefined) {
+                document.getElementById('founderPositionX').value = settings.positionX;
+                document.getElementById('founderPosXValue').textContent = settings.positionX;
+            }
+            if (settings.positionY !== undefined) {
+                document.getElementById('founderPositionY').value = settings.positionY;
+                document.getElementById('founderPosYValue').textContent = settings.positionY;
+            }
+
+            // Apply to preview
+            applyFounderSettings(settings);
         }
 
         // Apply saved settings on page load
