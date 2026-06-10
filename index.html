@@ -3695,6 +3695,8 @@
                     showView('customer');
                     loadVenues();
                     loadHomepageSpotlightEvents();
+                    // Start music
+                    setTimeout(() => { if (typeof startMusic === 'function') startMusic(); }, 100);
                     // Clean URL
                     window.history.replaceState({}, '', window.location.pathname);
                 }
