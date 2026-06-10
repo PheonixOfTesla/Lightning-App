@@ -3119,19 +3119,19 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
                         </svg>
-                        Enter your email or phone to receive your ticket
+                        Your pass will be sent via text message
                     </p>
                     <div class="form-group" style="margin-bottom: 0.75rem;">
                         <label class="form-label">Name</label>
                         <input type="text" class="form-input" id="guestName" name="name" autocomplete="name" placeholder="Your name">
                     </div>
                     <div class="form-group" style="margin-bottom: 0.75rem;">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-input" id="guestEmail" name="email" autocomplete="email" placeholder="your@email.com">
+                        <label class="form-label">Phone <span style="color: var(--lightning-yellow);">*</span></label>
+                        <input type="tel" class="form-input" id="guestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555" required>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Phone</label>
-                        <input type="tel" class="form-input" id="guestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555">
+                        <label class="form-label">Email <span style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">(optional)</span></label>
+                        <input type="email" class="form-input" id="guestEmail" name="email" autocomplete="email" placeholder="your@email.com">
                     </div>
                 </div>
 
@@ -5596,9 +5596,10 @@
             const email = guestEmail || state.user?.email;
             const phone = guestPhone || state.user?.phone;
 
-            // Require at least email OR phone
-            if (!email && !phone) {
-                showToast('Please enter your email or phone number', 'error');
+            // Phone is required for SMS delivery
+            if (!phone) {
+                showToast('Phone number is required to receive your pass via SMS', 'error');
+                document.getElementById('guestPhone')?.focus();
                 return;
             }
 
@@ -7459,15 +7460,17 @@
                             <div id="eventTicketTiers"></div>
 
                             <div id="eventGuestFields" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.15); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0;">
-                                <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 1rem;">Enter your details to receive tickets</p>
+                                <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 1rem;">Your tickets will be sent via text message</p>
                                 <div class="form-group" style="margin-bottom: 0.75rem;">
                                     <input type="text" class="form-input" id="eventGuestName" name="name" autocomplete="name" placeholder="Your name" required>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0.75rem;">
-                                    <input type="email" class="form-input" id="eventGuestEmail" name="email" autocomplete="email" placeholder="your@email.com" required>
+                                    <label style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 0.25rem; display: block;">Phone <span style="color: var(--lightning-yellow);">*</span></label>
+                                    <input type="tel" class="form-input" id="eventGuestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555" required>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <input type="tel" class="form-input" id="eventGuestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555">
+                                    <label style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 0.25rem; display: block;">Email <span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">(optional)</span></label>
+                                    <input type="email" class="form-input" id="eventGuestEmail" name="email" autocomplete="email" placeholder="your@email.com">
                                 </div>
                             </div>
 
@@ -7677,7 +7680,7 @@
                         })
                     });
 
-                    showToast('🎟️ Ticket purchased! Check your email.', 'success');
+                    showToast('🎟️ Ticket purchased! Check your phone for SMS.', 'success');
                     closeModal('eventTicketModal');
                 } catch (error) {
                     ev.complete('fail');
@@ -7695,8 +7698,8 @@
             const phone = document.getElementById('eventGuestPhone').value.trim();
             const selectedTier = document.querySelector('input[name="ticketTier"]:checked');
 
-            if (!name || !email) {
-                showToast('Please enter your name and email', 'error');
+            if (!name || !phone) {
+                showToast('Please enter your name and phone number', 'error');
                 return;
             }
 
@@ -7728,7 +7731,7 @@
                         })
                     });
 
-                    showToast('🎟️ Ticket confirmed! Check your email.', 'success');
+                    showToast('🎟️ Ticket confirmed! Check your phone for SMS.', 'success');
                     closeModal('eventTicketModal');
                 } else {
                     // Paid ticket - create payment intent
@@ -7772,7 +7775,7 @@
                         })
                     });
 
-                    showToast('🎟️ Ticket purchased! Check your email.', 'success');
+                    showToast('🎟️ Ticket purchased! Check your phone for SMS.', 'success');
                     closeModal('eventTicketModal');
                 }
             } catch (error) {
@@ -8930,7 +8933,7 @@
 
                                 if (result.pass) {
                                     closeModal('purchaseModal');
-                                    showToast('Pass purchased! Check your SMS/email.', 'success');
+                                    showToast('Pass purchased! Check your phone for SMS.', 'success');
                                     if (result.pass.viewUrl) {
                                         window.open(result.pass.viewUrl, '_blank');
                                     }
