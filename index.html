@@ -3984,6 +3984,13 @@
 
             // Initialize WebSocket immediately (non-blocking)
             initSocketIO();
+
+            // Auto-refresh events every 30 seconds
+            setInterval(() => {
+                if (!document.getElementById('browseView')?.classList.contains('hidden')) {
+                    loadVenues();
+                }
+            }, 30000);
         });
 
         // Lightning flash effect on auth page and landing page
@@ -4206,6 +4213,22 @@
                     showToast(`✅ Played: "${data.songTitle}"`, 'success');
                     if (typeof loadDJQueue === 'function') loadDJQueue(state.djSession);
                 }
+            });
+
+            // ===== REAL-TIME EVENT UPDATES =====
+            state.socket.on('eventCreated', (data) => {
+                console.log('🎉 New event created:', data);
+                loadVenues(); // Refresh events list
+            });
+
+            state.socket.on('eventUpdated', (data) => {
+                console.log('📝 Event updated:', data);
+                loadVenues(); // Refresh events list
+            });
+
+            state.socket.on('ticketUpdate', (data) => {
+                console.log('🎫 Ticket availability changed:', data);
+                loadVenues(); // Refresh to show updated availability
             });
         }
 
