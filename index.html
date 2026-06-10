@@ -3599,6 +3599,9 @@
 
         // ===== SMART BROWSE - scroll if already viewing, load if not =====
         function browseEvents() {
+            // Always try to start/resume music
+            if (typeof startMusic === 'function') startMusic();
+
             const customerView = document.getElementById('customerView');
             if (customerView && customerView.style.display !== 'none') {
                 // Already viewing events - scroll to spotlight section
