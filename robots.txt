@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thelightningpass.com/sitemap.xml
+Sitemap: https://lightning-app-peach.vercel.app/sitemap.xml
+
+# Lightning Pass - Sarasota Events & Nightlife
+# https://thelightningpass.com
