@@ -5142,25 +5142,17 @@
                     const isShowcase = venue.isShowcase === true;
 
                     if (isShowcase) {
-                        // VIP Showcase venue - with event date if available
-                        const eventDateStr = venueEvent ? (() => {
-                            const d = new Date(venueEvent.date);
-                            const day = d.toLocaleDateString('en-US', { weekday: 'short' });
-                            const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                            const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                            return `${day}, ${date} · ${time}`;
-                        })() : null;
+                        // VIP Showcase venue - clean card with clickable address
+                        const mapsUrl = venue.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.address)}` : null;
 
                         card.innerHTML = `
-                            ${eventDateStr ? `<p style="color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600; margin: 0 0 0.75rem 0;">${eventDateStr}</p>` : ''}
                             <div style="margin-bottom: 0.75rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
                                     <h3 style="color: #1a1a1a; margin: 0; font-weight: 600; font-size: 1.1rem;">${venue.name}</h3>
                                     <span style="background: rgba(0,0,0,0.06); color: #666; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 1rem; font-size: 0.65rem; letter-spacing: 0.03em;">${venue.type || 'Venue'}</span>
                                 </div>
-                                <p style="color: #888; margin: 0; font-size: 0.8rem;">${venue.address || ''}</p>
+                                ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" style="color: #888; margin: 0; font-size: 0.8rem; text-decoration: none; display: block;">${venue.address} ↗</a>` : ''}
                             </div>
-                            ${venueEvent?.isRecurring ? '<p style="color: #999; font-size: 0.7rem; margin-bottom: 0.75rem;">Weekly</p>' : ''}
                             <div style="flex-grow: 1;"></div>
                             <a href="tel:${venue.phone || ''}" style="display: block; width: 100%; text-align: center; padding: 0.7rem 1rem; background: #1a1a1a; color: #fff; font-weight: 600; font-size: 0.8rem; border-radius: 0.5rem; text-decoration: none; ${!venue.phone ? 'pointer-events: none; opacity: 0.5;' : ''}">
                                 Call to Reserve
