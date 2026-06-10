@@ -5070,8 +5070,53 @@
         // ===== CUSTOMER FUNCTIONS =====
         async function loadVenues() {
             try {
-                const data = await apiCall('/api/v1/lightning/venues');
-                state.venues = data.venues || [];
+                // Fetch both venues and events
+                const [venueData, eventData] = await Promise.all([
+                    apiCall('/api/v1/lightning/venues'),
+                    apiCall('/api/v1/lightning/public-events')
+                ]);
+
+                state.venues = venueData.venues || [];
+                const events = eventData.events || [];
+
+                // Create a map of venue IDs to their next event
+                const venueEventsById = {};
+                const venueEventsByName = {};
+                const now = new Date();
+
+                events.forEach(event => {
+                    const eventDate = new Date(event.date);
+                    if (eventDate >= now) {
+                        // Primary: Match by venueId (most reliable)
+                        if (event.venueId) {
+                            const venueId = typeof event.venueId === 'object' ? event.venueId._id : event.venueId;
+                            if (!venueEventsById[venueId] || new Date(venueEventsById[venueId].date) > eventDate) {
+                                venueEventsById[venueId] = event;
+                            }
+                        }
+
+                        // Secondary: Match by name (case insensitive, partial match)
+                        const eventNameLower = event.name.toLowerCase();
+                        const eventLocationLower = (event.location || '').toLowerCase();
+                        state.venues.forEach(v => {
+                            const venueNameLower = v.name.toLowerCase();
+                            // Check if event name contains venue name, or location contains venue name
+                            if (eventNameLower.includes(venueNameLower) ||
+                                venueNameLower.includes(eventNameLower) ||
+                                eventLocationLower.includes(venueNameLower)) {
+                                if (!venueEventsByName[v._id] || new Date(venueEventsByName[v._id].date) > eventDate) {
+                                    venueEventsByName[v._id] = event;
+                                }
+                            }
+                        });
+                    }
+                });
+
+                // Merge: prefer venueId match over name match
+                const venueEvents = {};
+                state.venues.forEach(v => {
+                    venueEvents[v._id] = venueEventsById[v._id] || venueEventsByName[v._id] || null;
+                });
 
                 // Sort spotlight venues first
                 state.venues.sort((a, b) => (b.isSpotlight ? 1 : 0) - (a.isSpotlight ? 1 : 0));
@@ -5086,6 +5131,8 @@
                 grid.innerHTML = '';
 
                 state.venues.forEach(venue => {
+                    // Get associated event for this venue (matched by venueId or name)
+                    const venueEvent = venueEvents[venue._id];
                     const card = document.createElement('div');
                     card.className = venue.isSpotlight ? 'venue-card spotlight' : 'venue-card';
                     card.dataset.type = venue.type || 'Venue';
@@ -5095,16 +5142,25 @@
                     const isShowcase = venue.isShowcase === true;
 
                     if (isShowcase) {
-                        // VIP Showcase venue - cleaner design
+                        // VIP Showcase venue - with event date if available
+                        const eventDateStr = venueEvent ? (() => {
+                            const d = new Date(venueEvent.date);
+                            const day = d.toLocaleDateString('en-US', { weekday: 'short' });
+                            const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                            return `${day}, ${date} · ${time}`;
+                        })() : null;
+
                         card.innerHTML = `
-                            <div style="margin-bottom: 1rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            ${eventDateStr ? `<p style="color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600; margin: 0 0 0.75rem 0;">${eventDateStr}</p>` : ''}
+                            <div style="margin-bottom: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
                                     <h3 style="color: #1a1a1a; margin: 0; font-weight: 600; font-size: 1.1rem;">${venue.name}</h3>
                                     <span style="background: rgba(0,0,0,0.06); color: #666; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 1rem; font-size: 0.65rem; letter-spacing: 0.03em;">${venue.type || 'Venue'}</span>
                                 </div>
                                 <p style="color: #888; margin: 0; font-size: 0.8rem;">${venue.address || ''}</p>
                             </div>
-                            <p style="color: #999; font-size: 0.75rem; margin-bottom: 1rem;">Reservation required</p>
+                            ${venueEvent?.isRecurring ? '<p style="color: #999; font-size: 0.7rem; margin-bottom: 0.75rem;">Weekly</p>' : ''}
                             <div style="flex-grow: 1;"></div>
                             <a href="tel:${venue.phone || ''}" style="display: block; width: 100%; text-align: center; padding: 0.7rem 1rem; background: #1a1a1a; color: #fff; font-weight: 600; font-size: 0.8rem; border-radius: 0.5rem; text-decoration: none; ${!venue.phone ? 'pointer-events: none; opacity: 0.5;' : ''}">
                                 Call to Reserve
