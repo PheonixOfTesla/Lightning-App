@@ -390,7 +390,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scale(1.5) translate(0px, 20px);
+            transform: scale(2.2) translate(0px, 15px);
         }
 
         .founder-name {
@@ -789,9 +789,9 @@
 
             // Only apply if there are actual saved settings, otherwise let CSS handle it
             if (settings.scale || settings.positionX || settings.positionY) {
-                const scale = settings.scale || 1.5;
+                const scale = settings.scale || 2.2;
                 const posX = settings.positionX || 0;
-                const posY = settings.positionY || 20;
+                const posY = settings.positionY || 15;
 
                 document.querySelectorAll('.founder-avatar img').forEach(img => {
                     img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
