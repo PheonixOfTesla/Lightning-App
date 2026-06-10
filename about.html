@@ -768,16 +768,19 @@
         // Apply founder avatar settings from admin panel
         (function() {
             const settings = JSON.parse(localStorage.getItem('founderSettings') || '{}');
-            if (settings.size || settings.scale) {
+            if (settings.size || settings.scale || settings.positionX !== undefined || settings.positionY !== undefined) {
                 const avatars = document.querySelectorAll('.founder-avatar');
                 avatars.forEach(avatar => {
                     if (settings.size) {
                         avatar.style.width = settings.size + 'px';
                         avatar.style.height = settings.size + 'px';
                     }
-                    if (settings.scale) {
-                        const img = avatar.querySelector('img');
-                        if (img) img.style.transform = `scale(${settings.scale})`;
+                    const img = avatar.querySelector('img');
+                    if (img) {
+                        const scale = settings.scale || 1;
+                        const posX = settings.positionX || 0;
+                        const posY = settings.positionY || 0;
+                        img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
                     }
                 });
             }
