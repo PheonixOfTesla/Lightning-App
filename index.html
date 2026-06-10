@@ -1890,13 +1890,27 @@
                 </div>
             </div>
 
-            <!-- Spotlight Events Section -->
+            <!-- SPOTLIGHT EVENTS - Premium ticketed events -->
             <div id="spotlightEventsSection" style="margin-bottom: 3rem; display: none;">
-                <div style="margin-bottom: 1.5rem;">
-                    <h2 style="font-size: 0.75rem; font-weight: 500; color: rgba(255,255,255,0.4); letter-spacing: 0.15em; text-transform: uppercase; margin: 0;">Upcoming Events</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin: 0;">
+                        <span style="color: var(--lightning-yellow);">⚡</span> Spotlight Events
+                    </h2>
+                    <a href="/calendar" style="color: var(--lightning-yellow); font-size: 0.8rem; text-decoration: none; font-weight: 500;">View All →</a>
                 </div>
-                <div id="homepageSpotlightEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+                <div id="homepageSpotlightEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
                     <!-- Spotlight events load here -->
+                </div>
+            </div>
+
+            <!-- COMMUNITY EVENTS - Around Sarasota -->
+            <div id="communityEventsSection" style="margin-bottom: 3rem; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1rem; font-weight: 500; color: rgba(255,255,255,0.6); letter-spacing: 0.05em; margin: 0;">Around Sarasota</h2>
+                    <a href="/calendar" style="color: rgba(255,255,255,0.4); font-size: 0.75rem; text-decoration: none;">See More →</a>
+                </div>
+                <div id="homepageCommunityEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                    <!-- Community events load here -->
                 </div>
             </div>
 
@@ -6957,100 +6971,128 @@
             }
         }
 
-        // Load Spotlight Events on Homepage
+        // Load Events on Homepage - Separated into Spotlight and Community sections
         async function loadHomepageSpotlightEvents() {
             try {
                 const data = await apiCall('/api/v1/lightning/public-events');
-                const container = document.getElementById('homepageSpotlightEvents');
-                const section = document.getElementById('spotlightEventsSection');
 
                 if (!data.events || data.events.length === 0) {
-                    section.style.display = 'none';
+                    document.getElementById('spotlightEventsSection').style.display = 'none';
+                    document.getElementById('communityEventsSection').style.display = 'none';
                     return;
                 }
 
-                section.style.display = 'block';
+                // Separate spotlight/lightning events from community events
+                const spotlightEvents = data.events.filter(e => e.eventType !== 'community');
+                const communityEvents = data.events.filter(e => e.eventType === 'community');
 
-                // Sort: Lightning Events first (priority), then by date
-                const sortedEvents = data.events.sort((a, b) => {
+                // Sort spotlight: Lightning first, then by priority/date
+                spotlightEvents.sort((a, b) => {
                     if (a.isLightningEvent && !b.isLightningEvent) return -1;
                     if (!a.isLightningEvent && b.isLightningEvent) return 1;
                     if ((a.priority || 0) !== (b.priority || 0)) return (b.priority || 0) - (a.priority || 0);
                     return new Date(a.date) - new Date(b.date);
                 });
 
-                container.innerHTML = sortedEvents.map(event => {
-                    const eventDate = new Date(event.date);
-                    const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
-                    const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                    const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
+                // Sort community by date
+                communityEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-                    // Badge based on event type
-                    const isLightning = event.isLightningEvent;
-                    const isCommunity = event.eventType === 'community';
-                    const isPending = event.status === 'pending';
+                // Render SPOTLIGHT EVENTS
+                const spotlightSection = document.getElementById('spotlightEventsSection');
+                const spotlightContainer = document.getElementById('homepageSpotlightEvents');
 
-                    // COMMUNITY EVENT - Same clean style as spotlight, no ticket button
-                    if (isCommunity) {
-                        return `
-                            <div class="venue-card community" style="position: relative; display: flex; flex-direction: column; background: #fff; border-radius: 1rem; border: 1px solid #e5e5e5;">
-                                <p style="color: #999; font-size: 0.75rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.6rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
-                                <h3 style="color: #1a1a1a; margin: 0 0 0.4rem 0; font-weight: 600; font-size: 1.05rem; line-height: 1.25;">${event.name}</h3>
-                                ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #1a1a1a; font-size: 0.8rem; font-weight: 400; margin: 0 0 0.4rem 0; display: block; text-decoration: underline;">${event.location}</a>` : ''}
-                                <p style="color: #666; font-size: 0.8rem; font-weight: 400; margin: 0; flex: 1; line-height: 1.5;">${event.description || ''}</p>
-                                ${event.isRecurring ? '<p style="color: #999; font-size: 0.7rem; margin-top: 0.75rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> Recurring weekly</p>' : ''}
-                            </div>
-                        `;
-                    }
+                if (spotlightEvents.length > 0) {
+                    spotlightSection.style.display = 'block';
+                    spotlightContainer.innerHTML = spotlightEvents.map(event => renderSpotlightCard(event)).join('');
+                } else {
+                    spotlightSection.style.display = 'none';
+                }
 
-                    // LIGHTNING EVENT - Quiet luxury design
-                    if (isLightning) {
-                        return `
-                            <div class="venue-card lightning-featured" style="grid-column: 1 / -1; position: relative; display: flex; flex-direction: column; background: #fff; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.12); border: 2px solid #1a1a1a;">
-                                <p style="color: #999; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
-                                <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                    ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227; flex-shrink: 0;">` : ''}
-                                    <h3 style="color: #1a1a1a; margin: 0; font-size: 1.35rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em;">${event.name}</h3>
-                                </div>
-                                ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #1a1a1a; font-size: 0.85rem; font-weight: 400; margin: 0 0 0.5rem 0; display: block; text-decoration: underline;">${event.location}</a>` : ''}
-                                <p style="color: #996b13; font-size: 0.85rem; font-weight: 500; margin: 0; line-height: 1.6;">${event.description || ''}</p>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                                    <div>
-                                        <div style="font-size: 1.1rem; font-weight: 500; color: #1a1a1a;">${price}</div>
-                                        ${event.status === 'pending' ? '<div style="font-size: 0.65rem; color: #e09800; font-weight: 500; margin-top: 0.15rem; letter-spacing: 0.05em;">PENDING</div>' : ''}
-                                    </div>
-                                    <button class="btn card-btn" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'  style="background: #1a1a1a; border: none; color: #fff; font-weight: 500; padding: 0.55rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; transition: all 0.2s; letter-spacing: 0.02em;">
-                                        Get Tickets
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
+                // Render COMMUNITY EVENTS
+                const communitySection = document.getElementById('communityEventsSection');
+                const communityContainer = document.getElementById('homepageCommunityEvents');
 
-                    // SPOTLIGHT EVENT - Quiet luxury design
-                    return `
-                        <div class="venue-card spotlight" style="position: relative; display: flex; flex-direction: column; background: #fff; border-radius: 1rem; border: 2px solid #1a1a1a;">
-                            <p style="color: #999; font-size: 0.75rem; font-weight: 400; letter-spacing: 0.02em; margin: 0 0 0.6rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
-                            <div style="display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.5rem;">
-                                ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 32px; height: 32px; border-radius: 6px; object-fit: contain; background: #f8f8f8; border: 2px solid #c9a227; flex-shrink: 0;">` : ''}
-                                <h3 style="color: #1a1a1a; margin: 0; font-weight: 600; font-size: 1.05rem; line-height: 1.25;">${event.name}</h3>
-                            </div>
-                            ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #1a1a1a; font-size: 0.8rem; font-weight: 400; margin: 0 0 0.4rem 0; display: block; text-decoration: underline;">${event.location}</a>` : ''}
-                            <p style="color: #996b13; font-size: 0.8rem; font-weight: 500; margin: 0; flex: 1; line-height: 1.5;">${event.description || ''}</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                                <div style="font-size: 1.1rem; font-weight: 500; color: #1a1a1a;">${price}</div>
-                                <button class="btn card-btn" onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})'  style="background: #1a1a1a; border: none; color: #fff; font-weight: 500; padding: 0.55rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; transition: all 0.2s; letter-spacing: 0.02em;">
-                                    Get Tickets
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                if (communityEvents.length > 0) {
+                    communitySection.style.display = 'block';
+                    communityContainer.innerHTML = communityEvents.slice(0, 6).map(event => renderCommunityCard(event)).join('');
+                } else {
+                    communitySection.style.display = 'none';
+                }
+
             } catch (error) {
-                console.error('Error loading homepage spotlight events:', error);
+                console.error('Error loading homepage events:', error);
                 document.getElementById('spotlightEventsSection').style.display = 'none';
+                document.getElementById('communityEventsSection').style.display = 'none';
             }
+        }
+
+        // Render a SPOTLIGHT event card (ticketed, premium look)
+        function renderSpotlightCard(event) {
+            const eventDate = new Date(event.date);
+            const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
+            const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
+            const isLightning = event.isLightningEvent;
+
+            if (isLightning) {
+                // FEATURED Lightning Event - Full width, bold
+                return `
+                    <div class="venue-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: 1rem; border: 2px solid var(--lightning-yellow); padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div>
+                                <p style="color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
+                                <h3 style="color: #fff; margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2;">${event.name}</h3>
+                            </div>
+                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 2px solid var(--lightning-yellow);">` : ''}
+                        </div>
+                        ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; display: block; margin-bottom: 0.75rem; text-decoration: underline;">${event.location}</a>` : ''}
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0 0 1.25rem 0; line-height: 1.5;">${event.description || ''}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
+                            <button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Get Tickets
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Regular Spotlight Event
+            return `
+                <div class="venue-card" style="background: #fff; border-radius: 1rem; border: 1px solid #e0e0e0; padding: 1.25rem;">
+                    <p style="color: #888; font-size: 0.75rem; font-weight: 500; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.5rem;">
+                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 36px; height: 36px; border-radius: 6px; object-fit: cover; flex-shrink: 0;">` : ''}
+                        <h3 style="color: #1a1a1a; margin: 0; font-weight: 600; font-size: 1.1rem; line-height: 1.25;">${event.name}</h3>
+                    </div>
+                    ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 0.4rem; text-decoration: underline;">${event.location}</a>` : ''}
+                    <p style="color: #888; font-size: 0.8rem; margin: 0; line-height: 1.5;">${event.description || ''}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">${price}</div>
+                        <button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
+                            Get Tickets
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render a COMMUNITY event card (minimal, informational)
+        function renderCommunityCard(event) {
+            const eventDate = new Date(event.date);
+            const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
+            const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+            return `
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; padding: 1rem;">
+                    <p style="color: rgba(255,255,255,0.4); font-size: 0.7rem; font-weight: 500; margin: 0 0 0.4rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
+                    <h4 style="color: rgba(255,255,255,0.9); margin: 0 0 0.3rem 0; font-weight: 600; font-size: 0.95rem;">${event.name}</h4>
+                    ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; text-decoration: none;">${event.location}</a>` : ''}
+                    ${event.isRecurring ? '<p style="color: rgba(255,255,255,0.3); font-size: 0.65rem; margin-top: 0.5rem;">Weekly</p>' : ''}
+                </div>
+            `;
         }
 
         // Event Ticket Purchase
