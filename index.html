@@ -3798,8 +3798,8 @@
             loadVenues();
             loadHomepageSpotlightEvents();
 
-            // Scroll to top on mobile
-            window.scrollTo(0, 0);
+            // Scroll to top on mobile after content loads
+            setTimeout(() => window.scrollTo(0, 0), 100);
         }
 
         // Auto-play music when page loads (will work if browser allows)
