@@ -7374,7 +7374,9 @@
             const eventDate = new Date(event.date);
             const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
             const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const startTime = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const endTime = event.endDate ? new Date(event.endDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null;
+            const timeStr = endTime ? `${startTime} - ${endTime}` : startTime;
             const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
             const ticket = event.tickets?.[0];
             const availableTickets = ticket?.available && ticket.available !== -1 ? (ticket.available - (ticket.sold || 0)) : null;
