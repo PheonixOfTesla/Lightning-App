@@ -7376,6 +7376,8 @@
             const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
             const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
+            const ticket = event.tickets?.[0];
+            const availableTickets = ticket?.available && ticket.available !== -1 ? (ticket.available - (ticket.sold || 0)) : null;
             const isLightning = event.isLightningEvent;
 
             if (isLightning) {
@@ -7392,7 +7394,10 @@
                         ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; display: block; margin-bottom: 0.75rem; text-decoration: underline;">${event.location}</a>` : ''}
                         <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0 0 1.25rem 0; line-height: 1.5;">${event.description || ''}</p>
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
+                            <div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
+                                ${availableTickets !== null ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
+                            </div>
                             <button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Get Tickets
                             </button>
