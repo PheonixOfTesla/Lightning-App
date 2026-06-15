@@ -3,6 +3,8 @@
   "rewrites": [
     { "source": "/calendar", "destination": "/calendar.html" },
     { "source": "/about", "destination": "/about.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
     { "source": "/partners", "destination": "/partners.html" },
     { "source": "/login", "destination": "/login.html" },
     { "source": "/dj/:djId", "destination": "/dj.html" },
