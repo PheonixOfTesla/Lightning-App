@@ -8044,9 +8044,10 @@
                             <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
                                 ${new Date(p.purchasedAt).toLocaleString()}
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(57, 255, 20, 0.1); color: var(--neon-green); border-radius: 4px;">${p.status}</span>
                                 <a href="${p.viewUrl}" target="_blank" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(0, 212, 255, 0.1); color: var(--electric-blue); border-radius: 4px; text-decoration: none;">View Pass</a>
+                                ${p.status !== 'refunded' ? `<button onclick="refundTicket('${p.passId}', '${p.guestName}')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 4px; cursor: pointer;">Refund</button>` : ''}
                             </div>
                         </div>
                     </div>
@@ -8055,6 +8056,29 @@
             } catch (err) {
                 console.error('Error loading ticket sales:', err);
                 list.innerHTML = '<div class="empty-state">Error loading ticket sales. Make sure you\'re logged in as admin.</div>';
+            }
+        }
+
+        async function refundTicket(passId, guestName) {
+            if (!confirm(`Refund ticket for ${guestName}?\n\nThis will process a refund through Stripe and cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const result = await apiCall(`/api/v1/lightning/admin/passes/${passId}/refund`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason: 'Admin refund from dashboard' })
+                });
+
+                if (result.success) {
+                    alert(`Refund processed!\n\nAmount: $${(result.refundAmount || 0).toFixed(2)}`);
+                    loadTicketSales(); // Refresh the list
+                } else {
+                    alert('Refund failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Refund error:', err);
+                alert('Refund failed: ' + (err.message || 'Unknown error'));
             }
         }
 
