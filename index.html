@@ -7402,7 +7402,9 @@
                             </div>
                             ${price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Get Tickets
-                            </button>` : ''}
+                            </button>` : `<button onclick="openNotifyModal('${event.name.replace(/'/g, "\\'")}')" style="background: transparent; border: 2px solid var(--lightning-yellow); color: var(--lightning-yellow); font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Notify Me
+                            </button>`}
                         </div>
                     </div>
                 `;
@@ -7422,7 +7424,9 @@
                         <div style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">${price}</div>
                         ${price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
                             Get Tickets
-                        </button>` : ''}
+                        </button>` : `<button onclick="openNotifyModal('${event.name.replace(/'/g, "\\'")}')" style="background: transparent; border: 2px solid #1a1a1a; color: #1a1a1a; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
+                            Notify Me
+                        </button>`}
                     </div>
                 </div>
             `;
@@ -9596,6 +9600,70 @@
                 if (response.ok) {
                     showToast('You\'re in! Check your inbox Wednesday.', 'success');
                     closeNotifyModal();
+                } else {
+                    showToast(data.error || 'Something went wrong', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to subscribe. Try again.', 'error');
+            }
+        }
+
+        // Notify Me Modal for FREE events
+        let notifyEventName = '';
+
+        function openNotifyModal(eventName) {
+            notifyEventName = eventName;
+            let modal = document.getElementById('notifyMeModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'notifyMeModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 400px; text-align: center;">
+                        <button class="modal-close" onclick="closeModal('notifyMeModal')" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        <div style="margin-bottom: 1.5rem;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" style="margin-bottom: 1rem;">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            <h2 style="color: #fff; margin: 0 0 0.5rem 0; font-size: 1.5rem;">Get Notified</h2>
+                            <p id="notifyEventNameDisplay" style="color: var(--lightning-yellow); margin: 0; font-size: 0.9rem;"></p>
+                        </div>
+                        <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 1.5rem;">We'll email you when tickets become available.</p>
+                        <input type="email" id="notifyMeEmail" class="form-input" placeholder="your@email.com" style="margin-bottom: 1rem; text-align: center;">
+                        <button onclick="submitNotifyMe()" class="btn" style="width: 100%; background: var(--lightning-yellow); color: #1a1a1a; border: none; font-weight: 700; padding: 0.875rem;">
+                            NOTIFY ME
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            document.getElementById('notifyEventNameDisplay').textContent = eventName;
+            document.getElementById('notifyMeEmail').value = '';
+            modal.classList.add('active');
+        }
+
+        async function submitNotifyMe() {
+            const email = document.getElementById('notifyMeEmail').value;
+            if (!email || !email.includes('@')) {
+                showToast('Please enter a valid email', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/newsletter/subscribe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        source: `notify:${notifyEventName}`
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(`We'll notify you about ${notifyEventName}!`, 'success');
+                    closeModal('notifyMeModal');
                 } else {
                     showToast(data.error || 'Something went wrong', 'error');
                 }
