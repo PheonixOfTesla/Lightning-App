@@ -9629,6 +9629,10 @@
                             <p id="notifyEventNameDisplay" style="color: var(--lightning-yellow); margin: 0; font-size: 0.9rem;"></p>
                         </div>
                         <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 1.5rem;">We'll email you when tickets become available.</p>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <input type="text" id="notifyMeFirstName" class="form-input" placeholder="First name" style="flex: 1;">
+                            <input type="text" id="notifyMeLastName" class="form-input" placeholder="Last name" style="flex: 1;">
+                        </div>
                         <input type="email" id="notifyMeEmail" class="form-input" placeholder="your@email.com" style="margin-bottom: 1rem; text-align: center;">
                         <button onclick="submitNotifyMe()" class="btn" style="width: 100%; background: var(--lightning-yellow); color: #1a1a1a; border: none; font-weight: 700; padding: 0.875rem;">
                             NOTIFY ME
@@ -9638,12 +9642,17 @@
                 document.body.appendChild(modal);
             }
             document.getElementById('notifyEventNameDisplay').textContent = eventName;
+            document.getElementById('notifyMeFirstName').value = '';
+            document.getElementById('notifyMeLastName').value = '';
             document.getElementById('notifyMeEmail').value = '';
             modal.classList.add('active');
         }
 
         async function submitNotifyMe() {
-            const email = document.getElementById('notifyMeEmail').value;
+            const firstName = document.getElementById('notifyMeFirstName').value.trim();
+            const lastName = document.getElementById('notifyMeLastName').value.trim();
+            const email = document.getElementById('notifyMeEmail').value.trim();
+
             if (!email || !email.includes('@')) {
                 showToast('Please enter a valid email', 'error');
                 return;
@@ -9655,6 +9664,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email,
+                        firstName,
+                        lastName,
                         source: `notify:${notifyEventName}`
                     })
                 });
