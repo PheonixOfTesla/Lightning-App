@@ -7400,9 +7400,9 @@
                                 <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
                                 ${availableTickets !== null ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
                             </div>
-                            <button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
+                            ${price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Get Tickets
-                            </button>
+                            </button>` : ''}
                         </div>
                     </div>
                 `;
@@ -7420,9 +7420,9 @@
                     <p style="color: #888; font-size: 0.8rem; margin: 0; line-height: 1.5;">${event.description || ''}</p>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f0f0f0;">
                         <div style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">${price}</div>
-                        <button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
+                        ${price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
                             Get Tickets
-                        </button>
+                        </button>` : ''}
                     </div>
                 </div>
             `;
