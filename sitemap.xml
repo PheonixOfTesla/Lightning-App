@@ -46,29 +46,43 @@
 
     <!-- Featured Events -->
     <url>
-        <loc>https://thelightningpass.com/events/sunset-bash</loc>
+        <loc>https://thelightningpass.com/sarasota-july-4th</loc>
         <lastmod>2026-06-17</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.95</priority>
     </url>
 
-    <!-- Location Pages -->
+    <!-- Sarasota Location Pages -->
     <url>
         <loc>https://thelightningpass.com/sarasota-events</loc>
         <lastmod>2026-06-17</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.9</priority>
+        <priority>0.95</priority>
     </url>
     <url>
         <loc>https://thelightningpass.com/sarasota-nightlife</loc>
         <lastmod>2026-06-17</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.9</priority>
+        <priority>0.95</priority>
     </url>
     <url>
-        <loc>https://thelightningpass.com/sarasota-july-4th</loc>
+        <loc>https://thelightningpass.com/sarasota-things-to-do</loc>
         <lastmod>2026-06-17</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.95</priority>
+    </url>
+
+    <!-- Nearby Location Pages -->
+    <url>
+        <loc>https://thelightningpass.com/siesta-key-events</loc>
+        <lastmod>2026-06-17</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://thelightningpass.com/tampa-events</loc>
+        <lastmod>2026-06-17</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.85</priority>
     </url>
 </urlset>
