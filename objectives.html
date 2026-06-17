@@ -267,7 +267,13 @@
 
             list.innerHTML = objectives.map(obj => `
                 <div class="objective-item ${obj.completed ? 'completed' : ''}" data-id="${obj._id}">
-                    <div class="checkbox ${obj.completed ? 'checked' : ''}" onclick="toggleObjective('${obj._id}', ${!obj.completed})"></div>
+                    ${obj.completed ? `
+                        <div class="checkbox checked" onclick="clearObjective('${obj._id}')" style="background: #22c55e; border-color: #22c55e; font-size: 0.75rem; font-weight: bold;">
+                            ${obj.completedBy || '✓'}
+                        </div>
+                    ` : `
+                        <div class="checkbox" onclick="promptInitials('${obj._id}')" style="font-size: 0.55rem; color: rgba(255,255,255,0.4);">code</div>
+                    `}
                     <span class="objective-text">${obj.text}</span>
                     ${isAdmin ? `<button class="delete-btn" onclick="deleteObjective('${obj._id}')">&times;</button>` : ''}
                 </div>
@@ -300,7 +306,14 @@
             }
         }
 
-        async function toggleObjective(id, completed) {
+        function promptInitials(id) {
+            const initials = prompt('Enter your initials (e.g. BJ, JL):');
+            if (initials && initials.trim()) {
+                completeObjective(id, initials.trim().toUpperCase());
+            }
+        }
+
+        async function completeObjective(id, initials) {
             const token = localStorage.getItem('token');
             try {
                 await fetch(`${API_BASE}/api/v1/lightning/objectives/${id}`, {
@@ -309,7 +322,24 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ completed })
+                    body: JSON.stringify({ completed: true, completedBy: initials })
+                });
+                loadObjectives();
+            } catch (e) {
+                console.error('Failed to update:', e);
+            }
+        }
+
+        async function clearObjective(id) {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`${API_BASE}/api/v1/lightning/objectives/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ completed: false })
                 });
                 loadObjectives();
             } catch (e) {

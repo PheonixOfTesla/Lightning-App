@@ -6605,10 +6605,14 @@
                 }
 
                 list.innerHTML = objectives.map(obj => `
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 0.5rem; ${obj.completed ? 'opacity: 0.5;' : ''}">
-                        <div onclick="toggleObjective('${obj._id}', ${!obj.completed})" style="width: 22px; height: 22px; border: 2px solid var(--lightning-yellow); border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; ${obj.completed ? 'background: var(--lightning-yellow);' : ''}">
-                            ${obj.completed ? '<span style="color: #000; font-weight: bold;">✓</span>' : ''}
-                        </div>
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 0.5rem; ${obj.completed ? 'opacity: 0.6;' : ''}">
+                        ${obj.completed ? `
+                            <div onclick="clearObjective('${obj._id}')" style="min-width: 36px; height: 36px; background: var(--neon-green); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; font-size: 0.85rem;">
+                                ${obj.completedBy || '✓'}
+                            </div>
+                        ` : `
+                            <div onclick="promptInitials('${obj._id}')" style="min-width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: rgba(255,255,255,0.4); transition: all 0.2s;" onmouseover="this.style.borderColor='var(--lightning-yellow)';this.style.color='var(--lightning-yellow)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.4)'">code</div>
+                        `}
                         <span style="flex: 1; ${obj.completed ? 'text-decoration: line-through;' : ''}">${obj.text}</span>
                         <button onclick="deleteObjective('${obj._id}')" style="background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; font-size: 1.2rem; padding: 0.25rem;">&times;</button>
                     </div>
@@ -6638,11 +6642,30 @@
             }
         }
 
-        async function toggleObjective(id, completed) {
+        function promptInitials(id) {
+            const initials = prompt('Enter your initials (e.g. BJ, JL):');
+            if (initials && initials.trim()) {
+                completeObjective(id, initials.trim().toUpperCase());
+            }
+        }
+
+        async function completeObjective(id, initials) {
             try {
                 await apiCall(`/api/v1/lightning/objectives/${id}`, {
                     method: 'PUT',
-                    body: JSON.stringify({ completed })
+                    body: JSON.stringify({ completed: true, completedBy: initials })
+                });
+                loadObjectives();
+            } catch (e) {
+                console.error('Failed to update:', e);
+            }
+        }
+
+        async function clearObjective(id) {
+            try {
+                await apiCall(`/api/v1/lightning/objectives/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ completed: false })
                 });
                 loadObjectives();
             } catch (e) {
