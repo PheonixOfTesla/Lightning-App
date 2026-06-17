@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/calendar", "destination": "/calendar.html" },
     { "source": "/about", "destination": "/about.html" },
