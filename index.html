@@ -6641,9 +6641,12 @@
         }
 
         function promptInitials(id) {
-            const initials = prompt('Code:');
-            if (initials && initials.trim()) {
-                completeObjective(id, initials.trim().toUpperCase());
+            const code = prompt('Code:');
+            if (code && code.trim()) {
+                const upper = code.trim().toUpperCase();
+                if (upper === 'BJ' || upper === 'JL') {
+                    completeObjective(id, upper);
+                }
             }
         }
 
