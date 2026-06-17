@@ -14,6 +14,7 @@
     { "source": "/dj-banner/:djId", "destination": "/dj-banner.html" },
     { "source": "/dj-assets/:djId", "destination": "/dj-assets.html" },
     { "source": "/add-venue", "destination": "/add-venue.html" },
+    { "source": "/objectives", "destination": "/objectives.html" },
     { "source": "/venue/connect/return", "destination": "/index.html" },
     { "source": "/venue/connect/refresh", "destination": "/index.html" },
     { "source": "/", "destination": "/index.html" }

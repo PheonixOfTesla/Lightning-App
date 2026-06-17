@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Objectives - Lightning Pass</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #ffdd00;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .objective-list {
+            margin-bottom: 2rem;
+        }
+
+        .objective-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .objective-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .objective-item.completed {
+            opacity: 0.5;
+        }
+
+        .objective-item.completed .objective-text {
+            text-decoration: line-through;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ffdd00;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .checkbox.checked {
+            background: #ffdd00;
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            color: #0a0a0f;
+            font-weight: bold;
+        }
+
+        .objective-text {
+            flex: 1;
+            font-size: 1.1rem;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.25rem;
+            transition: color 0.2s;
+            display: none;
+        }
+
+        .objective-item:hover .delete-btn {
+            display: block;
+        }
+
+        .delete-btn:hover {
+            color: #ff4444;
+        }
+
+        .admin-controls {
+            display: none;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .admin-controls.visible {
+            display: block;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .add-form input {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .add-form input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .add-form input:focus {
+            outline: none;
+            border-color: #ffdd00;
+        }
+
+        .add-form button {
+            padding: 0.875rem 1.5rem;
+            background: #ffdd00;
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0f;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-form button:hover {
+            transform: scale(1.02);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .divider {
+            text-align: center;
+            color: rgba(255,255,255,0.2);
+            margin: 1.5rem 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+            font-size: 0.9rem;
+        }
+
+        .login-prompt {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .login-prompt a {
+            color: #ffdd00;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LIGHTNING PASS</h1>
+            <p>Post-Event Objectives</p>
+        </div>
+
+        <div class="objective-list" id="objectiveList">
+            <div class="empty-state">Loading...</div>
+        </div>
+
+        <div class="admin-controls" id="adminControls">
+            <form class="add-form" onsubmit="addObjective(event)">
+                <input type="text" id="newObjective" placeholder="Add new objective..." required>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+
+        <div class="login-prompt" id="loginPrompt" style="display: none;">
+            <a href="/">Login as admin to edit</a>
+        </div>
+
+        <div class="footer">
+            That's the flywheel. Let's go.
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        let isAdmin = false;
+
+        async function checkAdmin() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('loginPrompt').style.display = 'block';
+                return false;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.user && data.user.role === 'admin') {
+                        document.getElementById('adminControls').classList.add('visible');
+                        isAdmin = true;
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error('Auth check failed:', e);
+            }
+            document.getElementById('loginPrompt').style.display = 'block';
+            return false;
+        }
+
+        async function loadObjectives() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/objectives`);
+                const data = await res.json();
+                renderObjectives(data.objectives || []);
+            } catch (e) {
+                console.error('Failed to load objectives:', e);
+                document.getElementById('objectiveList').innerHTML = '<div class="empty-state">Failed to load</div>';
+            }
+        }
+
+        function renderObjectives(objectives) {
+            const list = document.getElementById('objectiveList');
+
+            if (objectives.length === 0) {
+                list.innerHTML = '<div class="empty-state">No objectives yet</div>';
+                return;
+            }
+
+            list.innerHTML = objectives.map(obj => `
+                <div class="objective-item ${obj.completed ? 'completed' : ''}" data-id="${obj._id}">
+                    <div class="checkbox ${obj.completed ? 'checked' : ''}" onclick="toggleObjective('${obj._id}', ${!obj.completed})"></div>
+                    <span class="objective-text">${obj.text}</span>
+                    ${isAdmin ? `<button class="delete-btn" onclick="deleteObjective('${obj._id}')">&times;</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function addObjective(e) {
+            e.preventDefault();
+            const input = document.getElementById('newObjective');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/objectives`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (res.ok) {
+                    input.value = '';
+                    loadObjectives();
+                }
+            } catch (e) {
+                console.error('Failed to add:', e);
+            }
+        }
+
+        async function toggleObjective(id, completed) {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`${API_BASE}/api/v1/lightning/objectives/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ completed })
+                });
+                loadObjectives();
+            } catch (e) {
+                console.error('Failed to update:', e);
+            }
+        }
+
+        async function deleteObjective(id) {
+            if (!confirm('Delete this objective?')) return;
+
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`${API_BASE}/api/v1/lightning/objectives/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadObjectives();
+            } catch (e) {
+                console.error('Failed to delete:', e);
+            }
+        }
+
+        // Init
+        checkAdmin().then(() => loadObjectives());
+    </script>
+</body>
+</html>
