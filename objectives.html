@@ -269,11 +269,9 @@
             list.innerHTML = objectives.map(obj => `
                 <div class="objective-item ${obj.completed ? 'completed' : ''}" data-id="${obj._id}">
                     ${obj.completed ? `
-                        <div class="checkbox checked" onclick="clearObjective('${obj._id}')" style="background: #22c55e; border-color: #22c55e; font-size: 0.75rem; font-weight: bold;">
-                            ${obj.completedBy || '✓'}
-                        </div>
+                        <div class="checkbox checked" onclick="clearObjective('${obj._id}')" style="background: #22c55e; border-color: #22c55e; font-size: 1rem; font-weight: bold;">✓</div>
                     ` : `
-                        <div class="checkbox" onclick="promptInitials('${obj._id}')" style="font-size: 0.55rem; color: rgba(255,255,255,0.4);">code</div>
+                        <div class="checkbox" onclick="promptInitials('${obj._id}')"></div>
                     `}
                     <span class="objective-text">${obj.text}</span>
                     ${isAdmin ? `<button class="delete-btn" onclick="deleteObjective('${obj._id}')">&times;</button>` : ''}

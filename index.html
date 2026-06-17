@@ -6607,11 +6607,9 @@
                 list.innerHTML = objectives.map(obj => `
                     <div style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 0.5rem; ${obj.completed ? 'opacity: 0.6;' : ''}">
                         ${obj.completed ? `
-                            <div onclick="clearObjective('${obj._id}')" style="min-width: 36px; height: 36px; background: var(--neon-green); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; font-size: 0.85rem;">
-                                ${obj.completedBy || '✓'}
-                            </div>
+                            <div onclick="clearObjective('${obj._id}')" style="min-width: 36px; height: 36px; background: var(--neon-green); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; font-size: 1rem;">✓</div>
                         ` : `
-                            <div onclick="promptInitials('${obj._id}')" style="min-width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: rgba(255,255,255,0.4); transition: all 0.2s;" onmouseover="this.style.borderColor='var(--lightning-yellow)';this.style.color='var(--lightning-yellow)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.4)'">code</div>
+                            <div onclick="promptInitials('${obj._id}')" style="min-width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.3); border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--lightning-yellow)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)'"></div>
                         `}
                         <span style="flex: 1; ${obj.completed ? 'text-decoration: line-through; color: rgba(255,255,255,0.4);' : ''}">${obj.text}</span>
                         <button onclick="deleteObjective('${obj._id}')" style="background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; font-size: 1.2rem; padding: 0.25rem;">&times;</button>
