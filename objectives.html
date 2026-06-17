@@ -214,9 +214,6 @@
             </form>
         </div>
 
-        <div class="login-prompt" id="loginPrompt" style="display: none;">
-            <a href="/">Login as admin to edit</a>
-        </div>
 
         <div class="footer">
             That's the flywheel. Let's go.
@@ -229,10 +226,7 @@
 
         async function checkAdmin() {
             const token = localStorage.getItem('token');
-            if (!token) {
-                document.getElementById('loginPrompt').style.display = 'block';
-                return false;
-            }
+            if (!token) return false;
 
             try {
                 const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
@@ -249,7 +243,6 @@
             } catch (e) {
                 console.error('Auth check failed:', e);
             }
-            document.getElementById('loginPrompt').style.display = 'block';
             return false;
         }
 
