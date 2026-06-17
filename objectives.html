@@ -234,8 +234,49 @@
             font-size: 0.85rem;
         }
 
-        .priority-table tr:hover td {
+        .priority-table tr.priority-row:hover td {
             background: rgba(255,255,255,0.03);
+            cursor: pointer;
+        }
+
+        .detail-btn {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(255,221,0,0.15);
+            border: 1px solid rgba(255,221,0,0.3);
+            border-radius: 4px;
+            color: #ffdd00;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .detail-btn:hover {
+            background: rgba(255,221,0,0.25);
+        }
+
+        .detail-row {
+            display: none;
+        }
+
+        .detail-row.show {
+            display: table-row;
+        }
+
+        .detail-row td {
+            padding: 0 !important;
+            border-bottom: 1px solid rgba(255,221,0,0.1) !important;
+        }
+
+        .detail-content {
+            padding: 1rem 1.25rem;
+            background: rgba(255,221,0,0.05);
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.6;
+        }
+
+        .detail-content strong {
+            color: #ffdd00;
         }
 
         /* Doing Right Section */
@@ -383,38 +424,87 @@
                         <th>#</th>
                         <th>Objective</th>
                         <th>Why</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr class="priority-row" onclick="toggleDetail(this)">
                         <td>1</td>
                         <td>July 4th success at Sarasota Modern</td>
                         <td>Packed venue = proof of concept</td>
+                        <td><span class="detail-btn">Detail</span></td>
                     </tr>
-                    <tr>
+                    <tr class="detail-row">
+                        <td colspan="4">
+                            <div class="detail-content">
+                                <strong>The Play:</strong> A packed July 4th event proves to Sarasota Modern that we deliver. They see 100+ people, zero effort on their part, and they just pour drinks. This is the demo that sells the infrastructure.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="priority-row" onclick="toggleDetail(this)">
                         <td>2</td>
                         <td>Lock in 2-3 social groups using Lightning</td>
                         <td>They bring customers, we get ticketing + data</td>
+                        <td><span class="detail-btn">Detail</span></td>
                     </tr>
-                    <tr>
+                    <tr class="detail-row">
+                        <td colspan="4">
+                            <div class="detail-content">
+                                <strong>The Play:</strong> Social groups (Suncoast Social, Sarasota Cool Girls, etc.) already have the customers. They bring 50-200 people per event. We give them venues + DJs + perks for FREE. In return, all ticketing goes through Lightning Pass. We capture the user data, they get a turnkey event.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="priority-row" onclick="toggleDetail(this)">
                         <td>3</td>
                         <td>Convert Sarasota Modern post-event</td>
                         <td>Proof of concept → infrastructure adoption</td>
+                        <td><span class="detail-btn">Detail</span></td>
                     </tr>
-                    <tr>
+                    <tr class="detail-row">
+                        <td colspan="4">
+                            <div class="detail-content">
+                                <strong>The Play:</strong> After July 4th, we pitch: "You saw what we did. Now use our system for YOUR events. You get a digital asset — your own venue page, ticketing, QR validation, access to our user base. It's free. We just take 20% of ticket sales." This is the infrastructure conversion.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="priority-row" onclick="toggleDetail(this)">
                         <td>4</td>
                         <td>Lock in 2 venues for July</td>
                         <td>More proof of concept runs</td>
+                        <td><span class="detail-btn">Detail</span></td>
                     </tr>
-                    <tr>
+                    <tr class="detail-row">
+                        <td colspan="4">
+                            <div class="detail-content">
+                                <strong>The Play:</strong> Each venue we host at is another proof of concept. Florence, Patricks, Zoto — we run events there, they see the value, then they adopt the infrastructure. More venues = more conversion opportunities = faster growth.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="priority-row" onclick="toggleDetail(this)">
                         <td>5</td>
                         <td>Build DJ roster (3-5 committed)</td>
                         <td>DJs ready = can promise them to venues</td>
+                        <td><span class="detail-btn">Detail</span></td>
                     </tr>
-                    <tr>
+                    <tr class="detail-row">
+                        <td colspan="4">
+                            <div class="detail-content">
+                                <strong>Why DJs are FREE:</strong> We offer DJ services to venues at no cost. Why? Because DJs are a seed for infrastructure adoption — not a revenue stream. The real value is getting venues onto our platform. Once they're using Lightning for ticketing, we get 20% of ALL their future transactions. Charging $500 for a DJ is nothing compared to 20% of their ticket revenue for years. The DJ is the bait, the infrastructure is the hook.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="priority-row" onclick="toggleDetail(this)">
                         <td>6</td>
                         <td>Google Search Console + SEO</td>
                         <td>Discoverable when people search Sarasota</td>
+                        <td><span class="detail-btn">Detail</span></td>
+                    </tr>
+                    <tr class="detail-row">
+                        <td colspan="4">
+                            <div class="detail-content">
+                                <strong>The Play:</strong> When someone searches "Sarasota events" or "Sarasota nightlife," Lightning Pass should show up. This is passive customer acquisition. We've built 15 SEO landing pages — now we need Google Search Console verified to get indexed. Requires DNS access (Josh + GoDaddy).
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -486,6 +576,13 @@
     <script>
         const API_BASE = 'https://lightning-backend-production.up.railway.app';
         let isAdmin = false;
+
+        function toggleDetail(row) {
+            const detailRow = row.nextElementSibling;
+            if (detailRow && detailRow.classList.contains('detail-row')) {
+                detailRow.classList.toggle('show');
+            }
+        }
 
         async function checkAdmin() {
             const token = localStorage.getItem('token');
