@@ -7806,9 +7806,11 @@
             try {
                 const data = await apiCall('/api/v1/analytics/system/overview');
 
-                document.getElementById('adminRevenue').textContent = `$${data.totalRevenue24h || 0}`;
+                document.getElementById('adminRevenue').textContent = `$${data.totalPlatformRevenue || 0}`;
                 document.getElementById('adminPasses').textContent = data.totalPasses || 0;
                 document.getElementById('adminTransactions').textContent = data.todayTransactions || 0;
+                document.getElementById('adminTotalDJs').textContent = data.totalDJs || 0;
+                document.getElementById('adminDJRequests').textContent = data.totalDJRequests || 0;
 
                 const venuesData = await apiCall('/api/v1/lightning/venues?includeAll=true');
                 const allVenues = venuesData.venues || [];
@@ -7850,19 +7852,15 @@
                     const usersData = await usersRes.json();
                     adminUsersCache = usersData.users || [];
                     document.getElementById('adminTotalUsers').textContent = adminUsersCache.length;
-                    const djCount = adminUsersCache.filter(u => u.role === 'dj').length;
-                    document.getElementById('adminTotalDJs').textContent = djCount;
                 }
 
-                // Load DJ requests count
+                // Load DJs cache for admin tab
                 const djsRes = await fetch(`${API_BASE}/api/v1/lightning/admin/djs/stripe`, {
                     headers: { 'x-admin-key': 'lightning-admin-2024' }
                 });
                 if (djsRes.ok) {
                     const djsData = await djsRes.json();
                     adminDJsCache = djsData.djs || [];
-                    const totalRequests = adminDJsCache.reduce((sum, dj) => sum + (dj.totalRequests || 0), 0);
-                    document.getElementById('adminDJRequests').textContent = totalRequests;
                 }
             } catch (err) {
                 console.error('Error loading extra stats:', err);
