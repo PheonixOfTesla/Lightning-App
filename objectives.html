@@ -264,6 +264,89 @@
             font-weight: bold;
         }
 
+        /* End of Month Targets */
+        .targets-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255,221,0,0.05);
+            border: 1px solid rgba(255,221,0,0.2);
+            border-radius: 12px;
+        }
+
+        .targets-section h2 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #ffdd00;
+            margin-bottom: 1.25rem;
+        }
+
+        .target-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .target-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .target-card {
+            text-align: center;
+            padding: 1.25rem 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+        }
+
+        .target-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffdd00;
+            line-height: 1;
+        }
+
+        .target-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.9);
+            margin-top: 0.5rem;
+        }
+
+        .target-note {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 0.35rem;
+        }
+
+        .unlock-section {
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .unlock-section h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 0.75rem;
+        }
+
+        .unlock-section ul {
+            list-style: none;
+        }
+
+        .unlock-section li {
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .unlock-section li strong {
+            color: #ffdd00;
+        }
+
         .footer {
             text-align: center;
             margin-top: 3rem;
@@ -335,6 +418,38 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- End of Month Targets -->
+        <div class="targets-section">
+            <h2>End of Month Targets (July 31)</h2>
+            <div class="target-grid">
+                <div class="target-card">
+                    <div class="target-number">200+</div>
+                    <div class="target-label">Users in Ecosystem</div>
+                    <div class="target-note">Name, phone, email = lifetime marketing channel</div>
+                </div>
+                <div class="target-card">
+                    <div class="target-number">$3K+</div>
+                    <div class="target-label">Monthly GMV</div>
+                    <div class="target-note">Revenue circulating through platform</div>
+                </div>
+                <div class="target-card">
+                    <div class="target-number">1-2</div>
+                    <div class="target-label">Venues on Infrastructure</div>
+                    <div class="target-note">Using Lightning for their own events</div>
+                </div>
+            </div>
+            <div class="unlock-section">
+                <h3>What This Unlocks</h3>
+                <ul>
+                    <li><strong>Model validated</strong> — Proof of concept → infrastructure conversion works</li>
+                    <li><strong>Repeatable playbook</strong> — Ready to expand to Tampa/St. Pete</li>
+                    <li><strong>Investor metrics</strong> — Real numbers for seed conversations</li>
+                    <li><strong>Network effects begin</strong> — Venue A's customers see Venue B's events</li>
+                    <li><strong>Valuation jump</strong> — $200K → $500K-1M range</li>
+                </ul>
+            </div>
         </div>
 
         <!-- What We're Doing Right -->
