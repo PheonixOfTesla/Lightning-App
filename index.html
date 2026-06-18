@@ -8322,21 +8322,86 @@
 
             try {
                 const eventSlug = document.getElementById('ticketEventFilter').value;
-                const params = eventSlug ? `?eventSlug=${eventSlug}` : '';
 
-                // Load stats
-                const statsRes = await apiCall(`/api/v1/embed/purchases/stats${params}`);
+                // Use event-passes endpoint when eventSlug is selected (shows ALL passes including comps)
+                if (eventSlug) {
+                    const data = await apiCall(`/api/v1/embed/event-passes?eventSlug=${eventSlug}`);
+                    const { stats, passes, event } = data;
+
+                    // Update stats
+                    document.getElementById('ticketSalesTotal').textContent = stats.totalTickets || 0;
+                    document.getElementById('ticketSalesRevenue').textContent = `$${(stats.totalRevenue || 0).toFixed(2)}`;
+                    document.getElementById('ticketSalesToday').textContent = stats.todayCount || 0;
+                    document.getElementById('ticketSalesTodayRevenue').textContent = `$${(stats.todayRevenue || 0).toFixed(2)}`;
+
+                    if (passes.length === 0) {
+                        list.innerHTML = '<div class="empty-state">No tickets yet</div>';
+                        return;
+                    }
+
+                    // Show event header with capacity
+                    let html = `
+                        <div style="background: linear-gradient(135deg, rgba(255,221,0,0.1), rgba(138,43,226,0.1)); border: 1px solid var(--lightning-yellow); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                <div>
+                                    <div style="font-weight: 700; color: var(--lightning-yellow);">${event.name}</div>
+                                    <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${new Date(event.date).toLocaleDateString()}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: white;">${event.sold}/${event.capacity}</div>
+                                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">sold</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap;">
+                                <span style="font-size: 0.75rem; color: var(--neon-green);">✓ Paid: ${stats.paidCount}</span>
+                                <span style="font-size: 0.75rem; color: var(--electric-purple);">★ Comp: ${stats.compCount}</span>
+                                ${stats.refundedCount > 0 ? `<span style="font-size: 0.75rem; color: #ff4d4d;">✗ Refunded: ${stats.refundedCount}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+
+                    html += passes.map(p => `
+                        <div style="background: var(--bg-dark); border: 1px solid ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--border-dark)'}; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
+                                <div>
+                                    <div style="font-weight: 600; color: white;">${p.guestName}${p.quantity > 1 ? ` <span style="color: var(--lightning-yellow);">(×${p.quantity})</span>` : ''}</div>
+                                    <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${p.email}</div>
+                                    ${p.phone ? `<div style="font-size: 0.875rem; color: rgba(255,255,255,0.5);">${p.phone}</div>` : ''}
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 700; color: ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--neon-green)'};">${p.type === 'COMP' ? 'COMP' : '$' + (p.amount || 0).toFixed(2)}</div>
+                                    <div style="font-size: 0.75rem; color: var(--electric-purple);">${p.ticketName}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-dark);">
+                                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+                                    ${new Date(p.purchasedAt).toLocaleString()}
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: ${p.status === 'refunded' ? 'rgba(255,77,77,0.1)' : 'rgba(57,255,20,0.1)'}; color: ${p.status === 'refunded' ? '#ff4d4d' : 'var(--neon-green)'}; border-radius: 4px;">${p.status}</span>
+                                    <a href="${p.viewUrl}" target="_blank" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(0, 212, 255, 0.1); color: var(--electric-blue); border-radius: 4px; text-decoration: none;">View Pass</a>
+                                    ${p.status !== 'refunded' && p.type !== 'COMP' ? `<button onclick="refundTicket('${p.passId}', '${p.guestName}')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 4px; cursor: pointer;">Refund</button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    list.innerHTML = html;
+                    return;
+                }
+
+                // Fallback when no event selected
+                const statsRes = await apiCall(`/api/v1/embed/purchases/stats`);
                 document.getElementById('ticketSalesTotal').textContent = statsRes.totalPurchases || 0;
                 document.getElementById('ticketSalesRevenue').textContent = `$${(statsRes.totalRevenue || 0).toFixed(2)}`;
                 document.getElementById('ticketSalesToday').textContent = statsRes.todayPurchases || 0;
                 document.getElementById('ticketSalesTodayRevenue').textContent = `$${(statsRes.todayRevenue || 0).toFixed(2)}`;
 
-                // Load purchases
-                const data = await apiCall(`/api/v1/embed/purchases${params}`);
+                const data = await apiCall(`/api/v1/embed/purchases`);
                 const purchases = data.purchases || [];
 
                 if (purchases.length === 0) {
-                    list.innerHTML = '<div class="empty-state">No ticket purchases yet</div>';
+                    list.innerHTML = '<div class="empty-state">No ticket purchases yet. Select an event above.</div>';
                     return;
                 }
 
