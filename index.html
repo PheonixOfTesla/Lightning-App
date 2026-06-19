@@ -7753,11 +7753,6 @@
         let selectedEvent = null;
 
         function openEventTicketModal(event) {
-            // Redirect sunset-bash to Suncoast Social
-            if (event.slug === 'sunset-bash') {
-                window.open('https://suncoast-social.com/events/315119129', '_blank');
-                return;
-            }
             selectedEvent = event;
 
             let modal = document.getElementById('eventTicketModal');
