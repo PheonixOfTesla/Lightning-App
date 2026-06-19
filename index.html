@@ -2985,14 +2985,15 @@
                                 <button type="button" class="btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="addTicketTier()">+ Add Tier</button>
                             </label>
                             <div id="ticketTiersContainer">
-                                <div class="ticket-tier" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
+                                <div class="ticket-tier" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
                                     <input type="text" class="form-input ticket-name" placeholder="General Admission" style="font-size: 0.875rem;">
                                     <input type="number" class="form-input ticket-price" placeholder="$0" min="0" step="0.01" style="font-size: 0.875rem;">
                                     <input type="number" class="form-input ticket-qty" placeholder="∞" min="-1" style="font-size: 0.875rem;" title="-1 for unlimited">
+                                    <input type="number" class="form-input ticket-guests" placeholder="1" min="1" max="20" style="font-size: 0.875rem;" title="Guests per ticket (e.g., 6 for Cabana)">
                                     <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: var(--danger-red); cursor: pointer; font-size: 1.25rem;">&times;</button>
                                 </div>
                             </div>
-                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem;">Leave quantity blank or -1 for unlimited</p>
+                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem;">Qty: -1 for unlimited | Guests: tickets per purchase (e.g., 6 for Cabana VIP)</p>
                         </div>
                         <button type="submit" class="btn" style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; border: none; font-weight: 700;">
                             ⚡ Create Spotlight Event
@@ -3333,8 +3334,8 @@
                         <input type="tel" class="form-input" id="guestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555" required>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Email <span style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">(optional)</span></label>
-                        <input type="email" class="form-input" id="guestEmail" name="email" autocomplete="email" placeholder="your@email.com">
+                        <label class="form-label">Email <span style="color: var(--lightning-yellow);">*</span></label>
+                        <input type="email" class="form-input" id="guestEmail" name="email" autocomplete="email" placeholder="your@email.com" required>
                     </div>
                 </div>
 
@@ -7770,6 +7771,15 @@
                         <form onsubmit="processEventTicketPurchase(event)" id="eventTicketForm">
                             <div id="eventTicketTiers"></div>
 
+                            <div id="eventTicketQuantity" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.15); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; display: flex; align-items: center; justify-content: space-between;">
+                                <span style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">How many tickets?</span>
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <button type="button" onclick="adjustEventQuantity(-1)" style="width: 36px; height: 36px; border: 2px solid var(--lightning-yellow); background: transparent; color: var(--lightning-yellow); border-radius: 50%; font-size: 20px; font-weight: bold; cursor: pointer;">−</button>
+                                    <span id="eventQuantityValue" style="font-size: 1.25rem; font-weight: bold; color: white; min-width: 30px; text-align: center;">1</span>
+                                    <button type="button" onclick="adjustEventQuantity(1)" style="width: 36px; height: 36px; border: 2px solid var(--lightning-yellow); background: transparent; color: var(--lightning-yellow); border-radius: 50%; font-size: 20px; font-weight: bold; cursor: pointer;">+</button>
+                                </div>
+                            </div>
+
                             <div id="eventGuestFields" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.15); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0;">
                                 <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 1rem;">Your tickets will be sent via text message</p>
                                 <div class="form-group" style="margin-bottom: 0.75rem;">
@@ -7780,8 +7790,8 @@
                                     <input type="tel" class="form-input" id="eventGuestPhone" name="phone" autocomplete="tel" placeholder="+1 (555) 555-5555" required>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 0.25rem; display: block;">Email <span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">(optional)</span></label>
-                                    <input type="email" class="form-input" id="eventGuestEmail" name="email" autocomplete="email" placeholder="your@email.com">
+                                    <label style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 0.25rem; display: block;">Email <span style="color: var(--lightning-yellow);">*</span></label>
+                                    <input type="email" class="form-input" id="eventGuestEmail" name="email" autocomplete="email" placeholder="your@email.com" required>
                                 </div>
                                 <div class="form-group" style="margin-top: 1rem;">
                                     <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.75rem; color: rgba(255,255,255,0.6); line-height: 1.4;">
@@ -7839,7 +7849,7 @@
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <label style="display: flex; justify-content: space-between; align-items: center; ${isDisabled ? 'cursor: not-allowed; opacity: 0.5;' : 'cursor: pointer;'} padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; ${isDisabled ? 'position: relative;' : ''}">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <input type="radio" name="ticketTier" value="${i}" ${i === 0 && !isDisabled ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} onchange="updateEventTicketTotal()" style="accent-color: var(--lightning-yellow);">
+                            <input type="radio" name="ticketTier" value="${i}" ${i === 0 && !isDisabled ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} onchange="eventTicketQuantity = 1; updateEventTicketTotal()" style="accent-color: var(--lightning-yellow);">
                             <div>
                                 <div style="font-weight: 600; color: white; ${isDisabled ? 'text-decoration: line-through;' : ''}">${ticket.name}</div>
                                 ${ticket.description ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); ${isDisabled ? 'text-decoration: line-through;' : ''}">${ticket.description}</div>` : ''}
@@ -7859,13 +7869,75 @@
             modal.classList.add('active');
         }
 
+        let eventTicketQuantity = 1;
+
+        function getEventQuantity() {
+            return eventTicketQuantity;
+        }
+
+        function adjustEventQuantity(delta) {
+            const selectedTier = document.querySelector('input[name="ticketTier"]:checked');
+            if (!selectedTier) return;
+
+            const ticket = selectedEvent.tickets[parseInt(selectedTier.value)];
+            const ticketName = (ticket.name || '').toLowerCase();
+
+            // Cabana/VIP packages have fixed quantity (parsed from name or guestCount)
+            const guestCount = ticket.guestCount || parseGuestCount(ticket.name);
+            if (guestCount > 1) return; // Fixed quantity packages can't be adjusted
+
+            const newQty = eventTicketQuantity + delta;
+            if (newQty < 1 || newQty > 10) return;
+
+            eventTicketQuantity = newQty;
+            document.getElementById('eventQuantityValue').textContent = eventTicketQuantity;
+            updateEventTicketTotal();
+        }
+
+        function parseGuestCount(name) {
+            // Parse "(6 guest)" or "(6 guests)" from ticket name
+            const match = (name || '').match(/\((\d+)\s*guest/i);
+            return match ? parseInt(match[1]) : 1;
+        }
+
         function updateEventTicketTotal() {
             if (!selectedEvent) return;
             const selectedTier = document.querySelector('input[name="ticketTier"]:checked');
             if (!selectedTier) return;
 
             const ticket = selectedEvent.tickets[parseInt(selectedTier.value)];
-            const total = ticket.price / 100;
+            const ticketName = (ticket.name || '').toLowerCase();
+
+            // Check for Cabana/VIP packages with fixed guest counts
+            const guestCount = ticket.guestCount || parseGuestCount(ticket.name);
+            const quantitySection = document.getElementById('eventTicketQuantity');
+
+            if (guestCount > 1) {
+                // Fixed quantity package (e.g., Cabana VIP 6 guest)
+                eventTicketQuantity = guestCount;
+                if (quantitySection) {
+                    quantitySection.innerHTML = `
+                        <span style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">Package includes</span>
+                        <span style="font-size: 1.25rem; font-weight: bold; color: var(--lightning-yellow);">${guestCount} tickets</span>
+                    `;
+                }
+            } else {
+                // Regular ticket with quantity selector
+                if (quantitySection) {
+                    quantitySection.innerHTML = `
+                        <span style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">How many tickets?</span>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <button type="button" onclick="adjustEventQuantity(-1)" style="width: 36px; height: 36px; border: 2px solid var(--lightning-yellow); background: transparent; color: var(--lightning-yellow); border-radius: 50%; font-size: 20px; font-weight: bold; cursor: pointer;">−</button>
+                            <span id="eventQuantityValue" style="font-size: 1.25rem; font-weight: bold; color: white; min-width: 30px; text-align: center;">${eventTicketQuantity}</span>
+                            <button type="button" onclick="adjustEventQuantity(1)" style="width: 36px; height: 36px; border: 2px solid var(--lightning-yellow); background: transparent; color: var(--lightning-yellow); border-radius: 50%; font-size: 20px; font-weight: bold; cursor: pointer;">+</button>
+                        </div>
+                    `;
+                }
+            }
+
+            const unitPrice = ticket.price / 100;
+            const total = unitPrice * eventTicketQuantity;
+            const ticketLabel = eventTicketQuantity > 1 ? `${eventTicketQuantity} tickets` : '1 ticket';
             document.getElementById('eventTicketTotal').textContent = total === 0 ? 'FREE' : '$' + total.toFixed(2);
 
             // Show/hide payment section based on price
@@ -7875,7 +7947,7 @@
             if (total === 0) {
                 paymentSection.style.display = 'none';
                 purchaseBtn.style.display = 'block';
-                purchaseBtn.textContent = '🎟️ GET FREE TICKET';
+                purchaseBtn.textContent = eventTicketQuantity > 1 ? `🎟️ GET ${eventTicketQuantity} FREE TICKETS` : '🎟️ GET FREE TICKET';
             } else {
                 paymentSection.style.display = 'block';
                 purchaseBtn.style.display = 'block';
@@ -7889,7 +7961,7 @@
                 }
 
                 // Initialize Apple Pay / Google Pay for events
-                initEventPaymentRequest(ticket.price, ticket.name);
+                initEventPaymentRequest(ticket.price * eventTicketQuantity, ticket.name);
             }
         }
 
@@ -8031,6 +8103,8 @@
                 const firstName = nameParts[0] || name;
                 const lastName = nameParts.slice(1).join(' ') || firstName;
 
+                const ticketCount = getEventQuantity();
+
                 if (ticket.price === 0) {
                     // Free ticket - just register
                     const response = await apiCall('/api/v1/embed/confirm', {
@@ -8038,6 +8112,7 @@
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
+                            ticketCount: ticketCount,
                             guest: {
                                 firstName: firstName,
                                 lastName: lastName,
@@ -8048,7 +8123,8 @@
                         })
                     });
 
-                    showToast('🎟️ Ticket confirmed! Check your phone for SMS.', 'success');
+                    const ticketLabel = ticketCount > 1 ? `${ticketCount} tickets` : 'Ticket';
+                    showToast(`🎟️ ${ticketLabel} confirmed! Check your phone for SMS.`, 'success');
                     closeModal('eventTicketModal');
                 } else {
                     // Paid ticket - create payment intent
@@ -8057,6 +8133,7 @@
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
+                            ticketCount: ticketCount,
                             guest: {
                                 firstName: firstName,
                                 lastName: lastName,
@@ -8082,6 +8159,7 @@
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
                             ticketType: ticket.type,
+                            ticketCount: ticketCount,
                             guest: {
                                 firstName: firstName,
                                 lastName: lastName,
@@ -8092,7 +8170,8 @@
                         })
                     });
 
-                    showToast('🎟️ Ticket purchased! Check your phone for SMS.', 'success');
+                    const purchaseLabel = ticketCount > 1 ? `${ticketCount} tickets` : 'Ticket';
+                    showToast(`🎟️ ${purchaseLabel} purchased! Check your phone for SMS.`, 'success');
                     closeModal('eventTicketModal');
                 }
             } catch (error) {
