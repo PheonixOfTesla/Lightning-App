@@ -15,6 +15,7 @@
     { "source": "/dj-assets/:djId", "destination": "/dj-assets.html" },
     { "source": "/add-venue", "destination": "/add-venue.html" },
     { "source": "/objectives", "destination": "/objectives.html" },
+    { "source": "/craig-proposal", "destination": "/craig-proposal.html" },
     { "source": "/sarasota-events", "destination": "/sarasota-events.html" },
     { "source": "/sarasota-nightlife", "destination": "/sarasota-nightlife.html" },
     { "source": "/sarasota-july-4th", "destination": "/sarasota-july-4th.html" },
