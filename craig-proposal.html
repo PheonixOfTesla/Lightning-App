@@ -2,68 +2,91 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lightning Pass Partnership Proposal</title>
 <style>
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     max-width: 800px;
     margin: 0 auto;
-    padding: 50px;
-    color: #1a1a1a;
+    padding: 50px 30px;
+    background: #0d1b2a;
+    color: #ffffff;
     line-height: 1.7;
-    background: #fff;
+}
+
+nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #ffdd00;
+    font-weight: 500;
+    padding: 10px 20px;
+    border: 2px solid #ffdd00;
+    border-radius: 25px;
+    transition: all 0.2s;
+}
+
+nav a:hover {
+    background: #ffdd00;
+    color: #0d1b2a;
 }
 
 .header {
     text-align: center;
-    padding-bottom: 30px;
-    border-bottom: 3px solid #ffdd00;
-    margin-bottom: 40px;
+    padding: 40px 0;
+    border-bottom: 1px solid rgba(255, 221, 0, 0.3);
+    margin: 30px 0 40px 0;
 }
 
 .header h1 {
     margin: 0;
     font-size: 28px;
     font-weight: 700;
+    color: #ffffff;
 }
 
 .header .subtitle {
-    color: #666;
-    margin-top: 8px;
+    color: #888;
+    margin-top: 10px;
     font-size: 16px;
 }
 
 h1 {
     font-size: 22px;
-    color: #1a1a1a;
-    margin-top: 45px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #ffdd00;
+    color: #ffdd00;
+    margin-top: 50px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(255, 221, 0, 0.3);
 }
 
 h2 {
     font-size: 18px;
-    color: #1a1a1a;
-    margin-top: 30px;
+    color: #ffffff;
+    margin-top: 35px;
 }
 
 h3 {
     font-size: 16px;
-    color: #333;
+    color: #cccccc;
     margin-top: 25px;
 }
 
 p {
+    color: #cccccc;
     margin-bottom: 15px;
 }
 
 strong {
-    color: #1a1a1a;
+    color: #ffffff;
 }
 
 .highlight {
     background: #ffdd00;
-    padding: 2px 6px;
+    color: #0d1b2a;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-weight: 600;
 }
 
@@ -71,88 +94,101 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
+    background: #1b2838;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 th {
-    background: #1a1a1a;
+    background: #1b2838;
     color: #ffdd00;
-    padding: 12px 15px;
+    padding: 14px 16px;
     text-align: left;
     font-weight: 600;
+    border-bottom: 1px solid rgba(255, 221, 0, 0.2);
 }
 
 td {
-    border: 1px solid #e0e0e0;
-    padding: 12px 15px;
+    padding: 12px 16px;
+    color: #cccccc;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-tr:nth-child(even) {
-    background: #f9f9f9;
+tr:last-child td {
+    border-bottom: none;
 }
 
 .value {
-    color: #b8960a;
+    color: #ffdd00;
     font-weight: 600;
 }
 
 hr {
     border: none;
-    border-top: 1px solid #e0e0e0;
-    margin: 40px 0;
+    border-top: 1px solid rgba(255, 221, 0, 0.2);
+    margin: 45px 0;
 }
 
 ul, ol {
+    color: #cccccc;
     margin: 15px 0;
     padding-left: 25px;
 }
 
 li {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+li strong {
+    color: #ffdd00;
 }
 
 .box {
-    background: #fffde7;
-    border: 2px solid #ffdd00;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 25px 0;
-    text-align: center;
-}
-
-.box-dark {
-    background: #1a1a1a;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
+    background: rgba(255, 221, 0, 0.1);
+    border: 1px solid rgba(255, 221, 0, 0.3);
+    border-radius: 12px;
     padding: 25px;
     margin: 25px 0;
     text-align: center;
 }
 
+.box-dark {
+    background: #1b2838;
+    border: 1px solid rgba(255, 221, 0, 0.2);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 25px 0;
+    text-align: center;
+}
+
 .box-dark .big {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
     color: #ffdd00;
 }
 
 .section-note {
-    background: #f5f5f5;
+    background: rgba(255, 255, 255, 0.05);
     border-left: 4px solid #ffdd00;
     padding: 15px 20px;
-    margin: 20px 0;
-    font-style: italic;
+    margin: 25px 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.section-note strong {
+    color: #ffdd00;
 }
 
 .footer {
     text-align: center;
-    margin-top: 50px;
-    padding-top: 25px;
-    border-top: 3px solid #ffdd00;
-    color: #666;
+    margin-top: 60px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 221, 0, 0.3);
+    color: #888;
 }
 
 .footer strong {
-    color: #1a1a1a;
+    color: #ffffff;
 }
 
 .two-col {
@@ -166,22 +202,39 @@ li {
 }
 
 .phase {
-    background: #f9f9f9;
-    border-radius: 8px;
-    padding: 20px;
+    background: #1b2838;
+    border-radius: 12px;
+    padding: 20px 25px;
     margin: 15px 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .phase h3 {
     margin-top: 0;
-    color: #1a1a1a;
+    color: #ffdd00;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 30px 20px;
+    }
+    .two-col {
+        flex-direction: column;
+        gap: 15px;
+    }
+    table {
+        font-size: 14px;
+    }
+    th, td {
+        padding: 10px 12px;
+    }
 }
 </style>
 </head>
 <body>
 
-<nav style="margin-bottom: 30px;">
-<a href="/" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #1a1a1a; font-weight: 500; padding: 10px 20px; border: 2px solid #ffdd00; border-radius: 25px; transition: all 0.2s;">
+<nav>
+<a href="/">
 <span style="font-size: 18px;">⚡</span> Back to Lightning Pass
 </a>
 </nav>
@@ -251,7 +304,7 @@ You get it for <span class="highlight">FREE</span>.
 
 <div class="two-col">
 <div>
-<strong>You bring:</strong>
+<strong style="color: #ffdd00;">You bring:</strong>
 <ul>
 <li>68K Facebook group members</li>
 <li>15K existing phone/email contacts</li>
@@ -259,7 +312,7 @@ You get it for <span class="highlight">FREE</span>.
 </ul>
 </div>
 <div>
-<strong>Lightning brings:</strong>
+<strong style="color: #ffdd00;">Lightning brings:</strong>
 <ul>
 <li>8 partner venues in Sarasota</li>
 <li>DJ network (free for events)</li>
@@ -278,7 +331,7 @@ You get it for <span class="highlight">FREE</span>.
 
 <div class="box-dark">
 <div class="big">80 / 20 Split</div>
-<p style="margin:15px 0 0 0;">You keep <strong>80%</strong> · Lightning keeps <strong>20%</strong></p>
+<p style="margin:15px 0 0 0; color: #cccccc;">You keep <strong>80%</strong> · Lightning keeps <strong>20%</strong></p>
 </div>
 
 <table>
@@ -289,7 +342,7 @@ You get it for <span class="highlight">FREE</span>.
 
 <p><strong>Example:</strong> Your group sells 500 tickets at $20 = $10,000</p>
 <ul>
-<li>You keep: <strong class="value">$8,000</strong></li>
+<li>You keep: <span class="value">$8,000</span></li>
 <li>Lightning keeps: $2,000</li>
 </ul>
 <p><strong>No minimums. No maximums. No hidden fees.</strong></p>
@@ -437,7 +490,7 @@ You get it for <span class="highlight">FREE</span>.
 
 <div class="two-col">
 <div>
-<strong>What you have:</strong>
+<strong style="color: #ffdd00;">What you have:</strong>
 <ul>
 <li>68,000 Facebook group members</li>
 <li>15,000 phone/email contacts</li>
@@ -445,7 +498,7 @@ You get it for <span class="highlight">FREE</span>.
 </ul>
 </div>
 <div>
-<strong>What you need:</strong>
+<strong style="color: #ffdd00;">What you need:</strong>
 <ul>
 <li>Infrastructure to monetize</li>
 <li>(Lightning provides this FREE)</li>
@@ -529,7 +582,7 @@ Live Event: thelightningpass.com/events/sunset-bash
 </p>
 
 <div class="footer">
-<strong>Lightning Pass</strong><br>
+<strong>⚡ Lightning Pass</strong><br>
 Skip the line. Own the night.
 </div>
 
