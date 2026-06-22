@@ -2246,12 +2246,15 @@
                     <h1 style="margin: 0; background: linear-gradient(90deg, var(--electric-purple), var(--electric-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         🎧 DJ Dashboard
                     </h1>
-                    <div style="display: flex; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <button id="djBankBtn" class="btn" onclick="showModal('djStripeConnectModal')" style="background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); display: none;">
                             🏦 Connect Bank
                         </button>
                         <button class="btn" onclick="showModal('djInfoModal')" style="background: transparent; border: 1px solid var(--electric-purple); color: var(--electric-purple);">
                             ℹ️ How It Works
+                        </button>
+                        <button class="btn" onclick="logout()" style="background: transparent; border: 1px solid #ff4466; color: #ff4466;">
+                            Log Out
                         </button>
                     </div>
                 </div>
@@ -2766,9 +2769,14 @@
 
         <!-- ADMIN CONTROL PANEL -->
         <div id="adminView" class="container hidden">
-            <h1 style="margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                Admin Control Panel
-            </h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <h1 style="margin: 0; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Admin Control Panel
+                </h1>
+                <button class="btn" onclick="logout()" style="background: transparent; border: 1px solid #ff4466; color: #ff4466;">
+                    Log Out
+                </button>
+            </div>
             
             <div id="pendingAlert" class="alert alert-warning" style="display: none;">
                 <strong>⚠️ Action Required:</strong> You have <strong id="pendingCount">0</strong> venue applications waiting for approval.
@@ -3957,8 +3965,7 @@
 
         // ===== SMART BROWSE - scroll if already viewing, load if not =====
         function browseEvents() {
-            // Always try to start/resume music
-            if (typeof startMusic === 'function') startMusic();
+            // Music disabled on autoplay - user must click to play
 
             const customerView = document.getElementById('customerView');
             if (customerView && customerView.style.display !== 'none') {
@@ -3986,8 +3993,7 @@
             // Hide landing page (no longer needed)
             document.getElementById('landingPage').style.display = 'none';
 
-            // Start music
-            startMusic();
+            // Music disabled on autoplay - user must click to play
 
             // Go directly to browse venues (guest mode)
             // Set up guest navigation if not logged in
@@ -4058,8 +4064,7 @@
                     showView('customer');
                     loadVenues();
                     loadHomepageSpotlightEvents();
-                    // Start music
-                    setTimeout(() => { if (typeof startMusic === 'function') startMusic(); }, 100);
+                    // Music disabled on autoplay - user must click to play
                     // Clean URL
                     window.history.replaceState({}, '', window.location.pathname);
                 }
@@ -5378,11 +5383,16 @@
 
         function updateNavigation(user) {
             const navLinks = document.getElementById('navLinks');
-            
+            const mobileMenu = document.getElementById('mobileMenu');
+
             if (user.role === 'admin') {
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="showView('admin')">Control Panel</a>
                     <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
+                `;
+                mobileMenu.innerHTML = `
+                    <a href="#" onclick="showView('admin'); toggleMenu();">Control Panel</a>
+                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
                 `;
             } else if (user.role === 'venue') {
                 navLinks.innerHTML = `
@@ -5390,13 +5400,31 @@
                     <a href="#" class="nav-link" onclick="showView('scanner')">Scanner</a>
                     <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
                 `;
+                mobileMenu.innerHTML = `
+                    <a href="#" onclick="showView('venue'); toggleMenu();">Dashboard</a>
+                    <a href="#" onclick="showView('scanner'); toggleMenu();">Scanner</a>
+                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
+                `;
+            } else if (user.role === 'dj') {
+                navLinks.innerHTML = `
+                    <a href="#" class="nav-link" onclick="showView('dj')">DJ Dashboard</a>
+                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
+                `;
+                mobileMenu.innerHTML = `
+                    <a href="#" onclick="showView('dj'); toggleMenu();">DJ Dashboard</a>
+                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
+                `;
             } else {
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
                     <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
                 `;
+                mobileMenu.innerHTML = `
+                    <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
+                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
+                `;
             }
-            
+
             navLinks.style.display = 'flex';
         }
 
@@ -5420,6 +5448,16 @@
                 <a href="/login" class="btn btn-primary">LOGIN</a>
             `;
             navLinks.style.display = 'flex';
+
+            // Update mobile menu for guest mode
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.innerHTML = `
+                <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
+                <a href="/partners">Partners</a>
+                <a href="/calendar">Calendar</a>
+                <a href="/about">About</a>
+                <a href="/login">Login</a>
+            `;
 
             showView('customer');
             loadVenues();
