@@ -7730,8 +7730,8 @@
             const ticket = event.tickets?.[0];
             const availableTickets = event.tickets?.reduce((sum, t) => {
                 const guestCount = t.guestCount || 1;
-                const avail = t.available && t.available !== -1 ? t.available : 0;
-                return sum + (avail * guestCount);
+                const remaining = t.available && t.available !== -1 ? (t.available - (t.sold || 0)) : 0;
+                return sum + (remaining * guestCount);
             }, 0) || null;
             const isLightning = event.isLightningEvent;
 
