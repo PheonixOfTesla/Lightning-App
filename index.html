@@ -3095,6 +3095,7 @@
                             <option value="">All Events</option>
                             <option value="sunset-bash">Sunset Bash</option>
                         </select>
+                        <input type="text" id="ticketSearchInput" class="form-input" placeholder="Search name, email, phone..." oninput="filterTicketSales()" style="max-width: 300px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem;">
                         <button class="btn btn-secondary" onclick="loadTicketSales()">Refresh</button>
                     </div>
                     <div id="ticketSalesList" style="max-height: 600px; overflow-y: auto;">
@@ -6762,6 +6763,7 @@
         // ===== ADMIN FUNCTIONS =====
         let adminUsersCache = [];
         let adminDJsCache = [];
+        let ticketSalesCache = { passes: [], event: null, stats: null };
 
         function showAdminTab(tab) {
             // Hide all tabs
@@ -8449,10 +8451,16 @@
             try {
                 const eventSlug = document.getElementById('ticketEventFilter').value;
 
+                // Clear search on refresh
+                document.getElementById('ticketSearchInput').value = '';
+
                 // Use event-passes endpoint when eventSlug is selected (shows ALL passes including comps)
                 if (eventSlug) {
                     const data = await apiCall(`/api/v1/embed/event-passes?eventSlug=${eventSlug}`);
                     const { stats, passes, event } = data;
+
+                    // Cache for filtering
+                    ticketSalesCache = { passes, event, stats };
 
                     // Update stats
                     document.getElementById('ticketSalesTotal').textContent = stats.totalTickets || 0;
@@ -8561,6 +8569,75 @@
                 console.error('Error loading ticket sales:', err);
                 list.innerHTML = '<div class="empty-state">Error loading ticket sales. Make sure you\'re logged in as admin.</div>';
             }
+        }
+
+        function filterTicketSales() {
+            const searchTerm = document.getElementById('ticketSearchInput').value.toLowerCase().trim();
+            const list = document.getElementById('ticketSalesList');
+            const { passes, event, stats } = ticketSalesCache;
+
+            if (!passes || passes.length === 0) return;
+
+            // Filter passes by name, email, or phone
+            const filtered = searchTerm ? passes.filter(p => {
+                const name = (p.guestName || '').toLowerCase();
+                const email = (p.email || '').toLowerCase();
+                const phone = (p.phone || '').toLowerCase();
+                return name.includes(searchTerm) || email.includes(searchTerm) || phone.includes(searchTerm);
+            }) : passes;
+
+            // Render event header
+            let html = `
+                <div style="background: linear-gradient(135deg, rgba(255,221,0,0.1), rgba(138,43,226,0.1)); border: 1px solid var(--lightning-yellow); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <div style="font-weight: 700; color: var(--lightning-yellow);">${event.name}</div>
+                            <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${new Date(event.date).toLocaleDateString()}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${event.sold}/${event.capacity}</div>
+                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">sold</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap;">
+                        <span style="font-size: 0.75rem; color: var(--neon-green);">✓ Paid: ${stats.paidCount}</span>
+                        <span style="font-size: 0.75rem; color: var(--electric-purple);">★ Comp: ${stats.compCount}</span>
+                        ${searchTerm ? `<span style="font-size: 0.75rem; color: var(--lightning-yellow);">🔍 Showing: ${filtered.length} of ${passes.length}</span>` : ''}
+                    </div>
+                </div>
+            `;
+
+            if (filtered.length === 0) {
+                html += '<div class="empty-state">No matches found</div>';
+            } else {
+                html += filtered.map(p => `
+                    <div style="background: var(--bg-dark); border: 1px solid ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--border-dark)'}; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600; color: white;">${p.guestName}${p.quantity > 1 ? ` <span style="color: var(--lightning-yellow);">(×${p.quantity})</span>` : ''}</div>
+                                <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">${p.email}</div>
+                                ${p.phone ? `<div style="font-size: 0.875rem; color: rgba(255,255,255,0.5);">${p.phone}</div>` : ''}
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 700; color: ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--neon-green)'};">${p.type === 'COMP' ? 'COMP' : '$' + (p.amount || 0).toFixed(2)}</div>
+                                <div style="font-size: 0.75rem; color: var(--electric-purple);">${p.ticketName}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-dark);">
+                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+                                ${new Date(p.purchasedAt).toLocaleString()}
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: ${p.status === 'refunded' ? 'rgba(255,77,77,0.1)' : 'rgba(57,255,20,0.1)'}; color: ${p.status === 'refunded' ? '#ff4d4d' : 'var(--neon-green)'}; border-radius: 4px;">${p.status}</span>
+                                <a href="${p.viewUrl}" target="_blank" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(0, 212, 255, 0.1); color: var(--electric-blue); border-radius: 4px; text-decoration: none;">View Pass</a>
+                                ${p.status !== 'refunded' && p.type !== 'COMP' ? `<button onclick="refundTicket('${p.passId}', '${p.guestName}')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 4px; cursor: pointer;">Refund</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            list.innerHTML = html;
         }
 
         async function refundTicket(passId, guestName) {
