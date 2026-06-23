@@ -8489,13 +8489,14 @@
                             <div style="display: flex; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap;">
                                 <span style="font-size: 0.75rem; color: var(--neon-green);">✓ Paid: ${stats.paidCount}</span>
                                 <span style="font-size: 0.75rem; color: var(--electric-purple);">★ Comp: ${stats.compCount}</span>
+                                ${stats.teamCount > 0 ? `<span style="font-size: 0.75rem; color: var(--lightning-yellow);">⚡ Team: ${stats.teamCount}</span>` : ''}
                                 ${stats.refundedCount > 0 ? `<span style="font-size: 0.75rem; color: #ff4d4d;">✗ Refunded: ${stats.refundedCount}</span>` : ''}
                             </div>
                         </div>
                     `;
 
                     html += passes.map(p => `
-                        <div style="background: var(--bg-dark); border: 1px solid ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--border-dark)'}; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="background: var(--bg-dark); border: 1px solid ${p.type === 'TEAM' ? 'var(--lightning-yellow)' : p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--border-dark)'}; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; ${p.type === 'TEAM' ? 'opacity: 0.7;' : ''}">
                             <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
                                 <div>
                                     <div style="font-weight: 600; color: white;">${p.guestName}${p.quantity > 1 ? ` <span style="color: var(--lightning-yellow);">(×${p.quantity})</span>` : ''}</div>
@@ -8503,7 +8504,7 @@
                                     ${p.phone ? `<div style="font-size: 0.875rem; color: rgba(255,255,255,0.5);">${p.phone}</div>` : ''}
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-weight: 700; color: ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--neon-green)'};">${p.type === 'COMP' ? 'COMP' : '$' + (p.amount || 0).toFixed(2)}</div>
+                                    <div style="font-weight: 700; color: ${p.type === 'TEAM' ? 'var(--lightning-yellow)' : p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--neon-green)'};">${p.type === 'TEAM' ? 'TEAM' : p.type === 'COMP' ? 'COMP' : '$' + (p.amount || 0).toFixed(2)}</div>
                                     <div style="font-size: 0.75rem; color: var(--electric-purple);">${p.ticketName}</div>
                                 </div>
                             </div>
@@ -8512,9 +8513,9 @@
                                     ${new Date(p.purchasedAt).toLocaleString()}
                                 </div>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: ${p.status === 'refunded' ? 'rgba(255,77,77,0.1)' : 'rgba(57,255,20,0.1)'}; color: ${p.status === 'refunded' ? '#ff4d4d' : 'var(--neon-green)'}; border-radius: 4px;">${p.status}</span>
+                                    <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: ${p.status === 'refunded' ? 'rgba(255,77,77,0.1)' : p.type === 'TEAM' ? 'rgba(255,221,0,0.1)' : 'rgba(57,255,20,0.1)'}; color: ${p.status === 'refunded' ? '#ff4d4d' : p.type === 'TEAM' ? 'var(--lightning-yellow)' : 'var(--neon-green)'}; border-radius: 4px;">${p.type === 'TEAM' ? 'team' : p.status}</span>
                                     <a href="${p.viewUrl}" target="_blank" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(0, 212, 255, 0.1); color: var(--electric-blue); border-radius: 4px; text-decoration: none;">View Pass</a>
-                                    ${p.status !== 'refunded' && p.type !== 'COMP' ? `<button onclick="refundTicket('${p.passId}', '${p.guestName}')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 4px; cursor: pointer;">Refund</button>` : ''}
+                                    ${p.status !== 'refunded' && p.type !== 'COMP' && p.type !== 'TEAM' ? `<button onclick="refundTicket('${p.passId}', '${p.guestName}')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 4px; cursor: pointer;">Refund</button>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -8602,6 +8603,7 @@
                     <div style="display: flex; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap;">
                         <span style="font-size: 0.75rem; color: var(--neon-green);">✓ Paid: ${stats.paidCount}</span>
                         <span style="font-size: 0.75rem; color: var(--electric-purple);">★ Comp: ${stats.compCount}</span>
+                        ${stats.teamCount > 0 ? `<span style="font-size: 0.75rem; color: var(--lightning-yellow);">⚡ Team: ${stats.teamCount}</span>` : ''}
                         ${searchTerm ? `<span style="font-size: 0.75rem; color: var(--lightning-yellow);">🔍 Showing: ${filtered.length} of ${passes.length}</span>` : ''}
                     </div>
                 </div>
@@ -8611,7 +8613,7 @@
                 html += '<div class="empty-state">No matches found</div>';
             } else {
                 html += filtered.map(p => `
-                    <div style="background: var(--bg-dark); border: 1px solid ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--border-dark)'}; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                    <div style="background: var(--bg-dark); border: 1px solid ${p.type === 'TEAM' ? 'var(--lightning-yellow)' : p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--border-dark)'}; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; ${p.type === 'TEAM' ? 'opacity: 0.7;' : ''}">
                         <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
                             <div>
                                 <div style="font-weight: 600; color: white;">${p.guestName}${p.quantity > 1 ? ` <span style="color: var(--lightning-yellow);">(×${p.quantity})</span>` : ''}</div>
@@ -8619,7 +8621,7 @@
                                 ${p.phone ? `<div style="font-size: 0.875rem; color: rgba(255,255,255,0.5);">${p.phone}</div>` : ''}
                             </div>
                             <div style="text-align: right;">
-                                <div style="font-weight: 700; color: ${p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--neon-green)'};">${p.type === 'COMP' ? 'COMP' : '$' + (p.amount || 0).toFixed(2)}</div>
+                                <div style="font-weight: 700; color: ${p.type === 'TEAM' ? 'var(--lightning-yellow)' : p.type === 'COMP' ? 'var(--electric-purple)' : 'var(--neon-green)'};">${p.type === 'TEAM' ? 'TEAM' : p.type === 'COMP' ? 'COMP' : '$' + (p.amount || 0).toFixed(2)}</div>
                                 <div style="font-size: 0.75rem; color: var(--electric-purple);">${p.ticketName}</div>
                             </div>
                         </div>
@@ -8628,9 +8630,9 @@
                                 ${new Date(p.purchasedAt).toLocaleString()}
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: ${p.status === 'refunded' ? 'rgba(255,77,77,0.1)' : 'rgba(57,255,20,0.1)'}; color: ${p.status === 'refunded' ? '#ff4d4d' : 'var(--neon-green)'}; border-radius: 4px;">${p.status}</span>
+                                <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: ${p.status === 'refunded' ? 'rgba(255,77,77,0.1)' : p.type === 'TEAM' ? 'rgba(255,221,0,0.1)' : 'rgba(57,255,20,0.1)'}; color: ${p.status === 'refunded' ? '#ff4d4d' : p.type === 'TEAM' ? 'var(--lightning-yellow)' : 'var(--neon-green)'}; border-radius: 4px;">${p.type === 'TEAM' ? 'team' : p.status}</span>
                                 <a href="${p.viewUrl}" target="_blank" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(0, 212, 255, 0.1); color: var(--electric-blue); border-radius: 4px; text-decoration: none;">View Pass</a>
-                                ${p.status !== 'refunded' && p.type !== 'COMP' ? `<button onclick="refundTicket('${p.passId}', '${p.guestName}')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 4px; cursor: pointer;">Refund</button>` : ''}
+                                ${p.status !== 'refunded' && p.type !== 'COMP' && p.type !== 'TEAM' ? `<button onclick="refundTicket('${p.passId}', '${p.guestName}')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 4px; cursor: pointer;">Refund</button>` : ''}
                             </div>
                         </div>
                     </div>
