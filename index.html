@@ -1185,6 +1185,119 @@
             color: var(--electric-purple);
         }
 
+        /* ===== DAILY DEALS STYLES ===== */
+        .deal-card {
+            background: var(--card-black);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .deal-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--lightning-yellow);
+            box-shadow: 0 8px 32px rgba(255, 221, 0, 0.15);
+        }
+
+        .deal-card-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: linear-gradient(135deg, rgba(255,221,0,0.1), rgba(157,78,221,0.1));
+        }
+
+        .deal-card-badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: var(--danger-red);
+            color: #fff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .deal-card-source {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .deal-card-source img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .deal-card-content {
+            padding: 1rem;
+        }
+
+        .deal-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .deal-card-pricing {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .deal-card-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+        }
+
+        .deal-card-original {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            text-decoration: line-through;
+        }
+
+        .deal-card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .deal-card-category {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .deal-card-expires {
+            font-size: 0.75rem;
+            color: var(--danger-red);
+            font-weight: 500;
+        }
+
         @media (max-width: 768px) {
             .nav-links .nav-link:not(.btn) {
                 display: none;
@@ -1904,6 +2017,7 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
+        <a href="/deals">Deals</a>
         <a href="/partners">Partners</a>
         <a href="/calendar">Calendar</a>
         <a href="/about">About</a>
@@ -2182,6 +2296,22 @@
                 </div>
                 <div id="homepageSpotlightEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
                     <!-- Spotlight events load here -->
+                </div>
+            </div>
+
+            <!-- LIGHTNING PASS DAILY - Hot Deals Section -->
+            <div id="dailyDealsSection" style="margin-bottom: 3rem; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin: 0;">
+                            <span style="color: var(--lightning-yellow);">⚡</span> Lightning Pass Daily
+                        </h2>
+                        <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0.25rem 0 0 0;">Today's hottest deals</p>
+                    </div>
+                    <a href="/deals" style="color: var(--lightning-yellow); font-size: 0.8rem; text-decoration: none; font-weight: 500;">View All Deals →</a>
+                </div>
+                <div id="dailyDealsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;">
+                    <!-- Daily deals cards load here -->
                 </div>
             </div>
 
@@ -3680,6 +3810,7 @@
             // Load venues and spotlight events
             loadVenues();
             loadHomepageSpotlightEvents();
+            loadDailyDeals();
         }
 
         // Legacy functions for backwards compatibility
@@ -3982,6 +4113,7 @@
                 showView('customer');
                 loadVenues();
                 loadHomepageSpotlightEvents();
+                loadDailyDeals();
             }
         }
 
@@ -4002,6 +4134,7 @@
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
+                    <a href="/deals" class="nav-link">Deals</a>
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
@@ -4013,6 +4146,7 @@
             showView('customer');
             loadVenues();
             loadHomepageSpotlightEvents();
+            loadDailyDeals();
 
             // Scroll to top on mobile after content loads
             setTimeout(() => window.scrollTo(0, 0), 100);
@@ -4065,6 +4199,7 @@
                     showView('customer');
                     loadVenues();
                     loadHomepageSpotlightEvents();
+                    loadDailyDeals();
                     // Music disabled on autoplay - user must click to play
                     // Clean URL
                     window.history.replaceState({}, '', window.location.pathname);
@@ -4311,6 +4446,7 @@
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
+                    <a href="/deals" class="nav-link">Deals</a>
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
@@ -5445,6 +5581,7 @@
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
                 <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
+                <a href="/deals" class="nav-link">Deals</a>
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/login" class="btn btn-primary">LOGIN</a>
             `;
@@ -5454,6 +5591,7 @@
             const mobileMenu = document.getElementById('mobileMenu');
             mobileMenu.innerHTML = `
                 <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
+                <a href="/deals">Deals</a>
                 <a href="/partners">Partners</a>
                 <a href="/calendar">Calendar</a>
                 <a href="/about">About</a>
@@ -5463,6 +5601,7 @@
             showView('customer');
             loadVenues();
             loadHomepageSpotlightEvents();
+            loadDailyDeals();
             showToast('Logged out successfully', 'success');
         }
 
@@ -7717,6 +7856,111 @@
                 console.error('Error loading homepage events:', error);
                 document.getElementById('spotlightEventsSection').style.display = 'none';
                 document.getElementById('communityEventsSection').style.display = 'none';
+            }
+        }
+
+        // ===== LIGHTNING PASS DAILY - DEALS FUNCTIONS =====
+        async function loadDailyDeals() {
+            const section = document.getElementById('dailyDealsSection');
+            const grid = document.getElementById('dailyDealsGrid');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/deals/featured`);
+
+                if (!response.ok) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!data.deals || data.deals.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                grid.innerHTML = data.deals.slice(0, 6).map(deal => renderDealCard(deal)).join('');
+
+            } catch (error) {
+                console.error('Error loading daily deals:', error);
+                section.style.display = 'none';
+            }
+        }
+
+        function renderDealCard(deal) {
+            const discountPercent = deal.discountPercent || Math.round((1 - deal.dealPrice / deal.originalPrice) * 100);
+            const sourceLogo = getDealSourceLogo(deal.source);
+            const expiresText = deal.expiresAt ? getExpiresText(deal.expiresAt) : '';
+
+            return `
+                <div class="deal-card" onclick="trackDealClick('${deal._id || deal.id}', '${deal.url || deal.dealUrl || ''}')">
+                    ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.display='none'">` : `<div class="deal-card-image"></div>`}
+                    <div class="deal-card-badge">-${discountPercent}%</div>
+                    ${sourceLogo ? `
+                        <div class="deal-card-source">
+                            <img src="${sourceLogo}" alt="${deal.source}">
+                        </div>
+                    ` : ''}
+                    <div class="deal-card-content">
+                        <h3 class="deal-card-title">${deal.title}</h3>
+                        <div class="deal-card-pricing">
+                            <span class="deal-card-price">$${(deal.dealPrice / 100).toFixed(2)}</span>
+                            <span class="deal-card-original">$${(deal.originalPrice / 100).toFixed(2)}</span>
+                        </div>
+                        <div class="deal-card-meta">
+                            <span class="deal-card-category">${deal.category || 'Deal'}</span>
+                            ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getDealSourceLogo(source) {
+            const logos = {
+                'amazon': 'https://logo.clearbit.com/amazon.com',
+                'uber': 'https://logo.clearbit.com/uber.com',
+                'ubereats': 'https://logo.clearbit.com/ubereats.com',
+                'doordash': 'https://logo.clearbit.com/doordash.com',
+                'grubhub': 'https://logo.clearbit.com/grubhub.com',
+                'target': 'https://logo.clearbit.com/target.com',
+                'walmart': 'https://logo.clearbit.com/walmart.com',
+                'bestbuy': 'https://logo.clearbit.com/bestbuy.com',
+                'expedia': 'https://logo.clearbit.com/expedia.com',
+                'hotels': 'https://logo.clearbit.com/hotels.com',
+                'groupon': 'https://logo.clearbit.com/groupon.com',
+                'ticketmaster': 'https://logo.clearbit.com/ticketmaster.com'
+            };
+            return source ? logos[source.toLowerCase()] || null : null;
+        }
+
+        function getExpiresText(expiresAt) {
+            const now = new Date();
+            const expires = new Date(expiresAt);
+            const hoursLeft = Math.round((expires - now) / (1000 * 60 * 60));
+
+            if (hoursLeft < 0) return 'Expired';
+            if (hoursLeft < 1) return 'Expires soon!';
+            if (hoursLeft < 24) return `${hoursLeft}h left`;
+            const daysLeft = Math.round(hoursLeft / 24);
+            return `${daysLeft}d left`;
+        }
+
+        async function trackDealClick(dealId, url) {
+            // Track the click
+            try {
+                await fetch(`${API_BASE}/api/v1/lightning/deals/click/${dealId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (e) {
+                console.log('Click tracking failed:', e);
+            }
+
+            // Open the deal URL if provided
+            if (url) {
+                window.open(url, '_blank', 'noopener,noreferrer');
             }
         }
 

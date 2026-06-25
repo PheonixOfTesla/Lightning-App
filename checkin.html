@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sunset Bash Guest List</title>
+
+  <!-- OG Meta Tags for link preview -->
+  <meta property="og:title" content="Sunset Bash Guest List">
+  <meta property="og:description" content="Stars, Stripes & Sunsets - July 4th, 2026">
+  <meta property="og:image" content="https://thelightningpass.com/logo.png">
+  <meta property="og:url" content="https://thelightningpass.com/checkin">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://thelightningpass.com/logo.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; padding: 40px 20px; color: #fff; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { text-align: center; font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(90deg, #ffdd00, #ff9500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+    .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+    .stat { background: rgba(255,255,255,0.1); padding: 20px 16px; border-radius: 12px; text-align: center; min-width: 0; }
+    .stat-value { font-size: 1.8rem; font-weight: bold; color: #ffdd00; word-break: break-word; }
+    .stat-label { color: #aaa; font-size: 0.85rem; }
+    .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; margin-bottom: 24px; overflow: hidden; }
+    .section h2 { font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .badge { font-size: 0.8rem; padding: 4px 10px; border-radius: 20px; font-weight: normal; white-space: nowrap; }
+    .badge-team { background: #4CAF50; }
+    .badge-comp { background: #2196F3; }
+    .badge-paid { background: #ffdd00; color: #000; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+    th { background: rgba(255,255,255,0.1); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; }
+    tr:hover { background: rgba(255,255,255,0.05); }
+    .empty { color: #666; font-style: italic; padding: 20px; text-align: center; }
+    .loading { text-align: center; padding: 60px; color: #888; }
+    .error { text-align: center; padding: 40px; color: #f44336; }
+
+    /* Login prompt */
+    .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .login-box { background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; text-align: center; max-width: 320px; }
+    .login-box h2 { margin-bottom: 8px; color: #ffdd00; }
+    .login-box p { color: #888; margin-bottom: 24px; font-size: 0.9rem; }
+    .code-input { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+    .code-input input { width: 50px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: bold; border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; outline: none; }
+    .code-input input:focus { border-color: #ffdd00; }
+    .login-btn { background: #ffdd00; color: #000; border: none; padding: 14px 32px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
+    .login-btn:hover { background: #ffcc00; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error { color: #f44336; margin-top: 16px; font-size: 0.9rem; }
+
+    /* Tablet */
+    @media (max-width: 768px) {
+      body { padding: 24px 16px; }
+      h1 { font-size: 2rem; }
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      .stat { padding: 16px 12px; }
+      .stat-value { font-size: 1.5rem; }
+      .section { padding: 16px; }
+      .section h2 { font-size: 1.2rem; }
+      th, td { padding: 10px 12px; font-size: 0.9rem; }
+    }
+
+    /* Mobile */
+    @media (max-width: 480px) {
+      body { padding: 16px 12px; }
+      h1 { font-size: 1.6rem; }
+      .subtitle { font-size: 0.9rem; }
+      .summary { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .stat { padding: 14px 10px; border-radius: 10px; }
+      .stat-value { font-size: 1.3rem; }
+      .stat-label { font-size: 0.75rem; }
+      .section { padding: 14px; border-radius: 12px; margin-bottom: 16px; }
+      .section h2 { font-size: 1.1rem; gap: 8px; }
+      .badge { font-size: 0.7rem; padding: 3px 8px; }
+      th, td { padding: 8px 10px; font-size: 0.85rem; }
+      .login-box { padding: 30px 24px; margin: 20px; }
+      .code-input input { width: 45px; height: 55px; font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <h2>Guest List</h2>
+      <p>Enter 4-digit access code</p>
+      <div class="code-input">
+        <input type="text" maxlength="1" id="c1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input type="text" maxlength="1" id="c2" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input type="text" maxlength="1" id="c3" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input type="text" maxlength="1" id="c4" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+      </div>
+      <button class="login-btn" id="loginBtn" onclick="submitCode()">View Guest List</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- Main Content (hidden until authenticated) -->
+  <div class="container" id="mainContent" style="display: none;">
+    <h1>Sunset Bash Guest List</h1>
+    <p class="subtitle">Stars, Stripes & Sunsets - July 4th, 2026</p>
+
+    <div class="summary">
+      <div class="stat"><div class="stat-value" id="statPasses">--</div><div class="stat-label">Total Passes</div></div>
+      <div class="stat"><div class="stat-value" id="statTickets">--</div><div class="stat-label">Total Tickets</div></div>
+      <div class="stat"><div class="stat-value" id="statAvailable" style="color: #2196F3;">--</div><div class="stat-label">Available</div></div>
+      <div class="stat"><div class="stat-value" id="statProfit" style="color: #4CAF50;">--</div><div class="stat-label">Net Volume</div></div>
+    </div>
+
+    <div class="section" style="margin-bottom: 24px;">
+      <h2>Revenue Breakdown</h2>
+      <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px 20px; max-width: 300px; margin-top: 16px;">
+        <span style="color: #aaa;">Gross Volume</span><span style="text-align: right;" id="revGross">--</span>
+        <span style="color: #aaa;">Stripe Fees</span><span style="text-align: right; color: #f44336;" id="revFees">--</span>
+        <span style="color: #aaa;">Refunds</span><span style="text-align: right; color: #f44336;" id="revRefunds">--</span>
+        <div style="grid-column: span 2; border-top: 1px solid rgba(255,255,255,0.2); margin: 8px 0;"></div>
+        <span style="font-weight: bold;">Net Volume</span><span style="text-align: right; font-weight: bold; color: #4CAF50;" id="revNet">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Team Members <span class="badge badge-team" id="badgeTeam">--</span></h2>
+      <div class="table-wrap" id="tableTeam"><div class="loading">Loading...</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Comp Passes <span class="badge badge-comp" id="badgeComp">--</span></h2>
+      <div class="table-wrap" id="tableComp"><div class="loading">Loading...</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Paid Passes <span class="badge badge-paid" id="badgePaid">--</span></h2>
+      <div class="table-wrap" id="tablePaid"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/embed/event/sunset-bash/checkin';
+
+    // Auto-focus and auto-advance code inputs
+    const inputs = [document.getElementById('c1'), document.getElementById('c2'), document.getElementById('c3'), document.getElementById('c4')];
+    inputs.forEach((input, i) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value && i < 3) inputs[i + 1].focus();
+        if (getCode().length === 4) submitCode();
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && i > 0) inputs[i - 1].focus();
+      });
+    });
+    inputs[0].focus();
+
+    function getCode() {
+      return inputs.map(i => i.value).join('');
+    }
+
+    async function submitCode() {
+      const code = getCode();
+      if (code.length !== 4) return;
+
+      const btn = document.getElementById('loginBtn');
+      const error = document.getElementById('loginError');
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+      error.textContent = '';
+
+      try {
+        const res = await fetch(`${API_URL}?code=${code}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          error.textContent = 'Invalid code. Try again.';
+          inputs.forEach(i => i.value = '');
+          inputs[0].focus();
+          btn.disabled = false;
+          btn.textContent = 'View Guest List';
+          return;
+        }
+
+        // Success - show data
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        renderData(data);
+
+      } catch (err) {
+        error.textContent = 'Connection error. Try again.';
+        btn.disabled = false;
+        btn.textContent = 'View Guest List';
+      }
+    }
+
+    function renderData(data) {
+      const { stats, guests } = data;
+
+      // Stats
+      document.getElementById('statPasses').textContent = stats.totalPasses;
+      document.getElementById('statTickets').textContent = stats.totalTickets;
+      document.getElementById('statAvailable').textContent = stats.available;
+      document.getElementById('statProfit').textContent = '$' + stats.netVolume.toFixed(2);
+
+      // Revenue breakdown (Stripe formula: Net = Gross - Fees - Refunds)
+      document.getElementById('revGross').textContent = '$' + stats.grossVolume.toFixed(2);
+      document.getElementById('revFees').textContent = '-$' + stats.stripeFees.toFixed(2);
+      document.getElementById('revRefunds').textContent = '-$' + stats.refunds.toFixed(2);
+      document.getElementById('revNet').textContent = '$' + stats.netVolume.toFixed(2);
+
+      // Badges
+      document.getElementById('badgeTeam').textContent = stats.teamTickets + ' tickets';
+      document.getElementById('badgeComp').textContent = stats.compTickets + ' tickets';
+      document.getElementById('badgePaid').textContent = stats.paidTickets + ' tickets';
+
+      // Tables
+      document.getElementById('tableTeam').innerHTML = makeTable(guests.team);
+      document.getElementById('tableComp').innerHTML = makeTable(guests.comp);
+      document.getElementById('tablePaid').innerHTML = makeTable(guests.paid);
+    }
+
+    function makeTable(rows) {
+      if (!rows || !rows.length) return '<div class="empty">No entries</div>';
+      let html = '<table><thead><tr><th>#</th><th>First Name</th><th>Last Name</th><th>ID Type</th><th>Qty</th></tr></thead><tbody>';
+      rows.forEach((r, i) => {
+        html += `<tr><td>${i+1}</td><td>${r.firstName}</td><td>${r.lastName}</td><td>${r.idType}</td><td>${r.quantity}</td></tr>`;
+      });
+      return html + '</tbody></table>';
+    }
+
+    // Check for code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCode = urlParams.get('code');
+    if (urlCode && urlCode.length === 4) {
+      urlCode.split('').forEach((c, i) => inputs[i].value = c);
+      submitCode();
+    }
+  </script>
+</body>
+</html>

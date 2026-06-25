@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>Lightning Pass Daily | Today's Best Deals in Sarasota</title>
+    <meta name="description" content="Discover today's hottest deals in Sarasota. Food, entertainment, travel, tech and more. Curated daily deals from top brands - exclusively on Lightning Pass.">
+    <meta name="keywords" content="Sarasota deals, daily deals, coupons, discounts, food deals, entertainment deals, Sarasota FL, Lightning Pass">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://thelightningpass.com/deals">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thelightningpass.com/deals">
+    <meta property="og:title" content="Lightning Pass Daily | Today's Best Deals">
+    <meta property="og:description" content="Discover today's hottest deals in Sarasota. Curated daily deals from top brands.">
+    <meta property="og:image" content="https://thelightningpass.com/logo.png">
+    <meta property="og:site_name" content="Lightning Pass">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 50% 30%, rgba(255, 221, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 60%, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--pure-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.875rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--white);
+            letter-spacing: -0.01em;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .logo-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover {
+            color: var(--lightning-yellow);
+        }
+
+        .nav-link.active {
+            color: var(--lightning-yellow);
+        }
+
+        .nav-link.btn-login {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--lightning-yellow);
+            border-radius: 0.5rem;
+            color: var(--lightning-yellow);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+        }
+
+        .nav-link.btn-login:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 6rem 2rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 2rem 0 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--lightning-yellow), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--gray);
+        }
+
+        /* Email Signup CTA */
+        .email-cta {
+            background: linear-gradient(135deg, rgba(255, 221, 0, 0.1) 0%, rgba(255, 221, 0, 0.02) 100%);
+            border: 1px solid rgba(255, 221, 0, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .email-cta h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--lightning-yellow);
+        }
+
+        .email-cta p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .email-form {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 500px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .email-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.875rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--card-black);
+            color: var(--white);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .email-form input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+
+        .email-form button {
+            padding: 0.875rem 2rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .email-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 221, 0, 0.4);
+        }
+
+        /* Filter Bar */
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            min-width: 80px;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: var(--white);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--lightning-yellow);
+        }
+
+        .filter-chip.active {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+            font-weight: 600;
+        }
+
+        /* Deals Grid */
+        .deals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Deal Card */
+        .deal-card {
+            background: var(--card-black);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .deal-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--lightning-yellow);
+            box-shadow: 0 8px 32px rgba(255, 221, 0, 0.15);
+        }
+
+        .deal-card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, rgba(255,221,0,0.1), rgba(157,78,221,0.1));
+        }
+
+        .deal-card-badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: var(--danger-red);
+            color: #fff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .deal-card-source {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .deal-card-source img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .deal-card-content {
+            padding: 1.25rem;
+        }
+
+        .deal-card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .deal-card-description {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .deal-card-pricing {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .deal-card-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+        }
+
+        .deal-card-original {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.4);
+            text-decoration: line-through;
+        }
+
+        .deal-card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .deal-card-category {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .deal-card-expires {
+            font-size: 0.75rem;
+            color: var(--danger-red);
+            font-weight: 500;
+        }
+
+        .deal-card-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--lightning-yellow);
+            color: var(--lightning-yellow);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            font-family: inherit;
+        }
+
+        .deal-card-btn:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        /* Locked Deal Card */
+        .deal-card.locked {
+            pointer-events: none;
+        }
+
+        .deal-card.locked .deal-card-content {
+            filter: blur(4px);
+        }
+
+        .deal-card-lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 27, 42, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .deal-card-lock-overlay .lock-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .deal-card-lock-overlay p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .deal-card-lock-overlay .unlock-btn {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            pointer-events: auto;
+            font-family: inherit;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray);
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--white);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--lightning-yellow);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 221, 0, 0.2);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-black);
+            border: 1px solid var(--lightning-yellow);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            z-index: 10000;
+            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-color: var(--neon-green);
+        }
+
+        .toast.error {
+            border-color: var(--danger-red);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--gray);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 4rem;
+        }
+
+        footer a {
+            color: var(--lightning-yellow);
+            text-decoration: none;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--white);
+            transition: all 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 27, 42, 0.98);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .mobile-menu a:hover,
+        .mobile-menu a.active {
+            color: var(--lightning-yellow);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .email-cta {
+                padding: 1.5rem;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filter-chips {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+                flex-wrap: nowrap;
+            }
+
+            .filter-chip {
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .main-content {
+                padding: 5rem 1rem 2rem;
+            }
+
+            .hero {
+                padding: 1rem 0 2rem;
+            }
+
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .deals-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-img">
+                    <img src="logo.png" alt="Lightning Pass">
+                </div>
+                <span class="logo-text">Lightning Pass</span>
+            </a>
+            <div class="nav-links">
+                <a href="/?browse=1" class="nav-link">Events</a>
+                <a href="/deals" class="nav-link active">Deals</a>
+                <a href="/partners" class="nav-link">Partners</a>
+                <a href="/calendar" class="nav-link">Calendar</a>
+                <a href="/about" class="nav-link">About</a>
+                <a href="/login" class="nav-link btn-login">LOGIN</a>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/?browse=1">Events</a>
+        <a href="/deals" class="active">Deals</a>
+        <a href="/partners">Partners</a>
+        <a href="/calendar">Calendar</a>
+        <a href="/about">About</a>
+        <a href="/login">Login</a>
+    </div>
+
+    <main class="main-content">
+        <!-- Hero -->
+        <div class="hero">
+            <h1>Lightning Pass Daily</h1>
+            <p>Today's hottest deals, curated just for you</p>
+        </div>
+
+        <!-- Email Signup CTA -->
+        <div class="email-cta" id="emailCta">
+            <h3>Unlock Exclusive Deals</h3>
+            <p>Get early access to flash deals and exclusive discounts delivered to your inbox</p>
+            <form class="email-form" id="emailForm" onsubmit="submitEmail(event)">
+                <input type="email" id="emailInput" placeholder="Enter your email" required>
+                <button type="submit">Get Deals</button>
+            </form>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <span class="filter-label">Category</span>
+                <div class="filter-chips" id="categoryFilters">
+                    <button class="filter-chip active" data-category="all" onclick="filterDeals('category', 'all')">All</button>
+                    <button class="filter-chip" data-category="food" onclick="filterDeals('category', 'food')">Food</button>
+                    <button class="filter-chip" data-category="tech" onclick="filterDeals('category', 'tech')">Tech</button>
+                    <button class="filter-chip" data-category="travel" onclick="filterDeals('category', 'travel')">Travel</button>
+                    <button class="filter-chip" data-category="entertainment" onclick="filterDeals('category', 'entertainment')">Entertainment</button>
+                    <button class="filter-chip" data-category="shopping" onclick="filterDeals('category', 'shopping')">Shopping</button>
+                </div>
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">Source</span>
+                <div class="filter-chips" id="sourceFilters">
+                    <button class="filter-chip active" data-source="all" onclick="filterDeals('source', 'all')">All Sources</button>
+                    <button class="filter-chip" data-source="amazon" onclick="filterDeals('source', 'amazon')">Amazon</button>
+                    <button class="filter-chip" data-source="uber" onclick="filterDeals('source', 'uber')">Uber</button>
+                    <button class="filter-chip" data-source="doordash" onclick="filterDeals('source', 'doordash')">DoorDash</button>
+                    <button class="filter-chip" data-source="target" onclick="filterDeals('source', 'target')">Target</button>
+                    <button class="filter-chip" data-source="groupon" onclick="filterDeals('source', 'groupon')">Groupon</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deals Grid -->
+        <div id="dealsGrid" class="deals-grid">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading deals...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Lightning Pass Daily &copy; 2026 | <a href="/privacy">Privacy</a> | <a href="/terms">Terms</a></p>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        // const API_BASE = 'http://localhost:3000'; // Dev
+
+        let allDeals = [];
+        let activeFilters = {
+            category: 'all',
+            source: 'all'
+        };
+        let isSubscribed = localStorage.getItem('dealsSubscribed') === 'true';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDeals();
+            checkSubscription();
+        });
+
+        // Check if user is already subscribed
+        function checkSubscription() {
+            if (isSubscribed) {
+                document.getElementById('emailCta').style.display = 'none';
+            }
+        }
+
+        // Load all deals
+        async function loadDeals() {
+            const grid = document.getElementById('dealsGrid');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/deals`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to load deals');
+                }
+
+                const data = await response.json();
+                allDeals = data.deals || [];
+
+                if (allDeals.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <h3>No Deals Available</h3>
+                            <p>Check back soon for amazing deals!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderDeals();
+
+            } catch (error) {
+                console.error('Error loading deals:', error);
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <h3>Coming Soon</h3>
+                        <p>Lightning Pass Daily deals are launching soon. Sign up above to be notified!</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render deals based on filters
+        function renderDeals() {
+            const grid = document.getElementById('dealsGrid');
+            let filtered = [...allDeals];
+
+            // Apply category filter
+            if (activeFilters.category !== 'all') {
+                filtered = filtered.filter(d =>
+                    d.category && d.category.toLowerCase() === activeFilters.category.toLowerCase()
+                );
+            }
+
+            // Apply source filter
+            if (activeFilters.source !== 'all') {
+                filtered = filtered.filter(d =>
+                    d.source && d.source.toLowerCase() === activeFilters.source.toLowerCase()
+                );
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <h3>No Matching Deals</h3>
+                        <p>Try adjusting your filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show first 3 deals, rest locked if not subscribed
+            grid.innerHTML = filtered.map((deal, index) => {
+                const isLocked = !isSubscribed && index >= 3;
+                return renderDealCard(deal, isLocked);
+            }).join('');
+        }
+
+        function renderDealCard(deal, isLocked = false) {
+            const discountPercent = deal.discountPercent || Math.round((1 - deal.dealPrice / deal.originalPrice) * 100);
+            const sourceLogo = getDealSourceLogo(deal.source);
+            const expiresText = deal.expiresAt ? getExpiresText(deal.expiresAt) : '';
+
+            if (isLocked) {
+                return `
+                    <div class="deal-card locked">
+                        ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="Deal" style="filter: blur(8px);">` : `<div class="deal-card-image" style="filter: blur(8px);"></div>`}
+                        <div class="deal-card-content">
+                            <h3 class="deal-card-title">Exclusive Deal</h3>
+                            <div class="deal-card-pricing">
+                                <span class="deal-card-price">$?.??</span>
+                                <span class="deal-card-original">$?.??</span>
+                            </div>
+                        </div>
+                        <div class="deal-card-lock-overlay">
+                            <span class="lock-icon">🔒</span>
+                            <p>Sign up to unlock this deal</p>
+                            <button class="unlock-btn" onclick="scrollToEmail()">Unlock Deals</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="deal-card" onclick="trackDealClick('${deal._id || deal.id}', '${deal.url || deal.dealUrl || ''}')">
+                    ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.background='linear-gradient(135deg, rgba(255,221,0,0.1), rgba(157,78,221,0.1))'">` : `<div class="deal-card-image"></div>`}
+                    <div class="deal-card-badge">-${discountPercent}%</div>
+                    ${sourceLogo ? `
+                        <div class="deal-card-source">
+                            <img src="${sourceLogo}" alt="${deal.source}">
+                        </div>
+                    ` : ''}
+                    <div class="deal-card-content">
+                        <h3 class="deal-card-title">${deal.title}</h3>
+                        ${deal.description ? `<p class="deal-card-description">${deal.description}</p>` : ''}
+                        <div class="deal-card-pricing">
+                            <span class="deal-card-price">$${(deal.dealPrice / 100).toFixed(2)}</span>
+                            <span class="deal-card-original">$${(deal.originalPrice / 100).toFixed(2)}</span>
+                        </div>
+                        <div class="deal-card-meta">
+                            <span class="deal-card-category">${deal.category || 'Deal'}</span>
+                            ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
+                        </div>
+                        <button class="deal-card-btn">Get This Deal</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getDealSourceLogo(source) {
+            const logos = {
+                'amazon': 'https://logo.clearbit.com/amazon.com',
+                'uber': 'https://logo.clearbit.com/uber.com',
+                'ubereats': 'https://logo.clearbit.com/ubereats.com',
+                'doordash': 'https://logo.clearbit.com/doordash.com',
+                'grubhub': 'https://logo.clearbit.com/grubhub.com',
+                'target': 'https://logo.clearbit.com/target.com',
+                'walmart': 'https://logo.clearbit.com/walmart.com',
+                'bestbuy': 'https://logo.clearbit.com/bestbuy.com',
+                'expedia': 'https://logo.clearbit.com/expedia.com',
+                'hotels': 'https://logo.clearbit.com/hotels.com',
+                'groupon': 'https://logo.clearbit.com/groupon.com',
+                'ticketmaster': 'https://logo.clearbit.com/ticketmaster.com'
+            };
+            return source ? logos[source.toLowerCase()] || null : null;
+        }
+
+        function getExpiresText(expiresAt) {
+            const now = new Date();
+            const expires = new Date(expiresAt);
+            const hoursLeft = Math.round((expires - now) / (1000 * 60 * 60));
+
+            if (hoursLeft < 0) return 'Expired';
+            if (hoursLeft < 1) return 'Expires soon!';
+            if (hoursLeft < 24) return `${hoursLeft}h left`;
+            const daysLeft = Math.round(hoursLeft / 24);
+            return `${daysLeft}d left`;
+        }
+
+        // Filter deals
+        function filterDeals(type, value) {
+            activeFilters[type] = value;
+
+            // Update UI
+            const container = type === 'category' ? 'categoryFilters' : 'sourceFilters';
+            document.querySelectorAll(`#${container} .filter-chip`).forEach(chip => {
+                chip.classList.toggle('active', chip.dataset[type] === value);
+            });
+
+            renderDeals();
+        }
+
+        // Track deal click
+        async function trackDealClick(dealId, url) {
+            try {
+                await fetch(`${API_BASE}/api/v1/lightning/deals/click/${dealId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (e) {
+                console.log('Click tracking failed:', e);
+            }
+
+            if (url) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
+        // Email signup
+        async function submitEmail(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/deals/subscribe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                // Even if API fails, mark as subscribed locally
+                localStorage.setItem('dealsSubscribed', 'true');
+                isSubscribed = true;
+
+                document.getElementById('emailCta').innerHTML = `
+                    <h3 style="color: var(--neon-green);">You're In!</h3>
+                    <p>Check your inbox for exclusive deals</p>
+                `;
+
+                // Re-render deals without locks
+                renderDeals();
+                showToast('Welcome! You now have access to all deals.', 'success');
+
+            } catch (error) {
+                // Still unlock on error (better UX)
+                localStorage.setItem('dealsSubscribed', 'true');
+                isSubscribed = true;
+                renderDeals();
+                showToast('Welcome! Enjoy the deals.', 'success');
+            }
+        }
+
+        function scrollToEmail() {
+            document.getElementById('emailCta').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('emailInput').focus();
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            document.querySelector('.hamburger').classList.toggle('active');
+            document.getElementById('mobileMenu').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
+        }
+    </script>
+</body>
+</html>
