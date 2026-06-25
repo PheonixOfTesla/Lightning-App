@@ -494,6 +494,26 @@
             color: var(--pure-black);
         }
 
+        .btn-pass {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            border: none;
+            font-weight: 700;
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-pass:hover {
+            background: #fff;
+            color: var(--pure-black);
+            box-shadow: 0 0 25px rgba(255, 221, 0, 0.6);
+            transform: scale(1.05);
+        }
+
         .btn-success {
             border-color: var(--neon-green);
             color: var(--neon-green);
@@ -4138,7 +4158,7 @@
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
-                    <a href="/login" class="btn btn-primary">LOGIN</a>
+                    <a href="/deals" class="btn btn-pass">GET PASS</a>
                 `;
                 navLinks.style.display = 'flex';
             }
@@ -4450,7 +4470,7 @@
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
-                    <a href="/login" class="btn btn-primary">LOGIN</a>
+                    <a href="/deals" class="btn btn-pass">GET PASS</a>
                 `;
                 navLinks.style.display = 'flex';
                 // Don't auto-show customer view here - let landing page handle it
