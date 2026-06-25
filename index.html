@@ -8320,7 +8320,7 @@
             const isPending = event.status === 'pending';
             const tiersHtml = event.tickets?.map((ticket, i) => {
                 const isPaid = ticket.price > 0;
-                const isSoldOut = ticket.available === 0;
+                const isSoldOut = ticket.available === 0 || ticket.available === '0' || (ticket.available !== -1 && ticket.available !== null && ticket.available !== undefined && ticket.available <= 0);
                 const isDisabled = (isPending && isPaid) || isSoldOut;
                 const statusText = isSoldOut ? 'SOLD OUT' : (isPending && isPaid ? 'COMING SOON' : '');
                 return `
