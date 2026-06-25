@@ -839,12 +839,15 @@
                         </div>
                     </div>
 
-                    <!-- Stripe Payment Element (Apple Pay, Google Pay, Link, Cards) -->
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Payment Method</label>
-                        <div id="payment-element" style="min-height: 100px;"></div>
-                        <div id="payment-errors" style="color: #ff4444; font-size: 0.8rem; margin-top: 0.5rem;"></div>
+                    <!-- Apple Pay / Google Pay Button -->
+                    <div id="payment-request-btn" style="margin-bottom: 0.5rem;"></div>
+                    <div id="payment-divider" style="display: none; text-align: center; color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 1rem 0; position: relative;">
+                        <span style="background: var(--card-black); padding: 0 1rem; position: relative; z-index: 1;">or pay with card</span>
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.2); z-index: 0;"></div>
                     </div>
+                    <!-- Card Element -->
+                    <div id="card-element" style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1rem;"></div>
+                    <div id="card-errors" style="color: #ff4444; font-size: 0.8rem; margin-bottom: 0.5rem;"></div>
 
                     <button type="submit" id="payButton" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">
                         Pay $120
@@ -867,9 +870,9 @@
 
         // Initialize Stripe
         const stripe = Stripe(STRIPE_KEY);
-        let elements = null;
-        let paymentElement = null;
-        let clientSecret = null;
+        const elements = stripe.elements();
+        let cardElement = null;
+        let paymentRequest = null;
 
         const rentals = {
             '1-jet-ski': { name: '1 Jet Ski', original: 150, price: 120 },
@@ -886,7 +889,7 @@
         }
 
         // Update total based on hours selected
-        async function updateTotal() {
+        function updateTotal() {
             if (!currentRental) return;
 
             const hours = parseInt(document.getElementById('rentalHours').value) || 1;
@@ -901,81 +904,125 @@
             document.getElementById('payButton').textContent = `Pay $${discountTotal}`;
             document.getElementById('rentalPrice').value = discountTotal;
 
-            // Re-initialize payment element with new amount
-            await initPaymentElement();
+            // Re-initialize payment request with new amount
+            initPaymentRequest();
         }
 
-        // Initialize Payment Element (shows Apple Pay, Google Pay, Link, Cards)
-        async function initPaymentElement() {
-            const paymentContainer = document.getElementById('payment-element');
-            if (!paymentContainer) return;
+        // Initialize Card Element
+        function initCardElement() {
+            if (cardElement) return; // Already initialized
+
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#32325d',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        '::placeholder': { color: '#aab7c4' }
+                    },
+                    invalid: { color: '#ff4444' }
+                }
+            });
+            cardElement.mount('#card-element');
+            cardElement.on('change', function(event) {
+                document.getElementById('card-errors').textContent = event.error ? event.error.message : '';
+            });
+        }
+
+        // Initialize Apple Pay / Google Pay
+        function initPaymentRequest() {
+            const prBtnContainer = document.getElementById('payment-request-btn');
+            const divider = document.getElementById('payment-divider');
+            if (prBtnContainer) prBtnContainer.innerHTML = '';
+            if (divider) divider.style.display = 'none';
 
             const hours = parseInt(document.getElementById('rentalHours').value) || 1;
             const totalAmount = currentRental.price * hours;
-            const firstName = document.getElementById('customerFirstName').value || '';
-            const lastName = document.getElementById('customerLastName').value || '';
-            const email = document.getElementById('customerEmail').value || '';
-            const phone = document.getElementById('customerPhone').value || '';
 
-            // Create payment intent first
-            const response = await fetch(`${API_URL}/api/v1/experiences/create-intent`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    rentalType: currentRental.name,
-                    price: totalAmount,
-                    hours: hours,
-                    name: `${firstName} ${lastName}`.trim() || 'Guest',
-                    email: email,
-                    phone: phone,
-                    date: document.getElementById('rentalDate').value || '',
-                    time: document.getElementById('rentalTime').value || ''
-                })
+            paymentRequest = stripe.paymentRequest({
+                country: 'US',
+                currency: 'usd',
+                total: {
+                    label: `Black Flag Watersports - ${currentRental.name}`,
+                    amount: totalAmount * 100
+                },
+                requestPayerName: true,
+                requestPayerEmail: true,
+                requestPayerPhone: true
             });
 
-            const data = await response.json();
-            if (data.error) {
-                console.error('Failed to create payment intent:', data.error);
-                return;
-            }
-
-            clientSecret = data.clientSecret;
-
-            // Create Elements instance with client secret
-            elements = stripe.elements({
-                clientSecret: clientSecret,
-                appearance: {
-                    theme: 'night',
-                    variables: {
-                        colorPrimary: '#ffdd00',
-                        colorBackground: '#1b2838',
-                        colorText: '#ffffff',
-                        colorDanger: '#ff4444',
-                        fontFamily: 'Inter, -apple-system, sans-serif',
-                        borderRadius: '8px'
+            const prButton = elements.create('paymentRequestButton', {
+                paymentRequest: paymentRequest,
+                style: {
+                    paymentRequestButton: {
+                        type: 'default',
+                        theme: 'dark',
+                        height: '48px'
                     }
                 }
             });
 
-            // Clear previous element
-            paymentContainer.innerHTML = '';
-
-            // Create and mount Payment Element
-            paymentElement = elements.create('payment', {
-                layout: {
-                    type: 'tabs',
-                    defaultCollapsed: false
-                },
-                wallets: {
-                    applePay: 'auto',
-                    googlePay: 'auto'
+            paymentRequest.canMakePayment().then((result) => {
+                if (result) {
+                    prButton.mount('#payment-request-btn');
+                    if (divider) divider.style.display = 'block';
                 }
             });
-            paymentElement.mount('#payment-element');
 
-            paymentElement.on('change', function(event) {
-                const displayError = document.getElementById('payment-errors');
-                displayError.textContent = event.error ? event.error.message : '';
+            paymentRequest.on('paymentmethod', async (ev) => {
+                try {
+                    const hours = parseInt(document.getElementById('rentalHours').value) || 1;
+                    const totalAmount = currentRental.price * hours;
+                    const formData = {
+                        rentalType: currentRental.name,
+                        price: totalAmount,
+                        hours: hours,
+                        name: ev.payerName,
+                        email: ev.payerEmail,
+                        phone: ev.payerPhone || '',
+                        date: document.getElementById('rentalDate').value,
+                        time: document.getElementById('rentalTime').value
+                    };
+
+                    // Create payment intent
+                    const intentResponse = await fetch(`${API_URL}/api/v1/experiences/create-intent`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const intentData = await intentResponse.json();
+
+                    if (intentData.error) {
+                        ev.complete('fail');
+                        return;
+                    }
+
+                    // Confirm payment
+                    const { error, paymentIntent } = await stripe.confirmCardPayment(
+                        intentData.clientSecret,
+                        { payment_method: ev.paymentMethod.id },
+                        { handleActions: false }
+                    );
+
+                    if (error) {
+                        ev.complete('fail');
+                        return;
+                    }
+
+                    ev.complete('success');
+
+                    // Confirm with backend
+                    await fetch(`${API_URL}/api/v1/experiences/confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentIntentId: paymentIntent.id, ...formData })
+                    });
+
+                    closeBookingModal();
+                    showSuccessMessage();
+                } catch (error) {
+                    ev.complete('fail');
+                }
             });
         }
 
@@ -1025,20 +1072,19 @@
             // Show modal
             document.getElementById('bookingModal').style.display = 'flex';
 
-            // Initialize Payment Element after modal is visible
+            // Initialize Card Element and Apple Pay
             setTimeout(() => {
-                initPaymentElement();
+                initCardElement();
+                initPaymentRequest();
             }, 100);
         }
 
         function closeBookingModal() {
             document.getElementById('bookingModal').style.display = 'none';
             currentRental = null;
-            clientSecret = null;
-            elements = null;
-            paymentElement = null;
-            const paymentContainer = document.getElementById('payment-element');
-            if (paymentContainer) paymentContainer.innerHTML = '';
+            paymentRequest = null;
+            const prBtnContainer = document.getElementById('payment-request-btn');
+            if (prBtnContainer) prBtnContainer.innerHTML = '';
         }
 
         // Close on overlay click
@@ -1050,8 +1096,8 @@
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            if (!elements || !clientSecret) {
-                document.getElementById('payment-errors').textContent = 'Payment not ready. Please wait and try again.';
+            if (!cardElement) {
+                document.getElementById('card-errors').textContent = 'Payment not ready. Please wait.';
                 return;
             }
 
@@ -1079,27 +1125,35 @@
             };
 
             try {
-                // Confirm payment with Payment Element
-                const { error, paymentIntent } = await stripe.confirmPayment({
-                    elements,
-                    confirmParams: {
-                        return_url: `${window.location.origin}/experiences?success=true`,
-                        payment_method_data: {
-                            billing_details: {
-                                name: formData.name,
-                                email: formData.email,
-                                phone: formData.phone
-                            }
+                // Create payment intent
+                const intentResponse = await fetch(`${API_URL}/api/v1/experiences/create-intent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const intentData = await intentResponse.json();
+
+                if (intentData.error) {
+                    throw new Error(intentData.error);
+                }
+
+                // Confirm payment with card element
+                const { error, paymentIntent } = await stripe.confirmCardPayment(intentData.clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: formData.name,
+                            email: formData.email,
+                            phone: formData.phone
                         }
-                    },
-                    redirect: 'if_required'
+                    }
                 });
 
                 if (error) {
                     throw new Error(error.message);
                 }
 
-                if (paymentIntent && paymentIntent.status === 'succeeded') {
+                if (paymentIntent.status === 'succeeded') {
                     // Confirm with backend and send email
                     await fetch(`${API_URL}/api/v1/experiences/confirm`, {
                         method: 'POST',
@@ -1115,7 +1169,7 @@
                 }
             } catch (error) {
                 console.error('Booking error:', error);
-                document.getElementById('payment-errors').textContent = error.message || 'Payment failed. Please try again.';
+                document.getElementById('card-errors').textContent = error.message || 'Payment failed. Please try again.';
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
