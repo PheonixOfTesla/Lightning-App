@@ -257,9 +257,16 @@
         .deal-card-image {
             width: 100%;
             height: 200px;
-            object-fit: contain;
-            background: #fff;
-            padding: 1rem;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .deal-card-image.error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 3rem;
         }
 
         .deal-card-content {
@@ -671,6 +678,22 @@
                         <input type="password" id="loginPassword" required placeholder="Your password">
                     </div>
                     <button type="submit" class="auth-btn" id="loginBtn">Login</button>
+                    <p style="text-align: center; margin-top: 1rem;">
+                        <a href="#" onclick="showResetPassword(event)" style="color: var(--lightning-yellow); font-size: 0.9rem;">Forgot Password?</a>
+                    </p>
+                </form>
+
+                <!-- Reset Password Form -->
+                <form class="auth-form" id="resetForm" onsubmit="handleReset(event)">
+                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem;">Enter your email and we'll send you a link to reset your password.</p>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="resetEmail" required placeholder="you@example.com">
+                    </div>
+                    <button type="submit" class="auth-btn" id="resetBtn">Send Reset Link</button>
+                    <p style="text-align: center; margin-top: 1rem;">
+                        <a href="#" onclick="switchTab('login')" style="color: var(--gray); font-size: 0.9rem;">Back to Login</a>
+                    </p>
                 </form>
             </div>
         </div>
@@ -718,30 +741,125 @@
         let currentUser = null;
         let activeCategory = 'all';
 
-        // Curated deals
+        // Curated deals for Sarasota 20-40 demo
+        // Using search URLs + Lorem Picsum for reliable images
         const deals = [
-            { id: 1, category: 'summer', title: 'Portable Bluetooth Speaker - Waterproof, 24H Playtime', image: 'https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1500_.jpg', asin: 'B08N5WRWNW' },
-            { id: 2, category: 'summer', title: 'Beach Umbrella with Sand Anchor - UV 50+ Protection', image: 'https://m.media-amazon.com/images/I/71iLFGsxuWL._AC_SL1500_.jpg', asin: 'B07D3NLWCB' },
-            { id: 3, category: 'summer', title: 'Insulated Cooler Backpack - Leak Proof, 30 Can', image: 'https://m.media-amazon.com/images/I/81QpkIctqPL._AC_SL1500_.jpg', asin: 'B073WLGS7F' },
-            { id: 4, category: 'summer', title: 'Polarized Sport Sunglasses - UV400 Protection', image: 'https://m.media-amazon.com/images/I/61utX8kBDlL._AC_SL1500_.jpg', asin: 'B07MZY7K9N' },
-            { id: 5, category: 'tech', title: 'Wireless Earbuds - Active Noise Cancelling, 32H Battery', image: 'https://m.media-amazon.com/images/I/51zLZbTliqL._AC_SL1500_.jpg', asin: 'B0C33XXS56' },
-            { id: 6, category: 'tech', title: 'Portable Charger Power Bank 20000mAh', image: 'https://m.media-amazon.com/images/I/71nSLZ23s2L._AC_SL1500_.jpg', asin: 'B08LH26PFT' },
-            { id: 7, category: 'tech', title: 'Smart Watch Fitness Tracker - Heart Rate Monitor', image: 'https://m.media-amazon.com/images/I/61RCJP1GSVL._AC_SL1500_.jpg', asin: 'B0B7F1RVJK' },
-            { id: 8, category: 'tech', title: 'Ring Light with Tripod Stand - 10" LED', image: 'https://m.media-amazon.com/images/I/61wPPhAuOGL._AC_SL1500_.jpg', asin: 'B08B3X7NXC' },
-            { id: 9, category: 'home', title: 'Air Fryer 5.8QT - Digital Display, 8 Presets', image: 'https://m.media-amazon.com/images/I/71dQCudYXaL._AC_SL1500_.jpg', asin: 'B0936FGLQS' },
-            { id: 10, category: 'home', title: 'Robot Vacuum Cleaner - Self-Charging, App Control', image: 'https://m.media-amazon.com/images/I/61mnof6lO1L._AC_SL1500_.jpg', asin: 'B08PP4KFNQ' },
-            { id: 11, category: 'home', title: 'LED Strip Lights 50ft - RGB Color Changing', image: 'https://m.media-amazon.com/images/I/81oHEhFpXnL._AC_SL1500_.jpg', asin: 'B082TZ3R67' },
-            { id: 12, category: 'home', title: 'Electric Kettle - 1.7L Stainless Steel, Fast Boil', image: 'https://m.media-amazon.com/images/I/71P99-Gh7TL._AC_SL1500_.jpg', asin: 'B07T1KH8L7' },
-            { id: 13, category: 'outdoor', title: 'Camping Hammock with Mosquito Net', image: 'https://m.media-amazon.com/images/I/81lY2vN0IwL._AC_SL1500_.jpg', asin: 'B07FXGKBXX' },
-            { id: 14, category: 'outdoor', title: 'Portable Camping Stove - Windproof', image: 'https://m.media-amazon.com/images/I/71Z27SkIuNL._AC_SL1500_.jpg', asin: 'B00B4FY8YO' },
-            { id: 15, category: 'outdoor', title: 'Inflatable Stand Up Paddle Board Kit', image: 'https://m.media-amazon.com/images/I/71EuEHBkZhL._AC_SL1500_.jpg', asin: 'B08T8HFHXW' },
-            { id: 16, category: 'outdoor', title: 'Portable Folding Chair - Heavy Duty', image: 'https://m.media-amazon.com/images/I/81vPgKrN1TL._AC_SL1500_.jpg', asin: 'B07P44VS6V' }
+            // Summer/Beach
+            { id: 1, category: 'summer', title: 'Beach Coolers & Bags', searchTerm: 'beach+cooler+bag' },
+            { id: 2, category: 'summer', title: 'Pool Floats & Loungers', searchTerm: 'pool+float+lounger' },
+            { id: 3, category: 'summer', title: 'Polarized Sunglasses', searchTerm: 'polarized+sunglasses' },
+            { id: 4, category: 'summer', title: 'Beach Umbrellas', searchTerm: 'beach+umbrella' },
+
+            // Tech
+            { id: 5, category: 'tech', title: 'Wireless Earbuds', searchTerm: 'wireless+earbuds' },
+            { id: 6, category: 'tech', title: 'Portable Power Banks', searchTerm: 'portable+charger+power+bank' },
+            { id: 7, category: 'tech', title: 'Bluetooth Speakers', searchTerm: 'bluetooth+speaker+waterproof' },
+            { id: 8, category: 'tech', title: 'Smart Watches', searchTerm: 'smart+watch+fitness' },
+
+            // Home
+            { id: 9, category: 'home', title: 'Air Fryers', searchTerm: 'air+fryer' },
+            { id: 10, category: 'home', title: 'Coffee Makers', searchTerm: 'coffee+maker' },
+            { id: 11, category: 'home', title: 'LED Strip Lights', searchTerm: 'led+strip+lights' },
+            { id: 12, category: 'home', title: 'Robot Vacuums', searchTerm: 'robot+vacuum' },
+
+            // Outdoor
+            { id: 13, category: 'outdoor', title: 'Paddle Boards', searchTerm: 'inflatable+paddle+board' },
+            { id: 14, category: 'outdoor', title: 'Kayaks', searchTerm: 'inflatable+kayak' },
+            { id: 15, category: 'outdoor', title: 'Camping Gear', searchTerm: 'camping+gear' },
+            { id: 16, category: 'outdoor', title: 'Home Gym Equipment', searchTerm: 'home+gym+equipment' }
         ];
+
+        // Generate image URL - use Lorem Picsum with seed for consistency
+        function getImageUrl(id) {
+            return `https://picsum.photos/seed/${id}/400/300`;
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
+            // Check for reset token in URL
+            const params = new URLSearchParams(window.location.search);
+            const resetToken = params.get('reset');
+            if (resetToken) {
+                showNewPasswordForm(resetToken);
+            } else {
+                checkAuth();
+            }
         });
+
+        // Show new password form (when user clicks reset link)
+        function showNewPasswordForm(token) {
+            document.getElementById('authModal').classList.add('active');
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+
+            // Replace modal body with new password form
+            document.querySelector('.modal-body').innerHTML = `
+                <div class="auth-error" id="authError"></div>
+                <form onsubmit="handleNewPassword(event, '${token}')">
+                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem;">Enter your new password below.</p>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPassword" required placeholder="At least 6 characters" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="confirmPassword" required placeholder="Confirm new password" minlength="6">
+                    </div>
+                    <button type="submit" class="auth-btn" id="newPassBtn">Set New Password</button>
+                </form>
+            `;
+
+            document.querySelector('.modal-header h2').textContent = 'Reset Password';
+            document.querySelector('.modal-header p').textContent = 'Create a new password for your account';
+            document.querySelector('.modal-tabs').style.display = 'none';
+        }
+
+        // Handle new password submission
+        async function handleNewPassword(e, token) {
+            e.preventDefault();
+            hideError();
+
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('newPassBtn');
+
+            if (newPassword !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/reset-password/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, newPassword })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.querySelector('.modal-body').innerHTML = `
+                        <div style="text-align: center; padding: 1rem 0;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">✓</div>
+                            <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">Password Reset!</h3>
+                            <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem;">Your password has been updated.</p>
+                            <a href="/deals" class="auth-btn" style="display: block; text-decoration: none;">Login Now</a>
+                        </div>
+                    `;
+                } else {
+                    showError(data.error || 'Failed to reset password');
+                    btn.disabled = false;
+                    btn.textContent = 'Set New Password';
+                }
+            } catch (e) {
+                showError('Connection error. Try again.');
+                btn.disabled = false;
+                btn.textContent = 'Set New Password';
+            }
+        }
 
         // Check if user is logged in
         async function checkAuth() {
@@ -809,6 +927,57 @@
             }
 
             hideError();
+        }
+
+        // Show reset password form
+        function showResetPassword(e) {
+            e.preventDefault();
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('resetForm').classList.add('active');
+            hideError();
+        }
+
+        // Handle reset password
+        async function handleReset(e) {
+            e.preventDefault();
+            hideError();
+
+            const email = document.getElementById('resetEmail').value;
+            const btn = document.getElementById('resetBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('resetForm').innerHTML = `
+                        <div style="text-align: center; padding: 1rem 0;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📧</div>
+                            <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">Check Your Email</h3>
+                            <p style="color: var(--gray); font-size: 0.9rem;">If an account exists for ${email}, you'll receive a password reset link.</p>
+                            <p style="margin-top: 1.5rem;">
+                                <a href="#" onclick="switchTab('login')" style="color: var(--lightning-yellow);">Back to Login</a>
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    showError(data.error || 'Failed to send reset email');
+                }
+            } catch (e) {
+                showError('Connection error. Try again.');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Send Reset Link';
         }
 
         // Show/hide error
@@ -912,13 +1081,13 @@
             renderDeals();
         }
 
-        // Build Amazon URL
-        function getAmazonUrl(asin) {
-            return `https://www.amazon.com/dp/${asin}?tag=${AFFILIATE_TAG}`;
+        // Build Amazon search URL (always works - no invalid ASINs)
+        function getAmazonSearchUrl(searchTerm) {
+            return `https://www.amazon.com/s?k=${searchTerm}&tag=${AFFILIATE_TAG}`;
         }
 
-        // Track click
-        async function trackClick(asin, category) {
+        // Track click and open Amazon
+        async function trackClick(searchTerm, category) {
             const token = localStorage.getItem('dealToken');
             if (token) {
                 try {
@@ -928,25 +1097,26 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ asin, category })
+                        body: JSON.stringify({ searchTerm, category })
                     });
                 } catch (e) {}
             }
-            window.open(getAmazonUrl(asin), '_blank');
+            window.open(getAmazonSearchUrl(searchTerm), '_blank');
         }
 
         // Render deal card
         function renderDealCard(deal) {
             const labels = { summer: 'Summer', tech: 'Tech', home: 'Home', outdoor: 'Outdoor' };
+            const imgUrl = getImageUrl(deal.id);
             return `
                 <div class="deal-card">
-                    <img class="deal-card-image" src="${deal.image}" alt="${deal.title}" loading="lazy">
+                    <img class="deal-card-image" src="${imgUrl}" alt="${deal.title}" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1b2838,#2d3748)';this.style.minHeight='200px';">
                     <div class="deal-card-content">
                         <span class="deal-card-category">${labels[deal.category] || deal.category}</span>
                         <h3 class="deal-card-title">${deal.title}</h3>
-                        <p class="deal-card-price">Check Price on Amazon</p>
-                        <button class="deal-card-btn" onclick="trackClick('${deal.asin}', '${deal.category}')">
-                            View on Amazon
+                        <p class="deal-card-price">Shop deals on Amazon</p>
+                        <button class="deal-card-btn" onclick="trackClick('${deal.searchTerm}', '${deal.category}')">
+                            Shop on Amazon
                         </button>
                     </div>
                 </div>
