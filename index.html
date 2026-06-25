@@ -10777,8 +10777,8 @@
 
         async function submitLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+            const email = document.getElementById('lcEmail').value;
+            const password = document.getElementById('lcPasscode').value;
             const btn = e.target.querySelector('button');
 
             console.log('Login attempt:', { email, password, userType: selectedUserType });
@@ -10925,8 +10925,8 @@
                         <span id="selectedTypeLabel" style="background: var(--lightning-yellow); color: #000; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;"></span>
                     </div>
                     <form class="pass-modal-form" onsubmit="submitLogin(event)">
-                        <input type="email" id="loginEmail" placeholder="Email" required>
-                        <input type="text" id="loginPassword" placeholder="Passcode" required>
+                        <input type="email" id="lcEmail" placeholder="Email" required>
+                        <input type="text" id="lcPasscode" placeholder="Passcode" required>
                         <button type="submit">LOGIN</button>
                     </form>
                     <div style="text-align: center; margin-top: 1rem;">
