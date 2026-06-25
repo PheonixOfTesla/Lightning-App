@@ -8068,21 +8068,15 @@
         }
 
         function renderDealCard(deal) {
-            // Calculate discount - only show if reasonable (5-90%)
-            let discountPercent = deal.discountPercent || 0;
-            if (!discountPercent && deal.originalPrice > deal.dealPrice) {
-                discountPercent = Math.round((1 - deal.dealPrice / deal.originalPrice) * 100);
-            }
-            const showDiscount = discountPercent >= 5 && discountPercent <= 90;
-
             const sourceLogo = getDealSourceLogo(deal.source);
             const expiresText = deal.expiresAt ? getExpiresText(deal.expiresAt) : '';
             const dealUrl = deal.url || deal.dealUrl || '';
+            const dealPrice = deal.dealPrice ? `$${(deal.dealPrice / 100).toFixed(2)}` : '';
 
             return `
-                <div class="deal-card" onclick="claimDeal('${deal._id || deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.dealPrice}, '${dealUrl}')">
+                <div class="deal-card" onclick="window.open('${dealUrl}', '_blank')">
                     ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.display='none'">` : `<div class="deal-card-image"></div>`}
-                    ${showDiscount ? `<div class="deal-card-badge">-${discountPercent}%</div>` : ''}
+                    ${deal.source ? `<div class="deal-card-badge" style="background: rgba(0,0,0,0.7); color: #fff; font-size: 0.65rem;">${deal.source.toUpperCase()}</div>` : ''}
                     ${sourceLogo ? `
                         <div class="deal-card-source">
                             <img src="${sourceLogo}" alt="${deal.source}">
@@ -8091,17 +8085,16 @@
                     <div class="deal-card-content">
                         <h3 class="deal-card-title">${deal.title}</h3>
                         <div class="deal-card-pricing">
-                            <span class="deal-card-price">$${(deal.dealPrice / 100).toFixed(2)}</span>
-                            <span class="deal-card-original">$${(deal.originalPrice / 100).toFixed(2)}</span>
+                            <span class="deal-card-price">${dealPrice || 'See Price'}</span>
                         </div>
                         <div class="deal-card-meta">
                             <span class="deal-card-category">${deal.category || 'Deal'}</span>
-                            ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
+                            ${deal.merchant ? `<span class="deal-card-merchant">${deal.merchant}</span>` : ''}
                         </div>
                     </div>
-                    <button class="deal-claim-btn" onclick="event.stopPropagation(); claimDeal('${deal._id || deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.dealPrice}, '${dealUrl}')">
+                    <button class="deal-claim-btn" onclick="event.stopPropagation(); window.open('${dealUrl}', '_blank')">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        CLAIM $1.99
+                        VIEW DEAL
                     </button>
                 </div>
             `;
