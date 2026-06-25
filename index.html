@@ -10834,17 +10834,11 @@
 
         async function submitCreateAccount(e) {
             e.preventDefault();
-            const name = document.getElementById('createName').value;
+            const firstName = document.getElementById('createFirstName').value;
+            const lastName = document.getElementById('createLastName').value;
             const email = document.getElementById('createEmail').value;
             const phone = document.getElementById('createPhone').value;
-            const password = document.getElementById('createPassword').value;
-            const passwordConfirm = document.getElementById('createPasswordConfirm').value;
             const btn = e.target.querySelector('button');
-
-            if (password !== passwordConfirm) {
-                alert('Passwords do not match');
-                return;
-            }
 
             btn.textContent = 'Creating...';
             btn.disabled = true;
@@ -10853,7 +10847,7 @@
                 const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, phone, password, userType: selectedUserType })
+                    body: JSON.stringify({ firstName, lastName, email, phone, userType: selectedUserType })
                 });
 
                 const data = await response.json();
@@ -10945,11 +10939,10 @@
                         <span id="createTypeLabel" style="background: var(--lightning-yellow); color: #000; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;"></span>
                     </div>
                     <form class="pass-modal-form" onsubmit="submitCreateAccount(event)">
-                        <input type="text" id="createName" placeholder="Full name" required>
+                        <input type="text" id="createFirstName" placeholder="First name" required>
+                        <input type="text" id="createLastName" placeholder="Last name" required>
                         <input type="email" id="createEmail" placeholder="Email" required>
-                        <input type="tel" id="createPhone" placeholder="Phone (optional)">
-                        <input type="password" id="createPassword" placeholder="Password" required>
-                        <input type="password" id="createPasswordConfirm" placeholder="Confirm password" required>
+                        <input type="tel" id="createPhone" placeholder="Phone">
                         <button type="submit">CREATE ACCOUNT</button>
                     </form>
                     <div style="text-align: center; margin-top: 1rem;">
