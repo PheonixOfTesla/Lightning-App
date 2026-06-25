@@ -661,9 +661,23 @@
 
                 <!-- Signup Form -->
                 <form class="auth-form active" id="signupForm" onsubmit="handleSignup(event)">
+                    <div style="display: flex; gap: 0.75rem;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>First Name</label>
+                            <input type="text" id="signupFirstName" required placeholder="First">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Last Name</label>
+                            <input type="text" id="signupLastName" required placeholder="Last">
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>Email</label>
                         <input type="email" id="signupEmail" required placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="signupPhone" placeholder="(555) 555-5555">
                     </div>
                     <div class="form-group">
                         <label>Password</label>
@@ -999,7 +1013,10 @@
             e.preventDefault();
             hideError();
 
+            const firstName = document.getElementById('signupFirstName').value;
+            const lastName = document.getElementById('signupLastName').value;
             const email = document.getElementById('signupEmail').value;
+            const phone = document.getElementById('signupPhone').value;
             const password = document.getElementById('signupPassword').value;
             const btn = document.getElementById('signupBtn');
 
@@ -1010,7 +1027,7 @@
                 const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ firstName, lastName, email, phone, password })
                 });
 
                 const data = await res.json();
