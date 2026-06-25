@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning Receipt | Lightning Pass</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23ffd700' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+    <style>
+        :root {
+            --lightning-yellow: #ffdd00;
+            --neon-green: #00ff88;
+            --pure-black: #000;
+            --card-black: #12121a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .receipt-container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .receipt-header img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+
+        .receipt-header h1 {
+            font-size: 1.5rem;
+            color: var(--lightning-yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .receipt-card {
+            background: var(--card-black);
+            border: 2px solid var(--lightning-yellow);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 221, 0, 0.2);
+        }
+
+        .receipt-success {
+            background: linear-gradient(135deg, var(--lightning-yellow) 0%, #ffaa00 100%);
+            color: #000;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .receipt-success h2 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .receipt-body {
+            padding: 2rem;
+        }
+
+        .receipt-qr {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #fff;
+            border-radius: 15px;
+        }
+
+        .receipt-qr canvas, .receipt-qr img {
+            max-width: 200px;
+        }
+
+        .receipt-qr p {
+            color: #333;
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+        }
+
+        .receipt-claim-id {
+            text-align: center;
+            font-family: monospace;
+            font-size: 1.25rem;
+            color: var(--lightning-yellow);
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .receipt-deal {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+        }
+
+        .receipt-deal-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .receipt-deal h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .receipt-deal .merchant {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .receipt-pricing {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .receipt-pricing-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .receipt-pricing-row.total {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--lightning-yellow);
+        }
+
+        .receipt-footer {
+            padding: 1.5rem 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .receipt-footer p {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .receipt-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .receipt-btn-primary {
+            background: var(--lightning-yellow);
+            color: #000;
+            border: none;
+        }
+
+        .receipt-btn-primary:hover {
+            background: #fff;
+            transform: scale(1.05);
+        }
+
+        .receipt-btn-secondary {
+            background: transparent;
+            color: var(--lightning-yellow);
+            border: 1px solid var(--lightning-yellow);
+        }
+
+        .receipt-btn-secondary:hover {
+            background: var(--lightning-yellow);
+            color: #000;
+        }
+
+        .receipt-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .status-paid {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--neon-green);
+        }
+
+        .status-redeemed {
+            background: rgba(138, 43, 226, 0.2);
+            color: #8b5cf6;
+        }
+
+        .status-pending {
+            background: rgba(255, 221, 0, 0.2);
+            color: var(--lightning-yellow);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 221, 0, 0.2);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #ff4444;
+        }
+
+        .promo-code {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px dashed var(--neon-green);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .promo-code label {
+            font-size: 0.8rem;
+            color: #888;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .promo-code code {
+            font-size: 1.25rem;
+            color: var(--neon-green);
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .receipt-body {
+                padding: 1.5rem;
+            }
+
+            .receipt-footer {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <img src="logo.png" alt="Lightning Pass">
+            <h1>Lightning Receipt</h1>
+        </div>
+
+        <div id="receiptContent">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading your receipt...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+    <script>
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+
+        async function loadReceipt() {
+            // Get claim ID from URL
+            const pathParts = window.location.pathname.split('/');
+            const claimId = pathParts[pathParts.length - 1];
+
+            if (!claimId || claimId === 'receipt') {
+                showError('No receipt ID provided');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/deals/receipt/${claimId}`);
+                const data = await response.json();
+
+                if (!data.success || !data.claim) {
+                    showError(data.error || 'Receipt not found');
+                    return;
+                }
+
+                renderReceipt(data.claim);
+
+            } catch (error) {
+                console.error('Error loading receipt:', error);
+                showError('Failed to load receipt');
+            }
+        }
+
+        function renderReceipt(claim) {
+            const statusClass = {
+                'paid': 'status-paid',
+                'redeemed': 'status-redeemed',
+                'pending': 'status-pending'
+            }[claim.status] || 'status-pending';
+
+            const statusText = {
+                'paid': 'Active',
+                'redeemed': 'Redeemed',
+                'pending': 'Pending Payment'
+            }[claim.status] || claim.status;
+
+            const content = document.getElementById('receiptContent');
+            content.innerHTML = `
+                <div class="receipt-card">
+                    <div class="receipt-success">
+                        <h2>⚡ Deal Claimed! <span class="receipt-status ${statusClass}">${statusText}</span></h2>
+                    </div>
+
+                    <div class="receipt-body">
+                        <div class="receipt-qr" id="qrCode"></div>
+
+                        <div class="receipt-claim-id">${claim.claimId}</div>
+
+                        <div class="receipt-deal">
+                            ${claim.deal.imageUrl ? `<img class="receipt-deal-image" src="${claim.deal.imageUrl}" alt="${claim.deal.title}">` : ''}
+                            <h3>${claim.deal.title}</h3>
+                            <p class="merchant">${claim.deal.merchant || 'Various Retailers'}</p>
+
+                            ${claim.deal.promoCode ? `
+                                <div class="promo-code">
+                                    <label>Use this code at checkout:</label>
+                                    <code>${claim.deal.promoCode}</code>
+                                </div>
+                            ` : ''}
+
+                            <div class="receipt-pricing">
+                                <div class="receipt-pricing-row">
+                                    <span>Deal Price</span>
+                                    <span>${claim.pricing.formattedDealPrice}</span>
+                                </div>
+                                <div class="receipt-pricing-row">
+                                    <span>Service Fee</span>
+                                    <span>${claim.pricing.formattedServiceFee}</span>
+                                </div>
+                                <div class="receipt-pricing-row total">
+                                    <span>Total Paid</span>
+                                    <span>${claim.pricing.formattedTotal}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="receipt-footer">
+                        <p>Show this QR code to redeem at participating locations, or use the link/promo code online.</p>
+                        <div class="receipt-actions">
+                            ${claim.deal.dealUrl ? `<a href="${claim.deal.dealUrl}" target="_blank" class="receipt-btn receipt-btn-primary">Go to Deal →</a>` : ''}
+                            <a href="/deals" class="receipt-btn receipt-btn-secondary">Browse More Deals</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Generate QR code
+            const qrContainer = document.getElementById('qrCode');
+            QRCode.toCanvas(document.createElement('canvas'), claim.claimId, {
+                width: 200,
+                margin: 2,
+                color: {
+                    dark: '#000',
+                    light: '#fff'
+                }
+            }, function(error, canvas) {
+                if (error) {
+                    qrContainer.innerHTML = `<p style="color: #333;">Claim ID: ${claim.claimId}</p>`;
+                } else {
+                    qrContainer.innerHTML = '';
+                    qrContainer.appendChild(canvas);
+                    qrContainer.innerHTML += `<p>Scan to verify</p>`;
+                }
+            });
+        }
+
+        function showError(message) {
+            document.getElementById('receiptContent').innerHTML = `
+                <div class="error">
+                    <h2>Oops!</h2>
+                    <p>${message}</p>
+                    <a href="/deals" class="receipt-btn receipt-btn-primary" style="margin-top: 1rem; display: inline-block;">Browse Deals</a>
+                </div>
+            `;
+        }
+
+        // Load receipt on page load
+        loadReceipt();
+    </script>
+</body>
+</html>

@@ -1422,6 +1422,29 @@
             font-weight: 500;
         }
 
+        .deal-card-clickable {
+            cursor: pointer;
+        }
+
+        .deal-claim-btn {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: linear-gradient(135deg, var(--lightning-yellow) 0%, #ffaa00 100%);
+            color: #000;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .deal-claim-btn:hover {
+            background: linear-gradient(135deg, #fff 0%, var(--lightning-yellow) 100%);
+            transform: scale(1.02);
+        }
+
         @media (max-width: 768px) {
             .nav-links .nav-link:not(.btn) {
                 display: none;
@@ -8016,27 +8039,33 @@
             const discountPercent = deal.discountPercent || Math.round((1 - deal.dealPrice / deal.originalPrice) * 100);
             const sourceLogo = getDealSourceLogo(deal.source);
             const expiresText = deal.expiresAt ? getExpiresText(deal.expiresAt) : '';
+            const totalPrice = ((deal.dealPrice + 199) / 100).toFixed(2); // Deal price + $1.99 service fee
 
             return `
-                <div class="deal-card" onclick="trackDealClick('${deal._id || deal.id}', '${deal.url || deal.dealUrl || ''}')">
-                    ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.display='none'">` : `<div class="deal-card-image"></div>`}
-                    <div class="deal-card-badge">-${discountPercent}%</div>
-                    ${sourceLogo ? `
-                        <div class="deal-card-source">
-                            <img src="${sourceLogo}" alt="${deal.source}">
-                        </div>
-                    ` : ''}
-                    <div class="deal-card-content">
-                        <h3 class="deal-card-title">${deal.title}</h3>
-                        <div class="deal-card-pricing">
-                            <span class="deal-card-price">$${(deal.dealPrice / 100).toFixed(2)}</span>
-                            <span class="deal-card-original">$${(deal.originalPrice / 100).toFixed(2)}</span>
-                        </div>
-                        <div class="deal-card-meta">
-                            <span class="deal-card-category">${deal.category || 'Deal'}</span>
-                            ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
+                <div class="deal-card">
+                    <div class="deal-card-clickable" onclick="trackDealClick('${deal._id || deal.id}', '${deal.url || deal.dealUrl || ''}')">
+                        ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.display='none'">` : `<div class="deal-card-image"></div>`}
+                        <div class="deal-card-badge">-${discountPercent}%</div>
+                        ${sourceLogo ? `
+                            <div class="deal-card-source">
+                                <img src="${sourceLogo}" alt="${deal.source}">
+                            </div>
+                        ` : ''}
+                        <div class="deal-card-content">
+                            <h3 class="deal-card-title">${deal.title}</h3>
+                            <div class="deal-card-pricing">
+                                <span class="deal-card-price">$${(deal.dealPrice / 100).toFixed(2)}</span>
+                                <span class="deal-card-original">$${(deal.originalPrice / 100).toFixed(2)}</span>
+                            </div>
+                            <div class="deal-card-meta">
+                                <span class="deal-card-category">${deal.category || 'Deal'}</span>
+                                ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
+                            </div>
                         </div>
                     </div>
+                    <button class="deal-claim-btn" onclick="event.stopPropagation(); claimDeal('${deal._id || deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.dealPrice})">
+                        ⚡ CLAIM - $${totalPrice}
+                    </button>
                 </div>
             `;
         }
@@ -8085,6 +8114,93 @@
             // Open the deal URL if provided
             if (url) {
                 window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
+        // Claim a deal - show email modal then redirect to Stripe checkout
+        async function claimDeal(dealId, dealTitle, dealPrice) {
+            // Check if user already has email stored
+            const storedEmail = localStorage.getItem('lightningPassEmail');
+            const storedName = localStorage.getItem('lightningPassName');
+
+            if (storedEmail) {
+                // Already have email, go straight to checkout
+                await processClaimCheckout(dealId, storedEmail, storedName);
+            } else {
+                // Show claim modal to get email
+                showClaimModal(dealId, dealTitle, dealPrice);
+            }
+        }
+
+        function showClaimModal(dealId, dealTitle, dealPrice) {
+            const totalPrice = ((dealPrice + 199) / 100).toFixed(2);
+            const modal = document.createElement('div');
+            modal.className = 'pass-modal-overlay active';
+            modal.id = 'claimModal';
+            modal.innerHTML = `
+                <div class="pass-modal">
+                    <span class="pass-modal-close" onclick="closeClaimModal()">&times;</span>
+                    <div class="pass-modal-icon">⚡</div>
+                    <h2>Claim This Deal</h2>
+                    <p style="font-size: 0.9rem; color: #aaa;">${dealTitle.slice(0, 60)}...</p>
+                    <p style="font-size: 1.5rem; color: var(--lightning-yellow); font-weight: 700;">$${totalPrice}</p>
+                    <form class="pass-modal-form" onsubmit="submitClaim(event, '${dealId}')">
+                        <input type="text" id="claimName" placeholder="Your name" required>
+                        <input type="email" id="claimEmail" placeholder="Your email" required>
+                        <button type="submit">⚡ CLAIM NOW</button>
+                    </form>
+                    <p style="font-size: 0.75rem; color: #666; margin-top: 1rem;">Includes $1.99 service fee. You'll receive a Lightning Receipt with your deal.</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeClaimModal() {
+            const modal = document.getElementById('claimModal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        async function submitClaim(e, dealId) {
+            e.preventDefault();
+            const email = document.getElementById('claimEmail').value;
+            const name = document.getElementById('claimName').value;
+            const btn = e.target.querySelector('button');
+
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+
+            // Store for future claims
+            localStorage.setItem('lightningPassEmail', email);
+            localStorage.setItem('lightningPassName', name);
+
+            await processClaimCheckout(dealId, email, name);
+        }
+
+        async function processClaimCheckout(dealId, email, name) {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/deals/claim/${dealId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, name })
+                });
+
+                const data = await response.json();
+
+                if (data.checkoutUrl) {
+                    // Redirect to Stripe checkout
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to create checkout'));
+                    closeClaimModal();
+                }
+            } catch (error) {
+                console.error('Claim error:', error);
+                alert('Error processing claim. Please try again.');
+                closeClaimModal();
             }
         }
 
