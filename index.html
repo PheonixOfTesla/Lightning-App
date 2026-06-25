@@ -10804,6 +10804,9 @@
                     localStorage.setItem('userType', selectedUserType);
                     localStorage.setItem('userEmail', email);
 
+                    // Set state.token for API calls
+                    state.token = data.token;
+
                     // Route based on user type
                     closePassModal();
                     switch(selectedUserType) {
