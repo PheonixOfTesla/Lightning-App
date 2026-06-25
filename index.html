@@ -8316,11 +8316,13 @@
                 </div>
             `;
 
-            // Populate ticket tiers (paid tickets disabled for pending events)
+            // Populate ticket tiers (paid tickets disabled for pending events, sold out tickets disabled)
             const isPending = event.status === 'pending';
             const tiersHtml = event.tickets?.map((ticket, i) => {
                 const isPaid = ticket.price > 0;
-                const isDisabled = isPending && isPaid;
+                const isSoldOut = ticket.available === 0;
+                const isDisabled = (isPending && isPaid) || isSoldOut;
+                const statusText = isSoldOut ? 'SOLD OUT' : (isPending && isPaid ? 'COMING SOON' : '');
                 return `
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <label style="display: flex; justify-content: space-between; align-items: center; ${isDisabled ? 'cursor: not-allowed; opacity: 0.5;' : 'cursor: pointer;'} padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; ${isDisabled ? 'position: relative;' : ''}">
@@ -8333,7 +8335,7 @@
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: flex-end;">
                             <div style="font-weight: bold; color: var(--lightning-yellow); ${isDisabled ? 'text-decoration: line-through;' : ''}">${ticket.price === 0 ? 'FREE' : '$' + (ticket.price / 100).toFixed(2)}</div>
-                            ${isDisabled ? '<div style="font-size: 0.6rem; color: #FFA500;">COMING SOON</div>' : ''}
+                            ${statusText ? `<div style="font-size: 0.6rem; color: ${isSoldOut ? '#ff4466' : '#FFA500'};">${statusText}</div>` : ''}
                         </div>
                     </label>
                 </div>
