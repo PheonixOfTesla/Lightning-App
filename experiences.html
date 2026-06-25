@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiences | Lightning Pass - Jet Ski Rentals, Boat Tours, Sarasota</title>
+    <meta name="description" content="Exclusive experiences for Lightning Pass members. Jet ski rentals, boat tours, and water sports in Sarasota Bay. Member discounts up to 20% off.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Lightning Experiences">
+    <meta property="og:description" content="Jet Ski Rentals & Water Sports - Member Discounts">
+    <meta property="og:image" content="https://thelightningpass.com/logo.png">
+    <meta property="og:url" content="https://thelightningpass.com/experiences">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Lightning Experiences">
+    <meta name="twitter:description" content="Jet Ski Rentals & Water Sports - Member Discounts">
+    <meta name="twitter:image" content="https://thelightningpass.com/logo.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2a3a4a;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --white: #ffffff;
+            --gray: #888;
+            --light-gray: #cccccc;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--pure-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.875rem 2rem;
+            border-bottom: 1px solid rgba(255, 221, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--white);
+        }
+
+        .logo span:first-child {
+            font-size: 1.75rem;
+            color: var(--lightning-yellow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--lightning-yellow);
+        }
+
+        .nav-link.active {
+            color: var(--lightning-yellow);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 120px 2rem 60px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(255, 221, 0, 0.05) 0%, transparent 100%);
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 221, 0, 0.15);
+            color: var(--lightning-yellow);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            color: var(--light-gray);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 221, 0, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-subtitle {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Partner Card */
+        .partner-card {
+            background: var(--card-black);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-dark);
+            margin-bottom: 2rem;
+        }
+
+        .partner-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .partner-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .partner-info h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .partner-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .partner-badge {
+            margin-left: auto;
+            background: rgba(255, 221, 0, 0.15);
+            color: var(--lightning-yellow);
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Rental Grid */
+        .rental-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .rental-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-dark);
+            transition: all 0.3s;
+        }
+
+        .rental-card:hover {
+            border-color: var(--lightning-yellow);
+            transform: translateY(-4px);
+        }
+
+        .rental-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #1a3a5c 0%, #0d2840 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .rental-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rental-image-placeholder {
+            font-size: 3rem;
+        }
+
+        .popular-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .rental-content {
+            padding: 1.25rem;
+        }
+
+        .rental-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .rental-details {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .rental-details li {
+            margin-bottom: 0.25rem;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rental-details li::before {
+            content: "•";
+            color: var(--lightning-yellow);
+        }
+
+        .rental-pricing {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .price-row:last-child {
+            border-bottom: none;
+        }
+
+        .price-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .price-original {
+            text-decoration: line-through;
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .price-discount {
+            color: #4ade80;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .price-final {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .book-btn:hover {
+            background: #e6c700;
+            transform: scale(1.02);
+        }
+
+        /* Partner Info Bar */
+        .partner-info-bar {
+            display: flex;
+            gap: 2rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid var(--border-dark);
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--light-gray);
+            font-size: 0.85rem;
+        }
+
+        .info-item svg {
+            color: var(--lightning-yellow);
+        }
+
+        /* Coming Soon */
+        .coming-soon-card {
+            background: var(--card-black);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            border: 1px dashed var(--border-dark);
+        }
+
+        .coming-soon-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+        }
+
+        .coming-soon-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-dark);
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--lightning-yellow);
+            text-decoration: none;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .rental-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .partner-info-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .partner-header {
+                flex-wrap: wrap;
+            }
+
+            .partner-badge {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span>⚡</span> Lightning Pass
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Events</a>
+                <a href="/experiences" class="nav-link active">Experiences</a>
+                <a href="/partners" class="nav-link">Partners</a>
+                <a href="/about" class="nav-link">About</a>
+            </div>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <span class="hero-badge">Lightning Experiences</span>
+        <h1>Experiences</h1>
+        <p>Exclusive member discounts on jet ski rentals, boat tours, and water sports across Sarasota Bay.</p>
+    </section>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Rentals Section -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🚤</div>
+                <div>
+                    <h2 class="section-title">Rentals</h2>
+                    <p class="section-subtitle">Jet skis, boats, and watercraft</p>
+                </div>
+            </div>
+
+            <!-- Black Flag Watersports -->
+            <div class="partner-card">
+                <div class="partner-header">
+                    <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/cbac2f067_logo.png" alt="Black Flag Watersports" class="partner-logo">
+                    <div class="partner-info">
+                        <h3>Black Flag Watersports</h3>
+                        <p>Sarasota Bay • Jet Ski Rentals</p>
+                    </div>
+                    <span class="partner-badge">20% OFF</span>
+                </div>
+
+                <div class="rental-grid">
+                    <!-- 1 Jet Ski -->
+                    <div class="rental-card">
+                        <div class="rental-image">
+                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/c62047ee0_IMG_5663.jpg" alt="Jet Ski">
+                        </div>
+                        <div class="rental-content">
+                            <h4 class="rental-name">1 Jet Ski</h4>
+                            <ul class="rental-details">
+                                <li>Solo rider</li>
+                                <li>High performance</li>
+                                <li>Easy to operate</li>
+                            </ul>
+                            <div class="rental-pricing">
+                                <div class="price-row">
+                                    <span class="price-label">Regular</span>
+                                    <span class="price-original">$150/hr</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-label">Member Discount</span>
+                                    <span class="price-discount">-20%</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-label">You Pay</span>
+                                    <span class="price-final">$120/hr</span>
+                                </div>
+                            </div>
+                            <button class="book-btn" onclick="bookRental('1-jet-ski')">Book Now</button>
+                        </div>
+                    </div>
+
+                    <!-- 2 Jet Skis -->
+                    <div class="rental-card">
+                        <div class="rental-image">
+                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/c62047ee0_IMG_5663.jpg" alt="2 Jet Skis">
+                            <span class="popular-tag">Most Popular</span>
+                        </div>
+                        <div class="rental-content">
+                            <h4 class="rental-name">2 Jet Skis</h4>
+                            <ul class="rental-details">
+                                <li>2 skis included</li>
+                                <li>Ride together</li>
+                                <li>Best value for two</li>
+                            </ul>
+                            <div class="rental-pricing">
+                                <div class="price-row">
+                                    <span class="price-label">Regular</span>
+                                    <span class="price-original">$300/hr</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-label">Member Discount</span>
+                                    <span class="price-discount">-20%</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-label">You Pay</span>
+                                    <span class="price-final">$240/hr</span>
+                                </div>
+                            </div>
+                            <button class="book-btn" onclick="bookRental('2-jet-skis')">Book Now</button>
+                        </div>
+                    </div>
+
+                    <!-- 3 Jet Skis -->
+                    <div class="rental-card">
+                        <div class="rental-image">
+                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/c62047ee0_IMG_5663.jpg" alt="3 Jet Skis">
+                        </div>
+                        <div class="rental-content">
+                            <h4 class="rental-name">3 Jet Skis</h4>
+                            <ul class="rental-details">
+                                <li>3 skis included</li>
+                                <li>Ride together</li>
+                                <li>Perfect for groups</li>
+                            </ul>
+                            <div class="rental-pricing">
+                                <div class="price-row">
+                                    <span class="price-label">Regular</span>
+                                    <span class="price-original">$450/hr</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-label">Member Discount</span>
+                                    <span class="price-discount">-20%</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-label">You Pay</span>
+                                    <span class="price-final">$360/hr</span>
+                                </div>
+                            </div>
+                            <button class="book-btn" onclick="bookRental('3-jet-skis')">Book Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="partner-info-bar">
+                    <div class="info-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        1059 N Tamiami Trail, Sarasota
+                    </div>
+                    <div class="info-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Open 7 days, 10:30 AM - Sunset
+                    </div>
+                    <div class="info-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        (941) 422-2222
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tours Section (Coming Soon) -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🏝️</div>
+                <div>
+                    <h2 class="section-title">Tours</h2>
+                    <p class="section-subtitle">Guided experiences & excursions</p>
+                </div>
+            </div>
+
+            <div class="coming-soon-card">
+                <h3>Coming Soon</h3>
+                <p>Sunset cruises, dolphin tours, and island excursions</p>
+            </div>
+        </section>
+
+        <!-- Classes Section (Coming Soon) -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🏄</div>
+                <div>
+                    <h2 class="section-title">Classes</h2>
+                    <p class="section-subtitle">Learn something new</p>
+                </div>
+            </div>
+
+            <div class="coming-soon-card">
+                <h3>Coming Soon</h3>
+                <p>Paddleboard lessons, surf classes, and more</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>⚡ <a href="/">Lightning Pass</a> • Be there. You're invited.</p>
+    </footer>
+
+    <!-- Booking Modal Script -->
+    <script>
+        function bookRental(rentalType) {
+            // For now, redirect to call
+            const phone = '9414222222';
+            const message = `Lightning Pass booking: ${rentalType}`;
+
+            // Show booking modal or redirect
+            if (confirm(`Book ${rentalType.replace(/-/g, ' ')}?\n\nYou'll be connected with Black Flag Watersports to complete your reservation.\n\nMention "Lightning Pass" for your 20% member discount.`)) {
+                window.location.href = `tel:${phone}`;
+            }
+        }
+    </script>
+</body>
+</html>
