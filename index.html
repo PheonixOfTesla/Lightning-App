@@ -3893,6 +3893,38 @@
         </div>
     </div>
 
+    <!-- Deal Claim Modal -->
+    <div id="dealClaimModal" class="modal" style="display: none;" onclick="if(event.target === this) closeClaimModal()">
+        <div class="modal-content" style="max-width: 420px; background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%); border: 2px solid var(--lightning-yellow); border-radius: 20px; padding: 2rem;">
+            <button onclick="closeClaimModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7;">&times;</button>
+
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="#ffdd00" style="margin-bottom: 0.5rem;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                <h2 style="color: #fff; margin: 0; font-size: 1.25rem; font-weight: 700;">Claim This Deal</h2>
+                <p id="claimDealTitle" style="color: var(--lightning-yellow); margin: 0.5rem 0 0; font-size: 0.9rem; line-height: 1.4;"></p>
+                <p style="color: rgba(255,255,255,0.6); margin: 0.25rem 0 0; font-size: 0.85rem;">Deal Price: <span id="claimDealPrice" style="color: #00ff88; font-weight: 700;"></span></p>
+            </div>
+
+            <div id="claimError" style="display: none; background: rgba(255,68,68,0.2); color: #ff6b6b; padding: 0.75rem; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; text-align: center;"></div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <input type="text" id="claimFirstName" class="form-input" placeholder="First Name" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.875rem; border-radius: 10px; font-size: 0.95rem;">
+                <input type="text" id="claimLastName" class="form-input" placeholder="Last Name" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.875rem; border-radius: 10px; font-size: 0.95rem;">
+            </div>
+            <input type="email" id="claimEmail" class="form-input" placeholder="Email Address" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.875rem; border-radius: 10px; font-size: 0.95rem; width: 100%; margin-bottom: 1.25rem;">
+
+            <button id="claimSubmitBtn" onclick="submitDealClaim()" style="width: 100%; background: var(--lightning-yellow); color: #000; border: none; padding: 1rem; border-radius: 25px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Claim for $1.99
+            </button>
+
+            <p style="color: rgba(255,255,255,0.5); font-size: 0.75rem; text-align: center; margin-top: 1rem; line-height: 1.5;">
+                Pay $1.99 service fee. After checkout, you'll receive the deal link via email.
+                <br>Secure payment via Stripe. Apple Pay & Google Pay accepted.
+            </p>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
@@ -8036,15 +8068,21 @@
         }
 
         function renderDealCard(deal) {
-            const discountPercent = deal.discountPercent || Math.round((1 - deal.dealPrice / deal.originalPrice) * 100);
+            // Calculate discount - only show if reasonable (5-90%)
+            let discountPercent = deal.discountPercent || 0;
+            if (!discountPercent && deal.originalPrice > deal.dealPrice) {
+                discountPercent = Math.round((1 - deal.dealPrice / deal.originalPrice) * 100);
+            }
+            const showDiscount = discountPercent >= 5 && discountPercent <= 90;
+
             const sourceLogo = getDealSourceLogo(deal.source);
             const expiresText = deal.expiresAt ? getExpiresText(deal.expiresAt) : '';
             const dealUrl = deal.url || deal.dealUrl || '';
 
             return `
-                <div class="deal-card" onclick="getDeal('${deal._id || deal.id}', '${dealUrl}')">
+                <div class="deal-card" onclick="claimDeal('${deal._id || deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.dealPrice}, '${dealUrl}')">
                     ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.display='none'">` : `<div class="deal-card-image"></div>`}
-                    <div class="deal-card-badge">-${discountPercent}%</div>
+                    ${showDiscount ? `<div class="deal-card-badge">-${discountPercent}%</div>` : ''}
                     ${sourceLogo ? `
                         <div class="deal-card-source">
                             <img src="${sourceLogo}" alt="${deal.source}">
@@ -8061,9 +8099,9 @@
                             ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
                         </div>
                     </div>
-                    <button class="deal-claim-btn" onclick="event.stopPropagation(); getDeal('${deal._id || deal.id}', '${dealUrl}')">
+                    <button class="deal-claim-btn" onclick="event.stopPropagation(); claimDeal('${deal._id || deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.dealPrice}, '${dealUrl}')">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        GET DEAL
+                        CLAIM $1.99
                     </button>
                 </div>
             `;
@@ -8099,29 +8137,87 @@
             return `${daysLeft}d left`;
         }
 
-        // Get deal - track click and redirect to deal URL (affiliate model)
-        async function getDeal(dealId, url) {
-            // Track the click for analytics
-            try {
-                fetch(`${API_BASE}/api/v1/lightning/deals/click/${dealId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            } catch (e) {
-                console.log('Click tracking failed:', e);
+        // Claim deal - open modal to collect info, then Stripe checkout
+        let currentClaimDeal = null;
+
+        function claimDeal(dealId, title, dealPrice, url) {
+            currentClaimDeal = { dealId, title, dealPrice, url };
+
+            // Show claim modal
+            const modal = document.getElementById('dealClaimModal');
+            document.getElementById('claimDealTitle').textContent = title.slice(0, 60) + (title.length > 60 ? '...' : '');
+            document.getElementById('claimDealPrice').textContent = `$${(dealPrice / 100).toFixed(2)}`;
+            document.getElementById('claimFirstName').value = '';
+            document.getElementById('claimLastName').value = '';
+            document.getElementById('claimEmail').value = '';
+            document.getElementById('claimError').style.display = 'none';
+            document.getElementById('claimSubmitBtn').disabled = false;
+            document.getElementById('claimSubmitBtn').innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Claim for $1.99';
+            modal.style.display = 'flex';
+        }
+
+        function closeClaimModal() {
+            document.getElementById('dealClaimModal').style.display = 'none';
+            currentClaimDeal = null;
+        }
+
+        async function submitDealClaim() {
+            const firstName = document.getElementById('claimFirstName').value.trim();
+            const lastName = document.getElementById('claimLastName').value.trim();
+            const email = document.getElementById('claimEmail').value.trim();
+            const errorEl = document.getElementById('claimError');
+            const btn = document.getElementById('claimSubmitBtn');
+
+            // Validate
+            if (!firstName || !lastName) {
+                errorEl.textContent = 'Please enter your full name';
+                errorEl.style.display = 'block';
+                return;
+            }
+            if (!email || !email.includes('@')) {
+                errorEl.textContent = 'Please enter a valid email';
+                errorEl.style.display = 'block';
+                return;
             }
 
-            // Redirect to deal URL
-            if (url) {
-                window.open(url, '_blank', 'noopener,noreferrer');
-            } else {
-                alert('Deal link not available');
+            // Disable button, show loading
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:spin 1s linear infinite;display:inline-block;"></div> Processing...';
+            errorEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/deals/claim/${currentClaimDeal.dealId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        name: `${firstName} ${lastName}`,
+                        firstName,
+                        lastName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.checkoutUrl) {
+                    throw new Error(data.error || 'Failed to create checkout');
+                }
+
+                // Redirect to Stripe checkout
+                window.location.href = data.checkoutUrl;
+
+            } catch (error) {
+                console.error('Claim error:', error);
+                errorEl.textContent = error.message || 'Something went wrong. Please try again.';
+                errorEl.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Claim for $1.99';
             }
         }
 
         // Legacy function for backwards compatibility
         async function trackDealClick(dealId, url) {
-            getDeal(dealId, url);
+            claimDeal(dealId, 'Deal', 0, url);
         }
 
         // Render a SPOTLIGHT event card (ticketed, premium look)
