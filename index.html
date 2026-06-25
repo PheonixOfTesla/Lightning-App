@@ -2164,7 +2164,7 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
-        <a href="/deals"><s>Claim</s> Soon</a>
+        <span style="opacity: 0.5; cursor: default;"><s>Claim</s> Soon</span>
         <a href="/partners">Partners</a>
         <a href="/calendar">Calendar</a>
         <a href="/about">About</a>
@@ -4313,7 +4313,7 @@
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
-                    <a href="/deals" class="nav-link"><s>Claim</s> Soon</a>
+                    <span class="nav-link" style="opacity: 0.5; cursor: default;"><s>Claim</s> Soon</span>
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
@@ -4625,7 +4625,7 @@
                 const navLinks = document.getElementById('navLinks');
                 navLinks.innerHTML = `
                     <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
-                    <a href="/deals" class="nav-link"><s>Claim</s> Soon</a>
+                    <span class="nav-link" style="opacity: 0.5; cursor: default;"><s>Claim</s> Soon</span>
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
@@ -5760,7 +5760,7 @@
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
                 <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
-                <a href="/deals" class="nav-link"><s>Claim</s> Soon</a>
+                <span class="nav-link" style="opacity: 0.5; cursor: default;"><s>Claim</s> Soon</span>
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/login" class="btn btn-primary">LOGIN</a>
             `;
@@ -5770,7 +5770,7 @@
             const mobileMenu = document.getElementById('mobileMenu');
             mobileMenu.innerHTML = `
                 <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
-                <a href="/deals"><s>Claim</s> Soon</a>
+                <span style="opacity: 0.5; cursor: default;"><s>Claim</s> Soon</span>
                 <a href="/partners">Partners</a>
                 <a href="/calendar">Calendar</a>
                 <a href="/about">About</a>
