@@ -10733,6 +10733,50 @@
             window.location.href = '/deals';
         }
 
+        function switchAuthTab(tab) {
+            const signupTab = document.getElementById('signupTab');
+            const loginTab = document.getElementById('loginTab');
+            const signupForm = document.getElementById('signupForm');
+            const loginForm = document.getElementById('loginForm');
+
+            if (tab === 'signup') {
+                signupTab.style.background = 'var(--lightning-yellow)';
+                signupTab.style.color = '#000';
+                loginTab.style.background = 'transparent';
+                loginTab.style.color = 'var(--gray)';
+                signupForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            } else {
+                loginTab.style.background = 'var(--lightning-yellow)';
+                loginTab.style.color = '#000';
+                signupTab.style.background = 'transparent';
+                signupTab.style.color = 'var(--gray)';
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+            }
+        }
+
+        async function submitPassLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const btn = e.target.querySelector('button');
+
+            btn.textContent = 'Logging in...';
+            btn.disabled = true;
+
+            try {
+                // Store email and show success
+                localStorage.setItem('lightningPassEmail', email);
+
+                document.querySelector('.pass-modal-form-container').style.display = 'none';
+                document.querySelector('.pass-modal-success').classList.add('active');
+            } catch (error) {
+                console.error('Login error:', error);
+                btn.textContent = 'LOGIN';
+                btn.disabled = false;
+            }
+        }
+
         // Close modal on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closePassModal();
@@ -10747,17 +10791,39 @@
                 <div class="pass-modal-icon">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </div>
-                <h2>Login Center</h2>
-                <p>Access your Lightning Pass account</p>
-                <form class="pass-modal-form" onsubmit="submitPassSignup(event)">
-                    <input type="text" id="passName" placeholder="Your name" required>
-                    <input type="email" id="passEmail" placeholder="Your email" required>
-                    <button type="submit">LOGIN</button>
-                </form>
-                <div class="pass-modal-benefits">
-                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>View your passes & tickets</div>
-                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Access member discounts</div>
-                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Manage your account</div>
+                <!-- Tabs -->
+                <div style="display: flex; margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-dark);">
+                    <button id="signupTab" onclick="switchAuthTab('signup')" style="flex: 1; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; font-weight: 600; cursor: pointer;">Sign Up</button>
+                    <button id="loginTab" onclick="switchAuthTab('login')" style="flex: 1; padding: 0.75rem; background: transparent; color: var(--gray); border: none; font-weight: 600; cursor: pointer;">Login</button>
+                </div>
+                <!-- Sign Up Form -->
+                <div id="signupForm">
+                    <h2 style="margin-bottom: 0.5rem;">Get Your Lightning Pass</h2>
+                    <p style="color: var(--gray); margin-bottom: 1.5rem;">Unlock exclusive deals and discounts</p>
+                    <form class="pass-modal-form" onsubmit="submitPassSignup(event)">
+                        <input type="text" id="passName" placeholder="Your name" required>
+                        <input type="email" id="passEmail" placeholder="Your email" required>
+                        <button type="submit">GET MY PASS</button>
+                    </form>
+                    <div class="pass-modal-benefits">
+                        <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Exclusive deals from top brands</div>
+                        <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Early access to flash sales</div>
+                        <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Daily deal alerts in your inbox</div>
+                    </div>
+                </div>
+                <!-- Login Form -->
+                <div id="loginForm" style="display: none;">
+                    <h2 style="margin-bottom: 0.5rem;">Welcome Back</h2>
+                    <p style="color: var(--gray); margin-bottom: 1.5rem;">Access your Lightning Pass account</p>
+                    <form class="pass-modal-form" onsubmit="submitPassLogin(event)">
+                        <input type="email" id="loginEmail" placeholder="Your email" required>
+                        <button type="submit">LOGIN</button>
+                    </form>
+                    <div class="pass-modal-benefits">
+                        <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>View your passes & tickets</div>
+                        <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Access member discounts</div>
+                        <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Manage your account</div>
+                    </div>
                 </div>
             </div>
             <div class="pass-modal-success">
