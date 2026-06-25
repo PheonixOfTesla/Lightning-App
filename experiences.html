@@ -82,9 +82,17 @@
             color: var(--white);
         }
 
-        .logo span:first-child {
-            font-size: 1.75rem;
-            color: var(--lightning-yellow);
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .logo-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .nav-links {
@@ -108,14 +116,66 @@
             color: var(--lightning-yellow);
         }
 
-        /* Mobile menu */
-        .mobile-menu-btn {
+        .btn-login {
+            padding: 0.5rem 1.25rem;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .btn-login:hover {
+            background: #e6c700;
+            color: var(--pure-black);
+        }
+
+        /* Hamburger */
+        .hamburger {
             display: none;
-            background: none;
-            border: none;
-            color: var(--white);
-            font-size: 1.5rem;
+            flex-direction: column;
+            gap: 5px;
             cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 2px;
+            background: var(--white);
+            transition: all 0.3s;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: var(--pure-black);
+            padding: 1rem;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 999;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu a,
+        .mobile-menu span {
+            color: var(--white);
+            text-decoration: none;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .mobile-menu a:hover,
+        .mobile-menu a.active {
+            color: var(--lightning-yellow);
         }
 
         /* Hero */
@@ -263,7 +323,7 @@
 
         .rental-image {
             width: 100%;
-            height: 180px;
+            height: 220px;
             object-fit: cover;
             background: linear-gradient(135deg, #1a3a5c 0%, #0d2840 100%);
             display: flex;
@@ -481,17 +541,36 @@
     <nav>
         <div class="nav-container">
             <a href="/" class="logo">
-                <span>⚡</span> Lightning Pass
+                <div class="logo-img"><img src="/logo.png" alt="Lightning Pass"></div>
+                <span class="logo-text">Lightning Pass</span>
             </a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Events</a>
+                <a href="/?browse=1" class="nav-link">Events</a>
                 <a href="/experiences" class="nav-link active">Experiences</a>
+                <span class="nav-link" style="cursor: default;"><s style="opacity: 0.5;">Claim</s> <span style="color: var(--lightning-yellow);">Soon</span></span>
                 <a href="/partners" class="nav-link">Partners</a>
+                <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link">About</a>
+                <a href="/" class="btn btn-login">LOGIN</a>
             </div>
-            <button class="mobile-menu-btn">☰</button>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/?browse=1">Events</a>
+        <a href="/experiences" class="active">Experiences</a>
+        <span style="cursor: default;"><s style="opacity: 0.5;">Claim</s> <span style="color: var(--lightning-yellow);">Soon</span></span>
+        <a href="/partners">Partners</a>
+        <a href="/calendar">Calendar</a>
+        <a href="/about">About</a>
+        <a href="/">Login</a>
+    </div>
 
     <!-- Hero -->
     <section class="hero">
@@ -505,7 +584,7 @@
         <!-- Rentals Section -->
         <section class="section">
             <div class="section-header">
-                <div class="section-icon">🚤</div>
+                <div class="section-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/><path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"/><path d="M12 10v4"/><path d="M12 2v3"/></svg></div>
                 <div>
                     <h2 class="section-title">Rentals</h2>
                     <p class="section-subtitle">Jet skis, boats, and watercraft</p>
@@ -527,7 +606,7 @@
                     <!-- 1 Jet Ski -->
                     <div class="rental-card">
                         <div class="rental-image">
-                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/c62047ee0_IMG_5663.jpg" alt="1 Jet Ski" style="object-fit: cover; width: 100%; height: 100%;">
+                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/c62047ee0_IMG_5663.jpg" alt="1 Jet Ski" style="object-fit: cover; object-position: center bottom; width: 100%; height: 100%;">
                         </div>
                         <div class="rental-content">
                             <h4 class="rental-name">1 Jet Ski</h4>
@@ -557,7 +636,7 @@
                     <!-- 2 Jet Skis -->
                     <div class="rental-card">
                         <div class="rental-image">
-                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/90b9e4584_IMG_5664.jpg" alt="2 Jet Skis" style="object-fit: cover; width: 100%; height: 100%;">
+                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/90b9e4584_IMG_5664.jpg" alt="2 Jet Skis" style="object-fit: cover; object-position: center bottom; width: 100%; height: 100%;">
                             <span class="popular-tag">Most Popular</span>
                         </div>
                         <div class="rental-content">
@@ -588,7 +667,7 @@
                     <!-- 3 Jet Skis -->
                     <div class="rental-card">
                         <div class="rental-image">
-                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/10fa68bb1_IMG_5665.jpg" alt="3 Jet Skis" style="object-fit: cover; width: 100%; height: 100%;">
+                            <img src="https://media.base44.com/images/public/6a2ecb2710f469e803ab8709/10fa68bb1_IMG_5665.jpg" alt="3 Jet Skis" style="object-fit: cover; object-position: center bottom; width: 100%; height: 100%;">
                         </div>
                         <div class="rental-content">
                             <h4 class="rental-name">3 Jet Skis</h4>
@@ -636,7 +715,7 @@
         <!-- Tours Section (Coming Soon) -->
         <section class="section">
             <div class="section-header">
-                <div class="section-icon">🏝️</div>
+                <div class="section-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></div>
                 <div>
                     <h2 class="section-title">Tours</h2>
                     <p class="section-subtitle">Guided experiences & excursions</p>
@@ -652,7 +731,7 @@
         <!-- Classes Section (Coming Soon) -->
         <section class="section">
             <div class="section-header">
-                <div class="section-icon">🏄</div>
+                <div class="section-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v4"/><path d="m8 14 4 4 4-4"/><path d="M5 20h14"/></svg></div>
                 <div>
                     <h2 class="section-title">Classes</h2>
                     <p class="section-subtitle">Learn something new</p>
@@ -668,20 +747,418 @@
 
     <!-- Footer -->
     <footer>
-        <p>⚡ <a href="/">Lightning Pass</a> • Be there. You're invited.</p>
+        <p><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--lightning-yellow)" style="vertical-align: middle; margin-right: 4px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> <a href="/">Lightning Pass</a> - Be there. You're invited.</p>
     </footer>
 
-    <!-- Booking Modal Script -->
-    <script>
-        function bookRental(rentalType) {
-            // For now, redirect to call
-            const phone = '9414222222';
-            const message = `Lightning Pass booking: ${rentalType}`;
+    <!-- Booking Modal -->
+    <div class="booking-modal-overlay" id="bookingModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 1rem;">
+        <div class="booking-modal" style="background: var(--card-black); border-radius: 16px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-dark);">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 1.25rem; font-weight: 600;" id="modalTitle">Book Jet Ski</h3>
+                <button onclick="closeBookingModal()" style="background: none; border: none; color: var(--gray); font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <form id="bookingForm">
+                    <input type="hidden" id="rentalType" name="rentalType">
+                    <input type="hidden" id="rentalPrice" name="rentalPrice">
 
-            // Show booking modal or redirect
-            if (confirm(`Book ${rentalType.replace(/-/g, ' ')}?\n\nYou'll be connected with Black Flag Watersports to complete your reservation.\n\nMention "Lightning Pass" for your 20% member discount.`)) {
-                window.location.href = `tel:${phone}`;
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">First Name *</label>
+                            <input type="text" id="customerFirstName" name="customerFirstName" required style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 1rem;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Last Name *</label>
+                            <input type="text" id="customerLastName" name="customerLastName" required style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 1rem;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Email *</label>
+                        <input type="email" id="customerEmail" name="customerEmail" required style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 1rem;">
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Phone *</label>
+                        <input type="tel" id="customerPhone" name="customerPhone" required style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 1rem;">
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Preferred Date *</label>
+                        <input type="date" id="rentalDate" name="rentalDate" required style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 1rem;">
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Start Time *</label>
+                        <select id="rentalTime" name="rentalTime" required style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 1rem;">
+                            <option value="">Select time...</option>
+                            <option value="10:30 AM">10:30 AM</option>
+                            <option value="11:00 AM">11:00 AM</option>
+                            <option value="12:00 PM">12:00 PM</option>
+                            <option value="1:00 PM">1:00 PM</option>
+                            <option value="2:00 PM">2:00 PM</option>
+                            <option value="3:00 PM">3:00 PM</option>
+                            <option value="4:00 PM">4:00 PM</option>
+                            <option value="5:00 PM">5:00 PM</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Duration *</label>
+                        <select id="rentalHours" name="rentalHours" required onchange="updateTotal()" style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 1rem;">
+                            <option value="1">1 Hour</option>
+                            <option value="2">2 Hours</option>
+                            <option value="3">3 Hours</option>
+                            <option value="4">4 Hours</option>
+                        </select>
+                    </div>
+
+                    <!-- Pickup Info -->
+                    <div style="background: rgba(255, 221, 0, 0.1); border: 1px solid rgba(255, 221, 0, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <div style="font-weight: 600; color: var(--lightning-yellow); margin-bottom: 0.5rem; font-size: 0.85rem;">PICKUP LOCATION</div>
+                        <div style="color: var(--light-gray); font-size: 0.9rem;">
+                            <div>1059 N Tamiami Trail</div>
+                            <div>Sarasota, FL 34236</div>
+                            <div style="margin-top: 0.5rem; color: var(--lightning-yellow);">(941) 422-2222</div>
+                        </div>
+                    </div>
+
+                    <!-- Price Summary -->
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--gray);" id="summaryItem">1 Jet Ski (1 hour)</span>
+                            <span style="text-decoration: line-through; color: var(--gray);" id="summaryOriginal">$150</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: #4ade80;">Member Discount (20%)</span>
+                            <span style="color: #4ade80;" id="summaryDiscount">-$30</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border-dark);">
+                            <span style="font-weight: 600;">Total</span>
+                            <span style="font-weight: 700; color: var(--lightning-yellow); font-size: 1.25rem;" id="summaryTotal">$120</span>
+                        </div>
+                    </div>
+
+                    <!-- Apple Pay / Google Pay Button -->
+                    <div id="payment-request-btn" style="margin-bottom: 1rem;"></div>
+                    <div id="payment-divider" style="display: none; text-align: center; margin-bottom: 1rem; color: var(--gray); font-size: 0.85rem;">
+                        <span style="background: var(--card-black); padding: 0 1rem;">or pay with card</span>
+                    </div>
+
+                    <button type="submit" id="payButton" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Pay $120
+                    </button>
+
+                    <p style="text-align: center; color: var(--gray); font-size: 0.75rem; margin-top: 1rem;">
+                        Confirmation email will be sent with pickup details.
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stripe -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <script>
+        const STRIPE_KEY = 'pk_live_51SFvASIfYqbb49BvhZYmJDk2U3PLXkZaQGKKVaCNqCHnC2lQFNt5v3kBgqAV0N5ADLY1xaXrUxFeSKkMUxGfzqxd00SBfVpRTG';
+        const API_URL = 'https://lightning-backend-production.up.railway.app';
+
+        // Initialize Stripe
+        const stripe = Stripe(STRIPE_KEY);
+        let paymentRequest = null;
+        let prButton = null;
+
+        const rentals = {
+            '1-jet-ski': { name: '1 Jet Ski', original: 150, price: 120 },
+            '2-jet-skis': { name: '2 Jet Skis', original: 300, price: 240 },
+            '3-jet-skis': { name: '3 Jet Skis', original: 450, price: 360 }
+        };
+
+        let currentRental = null;
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('active');
+        }
+
+        // Update total based on hours selected
+        function updateTotal() {
+            if (!currentRental) return;
+
+            const hours = parseInt(document.getElementById('rentalHours').value) || 1;
+            const originalTotal = currentRental.original * hours;
+            const discountTotal = currentRental.price * hours;
+            const savings = originalTotal - discountTotal;
+
+            document.getElementById('summaryItem').textContent = `${currentRental.name} (${hours} hour${hours > 1 ? 's' : ''})`;
+            document.getElementById('summaryOriginal').textContent = `$${originalTotal}`;
+            document.getElementById('summaryDiscount').textContent = `-$${savings}`;
+            document.getElementById('summaryTotal').textContent = `$${discountTotal}`;
+            document.getElementById('payButton').textContent = `Pay $${discountTotal}`;
+            document.getElementById('rentalPrice').value = discountTotal;
+
+            // Update payment request amount for Apple Pay
+            if (paymentRequest) {
+                paymentRequest.update({
+                    total: {
+                        label: `Black Flag Watersports - ${currentRental.name}`,
+                        amount: discountTotal * 100
+                    }
+                });
             }
+        }
+
+        // Initialize Apple Pay / Google Pay
+        async function initPaymentRequest() {
+            const prBtnContainer = document.getElementById('payment-request-btn');
+            const divider = document.getElementById('payment-divider');
+
+            if (prBtnContainer) prBtnContainer.innerHTML = '';
+            if (divider) divider.style.display = 'none';
+
+            const hours = parseInt(document.getElementById('rentalHours').value) || 1;
+            const totalAmount = currentRental.price * hours;
+
+            paymentRequest = stripe.paymentRequest({
+                country: 'US',
+                currency: 'usd',
+                total: {
+                    label: `Black Flag Watersports - ${currentRental.name}`,
+                    amount: totalAmount * 100
+                },
+                requestPayerName: true,
+                requestPayerEmail: true,
+                requestPayerPhone: true
+            });
+
+            const elements = stripe.elements();
+            prButton = elements.create('paymentRequestButton', {
+                paymentRequest: paymentRequest,
+                style: {
+                    paymentRequestButton: {
+                        type: 'default',
+                        theme: 'dark',
+                        height: '48px'
+                    }
+                }
+            });
+
+            paymentRequest.canMakePayment().then((result) => {
+                if (result) {
+                    if (prBtnContainer) {
+                        prButton.mount('#payment-request-btn');
+                    }
+                    if (divider) {
+                        divider.style.display = 'block';
+                    }
+                }
+            });
+
+            paymentRequest.on('paymentmethod', async (ev) => {
+                try {
+                    const hours = parseInt(document.getElementById('rentalHours').value) || 1;
+                    const totalAmount = currentRental.price * hours;
+
+                    // Parse payer name
+                    const payerNameParts = (ev.payerName || '').trim().split(' ');
+                    const payerFirstName = payerNameParts[0] || 'Guest';
+                    const payerLastName = payerNameParts.slice(1).join(' ') || payerFirstName;
+
+                    // Create payment intent via backend
+                    const intentResponse = await fetch(`${API_URL}/api/v1/experiences/create-intent`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            rentalType: currentRental.name,
+                            price: totalAmount,
+                            hours: hours,
+                            name: ev.payerName,
+                            email: ev.payerEmail,
+                            phone: ev.payerPhone || '',
+                            date: document.getElementById('rentalDate').value,
+                            time: document.getElementById('rentalTime').value
+                        })
+                    });
+
+                    const intentData = await intentResponse.json();
+
+                    if (intentData.error) {
+                        ev.complete('fail');
+                        alert('Payment failed: ' + intentData.error);
+                        return;
+                    }
+
+                    // Confirm payment with Stripe
+                    const { error, paymentIntent } = await stripe.confirmCardPayment(
+                        intentData.clientSecret,
+                        { payment_method: ev.paymentMethod.id },
+                        { handleActions: false }
+                    );
+
+                    if (error) {
+                        ev.complete('fail');
+                        alert('Payment failed: ' + error.message);
+                        return;
+                    }
+
+                    ev.complete('success');
+
+                    // Confirm with backend
+                    await fetch(`${API_URL}/api/v1/experiences/confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            paymentIntentId: paymentIntent.id,
+                            rentalType: currentRental.name,
+                            price: totalAmount,
+                            hours: hours,
+                            name: ev.payerName,
+                            email: ev.payerEmail,
+                            phone: ev.payerPhone || '',
+                            date: document.getElementById('rentalDate').value,
+                            time: document.getElementById('rentalTime').value
+                        })
+                    });
+
+                    // Show success
+                    closeBookingModal();
+                    showSuccessMessage();
+
+                } catch (error) {
+                    ev.complete('fail');
+                    console.error('Apple Pay error:', error);
+                    alert('Payment failed. Please try again or use card.');
+                }
+            });
+        }
+
+        function showSuccessMessage() {
+            const successOverlay = document.createElement('div');
+            successOverlay.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+                    <div style="background: var(--card-black); border-radius: 16px; padding: 2rem; max-width: 400px; text-align: center; border: 1px solid var(--lightning-yellow);">
+                        <div style="width: 60px; height: 60px; background: rgba(74, 222, 128, 0.2); border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <h2 style="color: white; margin-bottom: 0.5rem;">Booking Confirmed!</h2>
+                        <p style="color: var(--gray); margin-bottom: 1.5rem;">Check your email for pickup details and confirmation.</p>
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <div style="color: var(--lightning-yellow); font-size: 0.85rem; margin-bottom: 0.25rem;">PICKUP LOCATION</div>
+                            <div style="color: white;">1059 N Tamiami Trail, Sarasota</div>
+                            <div style="color: var(--lightning-yellow); margin-top: 0.5rem;">(941) 422-2222</div>
+                        </div>
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()" style="width: 100%; padding: 0.875rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">Done</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(successOverlay);
+        }
+
+        function bookRental(rentalType) {
+            const rental = rentals[rentalType];
+            if (!rental) return;
+
+            currentRental = rental;
+            document.getElementById('rentalType').value = rentalType;
+            document.getElementById('rentalHours').value = '1';
+
+            // Set modal values
+            document.getElementById('rentalPrice').value = rental.price;
+            document.getElementById('modalTitle').textContent = `Book ${rental.name}`;
+            document.getElementById('summaryItem').textContent = `${rental.name} (1 hour)`;
+            document.getElementById('summaryOriginal').textContent = `$${rental.original}`;
+            document.getElementById('summaryDiscount').textContent = `-$${rental.original - rental.price}`;
+            document.getElementById('summaryTotal').textContent = `$${rental.price}`;
+            document.getElementById('payButton').textContent = `Pay $${rental.price}`;
+
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rentalDate').min = today;
+
+            // Show modal
+            document.getElementById('bookingModal').style.display = 'flex';
+
+            // Initialize Apple Pay after modal is visible
+            setTimeout(() => {
+                initPaymentRequest();
+            }, 100);
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+            currentRental = null;
+            paymentRequest = null;
+            const prBtnContainer = document.getElementById('payment-request-btn');
+            if (prBtnContainer) prBtnContainer.innerHTML = '';
+        }
+
+        // Close on overlay click
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) closeBookingModal();
+        });
+
+        // Form submission (card fallback)
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('payButton');
+            const originalText = btn.textContent;
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+
+            const hours = parseInt(document.getElementById('rentalHours').value) || 1;
+            const totalPrice = currentRental ? currentRental.price * hours : parseInt(document.getElementById('rentalPrice').value);
+            const firstName = document.getElementById('customerFirstName').value;
+            const lastName = document.getElementById('customerLastName').value;
+
+            const formData = {
+                rentalType: document.getElementById('rentalType').value,
+                price: totalPrice,
+                hours: hours,
+                firstName: firstName,
+                lastName: lastName,
+                name: `${firstName} ${lastName}`,
+                email: document.getElementById('customerEmail').value,
+                phone: document.getElementById('customerPhone').value,
+                date: document.getElementById('rentalDate').value,
+                time: document.getElementById('rentalTime').value
+            };
+
+            try {
+                // Create checkout session via backend (redirect to Stripe)
+                const response = await fetch(`${API_URL}/api/v1/experiences/checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const session = await response.json();
+
+                if (session.url) {
+                    window.location.href = session.url;
+                } else if (session.error) {
+                    throw new Error(session.error);
+                }
+            } catch (error) {
+                console.error('Booking error:', error);
+                alert('Booking failed. Please call (941) 422-2222 to reserve.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Handle success/canceled URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            showSuccessMessage();
+            // Clean URL
+            window.history.replaceState({}, document.title, '/experiences');
+        }
+        if (urlParams.get('canceled') === 'true') {
+            // Clean URL
+            window.history.replaceState({}, document.title, '/experiences');
         }
     </script>
 </body>
