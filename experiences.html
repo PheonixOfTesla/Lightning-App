@@ -551,7 +551,7 @@
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link">About</a>
-                <a href="/" class="btn btn-login">LOGIN</a>
+                <a href="/" class="btn btn-login" id="authButton">LOGIN</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span>
@@ -1005,6 +1005,38 @@
                         </div>
                     </div>
 
+                    <!-- Member Verification -->
+                    <div id="memberCheckSection" style="background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <div style="font-weight: 600; color: white; margin-bottom: 0.75rem; font-size: 0.95rem;">Are you a member?</div>
+                        <div id="memberButtons" style="display: flex; gap: 0.75rem;">
+                            <button type="button" onclick="showMemberLogin()" style="flex: 1; padding: 0.75rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Yes</button>
+                            <button type="button" onclick="setNonMember()" style="flex: 1; padding: 0.75rem; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-dark); border-radius: 8px; font-weight: 600; cursor: pointer;">No</button>
+                        </div>
+
+                        <!-- Member Login Fields (hidden by default) -->
+                        <div id="memberLoginFields" style="display: none; margin-top: 1rem;">
+                            <div style="margin-bottom: 0.75rem;">
+                                <input type="email" id="memberEmail" placeholder="Email" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 0.95rem;">
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <input type="password" id="memberPasscode" placeholder="Passcode" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 0.95rem;">
+                            </div>
+                            <button type="button" onclick="verifyMember()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Verify</button>
+                            <div id="memberError" style="color: #ff4444; font-size: 0.8rem; margin-top: 0.5rem; display: none;"></div>
+                        </div>
+
+                        <!-- Member Verified State -->
+                        <div id="memberVerified" style="display: none; text-align: center; padding: 0.5rem 0;">
+                            <span style="color: #4ade80; font-weight: 600;">✓ Member verified - 23% discount applied!</span>
+                        </div>
+
+                        <!-- Non-Member State -->
+                        <div id="nonMemberState" style="display: none; margin-top: 0.75rem;">
+                            <div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem;">Paying regular price</div>
+                            <a href="/" onclick="closeBookingModal()" style="color: var(--lightning-yellow); font-size: 0.85rem; text-decoration: underline;">Sign up to save 23%</a>
+                        </div>
+                    </div>
+
                     <!-- Price Summary -->
                     <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
@@ -1012,7 +1044,7 @@
                             <span style="text-decoration: line-through; color: var(--gray);" id="summaryOriginal">$150</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span style="color: #4ade80;">Member Discount (20%)</span>
+                            <span style="color: #4ade80;" id="discountLabel">Member Discount (23%)</span>
                             <span style="color: #4ade80;" id="summaryDiscount">-$30</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border-dark);">
@@ -1144,6 +1176,76 @@
         };
 
         let currentRental = null;
+        let isMemberVerified = false;
+
+        // Check auth state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('authToken');
+            const authButton = document.getElementById('authButton');
+            if (token) {
+                authButton.textContent = 'LOGOUT';
+                authButton.href = '#';
+                authButton.onclick = function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userType');
+                    localStorage.removeItem('userEmail');
+                    window.location.reload();
+                };
+                // Auto-verify member if logged in
+                isMemberVerified = true;
+            }
+        });
+
+        // Member verification functions
+        function showMemberLogin() {
+            document.getElementById('memberButtons').style.display = 'none';
+            document.getElementById('memberLoginFields').style.display = 'block';
+        }
+
+        function verifyMember() {
+            const email = document.getElementById('memberEmail').value;
+            const passcode = document.getElementById('memberPasscode').value;
+            const errorEl = document.getElementById('memberError');
+
+            if (passcode === 'Member123!') {
+                isMemberVerified = true;
+                document.getElementById('memberLoginFields').style.display = 'none';
+                document.getElementById('memberVerified').style.display = 'block';
+                document.getElementById('memberCheckSection').style.borderColor = '#4ade80';
+                document.getElementById('memberCheckSection').style.background = 'rgba(74, 222, 128, 0.1)';
+                // Save to localStorage
+                localStorage.setItem('authToken', 'member-verified');
+                localStorage.setItem('userEmail', email);
+                updateTotal();
+            } else {
+                errorEl.textContent = 'Invalid passcode. Try again or pay regular price.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        function setNonMember() {
+            isMemberVerified = false;
+            document.getElementById('memberButtons').style.display = 'none';
+            document.getElementById('nonMemberState').style.display = 'block';
+            updateTotal();
+        }
+
+        function resetMemberState() {
+            // Only reset if not logged in
+            if (!localStorage.getItem('authToken')) {
+                isMemberVerified = false;
+                document.getElementById('memberButtons').style.display = 'flex';
+                document.getElementById('memberLoginFields').style.display = 'none';
+                document.getElementById('memberVerified').style.display = 'none';
+                document.getElementById('nonMemberState').style.display = 'none';
+                document.getElementById('memberCheckSection').style.borderColor = 'rgba(138, 43, 226, 0.3)';
+                document.getElementById('memberCheckSection').style.background = 'rgba(138, 43, 226, 0.1)';
+                document.getElementById('memberEmail').value = '';
+                document.getElementById('memberPasscode').value = '';
+                document.getElementById('memberError').style.display = 'none';
+            }
+        }
 
         // Mobile menu toggle
         function toggleMenu() {
@@ -1151,21 +1253,36 @@
             mobileMenu.classList.toggle('active');
         }
 
-        // Update total based on hours selected
+        // Update total based on hours selected and member status
         function updateTotal() {
             if (!currentRental) return;
 
             const hours = parseInt(document.getElementById('rentalHours').value) || 1;
             const originalTotal = currentRental.original * hours;
-            const discountTotal = currentRental.price * hours;
-            const savings = originalTotal - discountTotal;
+            const memberTotal = currentRental.price * hours;
+
+            // Use member price if verified, otherwise regular price
+            const finalTotal = isMemberVerified ? memberTotal : originalTotal;
+            const savings = originalTotal - memberTotal;
 
             document.getElementById('summaryItem').textContent = `${currentRental.name} (${hours} hour${hours > 1 ? 's' : ''})`;
-            document.getElementById('summaryOriginal').textContent = `$${originalTotal}`;
-            document.getElementById('summaryDiscount').textContent = `-$${savings}`;
-            document.getElementById('summaryTotal').textContent = `$${discountTotal}`;
-            document.getElementById('payButton').textContent = `Pay $${discountTotal}`;
-            document.getElementById('rentalPrice').value = discountTotal;
+
+            if (isMemberVerified) {
+                // Show discount for members
+                document.getElementById('summaryOriginal').textContent = `$${originalTotal}`;
+                document.getElementById('summaryOriginal').style.display = 'block';
+                document.getElementById('discountLabel').parentElement.style.display = 'flex';
+                document.getElementById('summaryDiscount').textContent = `-$${savings}`;
+            } else {
+                // Hide discount for non-members
+                document.getElementById('summaryOriginal').style.textDecoration = 'none';
+                document.getElementById('summaryOriginal').textContent = '';
+                document.getElementById('discountLabel').parentElement.style.display = 'none';
+            }
+
+            document.getElementById('summaryTotal').textContent = `$${finalTotal}`;
+            document.getElementById('payButton').textContent = `Pay $${finalTotal}`;
+            document.getElementById('rentalPrice').value = finalTotal;
 
             // Re-initialize payment request with new amount
             initPaymentRequest();
@@ -1200,7 +1317,9 @@
             if (divider) divider.style.display = 'none';
 
             const hours = parseInt(document.getElementById('rentalHours').value) || 1;
-            const totalAmount = currentRental.price * hours;
+            // Use member price if verified, otherwise regular price
+            const pricePerHour = isMemberVerified ? currentRental.price : currentRental.original;
+            const totalAmount = pricePerHour * hours;
 
             paymentRequest = stripe.paymentRequest({
                 country: 'US',
@@ -1319,14 +1438,24 @@
             document.getElementById('rentalType').value = rentalType;
             document.getElementById('rentalHours').value = '1';
 
-            // Set modal values
-            document.getElementById('rentalPrice').value = rental.price;
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                // User is logged in - auto-verify member
+                isMemberVerified = true;
+                document.getElementById('memberCheckSection').style.display = 'none';
+            } else {
+                // Not logged in - show member check
+                isMemberVerified = false;
+                document.getElementById('memberCheckSection').style.display = 'block';
+                document.getElementById('memberButtons').style.display = 'flex';
+                document.getElementById('memberLoginFields').style.display = 'none';
+                document.getElementById('memberVerified').style.display = 'none';
+                document.getElementById('nonMemberState').style.display = 'none';
+            }
+
+            // Set modal title
             document.getElementById('modalTitle').textContent = `Book ${rental.name}`;
-            document.getElementById('summaryItem').textContent = `${rental.name} (1 hour)`;
-            document.getElementById('summaryOriginal').textContent = `$${rental.original}`;
-            document.getElementById('summaryDiscount').textContent = `-$${rental.original - rental.price}`;
-            document.getElementById('summaryTotal').textContent = `$${rental.price}`;
-            document.getElementById('payButton').textContent = `Pay $${rental.price}`;
 
             // Set min date to today
             const today = new Date().toISOString().split('T')[0];
@@ -1334,6 +1463,9 @@
 
             // Show modal
             document.getElementById('bookingModal').style.display = 'flex';
+
+            // Update pricing based on member status
+            updateTotal();
 
             // Initialize Card Element and Apple Pay
             setTimeout(() => {
@@ -1346,6 +1478,7 @@
             document.getElementById('bookingModal').style.display = 'none';
             currentRental = null;
             paymentRequest = null;
+            resetMemberState();
             const prBtnContainer = document.getElementById('payment-request-btn');
             if (prBtnContainer) prBtnContainer.innerHTML = '';
         }
