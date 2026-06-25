@@ -633,7 +633,10 @@
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
         <div class="modal">
-            <div class="modal-header">
+            <div class="modal-header" style="position: relative;">
+                <button onclick="skipLogin()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#000"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
                 <h2>Unlock Deals</h2>
                 <p>Create a free account to access all deals</p>
             </div>
@@ -901,6 +904,12 @@
             currentUser = null;
             document.getElementById('userWelcome').style.display = 'none';
             showAuthModal();
+        }
+
+        // Skip login - browse as guest
+        function skipLogin() {
+            hideAuthModal();
+            renderDeals();
         }
 
         // Build Amazon URL
