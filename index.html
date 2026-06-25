@@ -10813,6 +10813,7 @@
                             // Set user state and show admin panel
                             state.user = { email: data.user.email, role: 'admin' };
                             showView('admin');
+                            loadAdminStats();
                             break;
                         case 'member': window.location.href = '/'; break;
                     }
