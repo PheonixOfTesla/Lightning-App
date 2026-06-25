@@ -10807,7 +10807,11 @@
                     switch(selectedUserType) {
                         case 'dj': window.location.href = '/dj'; break;
                         case 'venue': window.location.href = '/partners'; break;
-                        case 'admin': window.location.href = '/checkin'; break;
+                        case 'admin':
+                            // Set user state and show admin panel
+                            state.user = { email: data.user.email, role: 'admin' };
+                            showView('admin');
+                            break;
                         case 'member': window.location.href = '/'; break;
                     }
                 } else {
