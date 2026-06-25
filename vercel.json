@@ -17,6 +17,7 @@
     { "source": "/add-venue", "destination": "/add-venue.html" },
     { "source": "/objectives", "destination": "/objectives.html" },
     { "source": "/craig-proposal", "destination": "/craig-proposal.html" },
+    { "source": "/black-flag-watersports-proposal", "destination": "/black-flag-watersports-proposal.html" },
     { "source": "/checkin", "destination": "/checkin.html" },
     { "source": "/receipt/:claimId", "destination": "/receipt.html" },
     { "source": "/sarasota-events", "destination": "/sarasota-events.html" },
