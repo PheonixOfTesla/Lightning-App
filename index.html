@@ -8039,32 +8039,31 @@
             const discountPercent = deal.discountPercent || Math.round((1 - deal.dealPrice / deal.originalPrice) * 100);
             const sourceLogo = getDealSourceLogo(deal.source);
             const expiresText = deal.expiresAt ? getExpiresText(deal.expiresAt) : '';
-            const totalPrice = ((deal.dealPrice + 199) / 100).toFixed(2); // Deal price + $1.99 service fee
+            const dealUrl = deal.url || deal.dealUrl || '';
 
             return `
-                <div class="deal-card">
-                    <div class="deal-card-clickable" onclick="trackDealClick('${deal._id || deal.id}', '${deal.url || deal.dealUrl || ''}')">
-                        ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.display='none'">` : `<div class="deal-card-image"></div>`}
-                        <div class="deal-card-badge">-${discountPercent}%</div>
-                        ${sourceLogo ? `
-                            <div class="deal-card-source">
-                                <img src="${sourceLogo}" alt="${deal.source}">
-                            </div>
-                        ` : ''}
-                        <div class="deal-card-content">
-                            <h3 class="deal-card-title">${deal.title}</h3>
-                            <div class="deal-card-pricing">
-                                <span class="deal-card-price">$${(deal.dealPrice / 100).toFixed(2)}</span>
-                                <span class="deal-card-original">$${(deal.originalPrice / 100).toFixed(2)}</span>
-                            </div>
-                            <div class="deal-card-meta">
-                                <span class="deal-card-category">${deal.category || 'Deal'}</span>
-                                ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
-                            </div>
+                <div class="deal-card" onclick="getDeal('${deal._id || deal.id}', '${dealUrl}')">
+                    ${deal.imageUrl ? `<img class="deal-card-image" src="${deal.imageUrl}" alt="${deal.title}" onerror="this.style.display='none'">` : `<div class="deal-card-image"></div>`}
+                    <div class="deal-card-badge">-${discountPercent}%</div>
+                    ${sourceLogo ? `
+                        <div class="deal-card-source">
+                            <img src="${sourceLogo}" alt="${deal.source}">
+                        </div>
+                    ` : ''}
+                    <div class="deal-card-content">
+                        <h3 class="deal-card-title">${deal.title}</h3>
+                        <div class="deal-card-pricing">
+                            <span class="deal-card-price">$${(deal.dealPrice / 100).toFixed(2)}</span>
+                            <span class="deal-card-original">$${(deal.originalPrice / 100).toFixed(2)}</span>
+                        </div>
+                        <div class="deal-card-meta">
+                            <span class="deal-card-category">${deal.category || 'Deal'}</span>
+                            ${expiresText ? `<span class="deal-card-expires">${expiresText}</span>` : ''}
                         </div>
                     </div>
-                    <button class="deal-claim-btn" onclick="event.stopPropagation(); claimDeal('${deal._id || deal.id}', '${deal.title.replace(/'/g, "\\'")}', ${deal.dealPrice})">
-                        ⚡ CLAIM - $${totalPrice}
+                    <button class="deal-claim-btn" onclick="event.stopPropagation(); getDeal('${deal._id || deal.id}', '${dealUrl}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        GET DEAL
                     </button>
                 </div>
             `;
@@ -8100,10 +8099,11 @@
             return `${daysLeft}d left`;
         }
 
-        async function trackDealClick(dealId, url) {
-            // Track the click
+        // Get deal - track click and redirect to deal URL (affiliate model)
+        async function getDeal(dealId, url) {
+            // Track the click for analytics
             try {
-                await fetch(`${API_BASE}/api/v1/lightning/deals/click/${dealId}`, {
+                fetch(`${API_BASE}/api/v1/lightning/deals/click/${dealId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -8111,97 +8111,17 @@
                 console.log('Click tracking failed:', e);
             }
 
-            // Open the deal URL if provided
+            // Redirect to deal URL
             if (url) {
                 window.open(url, '_blank', 'noopener,noreferrer');
-            }
-        }
-
-        // Claim a deal - show email modal then redirect to Stripe checkout
-        async function claimDeal(dealId, dealTitle, dealPrice) {
-            // Check if user already has email stored
-            const storedEmail = localStorage.getItem('lightningPassEmail');
-            const storedName = localStorage.getItem('lightningPassName');
-
-            if (storedEmail) {
-                // Already have email, go straight to checkout
-                await processClaimCheckout(dealId, storedEmail, storedName);
             } else {
-                // Show claim modal to get email
-                showClaimModal(dealId, dealTitle, dealPrice);
+                alert('Deal link not available');
             }
         }
 
-        function showClaimModal(dealId, dealTitle, dealPrice) {
-            const totalPrice = ((dealPrice + 199) / 100).toFixed(2);
-            const modal = document.createElement('div');
-            modal.className = 'pass-modal-overlay active';
-            modal.id = 'claimModal';
-            modal.innerHTML = `
-                <div class="pass-modal">
-                    <span class="pass-modal-close" onclick="closeClaimModal()">&times;</span>
-                    <div class="pass-modal-icon">⚡</div>
-                    <h2>Claim This Deal</h2>
-                    <p style="font-size: 0.9rem; color: #aaa;">${dealTitle.slice(0, 60)}...</p>
-                    <p style="font-size: 1.5rem; color: var(--lightning-yellow); font-weight: 700;">$${totalPrice}</p>
-                    <form class="pass-modal-form" onsubmit="submitClaim(event, '${dealId}')">
-                        <input type="text" id="claimName" placeholder="Your name" required>
-                        <input type="email" id="claimEmail" placeholder="Your email" required>
-                        <button type="submit">⚡ CLAIM NOW</button>
-                    </form>
-                    <p style="font-size: 0.75rem; color: #666; margin-top: 1rem;">Includes $1.99 service fee. You'll receive a Lightning Receipt with your deal.</p>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeClaimModal() {
-            const modal = document.getElementById('claimModal');
-            if (modal) {
-                modal.remove();
-                document.body.style.overflow = '';
-            }
-        }
-
-        async function submitClaim(e, dealId) {
-            e.preventDefault();
-            const email = document.getElementById('claimEmail').value;
-            const name = document.getElementById('claimName').value;
-            const btn = e.target.querySelector('button');
-
-            btn.textContent = 'Processing...';
-            btn.disabled = true;
-
-            // Store for future claims
-            localStorage.setItem('lightningPassEmail', email);
-            localStorage.setItem('lightningPassName', name);
-
-            await processClaimCheckout(dealId, email, name);
-        }
-
-        async function processClaimCheckout(dealId, email, name) {
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/lightning/deals/claim/${dealId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, name })
-                });
-
-                const data = await response.json();
-
-                if (data.checkoutUrl) {
-                    // Redirect to Stripe checkout
-                    window.location.href = data.checkoutUrl;
-                } else {
-                    alert('Error: ' + (data.error || 'Failed to create checkout'));
-                    closeClaimModal();
-                }
-            } catch (error) {
-                console.error('Claim error:', error);
-                alert('Error processing claim. Please try again.');
-                closeClaimModal();
-            }
+        // Legacy function for backwards compatibility
+        async function trackDealClick(dealId, url) {
+            getDeal(dealId, url);
         }
 
         // Render a SPOTLIGHT event card (ticketed, premium look)
@@ -10802,7 +10722,9 @@
         <div class="pass-modal">
             <span class="pass-modal-close" onclick="closePassModal()">&times;</span>
             <div class="pass-modal-form-container">
-                <div class="pass-modal-icon">⚡</div>
+                <div class="pass-modal-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
                 <h2>Get Your Lightning Pass</h2>
                 <p>Unlock exclusive daily deals and discounts</p>
                 <form class="pass-modal-form" onsubmit="submitPassSignup(event)">
@@ -10811,16 +10733,18 @@
                     <button type="submit">GET MY PASS</button>
                 </form>
                 <div class="pass-modal-benefits">
-                    <div>✓ Exclusive deals from top brands</div>
-                    <div>✓ Early access to flash sales</div>
-                    <div>✓ Daily deal alerts in your inbox</div>
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Exclusive deals from top brands</div>
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Early access to flash sales</div>
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--neon-green)" style="vertical-align: middle; margin-right: 6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Daily deal alerts in your inbox</div>
                 </div>
             </div>
             <div class="pass-modal-success">
-                <div class="pass-modal-icon">🎉</div>
+                <div class="pass-modal-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--neon-green)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                </div>
                 <h2>You're In!</h2>
                 <p>Your Lightning Pass is active. Check your email for confirmation.</p>
-                <button onclick="goToDeals()" style="margin-top: 1rem; padding: 1rem 2rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">VIEW DEALS →</button>
+                <button onclick="goToDeals()" style="margin-top: 1rem; padding: 1rem 2rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">VIEW DEALS</button>
             </div>
         </div>
     </div>
