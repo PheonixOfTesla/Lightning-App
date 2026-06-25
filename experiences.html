@@ -841,8 +841,16 @@
 
                     <!-- Apple Pay / Google Pay Button -->
                     <div id="payment-request-btn" style="margin-bottom: 1rem;"></div>
-                    <div id="payment-divider" style="display: none; text-align: center; margin-bottom: 1rem; color: var(--gray); font-size: 0.85rem;">
-                        <span style="background: var(--card-black); padding: 0 1rem;">or pay with card</span>
+                    <div id="payment-divider" style="display: none; text-align: center; margin-bottom: 1rem; color: var(--gray); font-size: 0.85rem; position: relative;">
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border-dark); z-index: 0;"></div>
+                        <span style="background: var(--card-black); padding: 0 1rem; position: relative; z-index: 1;">or pay with card</span>
+                    </div>
+
+                    <!-- Stripe Card Element -->
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--light-gray); font-size: 0.85rem;">Card Details</label>
+                        <div id="card-element" style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #ccc;"></div>
+                        <div id="card-errors" style="color: #ff4444; font-size: 0.8rem; margin-top: 0.5rem;"></div>
                     </div>
 
                     <button type="submit" id="payButton" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -866,6 +874,8 @@
 
         // Initialize Stripe
         const stripe = Stripe(STRIPE_KEY);
+        const elements = stripe.elements();
+        let cardElement = null;
         let paymentRequest = null;
         let prButton = null;
 
@@ -1080,8 +1090,28 @@
             // Show modal
             document.getElementById('bookingModal').style.display = 'flex';
 
-            // Initialize Apple Pay after modal is visible
+            // Initialize card element and Apple Pay after modal is visible
             setTimeout(() => {
+                // Mount card element
+                if (!cardElement) {
+                    cardElement = elements.create('card', {
+                        style: {
+                            base: {
+                                fontSize: '16px',
+                                color: '#32325d',
+                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                '::placeholder': { color: '#aab7c4' }
+                            },
+                            invalid: { color: '#ff4444' }
+                        }
+                    });
+                    cardElement.mount('#card-element');
+                    cardElement.on('change', function(event) {
+                        const displayError = document.getElementById('card-errors');
+                        displayError.textContent = event.error ? event.error.message : '';
+                    });
+                }
+                // Initialize Apple Pay
                 initPaymentRequest();
             }, 100);
         }
@@ -1092,6 +1122,11 @@
             paymentRequest = null;
             const prBtnContainer = document.getElementById('payment-request-btn');
             if (prBtnContainer) prBtnContainer.innerHTML = '';
+            // Unmount card element
+            if (cardElement) {
+                cardElement.unmount();
+                cardElement = null;
+            }
         }
 
         // Close on overlay click
@@ -1127,23 +1162,52 @@
             };
 
             try {
-                // Create checkout session via backend (redirect to Stripe)
-                const response = await fetch(`${API_URL}/api/v1/experiences/checkout`, {
+                // Create payment intent via backend
+                const intentResponse = await fetch(`${API_URL}/api/v1/experiences/create-intent`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
 
-                const session = await response.json();
+                const intentData = await intentResponse.json();
 
-                if (session.url) {
-                    window.location.href = session.url;
-                } else if (session.error) {
-                    throw new Error(session.error);
+                if (intentData.error) {
+                    throw new Error(intentData.error);
+                }
+
+                // Confirm payment with card element
+                const { error, paymentIntent } = await stripe.confirmCardPayment(intentData.clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: formData.name,
+                            email: formData.email,
+                            phone: formData.phone
+                        }
+                    }
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                if (paymentIntent.status === 'succeeded') {
+                    // Confirm with backend and send email
+                    await fetch(`${API_URL}/api/v1/experiences/confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            paymentIntentId: paymentIntent.id,
+                            ...formData
+                        })
+                    });
+
+                    closeBookingModal();
+                    showSuccessMessage();
                 }
             } catch (error) {
                 console.error('Booking error:', error);
-                alert('Booking failed. Please call (941) 422-2222 to reserve.');
+                document.getElementById('card-errors').textContent = error.message || 'Payment failed. Please try again.';
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
