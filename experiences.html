@@ -802,7 +802,7 @@
             </div>
         </section>
 
-        <!-- Tours Section (Coming Soon) -->
+        <!-- Tours Section -->
         <section class="section">
             <div class="section-header">
                 <div class="section-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></div>
@@ -812,9 +812,83 @@
                 </div>
             </div>
 
-            <div class="coming-soon-card">
-                <h3>Coming Soon</h3>
-                <p>Sunset cruises, dolphin tours, and island excursions</p>
+            <div class="partner-card">
+                <div class="partner-header">
+                    <div class="partner-info">
+                        <h3>Sunset Jet Ski Tour</h3>
+                        <p>The Perfect Date Experience</p>
+                    </div>
+                    <span class="partner-badge" style="background: linear-gradient(135deg, #ff6b6b, #ffd93d);">ROMANTIC</span>
+                </div>
+
+                <!-- Slideshow -->
+                <div class="tour-slideshow" style="position: relative; width: 100%; height: 280px; border-radius: 12px; overflow: hidden; margin-bottom: 1rem;">
+                    <div class="slideshow-container" id="tourSlideshow" style="display: flex; transition: transform 0.5s ease; height: 100%;">
+                        <div class="slide" style="min-width: 100%; height: 100%;">
+                            <img src="https://d2p7pge43lyniu.cloudfront.net/output/a3831328-dac9-4e4f-95b2-0a4014691f76.png" alt="Sunset Tour" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="slide" style="min-width: 100%; height: 100%;">
+                            <img src="https://d2p7pge43lyniu.cloudfront.net/output/8d913f01-6bd2-43cd-9041-a9de9a5c679f.png" alt="Sunset Tour" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="slide" style="min-width: 100%; height: 100%;">
+                            <img src="https://d2p7pge43lyniu.cloudfront.net/output/ac40b521-b590-4254-804c-a10ca8b4772f.png" alt="Sunset Tour" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="slide" style="min-width: 100%; height: 100%;">
+                            <video src="https://d2p7pge43lyniu.cloudfront.net/output/5bcc8c7c-1e2a-4951-80bd-819a126a06b1.mp4" style="width: 100%; height: 100%; object-fit: cover;" autoplay muted loop playsinline></video>
+                        </div>
+                    </div>
+                    <!-- Slideshow Controls -->
+                    <button onclick="prevSlide()" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">&#10094;</button>
+                    <button onclick="nextSlide()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">&#10095;</button>
+                    <!-- Dots -->
+                    <div style="position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px;">
+                        <span class="dot" onclick="goToSlide(0)" style="width: 10px; height: 10px; background: var(--lightning-yellow); border-radius: 50%; cursor: pointer; opacity: 1;"></span>
+                        <span class="dot" onclick="goToSlide(1)" style="width: 10px; height: 10px; background: white; border-radius: 50%; cursor: pointer; opacity: 0.5;"></span>
+                        <span class="dot" onclick="goToSlide(2)" style="width: 10px; height: 10px; background: white; border-radius: 50%; cursor: pointer; opacity: 0.5;"></span>
+                        <span class="dot" onclick="goToSlide(3)" style="width: 10px; height: 10px; background: white; border-radius: 50%; cursor: pointer; opacity: 0.5;"></span>
+                    </div>
+                </div>
+
+                <!-- Tour Details -->
+                <div style="padding: 0 0.5rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+                        <span style="background: rgba(255,221,0,0.15); color: var(--lightning-yellow); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">2 Jet Skis Included</span>
+                        <span style="background: rgba(255,221,0,0.15); color: var(--lightning-yellow); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Photos & Videos</span>
+                        <span style="background: rgba(255,221,0,0.15); color: var(--lightning-yellow); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Golden Hour</span>
+                    </div>
+                    <ul style="list-style: none; padding: 0; margin: 0 0 1rem 0; color: var(--light-gray); font-size: 0.9rem;">
+                        <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Guided sunset ride through Sarasota Bay
+                        </li>
+                        <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Professional photos & video included
+                        </li>
+                        <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Perfect for couples & special occasions
+                        </li>
+                    </ul>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,221,0,0.1); border-radius: 12px; margin-bottom: 1rem;">
+                        <div>
+                            <div style="color: var(--gray); font-size: 0.8rem;">Starting at</div>
+                            <div style="color: var(--lightning-yellow); font-size: 1.5rem; font-weight: 700;">$250<span style="font-size: 0.9rem; font-weight: 400;">/hour</span></div>
+                        </div>
+                        <button class="book-btn" onclick="bookTour()" style="padding: 0.875rem 2rem;">Book Now</button>
+                    </div>
+                </div>
+
+                <div class="partner-info-bar">
+                    <div class="info-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Departs 1 hour before sunset
+                    </div>
+                    <div class="info-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        (941) 422-2222
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -958,6 +1032,61 @@
         const STRIPE_KEY = 'pk_live_51SFvASIfYqbb49BvhZYmJDk2U3PLXkZaQGKKVaCNqCHnC2lQFNt5v3kBgqAV0N5ADLY1xaXrUxFeSKkMUxGfzqxd00SBfVpRTG';
         const API_URL = 'https://lightning-backend-production.up.railway.app';
 
+        // Slideshow for Tours
+        let currentSlide = 0;
+        const totalSlides = 4;
+
+        function updateSlideshow() {
+            const container = document.getElementById('tourSlideshow');
+            if (!container) return;
+            container.style.transform = `translateX(-${currentSlide * 100}%)`;
+            // Update dots
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, i) => {
+                dot.style.opacity = i === currentSlide ? '1' : '0.5';
+                dot.style.background = i === currentSlide ? 'var(--lightning-yellow)' : 'white';
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlideshow();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlideshow();
+        }
+
+        function goToSlide(n) {
+            currentSlide = n;
+            updateSlideshow();
+        }
+
+        // Auto-advance slideshow every 5 seconds
+        setInterval(nextSlide, 5000);
+
+        // Book Tour function
+        function bookTour() {
+            currentRental = { name: 'Sunset Jet Ski Tour', original: 250, price: 250 };
+            document.getElementById('modalTitle').textContent = 'Book Sunset Tour';
+            document.getElementById('rentalType').value = 'sunset-tour';
+            document.getElementById('rentalHours').value = 1;
+
+            const hours = 1;
+            document.getElementById('originalPrice').textContent = `$${250 * hours}`;
+            document.getElementById('savings').textContent = 'Photos & Videos Included';
+            document.getElementById('discountPrice').textContent = `$${250 * hours}`;
+            document.getElementById('payButton').textContent = `Pay $${250 * hours}`;
+            document.getElementById('rentalPrice').value = 250 * hours;
+
+            document.getElementById('bookingModal').style.display = 'flex';
+            setTimeout(() => {
+                initCardElement();
+                initPaymentRequest();
+            }, 100);
+        }
+
         // Initialize Stripe
         const stripe = Stripe(STRIPE_KEY);
         const elements = stripe.elements();
@@ -970,7 +1099,8 @@
             '3-jet-skis': { name: '3 Jet Skis', original: 360, price: 270 },
             '4-jet-skis': { name: '4 Jet Skis', original: 480, price: 360 },
             '5-jet-skis': { name: '5 Jet Skis', original: 600, price: 450 },
-            '6-jet-skis': { name: '6 Jet Skis', original: 720, price: 540 }
+            '6-jet-skis': { name: '6 Jet Skis', original: 720, price: 540 },
+            'sunset-tour': { name: 'Sunset Jet Ski Tour', original: 250, price: 250 }
         };
 
         let currentRental = null;
