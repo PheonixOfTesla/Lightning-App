@@ -848,7 +848,7 @@
                 <!-- Tour Details -->
                 <div style="padding: 0 0.5rem;">
                     <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
-                        <span style="background: rgba(255,221,0,0.15); color: var(--lightning-yellow); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">2 Jet Skis Included</span>
+                        <span style="background: rgba(255,221,0,0.15); color: var(--lightning-yellow); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">1 Jet Ski Included</span>
                         <span style="background: rgba(255,221,0,0.15); color: var(--lightning-yellow); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Photos & Videos</span>
                         <span style="background: rgba(255,221,0,0.15); color: var(--lightning-yellow); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Golden Hour</span>
                     </div>
@@ -882,11 +882,11 @@
                         <!-- Total -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                             <div>
-                                <div style="color: var(--gray); font-size: 0.8rem;">2 Jet Skis included</div>
+                                <div style="color: var(--gray); font-size: 0.8rem;">1 Jet Ski included</div>
                                 <div style="color: var(--gray); font-size: 0.85rem;" id="tourExtrasText"></div>
                             </div>
                             <div style="text-align: right;">
-                                <div style="color: var(--lightning-yellow); font-size: 2rem; font-weight: 700;" id="tourTotalPrice">$250<span style="font-size: 1rem; font-weight: 400;">/hour</span></div>
+                                <div style="color: var(--lightning-yellow); font-size: 2rem; font-weight: 700;" id="tourTotalPrice">$275<span style="font-size: 1rem; font-weight: 400;">/hour</span></div>
                             </div>
                         </div>
                         <button class="book-btn" onclick="bookTour()" style="width: 100%; padding: 1rem; font-size: 1.1rem;" id="tourBookBtn">Book Now</button>
@@ -1114,7 +1114,7 @@
 
         // Tour extras
         let tourExtraJetSkis = 0;
-        const TOUR_BASE_PRICE = 250;
+        const TOUR_BASE_PRICE = 275;
         const EXTRA_JETSKI_PRICE = 130;
 
         function updateTourExtras(change) {
@@ -1168,7 +1168,7 @@
             '4-jet-skis': { name: '4 Jet Skis', original: 520, price: 400 },
             '5-jet-skis': { name: '5 Jet Skis', original: 650, price: 500 },
             '6-jet-skis': { name: '6 Jet Skis', original: 780, price: 600 },
-            'sunset-tour': { name: 'Sunset Jet Ski Tour', original: 250, price: 250 }
+            'sunset-tour': { name: 'Sunset Jet Ski Tour', original: 275, price: 275 }
         };
 
         let currentRental = null;
