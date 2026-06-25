@@ -10781,6 +10781,8 @@
             const password = document.getElementById('loginPassword').value;
             const btn = e.target.querySelector('button');
 
+            console.log('Login attempt:', { email, password, userType: selectedUserType });
+
             btn.textContent = 'Logging in...';
             btn.disabled = true;
 
@@ -10790,8 +10792,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password, userType: selectedUserType })
                 });
+                console.log('Response status:', response.status);
 
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.token) {
                     localStorage.setItem('authToken', data.token);
