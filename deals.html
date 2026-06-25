@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- SEO Meta Tags -->
-    <title>Lightning Pass Deals | Curated Savings on Top Products</title>
-    <meta name="description" content="Curated deals on summer essentials, tech, home goods and more. Hand-picked products at great prices - exclusively on Lightning Pass.">
+    <title>Lightning Pass Claim | Curated Savings on Top Products</title>
+    <meta name="description" content="Curated perks on summer essentials, tech, home goods and more. Hand-picked products at great prices - exclusively on Lightning Pass.">
     <meta name="keywords" content="deals, coupons, discounts, Amazon deals, summer deals, tech deals, Lightning Pass">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://thelightningpass.com/deals">
@@ -17,8 +17,8 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://thelightningpass.com/deals">
-    <meta property="og:title" content="Lightning Pass Deals | Curated Savings">
-    <meta property="og:description" content="Curated deals on summer essentials, tech, home goods and more.">
+    <meta property="og:title" content="Lightning Pass Claim | Curated Savings">
+    <meta property="og:description" content="Curated perks on summer essentials, tech, home goods and more.">
     <meta property="og:image" content="https://thelightningpass.com/logo.png">
     <meta property="og:site_name" content="Lightning Pass">
 
@@ -619,7 +619,7 @@
             </a>
             <div class="nav-links">
                 <a href="/?browse=1" class="nav-link">Events</a>
-                <a href="/deals" class="nav-link active">Deals</a>
+                <a href="/deals" class="nav-link active">Claim</a>
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link">About</a>
@@ -633,7 +633,7 @@
 
     <div class="mobile-menu" id="mobileMenu">
         <a href="/?browse=1">Events</a>
-        <a href="/deals" class="active">Deals</a>
+        <a href="/deals" class="active">Claim</a>
         <a href="/partners">Partners</a>
         <a href="/calendar">Calendar</a>
         <a href="/about">About</a>
@@ -650,8 +650,8 @@
                     <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;"><img src="logo.png" alt="Lightning Pass" style="width: 100%; height: 100%; object-fit: cover;"></div>
                     <span style="font-size: 1.25rem; font-weight: 600; color: #000;">Lightning Pass</span>
                 </div>
-                <h2 style="margin-top: 0.5rem;">Unlock Deals</h2>
-                <p>Create a free account to access all deals</p>
+                <h2 style="margin-top: 0.5rem;">Unlock Perks</h2>
+                <p>Create a free account to access all perks</p>
             </div>
             <div class="modal-tabs">
                 <button class="modal-tab active" onclick="switchTab('signup')">Sign Up</button>
@@ -721,7 +721,7 @@
 
     <main class="main-content">
         <div class="hero">
-            <h1>Lightning Deals</h1>
+            <h1>Lightning Claim</h1>
             <p>Hand-picked products at great prices</p>
             <div class="user-welcome" id="userWelcome" style="display: none;">
                 <span id="userName"></span>
@@ -734,7 +734,7 @@
         </div>
 
         <div class="category-tabs">
-            <button class="category-tab active" data-category="all" onclick="filterCategory('all')">All Deals</button>
+            <button class="category-tab active" data-category="all" onclick="filterCategory('all')">All Perks</button>
             <button class="category-tab" data-category="summer" onclick="filterCategory('summer')">Summer</button>
             <button class="category-tab" data-category="tech" onclick="filterCategory('tech')">Tech</button>
             <button class="category-tab" data-category="home" onclick="filterCategory('home')">Home</button>
@@ -761,7 +761,7 @@
         let currentUser = null;
         let activeCategory = 'all';
 
-        // Curated deals for Sarasota 20-40 demo
+        // Curated perks for Sarasota 20-40 demo
         // Using search URLs + Lorem Picsum for reliable images
         const deals = [
             // Summer/Beach
@@ -914,7 +914,7 @@
             document.getElementById('authModal').classList.add('active');
             document.getElementById('dealsContainer').innerHTML = `
                 <div class="loading">
-                    <p style="color: var(--gray);">Login to view deals</p>
+                    <p style="color: var(--gray);">Login to view perks</p>
                 </div>
             `;
         }
@@ -1164,7 +1164,7 @@
                         html += `
                             <div class="section-header">
                                 <h2>${labels[cat]}</h2>
-                                <span class="count">${catDeals.length} deals</span>
+                                <span class="count">${catDeals.length} perks</span>
                             </div>
                             <div class="deals-grid">${catDeals.map(renderDealCard).join('')}</div>
                         `;
