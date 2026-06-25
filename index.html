@@ -10755,6 +10755,8 @@
                 document.getElementById('userTypeSelect').style.display = 'none';
                 document.getElementById('loginFormContainer').style.display = 'block';
                 document.getElementById('selectedTypeLabel').textContent = type.toUpperCase() + ' LOGIN';
+                // Hide Create Account for admin (admins can't self-register)
+                document.getElementById('createAccountLink').style.display = type === 'admin' ? 'none' : 'block';
             }
         }
 
@@ -10933,7 +10935,7 @@
                         <input type="text" id="lcPasscode" placeholder="Passcode" required>
                         <button type="submit">LOGIN</button>
                     </form>
-                    <div style="text-align: center; margin-top: 1rem;">
+                    <div id="createAccountLink" style="text-align: center; margin-top: 1rem;">
                         <a href="#" onclick="showCreateAccount()" style="color: var(--lightning-yellow); font-size: 0.85rem;">Create Account</a>
                     </div>
                     <div style="text-align: center; margin-top: 0.5rem;">
