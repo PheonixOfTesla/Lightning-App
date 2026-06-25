@@ -1134,19 +1134,30 @@
         // Book Tour function
         function bookTour() {
             const totalPrice = TOUR_BASE_PRICE + (tourExtraJetSkis * EXTRA_JETSKI_PRICE);
-            const totalJetSkis = 2 + tourExtraJetSkis;
+            const totalJetSkis = 1 + tourExtraJetSkis;
 
-            currentRental = { name: `Sunset Tour (${totalJetSkis} Jet Skis)`, original: totalPrice, price: totalPrice };
+            currentRental = { name: `Sunset Tour (${totalJetSkis} Jet Ski${totalJetSkis > 1 ? 's' : ''})`, original: totalPrice, price: totalPrice };
+
+            // Tour has no member discount - same price for all
+            isMemberVerified = true; // Skip member check for tours
+            document.getElementById('memberCheckSection').style.display = 'none';
+
             document.getElementById('modalTitle').textContent = 'Book Sunset Tour';
             document.getElementById('rentalType').value = 'sunset-tour';
-            document.getElementById('rentalHours').value = 1;
+            document.getElementById('rentalHours').value = '1';
 
-            const hours = 1;
-            document.getElementById('originalPrice').textContent = `$${totalPrice * hours}`;
-            document.getElementById('savings').textContent = `${totalJetSkis} Jet Skis + Photos & Videos`;
-            document.getElementById('discountPrice').textContent = `$${totalPrice * hours}`;
-            document.getElementById('payButton').textContent = `Pay $${totalPrice * hours}`;
-            document.getElementById('rentalPrice').value = totalPrice * hours;
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rentalDate').min = today;
+
+            // Update price summary
+            document.getElementById('summaryItem').textContent = `Sunset Tour (${totalJetSkis} Jet Ski${totalJetSkis > 1 ? 's' : ''})`;
+            document.getElementById('summaryOriginal').textContent = '';
+            document.getElementById('summaryOriginal').style.display = 'none';
+            document.getElementById('discountLabel').parentElement.style.display = 'none';
+            document.getElementById('summaryTotal').textContent = `$${totalPrice}`;
+            document.getElementById('payButton').textContent = `Pay $${totalPrice}`;
+            document.getElementById('rentalPrice').value = totalPrice;
 
             document.getElementById('bookingModal').style.display = 'flex';
             setTimeout(() => {
