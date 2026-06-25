@@ -660,7 +660,7 @@
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link active">About</a>
-                <a href="#" onclick="showLoginModal(); return false;" class="nav-link btn-login">LOGIN</a>
+                <a href="#" onclick="showLoginModal(); return false;" class="nav-link btn-login" id="nav-login">LOGIN</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span>
@@ -677,7 +677,7 @@
         <a href="/partners">Partners</a>
         <a href="/calendar">Calendar</a>
         <a href="/about" class="active">About</a>
-        <a href="/login">Login</a>
+        <a href="#" id="mobile-login" onclick="showLoginModal(); return false;">Login</a>
     </div>
 
     <!-- Hero -->
@@ -804,37 +804,175 @@
         // Scroll to top on page load
         window.scrollTo(0, 0);
 
-        // Login Modal
+        // Unified Auth System
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+
         function showLoginModal() {
-            document.getElementById('loginModal').classList.add('active');
+            document.getElementById('authModal').style.display = 'flex';
+            switchAuthTab('signup');
         }
         function hideLoginModal() {
-            document.getElementById('loginModal').classList.remove('active');
+            document.getElementById('authModal').style.display = 'none';
         }
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('authError').style.display = 'none';
+            if (tab === 'signup') {
+                document.querySelector('.auth-tab:first-child').classList.add('active');
+                document.getElementById('signupForm').classList.add('active');
+            } else if (tab === 'login') {
+                document.querySelector('.auth-tab:last-child').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else if (tab === 'reset') {
+                document.getElementById('resetForm').classList.add('active');
+            }
+        }
+        function showAuthError(msg) {
+            const el = document.getElementById('authError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        async function handleAuthSignup(e) {
+            e.preventDefault();
+            const btn = document.getElementById('authSignupBtn');
+            btn.disabled = true; btn.textContent = 'Creating...';
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: document.getElementById('authFirstName').value,
+                        lastName: document.getElementById('authLastName').value,
+                        email: document.getElementById('authSignupEmail').value,
+                        phone: document.getElementById('authPhone').value,
+                        password: document.getElementById('authSignupPassword').value
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.token) {
+                    localStorage.setItem('dealToken', data.token);
+                    localStorage.setItem('dealUser', JSON.stringify(data.user));
+                    hideLoginModal();
+                    updateAuthButton();
+                } else {
+                    showAuthError(data.error || 'Signup failed');
+                }
+            } catch (e) { showAuthError('Connection error'); }
+            btn.disabled = false; btn.textContent = 'Create Account';
+        }
+        async function handleAuthLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('authLoginBtn');
+            btn.disabled = true; btn.textContent = 'Logging in...';
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('authLoginEmail').value,
+                        password: document.getElementById('authLoginPassword').value
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.token) {
+                    localStorage.setItem('dealToken', data.token);
+                    localStorage.setItem('dealUser', JSON.stringify(data.user));
+                    hideLoginModal();
+                    updateAuthButton();
+                } else {
+                    showAuthError(data.error || 'Login failed');
+                }
+            } catch (e) { showAuthError('Connection error'); }
+            btn.disabled = false; btn.textContent = 'Login';
+        }
+        async function handleAuthReset(e) {
+            e.preventDefault();
+            const btn = document.getElementById('authResetBtn');
+            btn.disabled = true; btn.textContent = 'Sending...';
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: document.getElementById('authResetEmail').value })
+                });
+                if (res.ok) {
+                    document.getElementById('resetForm').innerHTML = '<div style="text-align:center;padding:1rem 0;"><h3 style="color:#ffdd00;margin-bottom:0.5rem;">Check Your Email</h3><p style="color:#888;font-size:0.9rem;">If an account exists, you\'ll receive a reset link.</p><p style="margin-top:1rem;"><a href="#" onclick="switchAuthTab(\'login\')" style="color:#ffdd00;">Back to Login</a></p></div>';
+                } else {
+                    showAuthError('Failed to send reset email');
+                }
+            } catch (e) { showAuthError('Connection error'); }
+            btn.disabled = false; btn.textContent = 'Send Reset Link';
+        }
+        function handleLogout() {
+            localStorage.removeItem('dealToken');
+            localStorage.removeItem('dealUser');
+            updateAuthButton();
+        }
+        function updateAuthButton() {
+            const btn = document.getElementById('nav-login');
+            const mobileBtn = document.getElementById('mobile-login');
+            const token = localStorage.getItem('dealToken');
+            if (token) {
+                if (btn) { btn.textContent = 'LOGOUT'; btn.onclick = function(e) { e.preventDefault(); handleLogout(); }; }
+                if (mobileBtn) { mobileBtn.textContent = 'Logout'; mobileBtn.onclick = function(e) { e.preventDefault(); handleLogout(); }; }
+            } else {
+                if (btn) { btn.textContent = 'LOGIN'; btn.onclick = function(e) { e.preventDefault(); showLoginModal(); }; }
+                if (mobileBtn) { mobileBtn.textContent = 'Login'; mobileBtn.onclick = function(e) { e.preventDefault(); showLoginModal(); }; }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateAuthButton);
     </script>
 
-    <!-- Login Modal -->
-    <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 1rem;">
-        <div style="background: #1b2838; border-radius: 1.5rem; width: 100%; max-width: 420px; border: 1px solid rgba(255,221,0,0.2); overflow: hidden;">
-            <div style="background: linear-gradient(135deg, #ffdd00, #ffaa00); padding: 2rem; text-align: center; position: relative;">
-                <button onclick="hideLoginModal()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+    <!-- Auth Modal -->
+    <div id="authModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;justify-content:center;align-items:center;padding:1rem;">
+        <div style="background:#1b2838;border-radius:1.5rem;width:100%;max-width:420px;border:1px solid rgba(255,221,0,0.2);overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#ffdd00,#ffaa00);padding:2rem;text-align:center;position:relative;">
+                <button onclick="hideLoginModal()" style="position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,0.2);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="#000"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </button>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;"><img src="logo.png" alt="Lightning Pass" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                    <span style="font-size: 1.25rem; font-weight: 600; color: #000;">Lightning Pass</span>
+                <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;"><img src="logo.png" alt="Lightning Pass" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <span style="font-size:1.25rem;font-weight:600;color:#000;">Lightning Pass</span>
                 </div>
-                <h2 style="color: #000; font-size: 1.5rem; margin: 0.5rem 0 0.25rem;">Login</h2>
-                <p style="color: rgba(0,0,0,0.7); font-size: 0.9rem; margin: 0;">Access your account</p>
+                <h2 style="color:#000;font-size:1.5rem;margin:0.5rem 0 0.25rem;">Welcome</h2>
+                <p style="color:rgba(0,0,0,0.7);font-size:0.9rem;margin:0;">Create an account or login</p>
             </div>
-            <div style="padding: 2rem;">
-                <div style="text-align: center; color: #888; font-size: 0.95rem;">
-                    <a href="/deals" style="display: block; background: #ffdd00; color: #000; padding: 1rem; border-radius: 0.5rem; text-decoration: none; font-weight: 700; margin-bottom: 1rem;">Login to Deals</a>
-                    <a href="/partners" style="display: block; background: rgba(255,255,255,0.1); color: #fff; padding: 1rem; border-radius: 0.5rem; text-decoration: none; font-weight: 500; border: 1px solid rgba(255,255,255,0.2);">Partner Login</a>
-                </div>
+            <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.1);">
+                <button class="auth-tab active" onclick="switchAuthTab('signup')" style="flex:1;padding:1rem;background:none;border:none;color:#888;font-size:0.95rem;font-weight:500;cursor:pointer;font-family:inherit;">Sign Up</button>
+                <button class="auth-tab" onclick="switchAuthTab('login')" style="flex:1;padding:1rem;background:none;border:none;color:#888;font-size:0.95rem;font-weight:500;cursor:pointer;font-family:inherit;">Login</button>
+            </div>
+            <div style="padding:2rem;">
+                <div id="authError" style="display:none;background:rgba(255,0,68,0.1);border:1px solid rgba(255,0,68,0.3);color:#ff4466;padding:0.75rem 1rem;border-radius:0.5rem;margin-bottom:1rem;font-size:0.9rem;"></div>
+                <form class="auth-form active" id="signupForm" onsubmit="handleAuthSignup(event)">
+                    <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
+                        <div style="flex:1;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">First Name</label><input type="text" id="authFirstName" required placeholder="First" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                        <div style="flex:1;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Last Name</label><input type="text" id="authLastName" required placeholder="Last" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    </div>
+                    <div style="margin-bottom:1rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Email</label><input type="email" id="authSignupEmail" required placeholder="you@example.com" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    <div style="margin-bottom:1rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Phone</label><input type="tel" id="authPhone" placeholder="(555) 555-5555" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Password</label><input type="password" id="authSignupPassword" required placeholder="At least 6 characters" minlength="6" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    <button type="submit" id="authSignupBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Create Account</button>
+                </form>
+                <form class="auth-form" id="loginForm" onsubmit="handleAuthLogin(event)" style="display:none;">
+                    <div style="margin-bottom:1rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Email</label><input type="email" id="authLoginEmail" required placeholder="you@example.com" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Password</label><input type="password" id="authLoginPassword" required placeholder="Your password" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    <button type="submit" id="authLoginBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Login</button>
+                    <p style="text-align:center;margin-top:1rem;"><a href="#" onclick="switchAuthTab('reset')" style="color:#ffdd00;font-size:0.9rem;text-decoration:none;">Forgot Password?</a></p>
+                </form>
+                <form class="auth-form" id="resetForm" onsubmit="handleAuthReset(event)" style="display:none;">
+                    <p style="color:#888;font-size:0.9rem;margin-bottom:1.5rem;">Enter your email and we'll send you a reset link.</p>
+                    <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Email</label><input type="email" id="authResetEmail" required placeholder="you@example.com" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    <button type="submit" id="authResetBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Send Reset Link</button>
+                    <p style="text-align:center;margin-top:1rem;"><a href="#" onclick="switchAuthTab('login')" style="color:#888;font-size:0.9rem;text-decoration:none;">Back to Login</a></p>
+                </form>
             </div>
         </div>
     </div>
-    <style>#loginModal.active { display: flex !important; }</style>
+    <style>
+        .auth-tab.active { color: #ffdd00 !important; border-bottom: 2px solid #ffdd00; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+    </style>
 </body>
 </html>
