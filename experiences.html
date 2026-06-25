@@ -871,11 +871,29 @@
                         </li>
                     </ul>
                     <div style="padding: 1rem; background: rgba(255,221,0,0.1); border-radius: 12px; margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <div style="color: var(--gray); font-size: 0.85rem;">Starting at</div>
-                            <div style="color: var(--lightning-yellow); font-size: 2rem; font-weight: 700;">$250<span style="font-size: 1rem; font-weight: 400;">/hour</span></div>
+                        <!-- Extra Jet Skis Selector -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div>
+                                <div style="color: white; font-size: 0.95rem; font-weight: 500;">Add Extra Jet Skis</div>
+                                <div style="color: var(--gray); font-size: 0.8rem;">+$120/jet ski</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <button onclick="updateTourExtras(-1)" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-dark); background: rgba(255,255,255,0.05); color: white; font-size: 1.2rem; cursor: pointer;">−</button>
+                                <span id="extraJetSkis" style="color: white; font-size: 1.1rem; font-weight: 600; min-width: 20px; text-align: center;">0</span>
+                                <button onclick="updateTourExtras(1)" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-dark); background: rgba(255,255,255,0.05); color: white; font-size: 1.2rem; cursor: pointer;">+</button>
+                            </div>
                         </div>
-                        <button class="book-btn" onclick="bookTour()" style="width: 100%; padding: 1rem; font-size: 1.1rem;">Book Now</button>
+                        <!-- Total -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <div style="color: var(--gray); font-size: 0.8rem;">2 Jet Skis included</div>
+                                <div style="color: var(--gray); font-size: 0.85rem;" id="tourExtrasText"></div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: var(--lightning-yellow); font-size: 2rem; font-weight: 700;" id="tourTotalPrice">$250<span style="font-size: 1rem; font-weight: 400;">/hour</span></div>
+                            </div>
+                        </div>
+                        <button class="book-btn" onclick="bookTour()" style="width: 100%; padding: 1rem; font-size: 1.1rem;" id="tourBookBtn">Book Now</button>
                     </div>
                 </div>
 
@@ -1066,19 +1084,41 @@
         // Auto-advance slideshow every 5 seconds
         setInterval(nextSlide, 5000);
 
+        // Tour extras
+        let tourExtraJetSkis = 0;
+        const TOUR_BASE_PRICE = 250;
+        const EXTRA_JETSKI_PRICE = 120;
+
+        function updateTourExtras(change) {
+            tourExtraJetSkis = Math.max(0, Math.min(4, tourExtraJetSkis + change)); // Max 4 extra (6 total)
+            document.getElementById('extraJetSkis').textContent = tourExtraJetSkis;
+
+            const totalPrice = TOUR_BASE_PRICE + (tourExtraJetSkis * EXTRA_JETSKI_PRICE);
+            document.getElementById('tourTotalPrice').innerHTML = `$${totalPrice}<span style="font-size: 1rem; font-weight: 400;">/hour</span>`;
+
+            if (tourExtraJetSkis > 0) {
+                document.getElementById('tourExtrasText').textContent = `+ ${tourExtraJetSkis} extra jet ski${tourExtraJetSkis > 1 ? 's' : ''} (+$${tourExtraJetSkis * EXTRA_JETSKI_PRICE})`;
+            } else {
+                document.getElementById('tourExtrasText').textContent = '';
+            }
+        }
+
         // Book Tour function
         function bookTour() {
-            currentRental = { name: 'Sunset Jet Ski Tour', original: 250, price: 250 };
+            const totalPrice = TOUR_BASE_PRICE + (tourExtraJetSkis * EXTRA_JETSKI_PRICE);
+            const totalJetSkis = 2 + tourExtraJetSkis;
+
+            currentRental = { name: `Sunset Tour (${totalJetSkis} Jet Skis)`, original: totalPrice, price: totalPrice };
             document.getElementById('modalTitle').textContent = 'Book Sunset Tour';
             document.getElementById('rentalType').value = 'sunset-tour';
             document.getElementById('rentalHours').value = 1;
 
             const hours = 1;
-            document.getElementById('originalPrice').textContent = `$${250 * hours}`;
-            document.getElementById('savings').textContent = 'Photos & Videos Included';
-            document.getElementById('discountPrice').textContent = `$${250 * hours}`;
-            document.getElementById('payButton').textContent = `Pay $${250 * hours}`;
-            document.getElementById('rentalPrice').value = 250 * hours;
+            document.getElementById('originalPrice').textContent = `$${totalPrice * hours}`;
+            document.getElementById('savings').textContent = `${totalJetSkis} Jet Skis + Photos & Videos`;
+            document.getElementById('discountPrice').textContent = `$${totalPrice * hours}`;
+            document.getElementById('payButton').textContent = `Pay $${totalPrice * hours}`;
+            document.getElementById('rentalPrice').value = totalPrice * hours;
 
             document.getElementById('bookingModal').style.display = 'flex';
             setTimeout(() => {
