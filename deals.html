@@ -98,7 +98,6 @@
             gap: 0.5rem;
             text-decoration: none;
             color: var(--white);
-            letter-spacing: -0.01em;
         }
 
         .logo-img {
@@ -123,15 +122,10 @@
         .nav-link {
             color: var(--white);
             text-decoration: none;
-            transition: all 0.3s;
             font-size: 0.95rem;
         }
 
-        .nav-link:hover {
-            color: var(--lightning-yellow);
-        }
-
-        .nav-link.active {
+        .nav-link:hover, .nav-link.active {
             color: var(--lightning-yellow);
         }
 
@@ -146,14 +140,7 @@
             letter-spacing: 0.5px;
             font-size: 0.875rem;
             box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
-            transition: all 0.3s ease;
             text-decoration: none;
-        }
-
-        .btn-pass:hover {
-            background: #fff;
-            box-shadow: 0 0 25px rgba(255, 221, 0, 0.6);
-            transform: scale(1.05);
         }
 
         /* Main Content */
@@ -165,7 +152,7 @@
             z-index: 2;
         }
 
-        /* Hero Section */
+        /* Hero */
         .hero {
             text-align: center;
             padding: 2rem 0 3rem;
@@ -184,6 +171,31 @@
         .hero p {
             font-size: 1.1rem;
             color: var(--gray);
+        }
+
+        .user-welcome {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 221, 0, 0.1);
+            border: 1px solid rgba(255, 221, 0, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .user-welcome span {
+            color: var(--lightning-yellow);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-decoration: underline;
         }
 
         /* Category Tabs */
@@ -216,7 +228,6 @@
             background: var(--lightning-yellow);
             border-color: var(--lightning-yellow);
             color: var(--pure-black);
-            font-weight: 600;
         }
 
         /* Deals Grid */
@@ -298,7 +309,6 @@
             color: #111;
             font-size: 0.9rem;
             font-weight: 600;
-            text-align: center;
             border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.2s;
@@ -308,12 +318,6 @@
 
         .deal-card-btn:hover {
             background: #e8890c;
-            transform: scale(1.02);
-        }
-
-        .deal-card-btn svg {
-            width: 18px;
-            height: 18px;
         }
 
         /* Section Headers */
@@ -333,27 +337,174 @@
         .section-header h2 {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--white);
         }
 
         .section-header .count {
             font-size: 0.85rem;
             color: var(--gray);
-            font-weight: 400;
         }
 
-        /* Empty State */
-        .empty-state {
+        /* Auth Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--card-black);
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid rgba(255, 221, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--lightning-yellow), #ffaa00);
+            padding: 2rem;
             text-align: center;
-            padding: 4rem 2rem;
-            color: var(--gray);
-            grid-column: 1 / -1;
         }
 
-        .empty-state h3 {
+        .modal-header h2 {
+            color: #000;
             font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .modal-header p {
+            color: rgba(0, 0, 0, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .modal-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-tab {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .modal-tab.active {
+            color: var(--lightning-yellow);
+            border-bottom: 2px solid var(--lightning-yellow);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--gray);
             margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--white);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: var(--lightning-yellow);
+            color: #000;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 221, 0, 0.4);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-error {
+            background: rgba(255, 0, 68, 0.1);
+            border: 1px solid rgba(255, 0, 68, 0.3);
+            color: #ff4466;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .auth-error.show {
+            display: block;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        /* Affiliate Disclosure */
+        .affiliate-disclosure {
+            background: rgba(255, 153, 0, 0.1);
+            border: 1px solid rgba(255, 153, 0, 0.2);
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+            color: var(--gray);
+            text-align: center;
+        }
+
+        .affiliate-disclosure strong {
+            color: var(--amazon-orange);
         }
 
         /* Footer */
@@ -371,19 +522,25 @@
             text-decoration: none;
         }
 
-        .affiliate-disclosure {
-            background: rgba(255, 153, 0, 0.1);
-            border: 1px solid rgba(255, 153, 0, 0.2);
-            border-radius: 0.5rem;
-            padding: 1rem 1.5rem;
-            margin-bottom: 2rem;
-            font-size: 0.85rem;
-            color: var(--gray);
+        /* Loading */
+        .loading {
             text-align: center;
+            padding: 4rem;
+            color: var(--gray);
         }
 
-        .affiliate-disclosure strong {
-            color: var(--amazon-orange);
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 221, 0, 0.2);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Hamburger Menu */
@@ -393,26 +550,12 @@
             gap: 5px;
             cursor: pointer;
             padding: 5px;
-            z-index: 1001;
         }
 
         .hamburger span {
             width: 24px;
             height: 2px;
             background: var(--white);
-            transition: all 0.3s;
-        }
-
-        .hamburger.active span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(5px, -5px);
         }
 
         .mobile-menu {
@@ -438,67 +581,23 @@
             color: var(--white);
             text-decoration: none;
             font-size: 1.5rem;
-            font-weight: 500;
-            transition: color 0.2s;
         }
 
-        .mobile-menu a:hover,
-        .mobile-menu a.active {
-            color: var(--lightning-yellow);
-        }
-
-        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
+            .hero h1 { font-size: 2rem; }
             .category-tabs {
                 justify-content: flex-start;
                 overflow-x: auto;
                 flex-wrap: nowrap;
-                padding-bottom: 0.5rem;
-                -webkit-overflow-scrolling: touch;
             }
-
-            .category-tab {
-                white-space: nowrap;
-                flex-shrink: 0;
-            }
+            .category-tab { white-space: nowrap; }
         }
 
         @media (max-width: 480px) {
-            nav {
-                padding: 0.75rem 1rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .hamburger {
-                display: flex;
-            }
-
-            .main-content {
-                padding: 5rem 1rem 2rem;
-            }
-
-            .hero {
-                padding: 1rem 0 2rem;
-            }
-
-            .hero h1 {
-                font-size: 1.75rem;
-            }
-
-            .deals-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-header h2 {
-                font-size: 1.25rem;
-            }
+            .nav-links { display: none; }
+            .hamburger { display: flex; }
+            .main-content { padding: 5rem 1rem 2rem; }
+            .deals-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -509,57 +608,98 @@
                 <div class="logo-img">
                     <img src="logo.png" alt="Lightning Pass">
                 </div>
-                <span class="logo-text">Lightning Pass</span>
+                <span>Lightning Pass</span>
             </a>
             <div class="nav-links">
                 <a href="/?browse=1" class="nav-link">Events</a>
                 <a href="/deals" class="nav-link active">Deals</a>
                 <a href="/partners" class="nav-link">Partners</a>
-                <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link">About</a>
                 <a href="/" class="btn btn-pass">GET PASS</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
-                <span></span>
-                <span></span>
-                <span></span>
+                <span></span><span></span><span></span>
             </div>
         </div>
     </nav>
 
-    <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <a href="/?browse=1">Events</a>
         <a href="/deals" class="active">Deals</a>
         <a href="/partners">Partners</a>
-        <a href="/calendar">Calendar</a>
         <a href="/about">About</a>
     </div>
 
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Unlock Deals</h2>
+                <p>Create a free account to access all deals</p>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="switchTab('signup')">Sign Up</button>
+                <button class="modal-tab" onclick="switchTab('login')">Login</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-error" id="authError"></div>
+
+                <!-- Signup Form -->
+                <form class="auth-form active" id="signupForm" onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="signupEmail" required placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signupPassword" required placeholder="At least 6 characters" minlength="6">
+                    </div>
+                    <button type="submit" class="auth-btn" id="signupBtn">Create Account</button>
+                </form>
+
+                <!-- Login Form -->
+                <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" required placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Your password">
+                    </div>
+                    <button type="submit" class="auth-btn" id="loginBtn">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <main class="main-content">
-        <!-- Hero -->
         <div class="hero">
             <h1>Lightning Deals</h1>
             <p>Hand-picked products at great prices</p>
+            <div class="user-welcome" id="userWelcome" style="display: none;">
+                <span id="userName"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
         </div>
 
-        <!-- Affiliate Disclosure -->
         <div class="affiliate-disclosure">
-            <strong>Affiliate Disclosure:</strong> As an Amazon Associate, I earn from qualifying purchases. Prices and availability are subject to change.
+            <strong>Affiliate Disclosure:</strong> As an Amazon Associate, I earn from qualifying purchases.
         </div>
 
-        <!-- Category Tabs -->
         <div class="category-tabs">
             <button class="category-tab active" data-category="all" onclick="filterCategory('all')">All Deals</button>
-            <button class="category-tab" data-category="summer" onclick="filterCategory('summer')">Summer Essentials</button>
+            <button class="category-tab" data-category="summer" onclick="filterCategory('summer')">Summer</button>
             <button class="category-tab" data-category="tech" onclick="filterCategory('tech')">Tech</button>
             <button class="category-tab" data-category="home" onclick="filterCategory('home')">Home</button>
             <button class="category-tab" data-category="outdoor" onclick="filterCategory('outdoor')">Outdoor</button>
         </div>
 
-        <!-- Deals Grid -->
         <div id="dealsContainer">
-            <!-- Populated by JS -->
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading deals...</p>
+            </div>
         </div>
     </main>
 
@@ -569,185 +709,242 @@
     </footer>
 
     <script>
-        // Amazon Associate Tag
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
         const AFFILIATE_TAG = 'lightningpass-20';
 
-        // Curated deals - add products here
-        const deals = [
-            // Summer Essentials
-            {
-                id: 1,
-                category: 'summer',
-                title: 'Portable Bluetooth Speaker - Waterproof, 24H Playtime',
-                image: 'https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1500_.jpg',
-                asin: 'B08N5WRWNW',
-                price: 'Check Price'
-            },
-            {
-                id: 2,
-                category: 'summer',
-                title: 'Beach Umbrella with Sand Anchor - UV 50+ Protection',
-                image: 'https://m.media-amazon.com/images/I/71iLFGsxuWL._AC_SL1500_.jpg',
-                asin: 'B07D3NLWCB',
-                price: 'Check Price'
-            },
-            {
-                id: 3,
-                category: 'summer',
-                title: 'Insulated Cooler Backpack - Leak Proof, 30 Can',
-                image: 'https://m.media-amazon.com/images/I/81QpkIctqPL._AC_SL1500_.jpg',
-                asin: 'B073WLGS7F',
-                price: 'Check Price'
-            },
-            {
-                id: 4,
-                category: 'summer',
-                title: 'Polarized Sport Sunglasses - UV400 Protection',
-                image: 'https://m.media-amazon.com/images/I/61utX8kBDlL._AC_SL1500_.jpg',
-                asin: 'B07MZY7K9N',
-                price: 'Check Price'
-            },
-
-            // Tech
-            {
-                id: 5,
-                category: 'tech',
-                title: 'Wireless Earbuds - Active Noise Cancelling, 32H Battery',
-                image: 'https://m.media-amazon.com/images/I/51zLZbTliqL._AC_SL1500_.jpg',
-                asin: 'B0C33XXS56',
-                price: 'Check Price'
-            },
-            {
-                id: 6,
-                category: 'tech',
-                title: 'Portable Charger Power Bank 20000mAh',
-                image: 'https://m.media-amazon.com/images/I/71nSLZ23s2L._AC_SL1500_.jpg',
-                asin: 'B08LH26PFT',
-                price: 'Check Price'
-            },
-            {
-                id: 7,
-                category: 'tech',
-                title: 'Smart Watch Fitness Tracker - Heart Rate, Sleep Monitor',
-                image: 'https://m.media-amazon.com/images/I/61RCJP1GSVL._AC_SL1500_.jpg',
-                asin: 'B0B7F1RVJK',
-                price: 'Check Price'
-            },
-            {
-                id: 8,
-                category: 'tech',
-                title: 'Ring Light with Tripod Stand - 10" LED',
-                image: 'https://m.media-amazon.com/images/I/61wPPhAuOGL._AC_SL1500_.jpg',
-                asin: 'B08B3X7NXC',
-                price: 'Check Price'
-            },
-
-            // Home
-            {
-                id: 9,
-                category: 'home',
-                title: 'Air Fryer 5.8QT - Digital Display, 8 Presets',
-                image: 'https://m.media-amazon.com/images/I/71dQCudYXaL._AC_SL1500_.jpg',
-                asin: 'B0936FGLQS',
-                price: 'Check Price'
-            },
-            {
-                id: 10,
-                category: 'home',
-                title: 'Robot Vacuum Cleaner - Self-Charging, App Control',
-                image: 'https://m.media-amazon.com/images/I/61mnof6lO1L._AC_SL1500_.jpg',
-                asin: 'B08PP4KFNQ',
-                price: 'Check Price'
-            },
-            {
-                id: 11,
-                category: 'home',
-                title: 'LED Strip Lights 50ft - RGB Color Changing, Remote',
-                image: 'https://m.media-amazon.com/images/I/81oHEhFpXnL._AC_SL1500_.jpg',
-                asin: 'B082TZ3R67',
-                price: 'Check Price'
-            },
-            {
-                id: 12,
-                category: 'home',
-                title: 'Electric Kettle - 1.7L Stainless Steel, Fast Boil',
-                image: 'https://m.media-amazon.com/images/I/71P99-Gh7TL._AC_SL1500_.jpg',
-                asin: 'B07T1KH8L7',
-                price: 'Check Price'
-            },
-
-            // Outdoor
-            {
-                id: 13,
-                category: 'outdoor',
-                title: 'Camping Hammock with Mosquito Net - Lightweight',
-                image: 'https://m.media-amazon.com/images/I/81lY2vN0IwL._AC_SL1500_.jpg',
-                asin: 'B07FXGKBXX',
-                price: 'Check Price'
-            },
-            {
-                id: 14,
-                category: 'outdoor',
-                title: 'Portable Camping Stove - Windproof, Piezo Ignition',
-                image: 'https://m.media-amazon.com/images/I/71Z27SkIuNL._AC_SL1500_.jpg',
-                asin: 'B00B4FY8YO',
-                price: 'Check Price'
-            },
-            {
-                id: 15,
-                category: 'outdoor',
-                title: 'Inflatable Stand Up Paddle Board - Complete Kit',
-                image: 'https://m.media-amazon.com/images/I/71EuEHBkZhL._AC_SL1500_.jpg',
-                asin: 'B08T8HFHXW',
-                price: 'Check Price'
-            },
-            {
-                id: 16,
-                category: 'outdoor',
-                title: 'Portable Folding Chair - Heavy Duty, Cup Holder',
-                image: 'https://m.media-amazon.com/images/I/81vPgKrN1TL._AC_SL1500_.jpg',
-                asin: 'B07P44VS6V',
-                price: 'Check Price'
-            }
-        ];
-
+        let currentUser = null;
         let activeCategory = 'all';
 
-        // Build Amazon affiliate URL
+        // Curated deals
+        const deals = [
+            { id: 1, category: 'summer', title: 'Portable Bluetooth Speaker - Waterproof, 24H Playtime', image: 'https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1500_.jpg', asin: 'B08N5WRWNW' },
+            { id: 2, category: 'summer', title: 'Beach Umbrella with Sand Anchor - UV 50+ Protection', image: 'https://m.media-amazon.com/images/I/71iLFGsxuWL._AC_SL1500_.jpg', asin: 'B07D3NLWCB' },
+            { id: 3, category: 'summer', title: 'Insulated Cooler Backpack - Leak Proof, 30 Can', image: 'https://m.media-amazon.com/images/I/81QpkIctqPL._AC_SL1500_.jpg', asin: 'B073WLGS7F' },
+            { id: 4, category: 'summer', title: 'Polarized Sport Sunglasses - UV400 Protection', image: 'https://m.media-amazon.com/images/I/61utX8kBDlL._AC_SL1500_.jpg', asin: 'B07MZY7K9N' },
+            { id: 5, category: 'tech', title: 'Wireless Earbuds - Active Noise Cancelling, 32H Battery', image: 'https://m.media-amazon.com/images/I/51zLZbTliqL._AC_SL1500_.jpg', asin: 'B0C33XXS56' },
+            { id: 6, category: 'tech', title: 'Portable Charger Power Bank 20000mAh', image: 'https://m.media-amazon.com/images/I/71nSLZ23s2L._AC_SL1500_.jpg', asin: 'B08LH26PFT' },
+            { id: 7, category: 'tech', title: 'Smart Watch Fitness Tracker - Heart Rate Monitor', image: 'https://m.media-amazon.com/images/I/61RCJP1GSVL._AC_SL1500_.jpg', asin: 'B0B7F1RVJK' },
+            { id: 8, category: 'tech', title: 'Ring Light with Tripod Stand - 10" LED', image: 'https://m.media-amazon.com/images/I/61wPPhAuOGL._AC_SL1500_.jpg', asin: 'B08B3X7NXC' },
+            { id: 9, category: 'home', title: 'Air Fryer 5.8QT - Digital Display, 8 Presets', image: 'https://m.media-amazon.com/images/I/71dQCudYXaL._AC_SL1500_.jpg', asin: 'B0936FGLQS' },
+            { id: 10, category: 'home', title: 'Robot Vacuum Cleaner - Self-Charging, App Control', image: 'https://m.media-amazon.com/images/I/61mnof6lO1L._AC_SL1500_.jpg', asin: 'B08PP4KFNQ' },
+            { id: 11, category: 'home', title: 'LED Strip Lights 50ft - RGB Color Changing', image: 'https://m.media-amazon.com/images/I/81oHEhFpXnL._AC_SL1500_.jpg', asin: 'B082TZ3R67' },
+            { id: 12, category: 'home', title: 'Electric Kettle - 1.7L Stainless Steel, Fast Boil', image: 'https://m.media-amazon.com/images/I/71P99-Gh7TL._AC_SL1500_.jpg', asin: 'B07T1KH8L7' },
+            { id: 13, category: 'outdoor', title: 'Camping Hammock with Mosquito Net', image: 'https://m.media-amazon.com/images/I/81lY2vN0IwL._AC_SL1500_.jpg', asin: 'B07FXGKBXX' },
+            { id: 14, category: 'outdoor', title: 'Portable Camping Stove - Windproof', image: 'https://m.media-amazon.com/images/I/71Z27SkIuNL._AC_SL1500_.jpg', asin: 'B00B4FY8YO' },
+            { id: 15, category: 'outdoor', title: 'Inflatable Stand Up Paddle Board Kit', image: 'https://m.media-amazon.com/images/I/71EuEHBkZhL._AC_SL1500_.jpg', asin: 'B08T8HFHXW' },
+            { id: 16, category: 'outdoor', title: 'Portable Folding Chair - Heavy Duty', image: 'https://m.media-amazon.com/images/I/81vPgKrN1TL._AC_SL1500_.jpg', asin: 'B07P44VS6V' }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        // Check if user is logged in
+        async function checkAuth() {
+            const token = localStorage.getItem('dealToken');
+            if (!token) {
+                showAuthModal();
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    currentUser = data.user;
+                    hideAuthModal();
+                    showUserWelcome();
+                    renderDeals();
+                } else {
+                    localStorage.removeItem('dealToken');
+                    showAuthModal();
+                }
+            } catch (e) {
+                console.error('Auth check failed:', e);
+                showAuthModal();
+            }
+        }
+
+        // Show/hide auth modal
+        function showAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+            document.getElementById('dealsContainer').innerHTML = `
+                <div class="loading">
+                    <p style="color: var(--gray);">Login to view deals</p>
+                </div>
+            `;
+        }
+
+        function hideAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        // Show user welcome
+        function showUserWelcome() {
+            if (currentUser) {
+                const name = currentUser.firstName || currentUser.email.split('@')[0];
+                document.getElementById('userName').textContent = `Welcome, ${name}`;
+                document.getElementById('userWelcome').style.display = 'inline-flex';
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+
+            if (tab === 'signup') {
+                document.querySelector('.modal-tab:first-child').classList.add('active');
+                document.getElementById('signupForm').classList.add('active');
+            } else {
+                document.querySelector('.modal-tab:last-child').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            }
+
+            hideError();
+        }
+
+        // Show/hide error
+        function showError(msg) {
+            const el = document.getElementById('authError');
+            el.textContent = msg;
+            el.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('authError').classList.remove('show');
+        }
+
+        // Handle signup
+        async function handleSignup(e) {
+            e.preventDefault();
+            hideError();
+
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const btn = document.getElementById('signupBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.token) {
+                    localStorage.setItem('dealToken', data.token);
+                    currentUser = data.user;
+                    hideAuthModal();
+                    showUserWelcome();
+                    renderDeals();
+                } else {
+                    showError(data.error || 'Signup failed');
+                }
+            } catch (e) {
+                showError('Connection error. Try again.');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+        }
+
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideError();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.token) {
+                    localStorage.setItem('dealToken', data.token);
+                    currentUser = data.user;
+                    hideAuthModal();
+                    showUserWelcome();
+                    renderDeals();
+                } else {
+                    showError(data.error || 'Login failed');
+                }
+            } catch (e) {
+                showError('Connection error. Try again.');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Login';
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('dealToken');
+            currentUser = null;
+            document.getElementById('userWelcome').style.display = 'none';
+            showAuthModal();
+        }
+
+        // Build Amazon URL
         function getAmazonUrl(asin) {
             return `https://www.amazon.com/dp/${asin}?tag=${AFFILIATE_TAG}`;
         }
 
+        // Track click
+        async function trackClick(asin, category) {
+            const token = localStorage.getItem('dealToken');
+            if (token) {
+                try {
+                    await fetch(`${API_BASE}/api/v1/lightning/deals/auth/track-click`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ asin, category })
+                    });
+                } catch (e) {}
+            }
+            window.open(getAmazonUrl(asin), '_blank');
+        }
+
         // Render deal card
         function renderDealCard(deal) {
+            const labels = { summer: 'Summer', tech: 'Tech', home: 'Home', outdoor: 'Outdoor' };
             return `
-                <div class="deal-card" data-category="${deal.category}">
-                    <img class="deal-card-image" src="${deal.image}" alt="${deal.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/280x200?text=Product'">
+                <div class="deal-card">
+                    <img class="deal-card-image" src="${deal.image}" alt="${deal.title}" loading="lazy">
                     <div class="deal-card-content">
-                        <span class="deal-card-category">${getCategoryLabel(deal.category)}</span>
+                        <span class="deal-card-category">${labels[deal.category] || deal.category}</span>
                         <h3 class="deal-card-title">${deal.title}</h3>
-                        <p class="deal-card-price">${deal.price}</p>
-                        <a href="${getAmazonUrl(deal.asin)}" target="_blank" rel="noopener sponsored" class="deal-card-btn" onclick="trackClick('${deal.asin}')">
-                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                        <p class="deal-card-price">Check Price on Amazon</p>
+                        <button class="deal-card-btn" onclick="trackClick('${deal.asin}', '${deal.category}')">
                             View on Amazon
-                        </a>
+                        </button>
                     </div>
                 </div>
             `;
         }
 
-        // Get category display label
-        function getCategoryLabel(category) {
-            const labels = {
-                'summer': 'Summer Essentials',
-                'tech': 'Tech',
-                'home': 'Home',
-                'outdoor': 'Outdoor'
-            };
-            return labels[category] || category;
-        }
-
-        // Render all deals
+        // Render deals
         function renderDeals() {
             const container = document.getElementById('dealsContainer');
             let filtered = deals;
@@ -756,73 +953,43 @@
                 filtered = deals.filter(d => d.category === activeCategory);
             }
 
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No Deals Found</h3>
-                        <p>Check back soon for more deals in this category!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            // Group by category if showing all
             if (activeCategory === 'all') {
-                const categories = ['summer', 'tech', 'home', 'outdoor'];
+                const cats = ['summer', 'tech', 'home', 'outdoor'];
+                const labels = { summer: 'Summer Essentials', tech: 'Tech', home: 'Home', outdoor: 'Outdoor' };
                 let html = '';
 
-                categories.forEach(cat => {
+                cats.forEach(cat => {
                     const catDeals = filtered.filter(d => d.category === cat);
-                    if (catDeals.length > 0) {
+                    if (catDeals.length) {
                         html += `
                             <div class="section-header">
-                                <h2>${getCategoryLabel(cat)}</h2>
+                                <h2>${labels[cat]}</h2>
                                 <span class="count">${catDeals.length} deals</span>
                             </div>
-                            <div class="deals-grid">
-                                ${catDeals.map(renderDealCard).join('')}
-                            </div>
+                            <div class="deals-grid">${catDeals.map(renderDealCard).join('')}</div>
                         `;
                     }
                 });
 
                 container.innerHTML = html;
             } else {
-                container.innerHTML = `
-                    <div class="deals-grid">
-                        ${filtered.map(renderDealCard).join('')}
-                    </div>
-                `;
+                container.innerHTML = `<div class="deals-grid">${filtered.map(renderDealCard).join('')}</div>`;
             }
         }
 
-        // Filter by category
-        function filterCategory(category) {
-            activeCategory = category;
-
-            // Update tabs
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.category === category);
+        // Filter category
+        function filterCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.category-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.category === cat);
             });
-
             renderDeals();
         }
 
-        // Track clicks (optional - for your analytics)
-        function trackClick(asin) {
-            console.log('Clicked:', asin);
-            // You could send this to your backend for tracking
-        }
-
-        // Mobile menu toggle
+        // Mobile menu
         function toggleMenu() {
-            document.querySelector('.hamburger').classList.toggle('active');
             document.getElementById('mobileMenu').classList.toggle('active');
-            document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
         }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', renderDeals);
     </script>
 </body>
 </html>
