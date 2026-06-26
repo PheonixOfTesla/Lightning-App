@@ -75,19 +75,22 @@ Lightning Pass operates in the Sarasota, Florida market with two revenue streams
 
 ## Financial Performance
 
+### Platform Revenue (First 2 Weeks)
+**$1,000+ net revenue in 14 days**
+
 ### Sunset Bash Event (July 4th, 2026)
 | Metric | Amount |
 |--------|--------|
-| Gross Volume | $1,094.00 |
-| Stripe Fees | -$51.83 |
+| Gross Volume | $1,154.00 |
+| Stripe Fees | -$53.87 |
 | Refunds | -$101.00 |
-| **Net Revenue** | **$941.17** |
+| **Net Revenue** | **$999.13** |
 
 ### Ticket Sales - SOLD OUT
-- **Status: SOLD OUT (100/100)**
-- General Admission: 100 sold / 100 capacity
+- **Status: SOLD OUT (109 tickets / 103 passes)**
+- Paid Tickets: 90
 - Cabana VIP ($99, 6 guests): 2 sold (Emma McDaniel, Nicole Monschein)
-- Team: 6 tickets (not counted toward capacity)
+- Team: 6 tickets
 - Comp: 13 tickets
 - Pricing: $10 advance / $15 current / $20 at door
 
@@ -258,7 +261,8 @@ Lightning Pass is live, processing real payments, and has proven the model works
 
 | Metric | Status |
 |--------|--------|
-| **Sunset Bash Revenue** | $941.17+ net (SOLD OUT - 100/100) |
+| **Platform Revenue** | $1,000+ net in first 2 weeks |
+| **Sunset Bash** | $999.13 net (SOLD OUT - 109 tickets) |
 | **Jet Ski Fleet** | 12 units ($116K-$299K annual potential) |
 | **Google Rating** | 5.0 stars (28 reviews) |
 | **Marriott Partnership** | Active (The Sarasota Modern) |
