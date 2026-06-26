@@ -676,11 +676,9 @@
                 <span>Lightning Pass</span>
             </a>
             <div class="nav-links" id="navLinks">
-                <a href="#" onclick="switchTab('passes'); return false;" class="nav-link nav-tab active" data-nav-tab="passes">My Passes</a>
-                <a href="#" onclick="switchTab('events'); return false;" class="nav-link nav-tab" data-nav-tab="events">Browse Events</a>
-                <a href="#" onclick="switchTab('perks'); return false;" class="nav-link nav-tab" data-nav-tab="perks">Lightning Perks</a>
-                <a href="#" onclick="switchTab('subscription'); return false;" class="nav-link nav-tab" data-nav-tab="subscription">Membership</a>
+                <a href="/" class="nav-link">Events</a>
                 <div class="nav-divider"></div>
+                <a href="/members" class="nav-link active">Member</a>
                 <a href="#" onclick="logout(); return false;" class="nav-link btn-login">LOGOUT</a>
             </div>
             <div class="hamburger" onclick="toggleMobileMenu()">
@@ -693,10 +691,8 @@
 
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
-        <a href="#" onclick="switchTab('passes'); toggleMobileMenu();">My Passes</a>
-        <a href="#" onclick="switchTab('events'); toggleMobileMenu();">Browse Events</a>
-        <a href="#" onclick="switchTab('perks'); toggleMobileMenu();">Lightning Perks</a>
-        <a href="#" onclick="switchTab('subscription'); toggleMobileMenu();">Membership</a>
+        <a href="/">Events</a>
+        <a href="/members" class="active">Member</a>
         <a href="#" onclick="logout()">Logout</a>
     </div>
 
@@ -736,6 +732,13 @@
                 </div>
             </div>
 
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="passes" onclick="switchTab('passes')">My Passes</button>
+                <button class="tab" data-tab="events" onclick="switchTab('events')">Browse Events</button>
+                <button class="tab" data-tab="perks" onclick="switchTab('perks')">Lightning Perks</button>
+                <button class="tab" data-tab="subscription" onclick="switchTab('subscription')">Membership</button>
+            </div>
 
             <!-- My Passes Tab -->
             <div id="passesTab" class="tab-content active">
@@ -1004,15 +1007,10 @@
         }
 
         function switchTab(tabName) {
-            // Update tab buttons (below header)
+            // Update tab buttons
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             const tabBtn = document.querySelector(`.tab[data-tab="${tabName}"]`);
             if (tabBtn) tabBtn.classList.add('active');
-
-            // Update header nav tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            const navTab = document.querySelector(`.nav-tab[data-nav-tab="${tabName}"]`);
-            if (navTab) navTab.classList.add('active');
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
