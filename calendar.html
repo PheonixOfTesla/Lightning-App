@@ -849,13 +849,13 @@
                     <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Password</label><input type="password" id="authSignupPassword" required placeholder="At least 6 characters" minlength="6" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
                     <button type="submit" id="authSignupBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Create Account</button>
                 </form>
-                <form class="auth-form" id="loginForm" onsubmit="handleAuthLogin(event)" style="display:none;">
+                <form class="auth-form" id="loginForm" onsubmit="handleAuthLogin(event)">
                     <div style="margin-bottom:1rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Email</label><input type="email" id="authLoginEmail" required placeholder="you@example.com" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
                     <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Password</label><input type="password" id="authLoginPassword" required placeholder="Your password" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
                     <button type="submit" id="authLoginBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Login</button>
                     <p style="text-align:center;margin-top:1rem;"><a href="#" onclick="switchAuthTab('reset')" style="color:#ffdd00;font-size:0.9rem;text-decoration:none;">Forgot Password?</a></p>
                 </form>
-                <form class="auth-form" id="resetForm" onsubmit="handleAuthReset(event)" style="display:none;">
+                <form class="auth-form" id="resetForm" onsubmit="handleAuthReset(event)">
                     <p style="color:#888;font-size:0.9rem;margin-bottom:1.5rem;">Enter your email and we'll send you a reset link.</p>
                     <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Email</label><input type="email" id="authResetEmail" required placeholder="you@example.com" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
                     <button type="submit" id="authResetBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Send Reset Link</button>
@@ -866,8 +866,8 @@
     </div>
     <style>
         .auth-tab.active { color: #ffdd00 !important; border-bottom: 2px solid #ffdd00; }
-        .auth-form { display: none; }
-        .auth-form.active { display: block; }
+        .auth-form { display: none !important; }
+        .auth-form.active { display: block !important; }
     </style>
 </body>
 </html>
