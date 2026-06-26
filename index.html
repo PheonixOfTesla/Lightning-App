@@ -2434,16 +2434,29 @@
                 </div>
             </div>
 
-            <!-- SPOTLIGHT EVENTS - Premium ticketed events -->
+            <!-- SPOTLIGHT - Premium ticketed promotional events -->
             <div id="spotlightEventsSection" style="margin-bottom: 3rem; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin: 0;">
-                        The Scene
+                        <span style="color: var(--lightning-yellow);">⚡</span> Spotlight
                     </h2>
                     <a href="/calendar" style="color: var(--lightning-yellow); font-size: 0.8rem; text-decoration: none; font-weight: 500;">View All →</a>
                 </div>
                 <div id="homepageSpotlightEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
-                    <!-- Spotlight events load here -->
+                    <!-- Lightning/promotional events load here -->
+                </div>
+            </div>
+
+            <!-- THE SCENE - Free no-cover venues -->
+            <div id="theSceneSection" style="margin-bottom: 3rem; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin: 0;">
+                        The Scene
+                    </h2>
+                    <a href="/calendar" style="color: var(--lightning-yellow); font-size: 0.8rem; text-decoration: none; font-weight: 500;">See More →</a>
+                </div>
+                <div id="homepageSceneEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+                    <!-- Free no-cover venues load here -->
                 </div>
             </div>
 
@@ -7978,6 +7991,7 @@
 
                 if (!data.events || data.events.length === 0) {
                     document.getElementById('spotlightEventsSection').style.display = 'none';
+                    document.getElementById('theSceneSection').style.display = 'none';
                     document.getElementById('communityEventsSection').style.display = 'none';
                     return;
                 }
@@ -8000,15 +8014,30 @@
                 // Sort community by date
                 communityEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-                // Render SPOTLIGHT EVENTS
+                // Split spotlight events: Lightning (paid) vs Scene (free)
+                const lightningEvents = spotlightEvents.filter(e => e.isLightningEvent || (e.tickets?.[0]?.price > 0));
+                const sceneEvents = spotlightEvents.filter(e => !e.isLightningEvent && (!e.tickets?.[0]?.price || e.tickets[0].price === 0));
+
+                // Render SPOTLIGHT (paid promotional events)
                 const spotlightSection = document.getElementById('spotlightEventsSection');
                 const spotlightContainer = document.getElementById('homepageSpotlightEvents');
 
-                if (spotlightEvents.length > 0) {
+                if (lightningEvents.length > 0) {
                     spotlightSection.style.display = 'block';
-                    spotlightContainer.innerHTML = spotlightEvents.map(event => renderSpotlightCard(event)).join('');
+                    spotlightContainer.innerHTML = lightningEvents.map(event => renderSpotlightCard(event)).join('');
                 } else {
                     spotlightSection.style.display = 'none';
+                }
+
+                // Render THE SCENE (free no-cover venues)
+                const sceneSection = document.getElementById('theSceneSection');
+                const sceneContainer = document.getElementById('homepageSceneEvents');
+
+                if (sceneEvents.length > 0) {
+                    sceneSection.style.display = 'block';
+                    sceneContainer.innerHTML = sceneEvents.map(event => renderSpotlightCard(event)).join('');
+                } else {
+                    sceneSection.style.display = 'none';
                 }
 
                 // Render COMMUNITY EVENTS
@@ -8037,6 +8066,7 @@
             } catch (error) {
                 console.error('Error loading homepage events:', error);
                 document.getElementById('spotlightEventsSection').style.display = 'none';
+                document.getElementById('theSceneSection').style.display = 'none';
                 document.getElementById('communityEventsSection').style.display = 'none';
             }
         }
