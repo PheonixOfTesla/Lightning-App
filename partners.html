@@ -797,6 +797,9 @@
                 <input type="password" id="signup-password" placeholder="Min 6 characters" required>
             </div>
             <button type="submit" class="btn btn-primary">Create Partner Account</button>
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
+                Already a partner? <a href="#" onclick="showLogin(); return false;" style="color: var(--lightning-yellow); text-decoration: none; font-weight: 600;">Sign In</a>
+            </p>
             <button type="button" class="btn btn-secondary" id="back-to-landing">Back</button>
         </form>
     </div>
@@ -815,6 +818,9 @@
                 <input type="password" id="login-password" required>
             </div>
             <button type="submit" class="btn btn-primary">Log In</button>
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--gray);">
+                Don't have an account? <a href="#" onclick="showSignup(); return false;" style="color: var(--lightning-yellow); text-decoration: none; font-weight: 600;">Sign Up</a>
+            </p>
             <button type="button" class="btn btn-secondary" id="back-to-landing-2">Back</button>
         </form>
     </div>
