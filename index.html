@@ -8155,11 +8155,13 @@
             const timeStr = endTime ? `${startTime} - ${endTime}` : startTime;
             const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
             const ticket = event.tickets?.[0];
-            const availableTickets = event.tickets?.reduce((sum, t) => {
+            const availableTicketsRaw = event.tickets?.reduce((sum, t) => {
                 const guestCount = t.guestCount || 1;
                 const remaining = t.available && t.available !== -1 ? (t.available - (t.sold || 0)) : 0;
                 return sum + (remaining * guestCount);
-            }, 0) || null;
+            }, 0);
+            const availableTickets = availableTicketsRaw ?? null;
+            const isSoldOut = availableTickets === 0;
             const isLightning = event.isLightningEvent;
 
             if (isLightning) {
@@ -8178,9 +8180,9 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
                             <div>
                                 <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
-                                ${availableTickets === 0 ? `<div style="font-size: 0.75rem; color: #ff4466; margin-top: 0.25rem; font-weight: 600;">SOLD OUT - 100/100</div>` : availableTickets !== null ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
+                                ${isSoldOut ? `<div style="font-size: 0.75rem; color: #ff4466; margin-top: 0.25rem; font-weight: 600;">SOLD OUT - 100/100</div>` : availableTickets !== null ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
                             </div>
-                            ${availableTickets === 0 ? `<button disabled style="background: rgba(255,255,255,0.1); border: 2px solid #ff4466; color: #ff4466; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: not-allowed; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">
+                            ${isSoldOut ? `<button disabled style="background: rgba(255,255,255,0.1); border: 2px solid #ff4466; color: #ff4466; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: not-allowed; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">
                                 SOLD OUT
                             </button>` : price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Get Tickets
@@ -8205,9 +8207,9 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f0f0f0;">
                         <div>
                             <div style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">${price}</div>
-                            ${availableTickets === 0 ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600;">SOLD OUT</div>` : ''}
+                            ${isSoldOut ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600;">SOLD OUT</div>` : ''}
                         </div>
-                        ${availableTickets === 0 ? `<button disabled style="background: #f5f5f5; border: 2px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
+                        ${isSoldOut ? `<button disabled style="background: #f5f5f5; border: 2px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
                             SOLD OUT
                         </button>` : price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
                             Get Tickets
