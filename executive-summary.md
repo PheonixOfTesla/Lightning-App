@@ -84,8 +84,8 @@ Lightning Pass operates in the Sarasota, Florida market with two revenue streams
 | **Net Revenue** | **$941.17** |
 
 ### Ticket Sales - SOLD OUT
-- **Status: SOLD OUT (150/150)**
-- General Admission: 150 sold / 150 capacity
+- **Status: SOLD OUT (100/100)**
+- General Admission: 100 sold / 100 capacity
 - Cabana VIP ($99, 6 guests): 2 sold (Emma McDaniel, Nicole Monschein)
 - Team: 6 tickets (not counted toward capacity)
 - Comp: 13 tickets
@@ -258,7 +258,7 @@ Lightning Pass is live, processing real payments, and has proven the model works
 
 | Metric | Status |
 |--------|--------|
-| **Sunset Bash Revenue** | $941.17+ net (SOLD OUT - 150/150) |
+| **Sunset Bash Revenue** | $941.17+ net (SOLD OUT - 100/100) |
 | **Jet Ski Fleet** | 12 units ($116K-$299K annual potential) |
 | **Google Rating** | 5.0 stars (28 reviews) |
 | **Marriott Partnership** | Active (The Sarasota Modern) |
