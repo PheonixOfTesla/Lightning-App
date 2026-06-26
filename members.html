@@ -1076,7 +1076,7 @@
             btn.disabled = true;
 
             try {
-                const res = await fetch(`${API_BASE}/api/v1/members/subscribe`, {
+                const res = await fetch(`${API_BASE}/api/v1/subscriptions/create-checkout`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1099,6 +1099,73 @@
             }
         }
 
+        // Load subscription status
+        async function loadSubscriptionStatus() {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            if (!token) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/subscriptions/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+
+                if (data.hasSubscription && data.isActive) {
+                    // Update UI for active subscriber
+                    const btn = document.getElementById('subscribeBtn');
+                    btn.textContent = 'Subscribed';
+                    btn.disabled = true;
+                    btn.style.background = 'var(--neon-green)';
+                    btn.style.borderColor = 'var(--neon-green)';
+
+                    // Show subscription stats
+                    if (data.stats) {
+                        document.getElementById('totalSavings').textContent = '$' + (data.stats.totalSavings / 100).toFixed(0);
+                    }
+
+                    // Show cancel option if not already canceling
+                    if (!data.cancelAtPeriodEnd) {
+                        const cancelLink = document.createElement('p');
+                        cancelLink.style.cssText = 'text-align: center; margin-top: 1rem;';
+                        cancelLink.innerHTML = '<a href="#" onclick="cancelSubscription()" style="color: var(--gray); font-size: 0.85rem;">Cancel subscription</a>';
+                        btn.parentNode.appendChild(cancelLink);
+                    } else {
+                        const notice = document.createElement('p');
+                        notice.style.cssText = 'text-align: center; margin-top: 1rem; color: var(--lightning-yellow); font-size: 0.85rem;';
+                        notice.textContent = `Cancels on ${new Date(data.currentPeriodEnd).toLocaleDateString()}`;
+                        btn.parentNode.appendChild(notice);
+                    }
+                }
+            } catch (error) {
+                console.error('Subscription status error:', error);
+            }
+        }
+
+        async function cancelSubscription() {
+            if (!confirm('Are you sure you want to cancel? You will keep access until the end of your billing period.')) return;
+
+            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/subscriptions/cancel`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Subscription canceled. You will keep access until ' + new Date(data.cancelAt).toLocaleDateString());
+                    location.reload();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                alert('Failed to cancel: ' + error.message);
+            }
+        }
+
         function logout() {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userType');
@@ -1117,6 +1184,16 @@
         // Initialize
         buildRoleNav();
         checkAuth();
+
+        // Check URL for subscription success/cancel
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('subscription') === 'success') {
+            alert('Welcome to Lightning Member! Your subscription is now active.');
+            window.history.replaceState({}, document.title, '/members');
+        }
+
+        // Load subscription status when dashboard is ready
+        setTimeout(loadSubscriptionStatus, 500);
     </script>
 </body>
 </html>
