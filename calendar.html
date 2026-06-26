@@ -746,8 +746,9 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.token) {
-                    localStorage.setItem('dealToken', data.token);
-                    localStorage.setItem('dealUser', JSON.stringify(data.user));
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userType', 'member');
+                    localStorage.setItem('userEmail', document.getElementById('authSignupEmail').value);
                     hideLoginModal();
                     updateAuthButton();
                 } else {
@@ -759,20 +760,23 @@
         async function handleAuthLogin(e) {
             e.preventDefault();
             const btn = document.getElementById('authLoginBtn');
+            const userType = document.getElementById('authLoginType').value;
             btn.disabled = true; btn.textContent = 'Logging in...';
             try {
-                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/auth/login`, {
+                const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: document.getElementById('authLoginEmail').value,
-                        password: document.getElementById('authLoginPassword').value
+                        password: document.getElementById('authLoginPassword').value,
+                        userType: userType
                     })
                 });
                 const data = await res.json();
                 if (res.ok && data.token) {
-                    localStorage.setItem('dealToken', data.token);
-                    localStorage.setItem('dealUser', JSON.stringify(data.user));
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userType', userType);
+                    localStorage.setItem('userEmail', document.getElementById('authLoginEmail').value);
                     hideLoginModal();
                     updateAuthButton();
                 } else {
@@ -800,14 +804,15 @@
             btn.disabled = false; btn.textContent = 'Send Reset Link';
         }
         function handleLogout() {
-            localStorage.removeItem('dealToken');
-            localStorage.removeItem('dealUser');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userType');
+            localStorage.removeItem('userEmail');
             updateAuthButton();
         }
         function updateAuthButton() {
             const btn = document.getElementById('nav-login');
             const mobileBtn = document.getElementById('mobile-login');
-            const token = localStorage.getItem('dealToken');
+            const token = localStorage.getItem('authToken');
             if (token) {
                 if (btn) { btn.textContent = 'LOGOUT'; btn.onclick = function(e) { e.preventDefault(); handleLogout(); }; }
                 if (mobileBtn) { mobileBtn.textContent = 'Logout'; mobileBtn.onclick = function(e) { e.preventDefault(); handleLogout(); }; }
@@ -850,8 +855,9 @@
                     <button type="submit" id="authSignupBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Create Account</button>
                 </form>
                 <form class="auth-form" id="loginForm" onsubmit="handleAuthLogin(event)">
+                    <div style="margin-bottom:1rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Account Type</label><select id="authLoginType" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;appearance:none;cursor:pointer;"><option value="member">Member</option><option value="dj">DJ</option><option value="venue">Venue</option><option value="admin">Admin</option></select></div>
                     <div style="margin-bottom:1rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Email</label><input type="email" id="authLoginEmail" required placeholder="you@example.com" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
-                    <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Password</label><input type="password" id="authLoginPassword" required placeholder="Your password" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
+                    <div style="margin-bottom:1.25rem;"><label style="display:block;font-size:0.85rem;color:#888;margin-bottom:0.5rem;">Passcode</label><input type="password" id="authLoginPassword" required placeholder="Your passcode" style="width:100%;padding:0.875rem 1rem;border-radius:0.5rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;font-family:inherit;"></div>
                     <button type="submit" id="authLoginBtn" style="width:100%;padding:1rem;border-radius:0.5rem;border:none;background:#ffdd00;color:#000;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;">Login</button>
                     <p style="text-align:center;margin-top:1rem;"><a href="#" onclick="switchAuthTab('reset')" style="color:#ffdd00;font-size:0.9rem;text-decoration:none;">Forgot Password?</a></p>
                 </form>
