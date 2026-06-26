@@ -986,7 +986,7 @@
             signupForm.classList.remove('active');
             loginForm.classList.remove('active');
             dashboard.classList.add('active');
-            document.getElementById('nav-login').textContent = 'Dashboard';
+            document.getElementById('nav-login').textContent = 'LOGOUT';
         }
 
         // Event listeners
@@ -996,9 +996,22 @@
         document.getElementById('back-to-landing-2').addEventListener('click', showLanding);
         document.getElementById('nav-login').addEventListener('click', (e) => {
             e.preventDefault();
-            if (token) {
-                showDashboard();
-                loadDashboard();
+            const partnerAuth = localStorage.getItem('partnerToken');
+            const mainAuth = localStorage.getItem('authToken');
+            const dealAuth = localStorage.getItem('dealToken');
+
+            if (partnerAuth || mainAuth || dealAuth) {
+                // Logged in - log out
+                localStorage.removeItem('partnerToken');
+                localStorage.removeItem('partnerUser');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userType');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('dealToken');
+                localStorage.removeItem('dealUser');
+                token = null;
+                user = null;
+                window.location.reload();
             } else {
                 showLogin();
             }
