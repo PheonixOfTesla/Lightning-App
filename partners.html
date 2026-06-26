@@ -915,8 +915,23 @@
         function checkAuth() {
             updateNavAuth();
             if (token && user) {
+                // Partner logged in - show dashboard
                 showDashboard();
                 loadDashboard();
+            } else if (mainAuthToken) {
+                // Logged in via main site but not a partner yet
+                // Auto-show signup with email pre-filled
+                const mainEmail = localStorage.getItem('userEmail');
+                showSignup();
+                if (mainEmail) {
+                    document.getElementById('signup-email').value = mainEmail;
+                }
+                // Show a friendly message
+                const successEl = document.getElementById('signup-success');
+                successEl.innerHTML = 'You\'re logged in! Complete the form below to become a partner.';
+                successEl.style.display = 'block';
+                successEl.style.background = 'rgba(255,221,0,0.1)';
+                successEl.style.color = '#ffdd00';
             } else {
                 showLanding();
             }
