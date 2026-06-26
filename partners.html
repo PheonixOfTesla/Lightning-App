@@ -879,9 +879,11 @@
         const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/referral';
         // const API_URL = 'http://localhost:3000/api/v1/referral'; // Dev
 
-        // State
+        // State - check both partner auth and main auth
         let token = localStorage.getItem('partnerToken');
         let user = JSON.parse(localStorage.getItem('partnerUser') || 'null');
+        const mainAuthToken = localStorage.getItem('authToken');
+        const mainUserType = localStorage.getItem('userType');
 
         // Elements
         const landingSection = document.getElementById('landing-section');
@@ -889,8 +891,29 @@
         const loginForm = document.getElementById('login-form');
         const dashboard = document.getElementById('dashboard');
 
+        // Update nav based on any auth state
+        function updateNavAuth() {
+            const navBtn = document.getElementById('nav-login');
+            if (mainAuthToken || token) {
+                navBtn.textContent = 'LOGOUT';
+                navBtn.onclick = function(e) {
+                    e.preventDefault();
+                    // Clear all auth
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userType');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('partnerToken');
+                    localStorage.removeItem('partnerUser');
+                    token = null;
+                    user = null;
+                    window.location.reload();
+                };
+            }
+        }
+
         // Check if logged in
         function checkAuth() {
+            updateNavAuth();
             if (token && user) {
                 showDashboard();
                 loadDashboard();
@@ -905,7 +928,10 @@
             signupForm.classList.remove('active');
             loginForm.classList.remove('active');
             dashboard.classList.remove('active');
-            document.getElementById('nav-login').textContent = 'Login';
+            // Only show Login if not logged in via main auth
+            if (!mainAuthToken) {
+                document.getElementById('nav-login').textContent = 'LOGIN';
+            }
         }
 
         function showSignup() {
