@@ -735,9 +735,10 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('passes')">My Passes</button>
-                <button class="tab" onclick="switchTab('perks')">Lightning Perks</button>
-                <button class="tab" onclick="switchTab('subscription')">Membership</button>
+                <button class="tab active" data-tab="passes">My Passes</button>
+                <button class="tab" data-tab="events">Browse Events</button>
+                <button class="tab" data-tab="perks">Lightning Perks</button>
+                <button class="tab" data-tab="subscription">Membership</button>
             </div>
 
             <!-- My Passes Tab -->
@@ -770,7 +771,21 @@
                         </svg>
                         <h3>No Passes Yet</h3>
                         <p>Browse events and get your first pass!</p>
-                        <a href="/" class="btn btn-primary">Browse Events</a>
+                        <button class="btn btn-primary" onclick="switchTab('events')">Browse Events</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Tab -->
+            <div id="eventsTab" class="tab-content">
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 0.5rem;">Upcoming Events</h3>
+                    <p style="color: var(--gray);">Get your tickets without leaving your dashboard</p>
+                </div>
+                <div id="eventsGrid" class="deals-grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading events...</p>
                     </div>
                 </div>
             </div>
@@ -970,7 +985,7 @@
                         </svg>
                         <h3>No Passes Yet</h3>
                         <p>Browse events and get your first pass!</p>
-                        <a href="/" class="btn btn-primary">Browse Events</a>
+                        <button class="btn btn-primary" onclick="switchTab('events')">Browse Events</button>
                     </div>
                 `;
                 return;
@@ -1057,11 +1072,81 @@
         function switchTab(tabName) {
             // Update tab buttons
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName + 'Tab').classList.add('active');
+
+            // Load events if switching to events tab
+            if (tabName === 'events' && !eventsLoaded) {
+                loadEvents();
+            }
+        }
+
+        // Attach click handlers to tabs
+        document.querySelectorAll('.tab[data-tab]').forEach(tab => {
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        });
+
+        let eventsLoaded = false;
+
+        async function loadEvents() {
+            const grid = document.getElementById('eventsGrid');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events`);
+                const data = await res.json();
+                const events = (data.events || []).filter(e => e.isActive && new Date(e.date) > new Date());
+
+                eventsLoaded = true;
+
+                if (events.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <h3>No Upcoming Events</h3>
+                            <p>Check back soon for new events!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = events.map(event => {
+                    const eventDate = new Date(event.date);
+                    const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    const hasTickets = event.tickets && event.tickets.some(t => t.available === -1 || (t.available - t.sold) > 0);
+                    const lowestPrice = event.tickets?.length ? Math.min(...event.tickets.map(t => t.price)) : 0;
+
+                    return `
+                        <div class="deal-card" style="cursor: pointer;" onclick="window.open('/?event=${event.slug}', '_blank')">
+                            <div class="deal-image" style="background: ${event.imageUrl ? `url(${event.imageUrl}) center/cover` : 'linear-gradient(135deg, var(--lightning-yellow), var(--electric-purple))'};"></div>
+                            <div class="deal-content">
+                                <span class="deal-badge" style="background: ${hasTickets ? 'var(--neon-green)' : 'var(--danger-red)'};">${hasTickets ? dateStr : 'SOLD OUT'}</span>
+                                <h4 class="deal-title">${event.name}</h4>
+                                <p class="deal-description">${event.location || ''}</p>
+                                <button class="deal-cta" ${!hasTickets ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                                    ${hasTickets ? (lowestPrice > 0 ? `Get Tickets - $${(lowestPrice/100).toFixed(0)}+` : 'Free RSVP') : 'Sold Out'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading events:', error);
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Unable to load events</h3>
+                        <p>Please try again later</p>
+                    </div>
+                `;
+            }
         }
 
         async function startSubscription() {
