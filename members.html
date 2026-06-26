@@ -795,14 +795,7 @@
 
             <!-- Lightning Perks Tab -->
             <div id="perksTab" class="tab-content">
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 0.5rem;">Exclusive Member Deals</h3>
-                    <p style="color: var(--gray);">Special discounts just for Lightning Pass members</p>
-                </div>
-
-                <div id="dealsGrid" class="deals-grid">
-                    <!-- Deals will be loaded dynamically -->
-                </div>
+                <iframe id="experiencesFrame" src="/experiences" style="width: 100%; height: calc(100vh - 200px); min-height: 800px; border: none; border-radius: 1rem; background: var(--card-black);"></iframe>
             </div>
 
             <!-- Subscription Tab -->
@@ -842,43 +835,6 @@
                     <button id="subscribeBtn" class="btn btn-primary" onclick="startSubscription()">
                         Become a Member
                     </button>
-                </div>
-
-                <!-- Black Flag Partnership -->
-                <div style="background: var(--card-black); border-radius: 1rem; padding: 2rem; border: 1px solid rgba(255,255,255,0.1);">
-                    <div style="text-align: center; margin-bottom: 1.5rem;">
-                        <h3 style="margin-bottom: 0.5rem;">Black Flag Watersports</h3>
-                        <p style="color: var(--gray);">Lightning Members get exclusive discounts on jet ski rentals!</p>
-                    </div>
-                    <div class="deals-grid" style="margin-top: 1rem;">
-                        <div class="deal-card">
-                            <div class="deal-image" style="background: linear-gradient(135deg, #00d4ff, #0066cc);">🚤</div>
-                            <div class="deal-content">
-                                <span class="deal-badge">20% OFF</span>
-                                <h4 class="deal-title">Jet Ski Rental</h4>
-                                <p class="deal-description">1-hour jet ski rental at Siesta Key. Use code: LIGHTNING20</p>
-                                <button class="deal-cta" onclick="copyCode('LIGHTNING20')">Copy Code</button>
-                            </div>
-                        </div>
-                        <div class="deal-card">
-                            <div class="deal-image" style="background: linear-gradient(135deg, #00d4ff, #9d4edd);">🏄</div>
-                            <div class="deal-content">
-                                <span class="deal-badge">15% OFF</span>
-                                <h4 class="deal-title">Paddleboard Tour</h4>
-                                <p class="deal-description">Guided paddleboard tour. Use code: LPPADDLE15</p>
-                                <button class="deal-cta" onclick="copyCode('LPPADDLE15')">Copy Code</button>
-                            </div>
-                        </div>
-                        <div class="deal-card">
-                            <div class="deal-image" style="background: linear-gradient(135deg, #ffdd00, #ff8c00);">🎉</div>
-                            <div class="deal-content">
-                                <span class="deal-badge">$50 OFF</span>
-                                <h4 class="deal-title">Party Boat Package</h4>
-                                <p class="deal-description">Group boat rental (6+ people). Use code: LPPARTY50</p>
-                                <button class="deal-cta" onclick="copyCode('LPPARTY50')">Copy Code</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
