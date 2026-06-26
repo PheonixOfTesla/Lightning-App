@@ -157,6 +157,34 @@
             color: var(--pure-black);
         }
 
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            margin: 0 0.5rem;
+        }
+
+        .dashboard-link {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-link.active {
+            background: rgba(255,221,0,0.15);
+            color: var(--lightning-yellow) !important;
+        }
+
+        .dashboard-nav {
+            display: none;
+        }
+
+        .dashboard-nav.show {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         /* Hero Section */
         .hero {
             padding: 8rem 2rem 4rem;
@@ -672,12 +700,11 @@
                 <span class="logo-text">Lightning Pass</span>
             </a>
             <div class="nav-links">
-                <a href="/?browse=1" class="nav-link">Events</a>
-                <a href="/experiences" class="nav-link">Experiences</a>
-                <span class="nav-link" style="cursor: default;"><s style="opacity: 0.5;">Claim</s> <span style="color: var(--lightning-yellow);">Soon</span></span>
-                <a href="/partners" class="nav-link" style="color: var(--lightning-yellow);">Partners</a>
-                <a href="/calendar" class="nav-link">Calendar</a>
-                <a href="/about" class="nav-link">About</a>
+                <a href="/" class="nav-link">Events</a>
+                <div class="nav-divider"></div>
+                <div class="dashboard-nav" id="dashboardNav">
+                    <!-- Role-based nav links injected by JS -->
+                </div>
                 <a href="#" onclick="showLoginModal(); return false;" class="nav-link btn-login" id="nav-login">LOGIN</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
@@ -909,6 +936,40 @@
         const loginForm = document.getElementById('login-form');
         const dashboard = document.getElementById('dashboard');
 
+        // Build role-based navigation
+        function buildRoleNav() {
+            const userType = localStorage.getItem('userType');
+            const adminToken = localStorage.getItem('adminToken');
+            const partnerToken = localStorage.getItem('partnerToken');
+            const djToken = localStorage.getItem('djToken');
+            const venueToken = localStorage.getItem('venueToken');
+
+            const isAdmin = userType === 'admin' || adminToken;
+            const currentPage = 'partner';
+
+            // Define all possible dashboards
+            const dashboards = [
+                { id: 'member', label: 'Member', href: '/members', show: true },
+                { id: 'dj', label: 'DJ', href: '/dj', show: isAdmin || userType === 'dj' || djToken },
+                { id: 'venue', label: 'Venue', href: '/venue', show: isAdmin || userType === 'venue' || venueToken },
+                { id: 'partner', label: 'Partner', href: '/partners', show: true },
+                { id: 'admin', label: 'Admin', href: '/admin', show: isAdmin }
+            ];
+
+            const dashboardNav = document.getElementById('dashboardNav');
+            dashboardNav.innerHTML = '';
+
+            dashboards.filter(d => d.show).forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                dashboardNav.appendChild(link);
+            });
+
+            dashboardNav.classList.add('show');
+        }
+
         // Update nav based on any auth state
         function updateNavAuth() {
             const navBtn = document.getElementById('nav-login');
@@ -987,6 +1048,7 @@
             loginForm.classList.remove('active');
             dashboard.classList.add('active');
             document.getElementById('nav-login').textContent = 'LOGOUT';
+            buildRoleNav();
         }
 
         // Event listeners

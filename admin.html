@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Lightning Pass</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--pure-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.875rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--white);
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .admin-badge {
+            background: var(--danger-red);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover { color: var(--lightning-yellow); }
+
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            margin: 0 0.5rem;
+        }
+
+        .dashboard-link {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-link.active {
+            background: rgba(255,221,0,0.15);
+            color: var(--lightning-yellow);
+        }
+
+        .nav-link.btn-logout {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--danger-red);
+            border-radius: 0.5rem;
+            color: var(--danger-red);
+            font-weight: 600;
+        }
+
+        .nav-link.btn-logout:hover {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 5rem 2rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            max-width: 400px;
+            margin: 4rem auto;
+            text-align: center;
+        }
+
+        .login-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--danger-red));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .login-card p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255,221,0,0.4);
+        }
+
+        .btn-danger {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            color: var(--white);
+        }
+
+        .error-message {
+            background: rgba(255,0,68,0.1);
+            border: 1px solid var(--danger-red);
+            color: var(--danger-red);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* Dashboard */
+        .dashboard { display: none; }
+        .dashboard.active { display: block; }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-black);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-card-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-card-value.yellow { color: var(--lightning-yellow); }
+        .stat-card-value.green { color: var(--neon-green); }
+        .stat-card-value.purple { color: var(--electric-purple); }
+        .stat-card-value.blue { color: var(--electric-blue); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--white);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .tab:hover { border-color: var(--lightning-yellow); }
+
+        .tab.active {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+            font-weight: 600;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            background: var(--card-black);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .data-table th {
+            background: rgba(255,255,255,0.05);
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active { background: var(--neon-green); color: var(--pure-black); }
+        .status-badge.pending { background: var(--lightning-yellow); color: var(--pure-black); }
+        .status-badge.live { background: var(--neon-green); color: var(--pure-black); }
+        .status-badge.approved { background: var(--electric-blue); color: var(--pure-black); }
+        .status-badge.rejected { background: var(--danger-red); color: white; }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: inherit;
+            margin-right: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn.approve {
+            background: var(--neon-green);
+            color: var(--pure-black);
+        }
+
+        .action-btn.reject {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        .action-btn.view {
+            background: var(--electric-blue);
+            color: var(--pure-black);
+        }
+
+        .action-btn.refund {
+            background: var(--electric-purple);
+            color: white;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-black);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Search */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+
+        .search-bar button {
+            padding: 0.875rem 1.5rem;
+            background: var(--lightning-yellow);
+            border: none;
+            border-radius: 0.5rem;
+            color: var(--pure-black);
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray);
+        }
+
+        .empty-state h3 {
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-dark);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--card-black);
+            border: 1px solid var(--lightning-yellow);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover { color: var(--white); }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            nav { padding: 0.75rem 1rem; }
+            .nav-links { display: none; }
+            .main-content { padding: 4rem 1rem 1rem; }
+            .dashboard-header { flex-direction: column; text-align: center; }
+            .dashboard-header h1 { font-size: 1.5rem; }
+            .data-table { font-size: 0.85rem; }
+            .data-table th, .data-table td { padding: 0.75rem 0.5rem; }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--card-black);
+            border: 1px solid var(--lightning-yellow);
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            z-index: 9999;
+            display: none;
+        }
+
+        .toast.show { display: block; animation: slideIn 0.3s ease; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <img src="logo.png" alt="Lightning Pass">
+                <span>Lightning Pass</span>
+            </a>
+            <div class="nav-links" id="navLinks" style="display: none;">
+                <a href="/" class="nav-link">Events</a>
+                <div class="nav-divider"></div>
+                <!-- Role-based nav links injected by JS -->
+                <a href="#" onclick="logout(); return false;" class="nav-link btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <div class="login-card">
+                <div class="login-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                </div>
+                <h2>Admin Portal</h2>
+                <p>Enter your credentials to access the admin dashboard</p>
+
+                <div id="loginError" class="error-message"></div>
+
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="admin@thelightningpass.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Passcode</label>
+                        <input type="password" id="loginPasscode" placeholder="Enter admin passcode" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
+                </form>
+
+                <p style="margin-top: 1.5rem; color: var(--gray); font-size: 0.85rem;">
+                    <a href="/" style="color: var(--lightning-yellow);">Back to site</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="dashboard" class="dashboard">
+            <div class="dashboard-header">
+                <h1>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--lightning-yellow)">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    Admin Dashboard
+                </h1>
+                <div style="color: var(--gray);">
+                    Welcome, <span id="adminEmail">Admin</span>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-label">Total Revenue</div>
+                    <div class="stat-card-value green" id="totalRevenue">$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Total Passes Sold</div>
+                    <div class="stat-card-value yellow" id="totalPasses">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Active Events</div>
+                    <div class="stat-card-value blue" id="activeEvents">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Total Users</div>
+                    <div class="stat-card-value purple" id="totalUsers">0</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('events')">Events</button>
+                <button class="tab" onclick="switchTab('passes')">Passes</button>
+                <button class="tab" onclick="switchTab('users')">Users</button>
+                <button class="tab" onclick="switchTab('deals')">Deals</button>
+                <button class="tab" onclick="switchTab('refunds')">Refunds</button>
+            </div>
+
+            <!-- Events Tab -->
+            <div id="eventsTab" class="tab-content active">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Event Management
+                    </h3>
+                    <div id="eventsLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading events...</p>
+                    </div>
+                    <div id="eventsTable" style="display: none; overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Venue</th>
+                                    <th>Status</th>
+                                    <th>Tickets Sold</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passes Tab -->
+            <div id="passesTab" class="tab-content">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                        Pass Management
+                    </h3>
+                    <div class="search-bar">
+                        <input type="text" id="passSearch" placeholder="Search by email, pass ID, or event...">
+                        <button onclick="searchPasses()">Search</button>
+                    </div>
+                    <div id="passesLoading" class="loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Searching passes...</p>
+                    </div>
+                    <div id="passesTable" style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Pass ID</th>
+                                    <th>Event</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="passesTableBody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--gray);">
+                                        Enter a search term to find passes
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        User Management
+                    </h3>
+                    <div class="search-bar">
+                        <input type="text" id="userSearch" placeholder="Search by email or name...">
+                        <button onclick="searchUsers()">Search</button>
+                    </div>
+                    <div id="usersTable" style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--gray);">
+                                        Enter a search term to find users
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deals Tab -->
+            <div id="dealsTab" class="tab-content">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                            <line x1="7" y1="7" x2="7.01" y2="7"/>
+                        </svg>
+                        Deals Management
+                    </h3>
+                    <button class="btn btn-primary" style="margin-bottom: 1rem;" onclick="showCreateDealModal()">
+                        + Create New Deal
+                    </button>
+                    <div id="dealsLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading deals...</p>
+                    </div>
+                    <div id="dealsTable" style="display: none; overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Discount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dealsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Refunds Tab -->
+            <div id="refundsTab" class="tab-content">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Refund Processing
+                    </h3>
+                    <div class="search-bar">
+                        <input type="text" id="refundSearch" placeholder="Search pass ID or email...">
+                        <button onclick="searchForRefund()">Search</button>
+                    </div>
+                    <div id="refundResults">
+                        <p style="color: var(--gray); text-align: center; padding: 2rem;">
+                            Search for a pass to process a refund
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Refund Modal -->
+    <div id="refundModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('refundModal')">&times;</button>
+            <h3 style="margin-bottom: 1rem;">Process Refund</h3>
+            <p style="color: var(--gray); margin-bottom: 1.5rem;">
+                Refunding: <strong id="refundPassId"></strong>
+            </p>
+            <div class="form-group">
+                <label>Reason for Refund</label>
+                <input type="text" id="refundReason" placeholder="e.g., Customer request, event cancelled">
+            </div>
+            <button class="btn btn-danger" onclick="processRefund()" style="width: 100%;">
+                Process Refund
+            </button>
+        </div>
+    </div>
+
+    <!-- Create Deal Modal -->
+    <div id="createDealModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('createDealModal')">&times;</button>
+            <h3 style="margin-bottom: 1rem;">Create New Deal</h3>
+            <form onsubmit="createDeal(event)">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="dealTitle" placeholder="e.g., 20% off Jet Ski Rentals" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="dealDescription" placeholder="Deal description">
+                </div>
+                <div class="form-group">
+                    <label>Discount Text</label>
+                    <input type="text" id="dealDiscount" placeholder="e.g., 20% OFF" required>
+                </div>
+                <div class="form-group">
+                    <label>Emoji</label>
+                    <input type="text" id="dealEmoji" placeholder="e.g., ">
+                </div>
+                <div class="form-group">
+                    <label>Link</label>
+                    <input type="url" id="dealLink" placeholder="https://...">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Deal</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        let adminToken = null;
+        let currentRefundPassId = null;
+
+        // Build role-based navigation (Admin sees ALL)
+        function buildRoleNav() {
+            const currentPage = 'admin';
+
+            // Admin sees all dashboards
+            const dashboards = [
+                { id: 'member', label: 'Member', href: '/members' },
+                { id: 'dj', label: 'DJ', href: '/dj' },
+                { id: 'venue', label: 'Venue', href: '/venue' },
+                { id: 'partner', label: 'Partner', href: '/partners' },
+                { id: 'admin', label: 'Admin', href: '/admin' }
+            ];
+
+            const navLinks = document.getElementById('navLinks');
+            const divider = navLinks.querySelector('.nav-divider');
+
+            // Add dashboard links after divider
+            dashboards.forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                divider.insertAdjacentElement('afterend', link);
+            });
+        }
+
+        // Check for existing session
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            const userType = localStorage.getItem('userType');
+
+            if (token && userType === 'admin') {
+                adminToken = token;
+                showDashboard();
+                loadDashboardData();
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const passcode = document.getElementById('loginPasscode').value;
+            const btn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('loginError');
+
+            btn.textContent = 'Logging in...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: passcode, userType: 'admin' })
+                });
+
+                const data = await res.json();
+
+                if (data.token) {
+                    adminToken = data.token;
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('userType', 'admin');
+                    localStorage.setItem('userEmail', email);
+
+                    document.getElementById('adminEmail').textContent = email;
+                    showDashboard();
+                    loadDashboardData();
+                } else {
+                    throw new Error(data.error || 'Invalid credentials');
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.textContent = 'Login';
+                btn.disabled = false;
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('navLinks').style.display = 'flex';
+            buildRoleNav();
+        }
+
+        async function loadDashboardData() {
+            // Load stats
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/analytics/system/overview`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('totalRevenue').textContent = '$' + (data.totalRevenue || 0).toLocaleString();
+                    document.getElementById('totalPasses').textContent = (data.totalPasses || 0).toLocaleString();
+                    document.getElementById('activeEvents').textContent = data.activeEvents || 0;
+                    document.getElementById('totalUsers').textContent = (data.totalUsers || 0).toLocaleString();
+                }
+            } catch (error) {
+                console.error('Stats error:', error);
+            }
+
+            // Load events
+            loadEvents();
+            loadDeals();
+        }
+
+        async function loadEvents() {
+            const loading = document.getElementById('eventsLoading');
+            const table = document.getElementById('eventsTable');
+            const tbody = document.getElementById('eventsTableBody');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events`);
+                const data = await res.json();
+                const events = data.events || [];
+
+                loading.style.display = 'none';
+                table.style.display = 'block';
+
+                if (events.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No events found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = events.map(event => `
+                    <tr>
+                        <td><strong>${event.name}</strong></td>
+                        <td>${new Date(event.date).toLocaleDateString()}</td>
+                        <td>${event.venueName || '-'}</td>
+                        <td><span class="status-badge ${event.status}">${event.status}</span></td>
+                        <td>${event.ticketsSold || 0}</td>
+                        <td>
+                            <button class="action-btn view" onclick="viewEvent('${event._id}')">View</button>
+                            ${event.status === 'pending' ? `
+                                <button class="action-btn approve" onclick="approveEvent('${event._id}')">Approve</button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Events error:', error);
+                loading.innerHTML = '<p style="color: var(--danger-red);">Failed to load events</p>';
+            }
+        }
+
+        async function approveEvent(eventId) {
+            if (!confirm('Approve this event?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events/${eventId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    showToast('Event approved!', 'success');
+                    loadEvents();
+                } else {
+                    throw new Error('Failed to approve event');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function viewEvent(eventId) {
+            window.open(`/?event=${eventId}`, '_blank');
+        }
+
+        async function searchPasses() {
+            const query = document.getElementById('passSearch').value;
+            if (!query) return;
+
+            const loading = document.getElementById('passesLoading');
+            const tbody = document.getElementById('passesTableBody');
+
+            loading.style.display = 'block';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                const passes = data.passes || [];
+
+                loading.style.display = 'none';
+
+                if (passes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No passes found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = passes.map(pass => `
+                    <tr>
+                        <td><code>${pass.passId || pass._id}</code></td>
+                        <td>${pass.eventName || '-'}</td>
+                        <td>${pass.customerEmail || pass.email || '-'}</td>
+                        <td>$${((pass.amount || 0) / 100).toFixed(2)}</td>
+                        <td><span class="status-badge ${pass.status}">${pass.status}</span></td>
+                        <td>
+                            ${pass.status !== 'refunded' ? `
+                                <button class="action-btn refund" onclick="showRefundModal('${pass.passId || pass._id}')">Refund</button>
+                            ` : '<span style="color: var(--gray);">Refunded</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Search error:', error);
+                loading.style.display = 'none';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Search failed</td></tr>';
+            }
+        }
+
+        async function searchUsers() {
+            const query = document.getElementById('userSearch').value;
+            if (!query) return;
+
+            const tbody = document.getElementById('usersTableBody');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                const users = data.users || [];
+
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gray);">No users found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.email}</td>
+                        <td>${user.name || user.firstName || '-'}</td>
+                        <td><span class="status-badge">${user.role || user.userType || 'member'}</span></td>
+                        <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <button class="action-btn view" onclick="viewUser('${user._id}')">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        function viewUser(userId) {
+            alert('User details view coming soon');
+        }
+
+        async function loadDeals() {
+            const loading = document.getElementById('dealsLoading');
+            const table = document.getElementById('dealsTable');
+            const tbody = document.getElementById('dealsTableBody');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals`);
+                const data = await res.json();
+                const deals = data.deals || [];
+
+                loading.style.display = 'none';
+                table.style.display = 'block';
+
+                if (deals.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--gray);">No deals found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = deals.map(deal => `
+                    <tr>
+                        <td><strong>${deal.title}</strong></td>
+                        <td>${deal.discount || '-'}</td>
+                        <td><span class="status-badge ${deal.isActive ? 'active' : ''}">${deal.isActive ? 'Active' : 'Inactive'}</span></td>
+                        <td>
+                            <button class="action-btn view" onclick="editDeal('${deal._id}')">Edit</button>
+                            <button class="action-btn reject" onclick="deleteDeal('${deal._id}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Deals error:', error);
+            }
+        }
+
+        function showCreateDealModal() {
+            document.getElementById('createDealModal').classList.add('active');
+        }
+
+        async function createDeal(e) {
+            e.preventDefault();
+
+            const deal = {
+                title: document.getElementById('dealTitle').value,
+                description: document.getElementById('dealDescription').value,
+                discount: document.getElementById('dealDiscount').value,
+                emoji: document.getElementById('dealEmoji').value,
+                link: document.getElementById('dealLink').value,
+                isActive: true
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(deal)
+                });
+
+                if (res.ok) {
+                    showToast('Deal created!', 'success');
+                    closeModal('createDealModal');
+                    loadDeals();
+                } else {
+                    throw new Error('Failed to create deal');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function editDeal(dealId) {
+            alert('Edit deal coming soon');
+        }
+
+        async function deleteDeal(dealId) {
+            if (!confirm('Delete this deal?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/${dealId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    showToast('Deal deleted!', 'success');
+                    loadDeals();
+                } else {
+                    throw new Error('Failed to delete deal');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function searchForRefund() {
+            const query = document.getElementById('refundSearch').value;
+            if (!query) return;
+
+            const results = document.getElementById('refundResults');
+            results.innerHTML = '<div class="loading"><div class="spinner"></div><p>Searching...</p></div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                const passes = data.passes || [];
+
+                if (passes.length === 0) {
+                    results.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 2rem;">No passes found</p>';
+                    return;
+                }
+
+                results.innerHTML = passes.map(pass => `
+                    <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${pass.passId || pass._id}</strong><br>
+                            <span style="color: var(--gray); font-size: 0.85rem;">${pass.eventName} - ${pass.customerEmail || pass.email}</span><br>
+                            <span style="color: var(--neon-green);">$${((pass.amount || 0) / 100).toFixed(2)}</span>
+                        </div>
+                        ${pass.status !== 'refunded' ? `
+                            <button class="action-btn refund" onclick="showRefundModal('${pass.passId || pass._id}')">Refund</button>
+                        ` : '<span class="status-badge rejected">Refunded</span>'}
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                results.innerHTML = '<p style="color: var(--danger-red); text-align: center; padding: 2rem;">Search failed</p>';
+            }
+        }
+
+        function showRefundModal(passId) {
+            currentRefundPassId = passId;
+            document.getElementById('refundPassId').textContent = passId;
+            document.getElementById('refundReason').value = '';
+            document.getElementById('refundModal').classList.add('active');
+        }
+
+        async function processRefund() {
+            if (!currentRefundPassId) return;
+
+            const reason = document.getElementById('refundReason').value || 'Admin refund';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/${currentRefundPassId}/refund`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ reason, notifyCustomer: true })
+                });
+
+                if (res.ok) {
+                    showToast('Refund processed!', 'success');
+                    closeModal('refundModal');
+                    searchForRefund();
+                } else {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Refund failed');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            toast.style.borderColor = type === 'error' ? 'var(--danger-red)' :
+                                      type === 'success' ? 'var(--neon-green)' : 'var(--lightning-yellow)';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('userType');
+            localStorage.removeItem('userEmail');
+            window.location.reload();
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>

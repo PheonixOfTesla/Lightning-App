@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Dashboard - Lightning Pass</title>
+    <meta name="description" content="View your Lightning Pass tickets, exclusive deals, and member perks.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 50% 30%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 60%, rgba(255, 255, 255, 0.03) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--pure-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.875rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--white);
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--lightning-yellow);
+        }
+
+        .nav-link.btn-login {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--lightning-yellow);
+            border-radius: 0.5rem;
+            color: var(--lightning-yellow);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+        }
+
+        .nav-link.btn-login:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            margin: 0 0.5rem;
+        }
+
+        .dashboard-link {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-link.active {
+            background: rgba(255,221,0,0.15);
+            color: var(--lightning-yellow);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 6rem 2rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--lightning-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--electric-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--pure-black);
+        }
+
+        .user-name {
+            font-weight: 600;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--white);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            border-color: var(--lightning-yellow);
+        }
+
+        .tab.active {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+            font-weight: 600;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-black);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-card-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .stat-card-value.yellow {
+            color: var(--lightning-yellow);
+        }
+
+        .stat-card-value.green {
+            color: var(--neon-green);
+        }
+
+        .stat-card-value.purple {
+            color: var(--electric-purple);
+        }
+
+        /* Pass Cards */
+        .passes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pass-card {
+            background: var(--card-black);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .pass-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--lightning-yellow);
+        }
+
+        .pass-card-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255,221,0,0.1), rgba(157,78,221,0.1));
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .pass-event-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .pass-event-date {
+            color: var(--lightning-yellow);
+            font-size: 0.9rem;
+        }
+
+        .pass-card-body {
+            padding: 1.5rem;
+        }
+
+        .pass-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .pass-type {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .pass-quantity {
+            color: var(--gray);
+        }
+
+        .pass-qr-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .pass-qr-container img {
+            max-width: 150px;
+        }
+
+        .pass-code {
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-align: center;
+        }
+
+        .pass-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .pass-status.valid {
+            color: var(--neon-green);
+        }
+
+        .pass-status.used {
+            color: var(--gray);
+        }
+
+        /* Deals Section */
+        .deals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .deal-card {
+            background: var(--card-black);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s;
+        }
+
+        .deal-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .deal-image {
+            height: 150px;
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--electric-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .deal-content {
+            padding: 1.25rem;
+        }
+
+        .deal-badge {
+            background: var(--neon-green);
+            color: var(--pure-black);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: inline-block;
+        }
+
+        .deal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .deal-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .deal-cta {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--lightning-yellow);
+            border-radius: 0.5rem;
+            color: var(--lightning-yellow);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .deal-cta:hover {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        /* Subscription Section */
+        .subscription-card {
+            background: linear-gradient(135deg, rgba(255,221,0,0.1), rgba(157,78,221,0.05));
+            border: 2px solid var(--lightning-yellow);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .subscription-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subscription-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--lightning-yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .subscription-price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--gray);
+        }
+
+        .subscription-perks {
+            list-style: none;
+            margin: 1.5rem 0;
+            text-align: left;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .subscription-perks li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .subscription-perks li::before {
+            content: '';
+            display: none;
+        }
+
+        .perk-icon {
+            color: var(--neon-green);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 2px solid;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255,221,0,0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--white);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--white);
+            color: var(--pure-black);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray);
+        }
+
+        .empty-state svg {
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-dark);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--white);
+            transition: all 0.3s;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .main-content {
+                padding: 5rem 1rem 1rem;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .tabs {
+                justify-content: flex-start;
+            }
+
+            .passes-grid,
+            .deals-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 27, 42, 0.98);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <img src="logo.png" alt="Lightning Pass">
+                <span>Lightning Pass</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Events</a>
+                <div class="nav-divider"></div>
+                <!-- Role-based nav links injected by JS -->
+                <a href="/members" class="nav-link dashboard-link active">Member</a>
+                <a href="#" onclick="logout(); return false;" class="nav-link btn-login">LOGOUT</a>
+            </div>
+            <div class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/">Events</a>
+        <div id="mobileRoleLinks"></div>
+        <a href="#" onclick="logout()">Logout</a>
+    </div>
+
+    <main class="main-content">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p>Loading your dashboard...</p>
+        </div>
+
+        <!-- Login Required State -->
+        <div id="loginRequired" style="display: none;">
+            <div class="empty-state">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <h3>Login Required</h3>
+                <p>Please log in to view your member dashboard</p>
+                <a href="/" class="btn btn-primary">Login</a>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" style="display: none;">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Member Dashboard</h1>
+                    <p style="color: var(--gray);">Welcome back!</p>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">M</div>
+                    <div>
+                        <div class="user-name" id="userName">Member</div>
+                        <div class="user-email" id="userEmail">member@example.com</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('passes')">My Passes</button>
+                <button class="tab" onclick="switchTab('perks')">Lightning Perks</button>
+                <button class="tab" onclick="switchTab('subscription')">Membership</button>
+            </div>
+
+            <!-- My Passes Tab -->
+            <div id="passesTab" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-label">Total Passes</div>
+                        <div class="stat-card-value yellow" id="totalPasses">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Upcoming Events</div>
+                        <div class="stat-card-value green" id="upcomingEvents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Total Spent</div>
+                        <div class="stat-card-value" id="totalSpent">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-label">Member Savings</div>
+                        <div class="stat-card-value purple" id="totalSavings">$0</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 1rem;">Your Passes</h3>
+                <div id="passesGrid" class="passes-grid">
+                    <div class="empty-state">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                        <h3>No Passes Yet</h3>
+                        <p>Browse events and get your first pass!</p>
+                        <a href="/" class="btn btn-primary">Browse Events</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lightning Perks Tab -->
+            <div id="perksTab" class="tab-content">
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 0.5rem;">Exclusive Member Deals</h3>
+                    <p style="color: var(--gray);">Special discounts just for Lightning Pass members</p>
+                </div>
+
+                <div id="dealsGrid" class="deals-grid">
+                    <!-- Deals will be loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Subscription Tab -->
+            <div id="subscriptionTab" class="tab-content">
+                <div id="subscriptionStatus">
+                    <!-- Subscription status will be loaded dynamically -->
+                </div>
+
+                <div class="subscription-card">
+                    <h3>Lightning Member</h3>
+                    <div class="subscription-price">$5<span>/month</span></div>
+                    <p style="color: var(--gray);">Unlock exclusive perks and savings</p>
+
+                    <ul class="subscription-perks">
+                        <li>
+                            <span class="perk-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Member-only event pricing
+                        </li>
+                        <li>
+                            <span class="perk-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Early access to tickets
+                        </li>
+                        <li>
+                            <span class="perk-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Jet ski discounts (Black Flag)
+                        </li>
+                        <li>
+                            <span class="perk-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Exclusive deals feed
+                        </li>
+                        <li>
+                            <span class="perk-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Skip-the-line at events
+                        </li>
+                    </ul>
+
+                    <button id="subscribeBtn" class="btn btn-primary" onclick="startSubscription()">
+                        Become a Member
+                    </button>
+                </div>
+
+                <!-- Black Flag Partnership -->
+                <div style="background: var(--card-black); border-radius: 1rem; padding: 2rem; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                    <h3 style="margin-bottom: 1rem;">Black Flag Watersports</h3>
+                    <p style="color: var(--gray); margin-bottom: 1.5rem;">
+                        Lightning Members get exclusive discounts on jet ski rentals and watersport experiences!
+                    </p>
+                    <a href="https://blackflagwatersports.com" target="_blank" class="btn btn-secondary">
+                        View Deals
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Lightning Pass &copy; 2026</p>
+    </footer>
+
+    <script>
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        let memberData = null;
+
+        // Build role-based navigation
+        function buildRoleNav() {
+            const userType = localStorage.getItem('userType');
+            const authToken = localStorage.getItem('authToken');
+            const adminToken = localStorage.getItem('adminToken');
+            const partnerToken = localStorage.getItem('partnerToken');
+            const djToken = localStorage.getItem('djToken');
+            const venueToken = localStorage.getItem('venueToken');
+
+            const isAdmin = userType === 'admin' || adminToken;
+            const currentPage = 'member';
+
+            // Define all possible dashboards
+            const dashboards = [
+                { id: 'member', label: 'Member', href: '/members', show: true },
+                { id: 'dj', label: 'DJ', href: '/dj', show: isAdmin || userType === 'dj' || djToken },
+                { id: 'venue', label: 'Venue', href: '/venue', show: isAdmin || userType === 'venue' || venueToken },
+                { id: 'partner', label: 'Partner', href: '/partners', show: isAdmin || partnerToken },
+                { id: 'admin', label: 'Admin', href: '/admin', show: isAdmin }
+            ];
+
+            // Build desktop nav
+            const navLinks = document.getElementById('navLinks');
+            const divider = navLinks.querySelector('.nav-divider');
+
+            // Remove existing dashboard links (except Events and Logout)
+            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
+
+            // Add dashboard links after divider
+            dashboards.filter(d => d.show).forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                divider.insertAdjacentElement('afterend', link);
+            });
+
+            // Build mobile nav
+            const mobileRoleLinks = document.getElementById('mobileRoleLinks');
+            mobileRoleLinks.innerHTML = dashboards.filter(d => d.show).map(dash =>
+                `<a href="${dash.href}" ${dash.id === currentPage ? 'class="active"' : ''}>${dash.label}</a>`
+            ).join('');
+        }
+
+        // Check authentication on load
+        async function checkAuth() {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            const userType = localStorage.getItem('userType');
+            const userEmail = localStorage.getItem('userEmail');
+
+            if (!token) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+                return;
+            }
+
+            // Load dashboard
+            try {
+                await loadMemberDashboard(token, userEmail);
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+            }
+        }
+
+        async function loadMemberDashboard(token, email) {
+            try {
+                // Fetch member passes
+                const passesRes = await fetch(`${API_BASE}/api/v1/lightning/passes/by-email/${encodeURIComponent(email)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                let passes = [];
+                if (passesRes.ok) {
+                    const passesData = await passesRes.json();
+                    passes = passesData.passes || [];
+                }
+
+                // Update UI
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+
+                // Set user info
+                const userEmail = email || 'Member';
+                document.getElementById('userEmail').textContent = userEmail;
+                document.getElementById('userAvatar').textContent = userEmail.charAt(0).toUpperCase();
+
+                // Calculate stats
+                const totalPasses = passes.length;
+                const now = new Date();
+                const upcomingPasses = passes.filter(p => new Date(p.eventDate) > now);
+                const totalSpent = passes.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+                document.getElementById('totalPasses').textContent = totalPasses;
+                document.getElementById('upcomingEvents').textContent = upcomingPasses.length;
+                document.getElementById('totalSpent').textContent = '$' + (totalSpent / 100).toFixed(0);
+
+                // Render passes
+                renderPasses(passes);
+
+                // Load deals
+                loadDeals();
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                throw error;
+            }
+        }
+
+        function renderPasses(passes) {
+            const grid = document.getElementById('passesGrid');
+
+            if (!passes || passes.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                        <h3>No Passes Yet</h3>
+                        <p>Browse events and get your first pass!</p>
+                        <a href="/" class="btn btn-primary">Browse Events</a>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = passes.map(pass => {
+                const eventDate = new Date(pass.eventDate);
+                const isUpcoming = eventDate > new Date();
+                const status = pass.status === 'used' ? 'used' : (isUpcoming ? 'valid' : 'expired');
+
+                return `
+                    <div class="pass-card">
+                        <div class="pass-card-header">
+                            <div class="pass-event-name">${pass.eventName || 'Event'}</div>
+                            <div class="pass-event-date">${eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                        </div>
+                        <div class="pass-card-body">
+                            <div class="pass-details">
+                                <span class="pass-type">${(pass.ticketType || 'General').toUpperCase()}</span>
+                                <span class="pass-quantity">${pass.quantity || 1} ticket(s)</span>
+                            </div>
+                            <div class="pass-qr-container">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pass.passId || pass._id)}" alt="QR Code">
+                            </div>
+                            <div class="pass-code">${pass.passId || pass._id}</div>
+                            <div class="pass-status ${status}">
+                                ${status === 'valid' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Valid' :
+                                  status === 'used' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Used' :
+                                  'Expired'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadDeals() {
+            const grid = document.getElementById('dealsGrid');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals`);
+                const data = await res.json();
+                const deals = data.deals || [];
+
+                if (deals.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                                <line x1="7" y1="7" x2="7.01" y2="7"/>
+                            </svg>
+                            <h3>No Deals Yet</h3>
+                            <p>Check back soon for exclusive member deals!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = deals.map(deal => `
+                    <div class="deal-card">
+                        <div class="deal-image">
+                            ${deal.emoji || ''}
+                        </div>
+                        <div class="deal-content">
+                            <span class="deal-badge">${deal.discount || 'DEAL'}</span>
+                            <h4 class="deal-title">${deal.title}</h4>
+                            <p class="deal-description">${deal.description || ''}</p>
+                            <a href="${deal.link || '#'}" class="deal-cta" target="_blank">Claim Deal</a>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading deals:', error);
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Unable to load deals</h3>
+                        <p>Please try again later</p>
+                    </div>
+                `;
+            }
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        async function startSubscription() {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            if (!token) {
+                alert('Please log in to subscribe');
+                return;
+            }
+
+            const btn = document.getElementById('subscribeBtn');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/members/subscribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await res.json();
+
+                if (data.checkoutUrl) {
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    throw new Error(data.error || 'Failed to start subscription');
+                }
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Failed to start subscription. Please try again.');
+                btn.textContent = 'Become a Member';
+                btn.disabled = false;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userType');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('dealToken');
+            localStorage.removeItem('dealUser');
+            localStorage.removeItem('partnerToken');
+            localStorage.removeItem('partnerUser');
+            window.location.href = '/';
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+
+        // Initialize
+        buildRoleNav();
+        checkAuth();
+    </script>
+</body>
+</html>

@@ -448,6 +448,17 @@
             color: var(--lightning-yellow);
         }
 
+        .dashboard-link {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-link.active {
+            background: rgba(255,221,0,0.15);
+            color: var(--lightning-yellow);
+        }
+
         .btn {
             padding: 0.75rem 2rem;
             border-radius: 0.5rem;
@@ -5717,46 +5728,75 @@
             const navLinks = document.getElementById('navLinks');
             const mobileMenu = document.getElementById('mobileMenu');
 
-            if (user.role === 'admin') {
-                navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('admin')">Control Panel</a>
-                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
-                `;
-                mobileMenu.innerHTML = `
-                    <a href="#" onclick="showView('admin'); toggleMenu();">Control Panel</a>
-                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
-                `;
-            } else if (user.role === 'venue') {
-                navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('venue')">Dashboard</a>
-                    <a href="#" class="nav-link" onclick="showView('scanner')">Scanner</a>
-                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
-                `;
-                mobileMenu.innerHTML = `
-                    <a href="#" onclick="showView('venue'); toggleMenu();">Dashboard</a>
-                    <a href="#" onclick="showView('scanner'); toggleMenu();">Scanner</a>
-                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
-                `;
-            } else if (user.role === 'dj') {
-                navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="showView('dj')">DJ Dashboard</a>
-                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
-                `;
-                mobileMenu.innerHTML = `
-                    <a href="#" onclick="showView('dj'); toggleMenu();">DJ Dashboard</a>
-                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
-                `;
-            } else {
-                navLinks.innerHTML = `
-                    <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
-                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
-                `;
-                mobileMenu.innerHTML = `
-                    <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
-                    <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>
-                `;
+            // Check for all role tokens
+            const isAdmin = user.role === 'admin' || localStorage.getItem('adminToken');
+            const isVenue = user.role === 'venue' || localStorage.getItem('venueToken');
+            const isDJ = user.role === 'dj' || localStorage.getItem('djToken');
+            const isPartner = localStorage.getItem('partnerToken');
+
+            // Build dashboard links based on roles
+            let dashboardLinks = '';
+            let mobileDashboardLinks = '';
+
+            // Events link always first
+            dashboardLinks += `<a href="#" class="nav-link" onclick="browseEvents()">Events</a>`;
+            dashboardLinks += `<span class="nav-divider" style="width:1px;height:20px;background:rgba(255,255,255,0.2);margin:0 0.5rem;"></span>`;
+            mobileDashboardLinks += `<a href="#" onclick="browseEvents(); toggleMenu();">Events</a>`;
+
+            // Member (everyone has this)
+            dashboardLinks += `<a href="/members" class="nav-link dashboard-link">Member</a>`;
+            mobileDashboardLinks += `<a href="/members">Member</a>`;
+
+            // DJ
+            if (isAdmin || isDJ) {
+                if (user.role === 'dj') {
+                    dashboardLinks += `<a href="#" class="nav-link dashboard-link active" onclick="showView('dj')">DJ</a>`;
+                    mobileDashboardLinks += `<a href="#" onclick="showView('dj'); toggleMenu();">DJ</a>`;
+                } else {
+                    dashboardLinks += `<a href="#" class="nav-link dashboard-link" onclick="showView('dj')">DJ</a>`;
+                    mobileDashboardLinks += `<a href="#" onclick="showView('dj'); toggleMenu();">DJ</a>`;
+                }
             }
 
+            // Venue
+            if (isAdmin || isVenue) {
+                if (user.role === 'venue') {
+                    dashboardLinks += `<a href="#" class="nav-link dashboard-link active" onclick="showView('venue')">Venue</a>`;
+                    mobileDashboardLinks += `<a href="#" onclick="showView('venue'); toggleMenu();">Venue</a>`;
+                } else {
+                    dashboardLinks += `<a href="#" class="nav-link dashboard-link" onclick="showView('venue')">Venue</a>`;
+                    mobileDashboardLinks += `<a href="#" onclick="showView('venue'); toggleMenu();">Venue</a>`;
+                }
+            }
+
+            // Partner
+            if (isAdmin || isPartner) {
+                dashboardLinks += `<a href="/partners" class="nav-link dashboard-link">Partner</a>`;
+                mobileDashboardLinks += `<a href="/partners">Partner</a>`;
+            }
+
+            // Admin
+            if (isAdmin) {
+                if (user.role === 'admin') {
+                    dashboardLinks += `<a href="/admin" class="nav-link dashboard-link active">Admin</a>`;
+                    mobileDashboardLinks += `<a href="/admin">Admin</a>`;
+                } else {
+                    dashboardLinks += `<a href="/admin" class="nav-link dashboard-link">Admin</a>`;
+                    mobileDashboardLinks += `<a href="/admin">Admin</a>`;
+                }
+            }
+
+            // Add scanner for venue
+            if (isVenue || isAdmin) {
+                dashboardLinks += `<a href="#" class="nav-link" onclick="showView('scanner')" style="margin-left:0.5rem;">Scanner</a>`;
+            }
+
+            // Logout button
+            dashboardLinks += `<button class="btn btn-danger" onclick="logout()" style="margin-left:1rem;">SIGN OUT</button>`;
+            mobileDashboardLinks += `<a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>`;
+
+            navLinks.innerHTML = dashboardLinks;
+            mobileMenu.innerHTML = mobileDashboardLinks;
             navLinks.style.display = 'flex';
         }
 
@@ -10773,38 +10813,94 @@
         }
 
         let selectedUserType = null;
+        let selectedRoles = ['member']; // Member is always included
 
-        function selectUserType(type) {
-            selectedUserType = type;
+        // Toggle role selection (multi-select)
+        function toggleRoleSelect(label) {
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            const type = label.dataset.type;
 
-            // Highlight selected button
-            document.querySelectorAll('.user-type-btn').forEach(btn => {
-                btn.style.border = '1px solid var(--border-dark)';
-                btn.style.background = 'rgba(255,255,255,0.05)';
-            });
-            event.target.closest('.user-type-btn').style.border = '2px solid var(--lightning-yellow)';
-            event.target.closest('.user-type-btn').style.background = 'rgba(255,221,0,0.1)';
+            if (type === 'member') return; // Member always selected
 
-            if (type === 'member') {
-                // Show member signup/login options
-                document.getElementById('userTypeSelect').style.display = 'none';
-                document.getElementById('memberSignup').style.display = 'block';
+            checkbox.checked = !checkbox.checked;
+
+            if (checkbox.checked) {
+                label.style.border = '2px solid var(--lightning-yellow)';
+                label.style.background = 'rgba(255,221,0,0.1)';
+                if (!selectedRoles.includes(type)) selectedRoles.push(type);
             } else {
-                // Show login form for DJ/Venue/Admin
-                document.getElementById('userTypeSelect').style.display = 'none';
-                document.getElementById('loginFormContainer').style.display = 'block';
-                document.getElementById('selectedTypeLabel').textContent = type.toUpperCase() + ' LOGIN';
-                // Hide Create Account for admin (admins can't self-register)
-                document.getElementById('createAccountLink').style.display = type === 'admin' ? 'none' : 'block';
+                label.style.border = '1px solid var(--border-dark)';
+                label.style.background = 'rgba(255,255,255,0.05)';
+                selectedRoles = selectedRoles.filter(r => r !== type);
             }
         }
 
+        // Proceed to signup form with selected roles
+        function proceedToSignup() {
+            document.getElementById('userTypeSelect').style.display = 'none';
+            document.getElementById('createAccountForm').style.display = 'block';
+
+            // Show selected roles
+            const rolesText = selectedRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' + ');
+            document.getElementById('createTypeLabel').textContent = rolesText;
+
+            // Show venue notice if selected
+            if (selectedRoles.includes('venue')) {
+                const notice = document.createElement('p');
+                notice.id = 'venueNotice';
+                notice.style.cssText = 'background: rgba(255,221,0,0.1); border: 1px solid var(--lightning-yellow); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--lightning-yellow);';
+                notice.innerHTML = '⏳ Venue access requires approval. You\'ll be notified once approved.';
+                const form = document.querySelector('#createAccountForm form');
+                if (!document.getElementById('venueNotice')) {
+                    form.insertBefore(notice, form.firstChild);
+                }
+            }
+        }
+
+        // Show quick login section
+        function showQuickLogin() {
+            document.getElementById('userTypeSelect').style.display = 'none';
+            document.getElementById('quickLoginSection').style.display = 'block';
+        }
+
+        // Select login type (single select for login)
+        function selectLoginType(type) {
+            selectedUserType = type;
+
+            // Highlight selected
+            document.querySelectorAll('.login-type-btn').forEach(btn => {
+                btn.style.border = '1px solid var(--border-dark)';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+            });
+            event.target.closest('.login-type-btn').style.border = '2px solid var(--lightning-yellow)';
+            event.target.closest('.login-type-btn').style.background = 'rgba(255,221,0,0.1)';
+
+            // Show login form
+            document.getElementById('quickLoginSection').style.display = 'none';
+            document.getElementById('loginFormContainer').style.display = 'block';
+            document.getElementById('selectedTypeLabel').textContent = type.toUpperCase() + ' LOGIN';
+            document.getElementById('createAccountLink').style.display = type === 'admin' ? 'none' : 'block';
+        }
+
         function showUserTypes() {
-            document.getElementById('userTypeSelect').style.display = 'grid';
+            document.getElementById('userTypeSelect').style.display = 'block';
+            document.getElementById('quickLoginSection').style.display = 'none';
             document.getElementById('loginFormContainer').style.display = 'none';
             document.getElementById('memberSignup').style.display = 'none';
             document.getElementById('createAccountForm').style.display = 'none';
             selectedUserType = null;
+            selectedRoles = ['member'];
+
+            // Reset role checkboxes
+            document.querySelectorAll('#userTypeSelect .user-type-btn').forEach(btn => {
+                const type = btn.dataset.type;
+                if (type !== 'member') {
+                    btn.style.border = '1px solid var(--border-dark)';
+                    btn.style.background = 'rgba(255,255,255,0.05)';
+                    const checkbox = btn.querySelector('input[type="checkbox"]');
+                    if (checkbox) checkbox.checked = false;
+                }
+            });
             return false;
         }
 
@@ -10851,13 +10947,8 @@
                     switch(selectedUserType) {
                         case 'dj': window.location.href = '/dj'; break;
                         case 'venue': window.location.href = '/partners'; break;
-                        case 'admin':
-                            // Set user state and show admin panel
-                            state.user = { email: data.user.email, role: 'admin' };
-                            showView('admin');
-                            loadAdminStats();
-                            break;
-                        case 'member': window.location.href = '/'; break;
+                        case 'admin': window.location.href = '/admin'; break;
+                        case 'member': window.location.href = '/members'; break;
                     }
                 } else {
                     alert(data.error || 'Login failed');
@@ -10896,11 +10987,23 @@
             btn.textContent = 'Creating...';
             btn.disabled = true;
 
+            // Determine primary role and all roles
+            const primaryRole = selectedRoles.includes('venue') ? 'venue' :
+                               selectedRoles.includes('dj') ? 'dj' : 'member';
+
             try {
                 const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ firstName, lastName, email, phone, userType: selectedUserType })
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        email,
+                        phone,
+                        userType: primaryRole,
+                        roles: selectedRoles, // Send all selected roles
+                        venueStatus: selectedRoles.includes('venue') ? 'pending' : null
+                    })
                 });
 
                 const data = await response.json();
@@ -10908,12 +11011,31 @@
                 if (data.token || data.success) {
                     if (data.token) {
                         localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('userType', selectedUserType);
+                        localStorage.setItem('userType', primaryRole);
                         localStorage.setItem('userEmail', email);
+
+                        // Store role-specific tokens
+                        selectedRoles.forEach(role => {
+                            if (role !== 'member') {
+                                localStorage.setItem(role + 'Token', data.token);
+                            }
+                        });
+                    }
+
+                    // Show success with pending notice if venue
+                    const successEl = document.querySelector('.pass-modal-success');
+                    if (selectedRoles.includes('venue')) {
+                        successEl.innerHTML = `
+                            <div style="font-size: 60px; margin-bottom: 1rem;">⏳</div>
+                            <h3 style="margin-bottom: 0.5rem;">Account Created!</h3>
+                            <p style="color: var(--lightning-yellow); margin-bottom: 1rem;">Venue access is pending approval</p>
+                            <p style="color: var(--gray); font-size: 0.9rem;">You'll be notified once your venue is approved. In the meantime, you can access your Member dashboard.</p>
+                            <button onclick="window.location.href='/members'" class="btn btn-primary" style="margin-top: 1.5rem;">Go to Dashboard</button>
+                        `;
                     }
 
                     document.querySelector('.pass-modal-form-container').style.display = 'none';
-                    document.querySelector('.pass-modal-success').classList.add('active');
+                    successEl.classList.add('active');
                 } else {
                     alert(data.error || 'Registration failed');
                     btn.textContent = 'CREATE ACCOUNT';
@@ -10944,28 +11066,62 @@
                 <h2 style="margin-bottom: 0.5rem;">Login Center</h2>
                 <p style="color: var(--gray); margin-bottom: 1.5rem;">Select your account type</p>
 
-                <!-- User Type Selection -->
-                <div id="userTypeSelect" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
-                    <button onclick="selectUserType('member')" class="user-type-btn" data-type="member" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s;">
-                        <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-                        <div style="font-weight: 600;">Member</div>
-                        <div style="font-size: 0.75rem; color: var(--gray);">View passes</div>
-                    </button>
-                    <button onclick="selectUserType('dj')" class="user-type-btn" data-type="dj" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s;">
-                        <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></div>
-                        <div style="font-weight: 600;">DJ</div>
-                        <div style="font-size: 0.75rem; color: var(--gray);">Request queue</div>
-                    </button>
-                    <button onclick="selectUserType('venue')" class="user-type-btn" data-type="venue" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s;">
-                        <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg></div>
-                        <div style="font-weight: 600;">Venue</div>
-                        <div style="font-size: 0.75rem; color: var(--gray);">Dashboard</div>
-                    </button>
-                    <button onclick="selectUserType('admin')" class="user-type-btn" data-type="admin" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s;">
-                        <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-                        <div style="font-weight: 600;">Admin</div>
-                        <div style="font-size: 0.75rem; color: var(--gray);">Management</div>
-                    </button>
+                <!-- User Type Selection (Multi-select for signup, single for login) -->
+                <div id="userTypeSelect" style="margin-bottom: 1.5rem;">
+                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem; text-align: center;">Select account type(s) - you can have multiple roles</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <label class="user-type-btn" data-type="member" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 2px solid var(--lightning-yellow); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
+                            <input type="checkbox" name="userTypes" value="member" checked disabled style="display: none;">
+                            <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                            <div style="font-weight: 600;">Member</div>
+                            <div style="font-size: 0.7rem; color: var(--neon-green);">Always included</div>
+                        </label>
+                        <label class="user-type-btn" data-type="dj" onclick="toggleRoleSelect(this)" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
+                            <input type="checkbox" name="userTypes" value="dj" style="display: none;">
+                            <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></div>
+                            <div style="font-weight: 600;">DJ</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Song requests</div>
+                        </label>
+                        <label class="user-type-btn" data-type="venue" onclick="toggleRoleSelect(this)" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
+                            <input type="checkbox" name="userTypes" value="venue" style="display: none;">
+                            <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg></div>
+                            <div style="font-weight: 600;">Venue</div>
+                            <div style="font-size: 0.7rem; color: var(--lightning-yellow);">Requires approval</div>
+                        </label>
+                        <label class="user-type-btn" data-type="partner" onclick="toggleRoleSelect(this)" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
+                            <input type="checkbox" name="userTypes" value="partner" style="display: none;">
+                            <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                            <div style="font-weight: 600;">Partner</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Referral program</div>
+                        </label>
+                    </div>
+                    <div style="text-align: center; margin-top: 1.5rem;">
+                        <button onclick="proceedToSignup()" class="btn btn-primary" style="width: 100%;">CONTINUE</button>
+                    </div>
+                    <p style="text-align: center; margin-top: 1rem; color: var(--gray); font-size: 0.85rem;">
+                        Already have an account? <a href="#" onclick="showQuickLogin()" style="color: var(--lightning-yellow);">Login</a>
+                    </p>
+                </div>
+
+                <!-- Quick Login (Admin can login here) -->
+                <div id="quickLoginSection" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
+                        <button onclick="selectLoginType('member')" class="user-type-btn login-type-btn" data-type="member" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
+                            <div style="font-weight: 600;">Member</div>
+                        </button>
+                        <button onclick="selectLoginType('dj')" class="user-type-btn login-type-btn" data-type="dj" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
+                            <div style="font-weight: 600;">DJ</div>
+                        </button>
+                        <button onclick="selectLoginType('venue')" class="user-type-btn login-type-btn" data-type="venue" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
+                            <div style="font-weight: 600;">Venue</div>
+                        </button>
+                        <button onclick="selectLoginType('admin')" class="user-type-btn login-type-btn" data-type="admin" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
+                            <div style="font-weight: 600;">Admin</div>
+                        </button>
+                    </div>
+                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem;">
+                        <a href="#" onclick="showUserTypes()" style="color: var(--lightning-yellow);">← Back to signup</a>
+                    </p>
                 </div>
 
                 <!-- Login Form (hidden until type selected) -->
