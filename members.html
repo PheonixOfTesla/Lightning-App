@@ -676,10 +676,11 @@
                 <span>Lightning Pass</span>
             </a>
             <div class="nav-links" id="navLinks">
-                <a href="/" class="nav-link">Events</a>
+                <a href="#" onclick="switchTab('passes'); return false;" class="nav-link nav-tab active" data-nav-tab="passes">My Passes</a>
+                <a href="#" onclick="switchTab('events'); return false;" class="nav-link nav-tab" data-nav-tab="events">Browse Events</a>
+                <a href="#" onclick="switchTab('perks'); return false;" class="nav-link nav-tab" data-nav-tab="perks">Lightning Perks</a>
+                <a href="#" onclick="switchTab('subscription'); return false;" class="nav-link nav-tab" data-nav-tab="subscription">Membership</a>
                 <div class="nav-divider"></div>
-                <!-- Role-based nav links injected by JS -->
-                <a href="/members" class="nav-link dashboard-link active">Member</a>
                 <a href="#" onclick="logout(); return false;" class="nav-link btn-login">LOGOUT</a>
             </div>
             <div class="hamburger" onclick="toggleMobileMenu()">
@@ -692,8 +693,10 @@
 
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
-        <a href="/">Events</a>
-        <div id="mobileRoleLinks"></div>
+        <a href="#" onclick="switchTab('passes'); toggleMobileMenu();">My Passes</a>
+        <a href="#" onclick="switchTab('events'); toggleMobileMenu();">Browse Events</a>
+        <a href="#" onclick="switchTab('perks'); toggleMobileMenu();">Lightning Perks</a>
+        <a href="#" onclick="switchTab('subscription'); toggleMobileMenu();">Membership</a>
         <a href="#" onclick="logout()">Logout</a>
     </div>
 
@@ -842,14 +845,40 @@
                 </div>
 
                 <!-- Black Flag Partnership -->
-                <div style="background: var(--card-black); border-radius: 1rem; padding: 2rem; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
-                    <h3 style="margin-bottom: 1rem;">Black Flag Watersports</h3>
-                    <p style="color: var(--gray); margin-bottom: 1.5rem;">
-                        Lightning Members get exclusive discounts on jet ski rentals and watersport experiences!
-                    </p>
-                    <a href="https://blackflagwatersports.com" target="_blank" class="btn btn-secondary">
-                        View Deals
-                    </a>
+                <div style="background: var(--card-black); border-radius: 1rem; padding: 2rem; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin-bottom: 0.5rem;">Black Flag Watersports</h3>
+                        <p style="color: var(--gray);">Lightning Members get exclusive discounts on jet ski rentals!</p>
+                    </div>
+                    <div class="deals-grid" style="margin-top: 1rem;">
+                        <div class="deal-card">
+                            <div class="deal-image" style="background: linear-gradient(135deg, #00d4ff, #0066cc);">🚤</div>
+                            <div class="deal-content">
+                                <span class="deal-badge">20% OFF</span>
+                                <h4 class="deal-title">Jet Ski Rental</h4>
+                                <p class="deal-description">1-hour jet ski rental at Siesta Key. Use code: LIGHTNING20</p>
+                                <button class="deal-cta" onclick="copyCode('LIGHTNING20')">Copy Code</button>
+                            </div>
+                        </div>
+                        <div class="deal-card">
+                            <div class="deal-image" style="background: linear-gradient(135deg, #00d4ff, #9d4edd);">🏄</div>
+                            <div class="deal-content">
+                                <span class="deal-badge">15% OFF</span>
+                                <h4 class="deal-title">Paddleboard Tour</h4>
+                                <p class="deal-description">Guided paddleboard tour. Use code: LPPADDLE15</p>
+                                <button class="deal-cta" onclick="copyCode('LPPADDLE15')">Copy Code</button>
+                            </div>
+                        </div>
+                        <div class="deal-card">
+                            <div class="deal-image" style="background: linear-gradient(135deg, #ffdd00, #ff8c00);">🎉</div>
+                            <div class="deal-content">
+                                <span class="deal-badge">$50 OFF</span>
+                                <h4 class="deal-title">Party Boat Package</h4>
+                                <p class="deal-description">Group boat rental (6+ people). Use code: LPPARTY50</p>
+                                <button class="deal-cta" onclick="copyCode('LPPARTY50')">Copy Code</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -862,50 +891,6 @@
     <script>
         const API_BASE = 'https://lightning-backend-production.up.railway.app';
         let memberData = null;
-
-        // Build role-based navigation
-        function buildRoleNav() {
-            const userType = localStorage.getItem('userType');
-            const authToken = localStorage.getItem('authToken');
-            const adminToken = localStorage.getItem('adminToken');
-            const partnerToken = localStorage.getItem('partnerToken');
-            const djToken = localStorage.getItem('djToken');
-            const venueToken = localStorage.getItem('venueToken');
-
-            const isAdmin = userType === 'admin' || adminToken;
-            const currentPage = 'member';
-
-            // Define all possible dashboards
-            const dashboards = [
-                { id: 'member', label: 'Member', href: '/members', show: true },
-                { id: 'dj', label: 'DJ', href: '/dj', show: isAdmin || userType === 'dj' || djToken },
-                { id: 'venue', label: 'Venue', href: '/venue', show: isAdmin || userType === 'venue' || venueToken },
-                { id: 'partner', label: 'Partner', href: '/partners', show: isAdmin || partnerToken },
-                { id: 'admin', label: 'Admin', href: '/admin', show: isAdmin }
-            ];
-
-            // Build desktop nav
-            const navLinks = document.getElementById('navLinks');
-            const divider = navLinks.querySelector('.nav-divider');
-
-            // Remove existing dashboard links (except Events and Logout)
-            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
-
-            // Add dashboard links after divider
-            dashboards.filter(d => d.show).forEach(dash => {
-                const link = document.createElement('a');
-                link.href = dash.href;
-                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
-                link.textContent = dash.label;
-                divider.insertAdjacentElement('afterend', link);
-            });
-
-            // Build mobile nav
-            const mobileRoleLinks = document.getElementById('mobileRoleLinks');
-            mobileRoleLinks.innerHTML = dashboards.filter(d => d.show).map(dash =>
-                `<a href="${dash.href}" ${dash.id === currentPage ? 'class="active"' : ''}>${dash.label}</a>`
-            ).join('');
-        }
 
         // Check authentication on load
         async function checkAuth() {
@@ -1070,9 +1055,15 @@
         }
 
         function switchTab(tabName) {
-            // Update tab buttons
+            // Update tab buttons (below header)
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            const tabBtn = document.querySelector(`.tab[data-tab="${tabName}"]`);
+            if (tabBtn) tabBtn.classList.add('active');
+
+            // Update header nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            const navTab = document.querySelector(`.nav-tab[data-nav-tab="${tabName}"]`);
+            if (navTab) navTab.classList.add('active');
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -1082,6 +1073,14 @@
             if (tabName === 'events' && !eventsLoaded) {
                 loadEvents();
             }
+        }
+
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code copied: ' + code);
+            }).catch(() => {
+                prompt('Copy this code:', code);
+            });
         }
 
         // Attach click handlers to tabs
@@ -1267,7 +1266,6 @@
         }
 
         // Initialize
-        buildRoleNav();
         checkAuth();
 
         // Check URL for subscription success/cancel
