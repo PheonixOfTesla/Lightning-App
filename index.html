@@ -8207,14 +8207,14 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f0f0f0;">
                         <div>
                             <div style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">${price}</div>
-                            ${isSoldOut ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600;">SOLD OUT</div>` : ''}
+                            ${isSoldOut && price !== 'FREE' ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600;">SOLD OUT</div>` : ''}
                         </div>
-                        ${isSoldOut ? `<button disabled style="background: #f5f5f5; border: 2px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
+                        ${price === 'FREE' ? `<button style="background: transparent; border: 2px solid #059669; color: #059669; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: default;">
+                            NO COVER
+                        </button>` : isSoldOut ? `<button disabled style="background: #f5f5f5; border: 2px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
                             SOLD OUT
-                        </button>` : price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
+                        </button>` : `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
                             Get Tickets
-                        </button>` : `<button onclick="openNotifyModal('${event.name.replace(/'/g, "\\'")}')" style="background: transparent; border: 2px solid #1a1a1a; color: #1a1a1a; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
-                            Notify Me
                         </button>`}
                     </div>
                 </div>
