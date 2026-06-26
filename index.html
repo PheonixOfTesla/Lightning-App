@@ -8178,9 +8178,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
                             <div>
                                 <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
-                                ${availableTickets !== null ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
+                                ${availableTickets === 0 ? `<div style="font-size: 0.75rem; color: #ff4466; margin-top: 0.25rem; font-weight: 600;">SOLD OUT - 100/100</div>` : availableTickets !== null ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
                             </div>
-                            ${price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
+                            ${availableTickets === 0 ? `<button disabled style="background: rgba(255,255,255,0.1); border: 2px solid #ff4466; color: #ff4466; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: not-allowed; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">
+                                SOLD OUT
+                            </button>` : price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Get Tickets
                             </button>` : `<button onclick="openNotifyModal('${event.name.replace(/'/g, "\\'")}')" style="background: transparent; border: 2px solid var(--lightning-yellow); color: var(--lightning-yellow); font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Notify Me
@@ -8201,8 +8203,13 @@
                     ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #666; font-size: 0.8rem; display: block; margin-bottom: 0.4rem; text-decoration: underline;">${event.location}</a>` : ''}
                     <p style="color: #888; font-size: 0.8rem; margin: 0; line-height: 1.5;">${event.description || ''}</p>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f0f0f0;">
-                        <div style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">${price}</div>
-                        ${price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
+                        <div>
+                            <div style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">${price}</div>
+                            ${availableTickets === 0 ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600;">SOLD OUT</div>` : ''}
+                        </div>
+                        ${availableTickets === 0 ? `<button disabled style="background: #f5f5f5; border: 2px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
+                            SOLD OUT
+                        </button>` : price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: #1a1a1a; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
                             Get Tickets
                         </button>` : `<button onclick="openNotifyModal('${event.name.replace(/'/g, "\\'")}')" style="background: transparent; border: 2px solid #1a1a1a; color: #1a1a1a; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
                             Notify Me
