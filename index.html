@@ -11094,36 +11094,36 @@
                 <div class="pass-modal-icon">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </div>
-                <h2 style="margin-bottom: 0.5rem;">Login Center</h2>
-                <p style="color: var(--gray); margin-bottom: 1.5rem;">Select your account type</p>
+                <h2 style="margin-bottom: 0.5rem;">Join Lightning Pass</h2>
+                <p style="color: var(--gray); margin-bottom: 1.5rem;">Unlock early access to events, member pricing, and more</p>
 
                 <!-- User Type Selection (Multi-select for signup, single for login) -->
                 <div id="userTypeSelect" style="margin-bottom: 1.5rem;">
-                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem; text-align: center;">Select account type(s) - you can have multiple roles</p>
+                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem; text-align: center;">What brings you here?</p>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                        <label class="user-type-btn" data-type="member" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 2px solid var(--lightning-yellow); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
+                        <label class="user-type-btn" data-type="member" style="padding: 1rem; background: rgba(255,221,0,0.1); border: 2px solid var(--lightning-yellow); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
                             <input type="checkbox" name="userTypes" value="member" checked disabled style="display: none;">
                             <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                             <div style="font-weight: 600;">Member</div>
-                            <div style="font-size: 0.7rem; color: var(--neon-green);">Always included</div>
+                            <div style="font-size: 0.7rem; color: var(--neon-green);">Events + Discounts</div>
                         </label>
                         <label class="user-type-btn" data-type="dj" onclick="toggleRoleSelect(this)" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
                             <input type="checkbox" name="userTypes" value="dj" style="display: none;">
                             <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></div>
                             <div style="font-weight: 600;">DJ</div>
-                            <div style="font-size: 0.75rem; color: var(--gray);">Song requests</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">I play music</div>
                         </label>
                         <label class="user-type-btn" data-type="venue" onclick="toggleRoleSelect(this)" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
                             <input type="checkbox" name="userTypes" value="venue" style="display: none;">
                             <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg></div>
                             <div style="font-weight: 600;">Venue</div>
-                            <div style="font-size: 0.7rem; color: var(--lightning-yellow);">Requires approval</div>
+                            <div style="font-size: 0.7rem; color: var(--gray);">I host events</div>
                         </label>
                         <label class="user-type-btn" data-type="partner" onclick="toggleRoleSelect(this)" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
                             <input type="checkbox" name="userTypes" value="partner" style="display: none;">
                             <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
                             <div style="font-weight: 600;">Partner</div>
-                            <div style="font-size: 0.75rem; color: var(--gray);">Referral program</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">I bring people</div>
                         </label>
                     </div>
                     <div style="text-align: center; margin-top: 1.5rem;">
