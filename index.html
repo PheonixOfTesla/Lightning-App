@@ -531,24 +531,31 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.85);
             z-index: 10000;
-            justify-content: center;
-            align-items: center;
+            overflow-y: auto;
+            overscroll-behavior: contain;
             backdrop-filter: blur(5px);
         }
         .pass-modal-overlay.active {
+            display: block;
+        }
+        .pass-modal-wrapper {
+            min-height: 100%;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
         .pass-modal {
             background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%);
             border: 2px solid var(--lightning-yellow);
             border-radius: 20px;
-            padding: 3rem;
+            padding: 2rem;
             max-width: 450px;
-            width: 90%;
+            width: 100%;
             text-align: center;
             position: relative;
             box-shadow: 0 0 50px rgba(255, 221, 0, 0.3);
@@ -627,6 +634,27 @@
         }
         .pass-modal-success h2 {
             color: var(--neon-green);
+        }
+
+        /* Mobile: smaller padding and elements */
+        @media (max-width: 480px) {
+            .pass-modal {
+                padding: 1.5rem;
+            }
+            .pass-modal h2 {
+                font-size: 1.4rem;
+            }
+            .pass-modal-icon svg {
+                width: 36px;
+                height: 36px;
+            }
+            .user-type-btn {
+                padding: 0.75rem !important;
+            }
+            .user-type-btn svg {
+                width: 24px !important;
+                height: 24px !important;
+            }
         }
 
         .btn-success {
@@ -11087,7 +11115,8 @@
     </script>
 
     <!-- Pass Signup Modal -->
-    <div class="pass-modal-overlay" id="passModal" onclick="if(event.target === this) closePassModal()">
+    <div class="pass-modal-overlay" id="passModal">
+        <div class="pass-modal-wrapper" onclick="if(event.target === this) closePassModal()">
         <div class="pass-modal">
             <span class="pass-modal-close" onclick="closePassModal()">&times;</span>
             <div class="pass-modal-form-container">
@@ -11217,6 +11246,7 @@
                 <p>Your Lightning Pass is active. Check your email for confirmation.</p>
                 <button onclick="goToDeals()" style="margin-top: 1rem; padding: 1rem 2rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">VIEW DEALS</button>
             </div>
+        </div>
         </div>
     </div>
 </body>
