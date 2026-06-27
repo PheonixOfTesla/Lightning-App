@@ -3116,11 +3116,11 @@
             </div>
         </div>
 
-        <!-- ADMIN CONTROL PANEL -->
+        <!-- OWNER CONTROL PANEL -->
         <div id="adminView" class="container hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                 <h1 style="margin: 0; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                    Admin Control Panel
+                    Owner Control Panel
                 </h1>
                 <button class="btn" onclick="logout()" style="background: transparent; border: 1px solid #ff4466; color: #ff4466;">
                     Log Out
@@ -3188,15 +3188,119 @@
 
             <!-- Admin Navigation Tabs -->
             <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem;">
-                <button class="btn" id="tabVenues" onclick="showAdminTab('venues')" style="background: var(--electric-purple); color: white; border-color: var(--electric-purple);">🏢 Venues</button>
-                <button class="btn" id="tabSpotlight" onclick="showAdminTab('spotlight')" style="background: transparent; border-color: var(--lightning-yellow); color: var(--lightning-yellow);">⚡ Spotlight</button>
-                <button class="btn" id="tabDJs" onclick="showAdminTab('djs')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎧 DJs</button>
-                <button class="btn" id="tabUsers" onclick="showAdminTab('users')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">👥 Users</button>
-                <button class="btn" id="tabTransactions" onclick="showAdminTab('transactions')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">💳 Transactions</button>
-                <button class="btn" id="tabTicketSales" onclick="showAdminTab('ticketSales')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">🎟️ Ticket Sales</button>
-                <button class="btn" id="tabSettings" onclick="showAdminTab('settings')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">⚙️ Settings</button>
-                <button class="btn" id="tabObjectives" onclick="showAdminTab('objectives')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">✓ Objectives</button>
+                <button class="btn" id="tabMonitoring" onclick="showAdminTab('monitoring')" style="background: transparent; border-color: var(--neon-green); color: var(--neon-green);">System</button>
+                <button class="btn" id="tabVenues" onclick="showAdminTab('venues')" style="background: var(--electric-purple); color: white; border-color: var(--electric-purple);">Venues</button>
+                <button class="btn" id="tabSpotlight" onclick="showAdminTab('spotlight')" style="background: transparent; border-color: var(--lightning-yellow); color: var(--lightning-yellow);">Spotlight</button>
+                <button class="btn" id="tabDJs" onclick="showAdminTab('djs')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">DJs</button>
+                <button class="btn" id="tabUsers" onclick="showAdminTab('users')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">Users</button>
+                <button class="btn" id="tabTransactions" onclick="showAdminTab('transactions')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">Transactions</button>
+                <button class="btn" id="tabTicketSales" onclick="showAdminTab('ticketSales')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">Ticket Sales</button>
+                <button class="btn" id="tabSettings" onclick="showAdminTab('settings')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">Settings</button>
+                <button class="btn" id="tabObjectives" onclick="showAdminTab('objectives')" style="background: transparent; border-color: var(--border-dark); color: rgba(255,255,255,0.6);">Objectives</button>
                 <button class="btn btn-primary" onclick="loadAdminStats()" style="margin-left: auto;">REFRESH</button>
+            </div>
+
+            <!-- System Monitoring Tab -->
+            <div id="adminTabMonitoring" style="display: none;">
+                <div class="section" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 class="section-title" style="margin: 0;">System Monitoring</h2>
+                        <button class="btn btn-success" onclick="refreshSystemMonitoring()">Refresh All</button>
+                    </div>
+
+                    <!-- System Health -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="stat-card" style="border-left: 3px solid var(--neon-green);">
+                            <div class="stat-label">Backend Status</div>
+                            <div class="stat-value" id="monitorBackendStatus" style="color: var(--neon-green); font-size: 1rem;">Checking...</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 3px solid var(--electric-blue);">
+                            <div class="stat-label">WebSocket</div>
+                            <div class="stat-value" id="monitorWebSocket" style="color: var(--electric-blue); font-size: 1rem;">Checking...</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 3px solid var(--electric-purple);">
+                            <div class="stat-label">Database</div>
+                            <div class="stat-value" id="monitorDatabase" style="color: var(--electric-purple); font-size: 1rem;">Checking...</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 3px solid var(--lightning-yellow);">
+                            <div class="stat-label">Last Check</div>
+                            <div class="stat-value" id="monitorLastCheck" style="color: var(--lightning-yellow); font-size: 0.9rem;">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Email Monitoring (Resend) -->
+                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; color: var(--white);">Email Status (Resend)</h3>
+                            <a href="https://resend.com/emails" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem;">Open Resend</a>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: rgba(57, 255, 20, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--neon-green);" id="emailsSentToday">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Sent Today</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(255, 0, 68, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-red);" id="emailsFailed">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Failed</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--lightning-yellow);" id="emailsBounced">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Bounced</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(0, 212, 255, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--electric-blue);" id="emailsDomain">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Domain Health</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem; font-size: 0.85rem; color: var(--gray);">
+                            Domain: <strong style="color: var(--white);">admin.thelightningpass.com</strong>
+                        </div>
+                    </div>
+
+                    <!-- Stripe Payment Monitoring -->
+                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; color: var(--white);">Payments (Stripe)</h3>
+                            <a href="https://dashboard.stripe.com" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem;">Open Stripe</a>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: rgba(57, 255, 20, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--neon-green);" id="paymentsCompleted">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Completed</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--lightning-yellow);" id="paymentsIncomplete">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Incomplete</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(255, 0, 68, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-red);" id="paymentsRefunded">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Refunded</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(157, 78, 221, 0.1); border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--electric-purple);" id="paymentsDisputed">--</div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">Disputed</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div style="padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                                <div style="font-size: 0.75rem; color: var(--gray);">Today's Volume</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: var(--neon-green);" id="stripeTodayVolume">$0</div>
+                            </div>
+                            <div style="padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                                <div style="font-size: 0.75rem; color: var(--gray);">Platform Fees (15%)</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);" id="stripePlatformFees">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Log -->
+                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem;">
+                        <h3 style="margin: 0 0 1rem 0; color: var(--white);">Recent Activity</h3>
+                        <div id="monitorActivityLog" style="max-height: 300px; overflow-y: auto;">
+                            <div style="color: var(--gray); text-align: center; padding: 2rem;">Loading activity...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Venues Tab -->
@@ -7207,6 +7311,7 @@
 
         function showAdminTab(tab) {
             // Hide all tabs
+            document.getElementById('adminTabMonitoring').style.display = 'none';
             document.getElementById('adminTabVenues').style.display = 'none';
             document.getElementById('adminTabSpotlight').style.display = 'none';
             document.getElementById('adminTabDJs').style.display = 'none';
@@ -7217,12 +7322,20 @@
             document.getElementById('adminTabObjectives').style.display = 'none';
 
             // Reset all tab buttons
-            ['tabVenues', 'tabSpotlight', 'tabDJs', 'tabUsers', 'tabTransactions', 'tabTicketSales', 'tabSettings', 'tabObjectives'].forEach(id => {
+            ['tabMonitoring', 'tabVenues', 'tabSpotlight', 'tabDJs', 'tabUsers', 'tabTransactions', 'tabTicketSales', 'tabSettings', 'tabObjectives'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) {
                     btn.style.background = 'transparent';
-                    btn.style.borderColor = id === 'tabSpotlight' ? 'var(--lightning-yellow)' : 'var(--border-dark)';
-                    btn.style.color = id === 'tabSpotlight' ? 'var(--lightning-yellow)' : 'rgba(255,255,255,0.6)';
+                    if (id === 'tabSpotlight') {
+                        btn.style.borderColor = 'var(--lightning-yellow)';
+                        btn.style.color = 'var(--lightning-yellow)';
+                    } else if (id === 'tabMonitoring') {
+                        btn.style.borderColor = 'var(--neon-green)';
+                        btn.style.color = 'var(--neon-green)';
+                    } else {
+                        btn.style.borderColor = 'var(--border-dark)';
+                        btn.style.color = 'rgba(255,255,255,0.6)';
+                    }
                 }
             });
 
@@ -7238,7 +7351,10 @@
                 activeBtn.style.color = 'white';
             }
 
-            if (tab === 'venues') {
+            if (tab === 'monitoring') {
+                document.getElementById('adminTabMonitoring').style.display = 'block';
+                refreshSystemMonitoring();
+            } else if (tab === 'venues') {
                 document.getElementById('adminTabVenues').style.display = 'block';
             } else if (tab === 'spotlight') {
                 document.getElementById('adminTabSpotlight').style.display = 'block';
@@ -8804,6 +8920,68 @@
             } finally {
                 btn.disabled = false;
                 updateEventTicketTotal();
+            }
+        }
+
+        // System Monitoring Functions
+        async function refreshSystemMonitoring() {
+            const now = new Date().toLocaleTimeString();
+            document.getElementById('monitorLastCheck').textContent = now;
+
+            // Check backend health
+            try {
+                const healthRes = await fetch(`${API_BASE}/health`);
+                const health = await healthRes.json();
+                document.getElementById('monitorBackendStatus').textContent = health.status === 'healthy' ? 'Online' : 'Degraded';
+                document.getElementById('monitorBackendStatus').style.color = health.status === 'healthy' ? 'var(--neon-green)' : 'var(--danger-red)';
+                document.getElementById('monitorDatabase').textContent = health.mongodb === 'connected' ? 'Connected' : 'Disconnected';
+                document.getElementById('monitorDatabase').style.color = health.mongodb === 'connected' ? 'var(--electric-purple)' : 'var(--danger-red)';
+            } catch (err) {
+                document.getElementById('monitorBackendStatus').textContent = 'Offline';
+                document.getElementById('monitorBackendStatus').style.color = 'var(--danger-red)';
+            }
+
+            // Check WebSocket
+            document.getElementById('monitorWebSocket').textContent = typeof io !== 'undefined' ? 'Available' : 'Not Loaded';
+
+            // Load monitoring data from backend
+            try {
+                const monitorData = await apiCall('/api/v1/lightning/admin/monitoring');
+
+                // Email stats
+                document.getElementById('emailsSentToday').textContent = monitorData.emails?.sentToday || 0;
+                document.getElementById('emailsFailed').textContent = monitorData.emails?.failed || 0;
+                document.getElementById('emailsBounced').textContent = monitorData.emails?.bounced || 0;
+                document.getElementById('emailsDomain').textContent = monitorData.emails?.domainHealth || 'OK';
+
+                // Payment stats
+                document.getElementById('paymentsCompleted').textContent = monitorData.payments?.completed || 0;
+                document.getElementById('paymentsIncomplete').textContent = monitorData.payments?.incomplete || 0;
+                document.getElementById('paymentsRefunded').textContent = monitorData.payments?.refunded || 0;
+                document.getElementById('paymentsDisputed').textContent = monitorData.payments?.disputed || 0;
+                document.getElementById('stripeTodayVolume').textContent = `$${monitorData.payments?.todayVolume || 0}`;
+                document.getElementById('stripePlatformFees').textContent = `$${monitorData.payments?.platformFees || 0}`;
+
+                // Activity log
+                const activityLog = document.getElementById('monitorActivityLog');
+                if (monitorData.recentActivity && monitorData.recentActivity.length > 0) {
+                    activityLog.innerHTML = monitorData.recentActivity.map(activity => `
+                        <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: var(--white);">${activity.type}</span>
+                                <span style="color: var(--gray); margin-left: 0.5rem;">${activity.details}</span>
+                            </div>
+                            <span style="color: var(--gray); font-size: 0.8rem;">${new Date(activity.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    activityLog.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 2rem;">No recent activity</div>';
+                }
+            } catch (err) {
+                console.error('Error loading monitoring data:', err);
+                // Set defaults if endpoint not available
+                document.getElementById('emailsSentToday').textContent = '--';
+                document.getElementById('paymentsCompleted').textContent = '--';
             }
         }
 
