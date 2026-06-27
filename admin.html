@@ -741,12 +741,37 @@
                 </div>
             </div>
 
+            <!-- Revenue Breakdown Card (Clickable) -->
+            <div class="stat-card" style="grid-column: span 2; margin-bottom: 1rem; cursor: pointer; transition: border-color 0.2s;" onclick="openRevenueBreakdown()" onmouseover="this.style.borderColor='var(--neon-green)'" onmouseout="this.style.borderColor='var(--border-dark)'">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="stat-card-label" style="font-size: 1rem;">Revenue Breakdown</div>
+                        <span style="font-size: 0.7rem; color: var(--neon-green); background: rgba(57,255,20,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">Click for details</span>
+                    </div>
+                    <div class="stat-card-value green" style="font-size: 1.75rem;" id="netRevenue">$0</div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-dark);">
+                    <div>
+                        <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Gross</div>
+                        <div style="font-size: 1.1rem; font-weight: 600; color: var(--white);" id="grossRevenue">$0</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Stripe Fees</div>
+                        <div style="font-size: 1.1rem; font-weight: 600; color: #ff6b6b;" id="stripeFees">-$0</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Refunds</div>
+                        <div style="font-size: 1.1rem; font-weight: 600; color: #ff6b6b;" id="refundTotal">-$0</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Net Revenue</div>
+                        <div style="font-size: 1.1rem; font-weight: 600; color: var(--neon-green);" id="netRevenueSmall">$0</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats Grid -->
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-card-label">Total Revenue</div>
-                    <div class="stat-card-value green" id="totalRevenue">$0</div>
-                </div>
                 <div class="stat-card">
                     <div class="stat-card-label">Passes Sold</div>
                     <div class="stat-card-value yellow" id="totalPasses">0</div>
@@ -1311,6 +1336,23 @@
         </div>
     </div>
 
+    <!-- Revenue Breakdown Modal -->
+    <div id="revenueModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 85vh; overflow-y: auto;">
+            <button class="modal-close" onclick="closeModal('revenueModal')">&times;</button>
+            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Revenue Breakdown
+            </h3>
+            <div id="revenueModalContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading revenue data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
@@ -1359,41 +1401,42 @@
             });
         }
 
-        // Check for existing session - admin portal requires admin-specific token
+        // Check for existing session - seamless auth from main site
         function checkAuth() {
-            // Check for admin-specific token
+            // Check for admin-specific token first
             let token = localStorage.getItem('adminToken');
             let userType = localStorage.getItem('userType');
 
-            // If we have an admin token, verify it still works
+            // If we have an admin token, use it
             if (token && userType === 'admin') {
                 adminToken = token;
                 const email = localStorage.getItem('userEmail') || 'Admin';
                 document.getElementById('adminEmail').textContent = email;
-
-                // Pre-fill email if we have it from unified login
-                const emailInput = document.getElementById('loginEmail');
-                if (emailInput && email) {
-                    emailInput.value = email;
-                }
-
                 showDashboard();
                 loadDashboardData();
-            } else {
-                // Check if user came from unified login with admin role
-                const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
-                const userEmail = localStorage.getItem('userEmail');
+                return;
+            }
 
-                if (userRoles.includes('admin') && userEmail) {
-                    // Pre-fill email and show message
-                    const emailInput = document.getElementById('loginEmail');
-                    if (emailInput) emailInput.value = userEmail;
+            // Check for main token with admin role (seamless portal navigation)
+            const mainToken = localStorage.getItem('token');
+            const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            const userEmail = localStorage.getItem('userEmail');
 
-                    const loginCard = document.querySelector('.login-card p');
-                    if (loginCard) {
-                        loginCard.innerHTML = 'Enter the <strong>admin passcode</strong> to access the Owner Dashboard';
-                    }
-                }
+            if (mainToken && userRoles.includes('admin')) {
+                // User is logged in with admin role from main site - grant access
+                adminToken = mainToken;
+                localStorage.setItem('adminToken', mainToken);  // Sync for future visits
+                localStorage.setItem('userType', 'admin');
+                document.getElementById('adminEmail').textContent = userEmail || 'Admin';
+                showDashboard();
+                loadDashboardData();
+                return;
+            }
+
+            // Not authenticated - show login with pre-filled email if available
+            if (userEmail) {
+                const emailInput = document.getElementById('loginEmail');
+                if (emailInput) emailInput.value = userEmail;
             }
         }
 
@@ -1454,7 +1497,20 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    document.getElementById('totalRevenue').textContent = '$' + (data.totalRevenue || 0).toLocaleString();
+
+                    // Revenue breakdown
+                    const gross = data.grossRevenue || 0;
+                    const fees = data.stripeFees || 0;
+                    const refunds = data.refundTotal || 0;
+                    const net = data.netRevenue || data.totalRevenue || 0;
+
+                    document.getElementById('netRevenue').textContent = '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    document.getElementById('grossRevenue').textContent = '$' + gross.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    document.getElementById('stripeFees').textContent = '-$' + fees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    document.getElementById('refundTotal').textContent = '-$' + refunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    document.getElementById('netRevenueSmall').textContent = '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+                    // Other stats
                     document.getElementById('totalPasses').textContent = (data.totalPasses || 0).toLocaleString();
                     document.getElementById('totalCustomers').textContent = (data.totalCustomers || 0).toLocaleString();
                     document.getElementById('activeEvents').textContent = data.activeEvents || 0;
@@ -2905,6 +2961,132 @@
             } catch (error) {
                 console.error('Activity log error:', error);
                 container.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 1rem;">Unable to load activity</div>';
+            }
+        }
+
+        // ============================
+        // Revenue Breakdown Modal
+        // ============================
+        async function openRevenueBreakdown() {
+            const modal = document.getElementById('revenueModal');
+            const content = document.getElementById('revenueModalContent');
+            modal.classList.add('active');
+
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading revenue data...</p>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/analytics/revenue/breakdown`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load revenue data');
+                }
+
+                const { totals, byEvent, noEventPasses } = data;
+
+                // Build HTML
+                let html = `
+                    <!-- Totals Summary -->
+                    <div style="background: linear-gradient(135deg, rgba(57,255,20,0.1), rgba(255,221,0,0.05)); border: 1px solid var(--neon-green); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; text-align: center;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; margin-bottom: 0.25rem;">Gross Revenue</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--white);">$${totals.gross.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; margin-bottom: 0.25rem;">Stripe Fees</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #ff6b6b;">-$${totals.fees.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; margin-bottom: 0.25rem;">Refunds</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #ff6b6b;">-$${totals.refunds.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--gray); text-transform: uppercase; margin-bottom: 0.25rem;">Net Revenue</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--neon-green);">$${totals.net.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark); color: var(--gray); font-size: 0.85rem;">
+                            ${totals.passCount} paid passes | ${totals.refundCount} refunds
+                        </div>
+                    </div>
+
+                    <!-- By Event Section -->
+                    <h4 style="margin-bottom: 1rem; color: var(--lightning-yellow);">Revenue by Event</h4>
+                `;
+
+                if (byEvent.length === 0 && !noEventPasses) {
+                    html += `<div style="color: var(--gray); text-align: center; padding: 2rem;">No revenue data available</div>`;
+                } else {
+                    html += `<div style="display: flex; flex-direction: column; gap: 0.75rem;">`;
+
+                    byEvent.forEach(event => {
+                        html += `
+                            <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; cursor: pointer; transition: border-color 0.2s;"
+                                 onclick="toggleEventPasses('${event.eventId}')"
+                                 onmouseover="this.style.borderColor='var(--lightning-yellow)'"
+                                 onmouseout="this.style.borderColor='var(--border-dark)'">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--white); margin-bottom: 0.25rem;">${event.eventName}</div>
+                                        <div style="font-size: 0.8rem; color: var(--gray);">${event.passCount} passes${event.refundCount > 0 ? ` | ${event.refundCount} refunds` : ''}</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--neon-green);">$${event.net.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                                        <div style="font-size: 0.75rem; color: var(--gray);">net</div>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-dark); font-size: 0.8rem;">
+                                    <div><span style="color: var(--gray);">Gross:</span> <span style="color: var(--white);">$${event.gross.toFixed(2)}</span></div>
+                                    <div><span style="color: var(--gray);">Fees:</span> <span style="color: #ff6b6b;">-$${event.fees.toFixed(2)}</span></div>
+                                    <div><span style="color: var(--gray);">Refunds:</span> <span style="color: #ff6b6b;">-$${event.refunds.toFixed(2)}</span></div>
+                                </div>
+                                <!-- Expandable passes list -->
+                                <div id="passes-${event.eventId}" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
+                                    <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.5rem; text-transform: uppercase;">Individual Transactions</div>
+                                    <div style="max-height: 200px; overflow-y: auto;">
+                                        ${event.passes.map(p => `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-dark); font-size: 0.8rem;">
+                                                <div>
+                                                    <div style="color: var(--white);">${p.guestName || p.email}</div>
+                                                    <div style="color: var(--gray); font-size: 0.7rem;">${p.passId} | ${new Date(p.createdAt).toLocaleDateString()}</div>
+                                                </div>
+                                                <div style="text-align: right;">
+                                                    <div style="color: ${p.status === 'refunded' ? '#ff6b6b' : 'var(--neon-green)'}; font-weight: 600;">$${p.amount.toFixed(2)}</div>
+                                                    ${p.status === 'refunded' ? '<div style="font-size: 0.65rem; color: #ff6b6b;">REFUNDED</div>' : ''}
+                                                    ${p.quantity > 1 ? `<div style="font-size: 0.65rem; color: var(--gray);">${p.quantity} tickets</div>` : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div>`;
+                }
+
+                content.innerHTML = html;
+
+            } catch (error) {
+                console.error('Revenue breakdown error:', error);
+                content.innerHTML = `<div style="color: var(--danger-red); text-align: center; padding: 2rem;">Error loading revenue data: ${error.message}</div>`;
+            }
+        }
+
+        function toggleEventPasses(eventId) {
+            const el = document.getElementById(`passes-${eventId}`);
+            if (el) {
+                el.style.display = el.style.display === 'none' ? 'block' : 'none';
             }
         }
 
