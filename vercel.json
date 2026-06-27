@@ -13,6 +13,7 @@
     { "source": "/dashboard", "destination": "/members.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/login", "destination": "/login.html" },
+    { "source": "/dj", "destination": "/dj.html" },
     { "source": "/dj/:djId", "destination": "/dj.html" },
     { "source": "/dj-display/:djId", "destination": "/dj-display.html" },
     { "source": "/dj-banner/:djId", "destination": "/dj-banner.html" },
