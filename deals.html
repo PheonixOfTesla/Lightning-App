@@ -802,9 +802,21 @@
             const mainToken = localStorage.getItem('token');
             const authToken = localStorage.getItem('authToken');
             if (mainToken || authToken) {
-                if (btn) { btn.textContent = 'DASHBOARD'; btn.href = '/members'; }
-                if (mobileBtn) { mobileBtn.textContent = 'Dashboard'; mobileBtn.href = '/members'; }
+                if (btn) { btn.textContent = 'LOGOUT'; btn.href = '#'; btn.onclick = function(e) { e.preventDefault(); logout(); }; }
+                if (mobileBtn) { mobileBtn.textContent = 'Logout'; mobileBtn.href = '#'; mobileBtn.onclick = function(e) { e.preventDefault(); logout(); }; }
+            } else {
+                if (btn) { btn.textContent = 'LOGIN'; btn.href = '#'; btn.onclick = function(e) { e.preventDefault(); showAuthModal(); }; }
+                if (mobileBtn) { mobileBtn.textContent = 'Login'; mobileBtn.href = '#'; mobileBtn.onclick = function(e) { e.preventDefault(); showAuthModal(); }; }
             }
+        }
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('dealToken');
+            localStorage.removeItem('dealUser');
+            window.location.reload();
         }
 
         // Initialize

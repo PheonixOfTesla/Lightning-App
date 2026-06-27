@@ -700,11 +700,11 @@
                 <span class="logo-text">Lightning Pass</span>
             </a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Events</a>
-                <div class="nav-divider"></div>
-                <div class="dashboard-nav" id="dashboardNav">
-                    <!-- Role-based nav links injected by JS -->
-                </div>
+                <a href="/?browse=1" class="nav-link">Events</a>
+                <a href="/experiences" class="nav-link">Experiences</a>
+                <a href="/partners" class="nav-link active">Partners</a>
+                <a href="/calendar" class="nav-link">Calendar</a>
+                <a href="/about" class="nav-link">About</a>
                 <a href="#" onclick="showLoginModal(); return false;" class="nav-link btn-login" id="nav-login">LOGIN</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
@@ -1466,17 +1466,30 @@
         function updateAuthButton() {
             const btn = document.getElementById('nav-login');
             const mobileBtn = document.getElementById('mobile-login');
+            const mainToken = localStorage.getItem('token');
             const dealToken = localStorage.getItem('dealToken');
             const mainAuth = localStorage.getItem('authToken');
             const partnerAuth = localStorage.getItem('partnerToken');
             // Show LOGOUT if ANY auth is present
-            if (dealToken || mainAuth || partnerAuth) {
-                if (btn) { btn.textContent = 'LOGOUT'; btn.onclick = function(e) { e.preventDefault(); handleLogout(); localStorage.removeItem('authToken'); localStorage.removeItem('userType'); localStorage.removeItem('userEmail'); localStorage.removeItem('partnerToken'); localStorage.removeItem('partnerUser'); window.location.reload(); }; }
-                if (mobileBtn) { mobileBtn.textContent = 'Logout'; mobileBtn.onclick = function(e) { e.preventDefault(); handleLogout(); localStorage.removeItem('authToken'); localStorage.removeItem('userType'); localStorage.removeItem('userEmail'); localStorage.removeItem('partnerToken'); localStorage.removeItem('partnerUser'); window.location.reload(); }; }
+            if (mainToken || dealToken || mainAuth || partnerAuth) {
+                if (btn) { btn.textContent = 'LOGOUT'; btn.href = '#'; btn.onclick = function(e) { e.preventDefault(); logout(); }; }
+                if (mobileBtn) { mobileBtn.textContent = 'Logout'; mobileBtn.href = '#'; mobileBtn.onclick = function(e) { e.preventDefault(); logout(); }; }
             } else {
-                if (btn) { btn.textContent = 'LOGIN'; btn.onclick = function(e) { e.preventDefault(); showLoginModal(); }; }
-                if (mobileBtn) { mobileBtn.textContent = 'Login'; mobileBtn.onclick = function(e) { e.preventDefault(); showLoginModal(); }; }
+                if (btn) { btn.textContent = 'LOGIN'; btn.href = '#'; btn.onclick = function(e) { e.preventDefault(); showLoginModal(); }; }
+                if (mobileBtn) { mobileBtn.textContent = 'Login'; mobileBtn.href = '#'; mobileBtn.onclick = function(e) { e.preventDefault(); showLoginModal(); }; }
             }
+        }
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userType');
+            localStorage.removeItem('dealToken');
+            localStorage.removeItem('dealUser');
+            localStorage.removeItem('partnerToken');
+            localStorage.removeItem('partnerUser');
+            window.location.reload();
         }
         document.addEventListener('DOMContentLoaded', updateAuthButton);
     </script>

@@ -1191,24 +1191,49 @@
 
         // Check auth state on page load
         document.addEventListener('DOMContentLoaded', function() {
+            updateAuthState();
+        });
+
+        function updateAuthState() {
             const mainToken = localStorage.getItem('token');
             const authToken = localStorage.getItem('authToken');
             const authButton = document.getElementById('authButton');
             const mobileLogin = document.querySelector('#mobileMenu a:last-child');
 
             if (mainToken || authToken) {
-                // User is logged in - show DASHBOARD
-                authButton.textContent = 'DASHBOARD';
-                authButton.href = '/members';
-                authButton.onclick = null;
+                // User is logged in - show LOGOUT
+                authButton.textContent = 'LOGOUT';
+                authButton.href = '#';
+                authButton.onclick = function(e) { e.preventDefault(); logout(); };
                 if (mobileLogin) {
-                    mobileLogin.textContent = 'Dashboard';
-                    mobileLogin.href = '/members';
+                    mobileLogin.textContent = 'Logout';
+                    mobileLogin.href = '#';
+                    mobileLogin.onclick = function(e) { e.preventDefault(); logout(); };
                 }
                 // Auto-verify member if logged in
                 isMemberVerified = true;
+            } else {
+                // Not logged in - show LOGIN
+                authButton.textContent = 'LOGIN';
+                authButton.href = '/';
+                authButton.onclick = null;
+                if (mobileLogin) {
+                    mobileLogin.textContent = 'Login';
+                    mobileLogin.href = '/';
+                    mobileLogin.onclick = null;
+                }
             }
-        });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('dealToken');
+            localStorage.removeItem('dealUser');
+            window.location.reload();
+        }
 
         // Member verification functions
         function showMemberLogin() {
