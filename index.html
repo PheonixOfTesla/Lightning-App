@@ -1952,11 +1952,10 @@
                 height: 48px;
             }
         }
-        /* Splash Screen - Tap to Enter */
+        /* Splash Screen - REMOVED (direct to events) */
+        /* Keeping minimal styles for legacy compatibility */
         #splashScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
+            display: none !important;
             right: 0;
             bottom: 0;
             width: 100%;
@@ -2086,46 +2085,10 @@
         }
     </style>
 </head>
-<body class="splash-active">
-    <!-- SPLASH SCREEN - Tap to Enter (required for mobile audio/video) -->
-    <div id="splashScreen" onclick="enterApp()">
-        <canvas id="lightningCanvas"></canvas>
-        <div class="splash-orb splash-orb-1"></div>
-        <div class="splash-orb splash-orb-2"></div>
-        <div class="splash-orb splash-orb-3"></div>
-        <div class="splash-content">
-        <div style="width: 90px; height: 90px; border-radius: 50%; border: 2px solid white; margin-bottom: 0.5rem; overflow: hidden;">
-            <img src="splash-bolt.png" alt="" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.02) translate(0px, 1px);">
-        </div>
-        <h1 class="splash-title">Lightning Pass</h1>
-        <div class="splash-tagline">
-            <span class="tagline-main">Your Pass</span>
-            <span class="tagline-tonight">To Everything</span>
-        </div>
-        <p class="splash-subtitle">Events, venues, and experiences<br>— all in one tap</p>
-        <button class="splash-enter">Tap to Enter</button>
-        </div>
-    </div>
-
+<body>
     <!-- IMMEDIATE SETTINGS APPLICATION (no network delay) -->
     <script>
     (function() {
-        // Apply cached splash settings immediately
-        var splashSettings = JSON.parse(localStorage.getItem('splashSettings') || '{}');
-        if (splashSettings.url) {
-            var splashLogo = document.querySelector('#splashScreen .splash-content > div');
-            if (splashLogo) {
-                if (splashSettings.size) {
-                    splashLogo.style.width = splashSettings.size + 'px';
-                    splashLogo.style.height = splashSettings.size + 'px';
-                }
-                var img = splashLogo.querySelector('img');
-                if (img) {
-                    img.src = splashSettings.url;
-                    img.style.transform = 'scale(' + (splashSettings.scale || 1.02) + ') translate(' + (splashSettings.positionX || 0) + 'px, ' + (splashSettings.positionY || splashSettings.position || 1) + 'px)';
-                }
-            }
-        }
         // Apply cached header settings immediately
         var headerSettings = JSON.parse(localStorage.getItem('headerSettings') || '{}');
         if (headerSettings.url) {
@@ -4472,18 +4435,8 @@
             }
         }
 
-        // ===== SPLASH SCREEN ENTRY =====
-        function enterApp() {
-            // Hide splash screen
-            document.getElementById('splashScreen').classList.add('hidden');
-            // Remove splash-active class from body (allows scrolling)
-            document.body.classList.remove('splash-active');
-            // Hide landing page (no longer needed)
-            document.getElementById('landingPage').style.display = 'none';
-
-            // Music disabled on autoplay - user must click to play
-
-            // Go directly to browse venues (guest mode)
+        // ===== SETUP GUEST NAVIGATION =====
+        function setupGuestNav() {
             // Set up guest navigation if not logged in
             if (!state.user) {
                 const navLinks = document.getElementById('navLinks');
@@ -4497,14 +4450,15 @@
                 `;
                 navLinks.style.display = 'flex';
             }
+        }
 
+        // Legacy function - kept for compatibility
+        function enterApp() {
+            setupGuestNav();
             showView('customer');
             loadVenues();
             loadHomepageSpotlightEvents();
             loadDailyDeals();
-
-            // Scroll to top on mobile after content loads
-            setTimeout(() => window.scrollTo(0, 0), 100);
         }
 
         // Auto-play music when page loads (will work if browser allows)
@@ -4561,23 +4515,16 @@
                 setTimeout(checkMemberLoginState, 500); // Wait for nav to render
             }
 
-            if (isLoggedIn || skipSplash) {
-                // User logged in OR coming from another page - skip splash, go straight to events
-                document.getElementById('splashScreen').classList.add('hidden');
-                document.getElementById('landingPage').style.display = 'none';
+            // Always go straight to events (no splash screen)
+            document.getElementById('landingPage').style.display = 'none';
+            setupGuestNav();
+            showView('customer');
+            loadVenues();
+            loadHomepageSpotlightEvents();
+            loadDailyDeals();
 
-                // If skip splash, also enter the app directly
-                if (skipSplash && !isLoggedIn) {
-                    showView('customer');
-                    loadVenues();
-                    loadHomepageSpotlightEvents();
-                    loadDailyDeals();
-                    // Music disabled on autoplay - user must click to play
-                    // Clean URL
-                    window.history.replaceState({}, '', window.location.pathname);
-                }
-            }
-            // If not logged in and no skip param, splash screen shows by default
+            // Attempt to start music (may require user interaction on mobile)
+            attemptAutoplayMusic();
 
             // ===== BULLETPROOF VIDEO LOOP =====
             const video = document.getElementById('video-background');
