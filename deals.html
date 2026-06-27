@@ -623,7 +623,7 @@
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link">About</a>
-                <a href="/" class="btn btn-pass">LOGIN</a>
+                <a href="/" class="btn btn-pass" id="nav-login">LOGIN</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span><span></span><span></span>
@@ -637,6 +637,7 @@
         <a href="/partners">Partners</a>
         <a href="/calendar">Calendar</a>
         <a href="/about">About</a>
+        <a href="/" id="mobile-login">Login</a>
     </div>
 
     <!-- Auth Modal -->
@@ -794,8 +795,21 @@
             return `https://picsum.photos/seed/${id}/400/300`;
         }
 
+        // Update nav auth button
+        function updateNavAuth() {
+            const btn = document.getElementById('nav-login');
+            const mobileBtn = document.getElementById('mobile-login');
+            const mainToken = localStorage.getItem('token');
+            const authToken = localStorage.getItem('authToken');
+            if (mainToken || authToken) {
+                if (btn) { btn.textContent = 'DASHBOARD'; btn.href = '/members'; }
+                if (mobileBtn) { mobileBtn.textContent = 'Dashboard'; mobileBtn.href = '/members'; }
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            updateNavAuth();
             // Check for reset token in URL
             const params = new URLSearchParams(window.location.search);
             const resetToken = params.get('reset');

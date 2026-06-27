@@ -1191,18 +1191,20 @@
 
         // Check auth state on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('authToken');
+            const mainToken = localStorage.getItem('token');
+            const authToken = localStorage.getItem('authToken');
             const authButton = document.getElementById('authButton');
-            if (token) {
-                authButton.textContent = 'LOGOUT';
-                authButton.href = '#';
-                authButton.onclick = function(e) {
-                    e.preventDefault();
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('userType');
-                    localStorage.removeItem('userEmail');
-                    window.location.reload();
-                };
+            const mobileLogin = document.querySelector('#mobileMenu a:last-child');
+
+            if (mainToken || authToken) {
+                // User is logged in - show DASHBOARD
+                authButton.textContent = 'DASHBOARD';
+                authButton.href = '/members';
+                authButton.onclick = null;
+                if (mobileLogin) {
+                    mobileLogin.textContent = 'Dashboard';
+                    mobileLogin.href = '/members';
+                }
                 // Auto-verify member if logged in
                 isMemberVerified = true;
             }

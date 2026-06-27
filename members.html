@@ -846,9 +846,24 @@
 
         // Check authentication on load
         async function checkAuth() {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            // Check all possible token sources
+            const mainToken = localStorage.getItem('token');
+            const authToken = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            const token = mainToken || authToken;
+
             const userType = localStorage.getItem('userType');
-            const userEmail = localStorage.getItem('userEmail');
+
+            // Get email from user object (index.html) or userEmail (other pages)
+            let userEmail = localStorage.getItem('userEmail');
+            if (!userEmail && mainToken) {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        const user = JSON.parse(userStr);
+                        userEmail = user.email;
+                    } catch (e) {}
+                }
+            }
 
             if (!token) {
                 document.getElementById('loadingState').style.display = 'none';
@@ -868,8 +883,8 @@
 
         async function loadMemberDashboard(token, email) {
             try {
-                // Fetch member passes
-                const passesRes = await fetch(`${API_BASE}/api/v1/lightning/passes/by-email/${encodeURIComponent(email)}`, {
+                // Fetch member passes using customer endpoint (token contains email)
+                const passesRes = await fetch(`${API_BASE}/api/v1/lightning/customer/passes`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -1096,7 +1111,7 @@
         }
 
         async function startSubscription() {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('dealToken');
             if (!token) {
                 alert('Please log in to subscribe');
                 return;
@@ -1132,7 +1147,7 @@
 
         // Load subscription status
         async function loadSubscriptionStatus() {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('dealToken');
             if (!token) return;
 
             try {
@@ -1176,7 +1191,7 @@
         async function cancelSubscription() {
             if (!confirm('Are you sure you want to cancel? You will keep access until the end of your billing period.')) return;
 
-            const token = localStorage.getItem('authToken') || localStorage.getItem('dealToken');
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('dealToken');
 
             try {
                 const res = await fetch(`${API_BASE}/api/v1/subscriptions/cancel`, {
