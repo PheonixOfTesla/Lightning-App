@@ -3080,14 +3080,32 @@
         </div>
 
         <!-- OWNER CONTROL PANEL -->
-        <div id="adminView" class="container hidden">
+        <div id="adminView" class="hidden">
+            <!-- Admin Nav Bar -->
+            <nav style="background: var(--pure-black); border-bottom: 1px solid var(--border-dark); padding: 1rem 2rem; margin-bottom: 2rem;">
+                <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+                    <a href="/" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
+                        <img src="logo.png" alt="Lightning Pass" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <span style="font-weight: 700; font-size: 1.1rem; color: white;">Lightning Pass</span>
+                    </a>
+                    <div id="adminViewNav" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <a href="/" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500;">Events</a>
+                        <div style="width: 1px; height: 20px; background: var(--border-dark); margin: 0 0.5rem;"></div>
+                        <!-- Role nav injected by buildAdminViewNav() -->
+                        <a href="#" onclick="logout(); return false;" style="color: #ff4466; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #ff4466; border-radius: 6px; font-weight: 500;">Logout</a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                <h1 style="margin: 0; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                    Owner Control Panel
-                </h1>
-                <button class="btn" onclick="logout()" style="background: transparent; border: 1px solid #ff4466; color: #ff4466;">
-                    Log Out
-                </button>
+                <div>
+                    <h1 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        <span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Admin Dashboard</span>
+                    </h1>
+                    <p id="adminWelcome" style="color: var(--gray); margin-top: 0.25rem;">Welcome, admin@admin.com</p>
+                </div>
             </div>
             
             <div id="pendingAlert" class="alert alert-warning" style="display: none;">
@@ -3738,7 +3756,8 @@
 
                 <div id="scanResult" style="display: none;"></div>
             </div>
-        </div>
+            </div><!-- Close container -->
+        </div><!-- Close adminView -->
     </main>
 
     <!-- Purchase Modal - Guest Checkout Enabled -->
