@@ -1739,6 +1739,7 @@
                             <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</td>
                             <td>
                                 <button class="action-btn view" onclick="viewUser('${user._id}')">View</button>
+                                <button class="action-btn reject" onclick="deleteUser('${user._id}')" style="margin-left: 0.25rem;">Delete</button>
                             </td>
                         </tr>
                     `;
@@ -2298,7 +2299,7 @@
                             <span style="color: var(--gray); font-size: 0.85rem;">${r.email || r.guestName || '-'}</span>
                         </div>
                         <div style="text-align: right;">
-                            <span style="color: var(--danger-red); font-weight: 600;">-$${((r.amount || 0) / 100).toFixed(2)}</span><br>
+                            <span style="color: var(--danger-red); font-weight: 600;">-$${(r.amount || 0).toFixed(2)}</span><br>
                             <span style="color: var(--gray); font-size: 0.8rem;">${r.refundedAt ? new Date(r.refundedAt).toLocaleDateString() : '-'}</span>
                         </div>
                     </div>
