@@ -843,7 +843,7 @@
                     </div>
 
                     <div class="search-bar">
-                        <input type="text" id="passSearch" placeholder="Search by email, pass ID, or event...">
+                        <input type="text" id="passSearch" placeholder="Search by email, pass ID, or event..." onkeypress="if(event.key==='Enter') searchPasses()">
                         <button onclick="searchPasses()">Search</button>
                     </div>
                     <div id="passesLoading" class="loading" style="display: none;">
@@ -2550,6 +2550,96 @@
                 console.error('Load refunds error:', error);
                 loading.style.display = 'none';
                 list.innerHTML = '<p style="color: var(--danger-red); text-align: center; padding: 1rem;">Failed to load refunds</p>';
+            }
+        }
+
+        async function loadAllPasses() {
+            const tbody = document.getElementById('passesTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;"><div class="spinner"></div> Loading passes...</td></tr>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                const passes = data.passes || [];
+                const summary = data.summary || {};
+
+                // Update summary stats
+                document.getElementById('passesSummaryCount').textContent = summary.totalPasses || passes.length;
+                document.getElementById('passesSummaryRevenue').textContent = '$' + (summary.totalRevenue || 0).toLocaleString();
+                document.getElementById('passesSummaryTickets').textContent = summary.totalTickets || 0;
+
+                if (passes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--gray);">No passes found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = passes.map(p => `
+                    <tr>
+                        <td style="font-family: monospace; font-size: 0.75rem; color: var(--lightning-yellow);">${(p.passId || '').substring(0, 18)}...</td>
+                        <td>
+                            <strong>${p.guestName || '-'}</strong><br>
+                            <span style="color: var(--gray); font-size: 0.8rem;">${p.email || '-'}</span>
+                        </td>
+                        <td style="font-size: 0.85rem;">${p.eventName || p.venueName || '-'}</td>
+                        <td>${p.quantity || 1}</td>
+                        <td style="color: var(--neon-green); font-weight: 600;">$${(p.amount || 0).toFixed(0)}</td>
+                        <td><span class="status-badge ${p.status}">${p.status}</span></td>
+                        <td><a href="${p.viewUrl || '#'}" target="_blank" style="color: var(--electric-blue);">View</a></td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Load passes error:', error);
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--danger-red);">Failed to load passes: ${error.message}</td></tr>`;
+            }
+        }
+
+        async function searchPasses() {
+            const search = document.getElementById('passSearch').value.trim();
+            if (!search) {
+                loadAllPasses();
+                return;
+            }
+
+            const tbody = document.getElementById('passesTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;"><div class="spinner"></div> Searching...</td></tr>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/search?q=${encodeURIComponent(search)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                const passes = data.passes || [];
+
+                if (passes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--gray);">No passes found matching search</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = passes.map(p => `
+                    <tr>
+                        <td style="font-family: monospace; font-size: 0.75rem; color: var(--lightning-yellow);">${(p.passId || '').substring(0, 18)}...</td>
+                        <td>
+                            <strong>${p.guestName || '-'}</strong><br>
+                            <span style="color: var(--gray); font-size: 0.8rem;">${p.email || '-'}</span>
+                        </td>
+                        <td style="font-size: 0.85rem;">${p.eventName || p.venueName || '-'}</td>
+                        <td>${p.quantity || 1}</td>
+                        <td style="color: var(--neon-green); font-weight: 600;">$${(p.amount || 0).toFixed(0)}</td>
+                        <td><span class="status-badge ${p.status}">${p.status}</span></td>
+                        <td><a href="${p.viewUrl || '#'}" target="_blank" style="color: var(--electric-blue);">View</a></td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Search passes error:', error);
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--danger-red);">Search failed: ${error.message}</td></tr>`;
             }
         }
 
