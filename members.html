@@ -682,8 +682,8 @@
             <div class="nav-links" id="navLinks">
                 <a href="/" class="nav-link">Events</a>
                 <div class="nav-divider"></div>
-                <a href="/members" class="nav-link active">Member</a>
-                <a href="#" onclick="logout(); return false;" class="nav-link btn-login">LOGOUT</a>
+                <!-- Role-based nav links injected by JS -->
+                <a href="#" onclick="logout(); return false;" class="nav-link btn-login">Logout</a>
             </div>
             <div class="hamburger" onclick="toggleMobileMenu()">
                 <span></span>
@@ -881,6 +881,57 @@
         const API_BASE = 'https://lightning-backend-production.up.railway.app';
         let memberData = null;
 
+        // Build role-based navigation from user's roles
+        function buildRoleNav() {
+            const currentPage = 'member';
+
+            // Get user's roles from localStorage
+            let userRoles = [];
+            try {
+                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            } catch (e) {
+                userRoles = ['member'];
+            }
+
+            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
+            const allDashboards = [
+                { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
+                { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
+                { id: 'host', role: 'host', label: 'Host', href: '/host' },
+                { id: 'partner', role: 'partner', label: 'Partner', href: '/partners' },
+                { id: 'dj', role: 'dj', label: 'DJ', href: '/dj' },
+                { id: 'member', role: 'member', label: 'Member', href: '/members' }
+            ];
+
+            // Filter to only user's roles
+            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
+
+            const navLinks = document.getElementById('navLinks');
+            const divider = navLinks.querySelector('.nav-divider');
+
+            // Remove any existing dashboard links
+            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
+
+            // Add dashboard links after divider (reverse to maintain order)
+            dashboards.reverse().forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                divider.insertAdjacentElement('afterend', link);
+            });
+
+            // Also update mobile menu
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileMenu) {
+                mobileMenu.innerHTML = '<a href="/">Events</a>' +
+                    dashboards.reverse().map(dash =>
+                        `<a href="${dash.href}"${dash.id === currentPage ? ' class="active"' : ''}>${dash.label}</a>`
+                    ).join('') +
+                    '<a href="#" onclick="logout()">Logout</a>';
+            }
+        }
+
         // Check authentication on load
         async function checkAuth() {
             // Check all possible token sources
@@ -934,6 +985,9 @@
                 // Update UI
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('dashboardContent').style.display = 'block';
+
+                // Build role-based navigation
+                buildRoleNav();
 
                 // Set user info
                 const userEmail = email || 'Member';

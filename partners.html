@@ -794,13 +794,11 @@
                 </div>
                 <span class="logo-text">Lightning Pass</span>
             </a>
-            <div class="nav-links">
-                <a href="/?browse=1" class="nav-link">Events</a>
-                <a href="/experiences" class="nav-link">Experiences</a>
-                <a href="/partners" class="nav-link active">Partners</a>
-                <a href="/calendar" class="nav-link">Calendar</a>
-                <a href="/about" class="nav-link">About</a>
-                <a href="#" onclick="showLoginModal(); return false;" class="nav-link btn-login" id="nav-login">LOGIN</a>
+            <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Events</a>
+                <div class="nav-divider" style="width: 1px; height: 20px; background: var(--border-dark); margin: 0 0.5rem;"></div>
+                <!-- Role-based nav links injected by JS -->
+                <a href="#" onclick="logout(); return false;" class="nav-link btn-login" id="nav-login">Logout</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span>
@@ -1047,36 +1045,46 @@
         const loginForm = document.getElementById('login-form');
         const dashboard = document.getElementById('dashboard');
 
-        // Build role-based navigation from stored roles
+        // Build role-based navigation from user's roles
         function buildRoleNav() {
-            const roles = JSON.parse(localStorage.getItem('userRoles') || '[]');
             const currentPage = 'partner';
 
-            const roleToNav = {
-                member: { id: 'member', label: 'Member', href: '/members' },
-                dj: { id: 'dj', label: 'DJ', href: '/dj' },
-                partner: { id: 'partner', label: 'Partner', href: '/partners' },
-                host: { id: 'host', label: 'Host', href: '/host' },
-                venue: { id: 'venue', label: 'Venue', href: '/venue' },
-                admin: { id: 'admin', label: 'Admin', href: '/admin' }
-            };
+            // Get user's roles from localStorage
+            let userRoles = [];
+            try {
+                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            } catch (e) {
+                userRoles = ['member'];
+            }
 
-            const dashboardNav = document.getElementById('dashboardNav');
-            if (!dashboardNav) return;
-            dashboardNav.innerHTML = '';
+            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
+            const allDashboards = [
+                { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
+                { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
+                { id: 'host', role: 'host', label: 'Host', href: '/host' },
+                { id: 'partner', role: 'partner', label: 'Partner', href: '/partners' },
+                { id: 'dj', role: 'dj', label: 'DJ', href: '/dj' },
+                { id: 'member', role: 'member', label: 'Member', href: '/members' }
+            ];
 
-            roles.forEach(role => {
-                const nav = roleToNav[role];
-                if (nav) {
-                    const link = document.createElement('a');
-                    link.href = nav.href;
-                    link.className = 'nav-link dashboard-link' + (nav.id === currentPage ? ' active' : '');
-                    link.textContent = nav.label;
-                    dashboardNav.appendChild(link);
-                }
+            // Filter to only user's roles
+            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
+
+            const navLinks = document.getElementById('navLinks');
+            const divider = navLinks.querySelector('.nav-divider');
+            if (!divider) return;
+
+            // Remove any existing dashboard links
+            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
+
+            // Add dashboard links after divider (reverse to maintain order)
+            dashboards.reverse().forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                divider.insertAdjacentElement('afterend', link);
             });
-
-            dashboardNav.classList.add('show');
         }
 
         // Update nav based on auth state

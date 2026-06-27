@@ -525,9 +525,10 @@
                     <span>Lightning Pass</span>
                     <span class="nav-badge">Host</span>
                 </a>
-                <div class="nav-links">
+                <div class="nav-links" id="navLinks">
                     <a href="/" class="nav-link">Events</a>
-                    <a href="/members" class="nav-link">My Passes</a>
+                    <div class="nav-divider" style="width: 1px; height: 20px; background: var(--border-dark); margin: 0 0.5rem;"></div>
+                    <!-- Role-based nav links injected by JS -->
                     <button class="btn-logout" onclick="logout()">Logout</button>
                 </div>
             </div>
@@ -596,6 +597,49 @@
     <script>
         const API_BASE = 'https://lightning-backend-production.up.railway.app';
         let currentUser = null;
+
+        // Build role-based navigation from user's roles
+        function buildRoleNav() {
+            const currentPage = 'host';
+
+            // Get user's roles from localStorage
+            let userRoles = [];
+            try {
+                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            } catch (e) {
+                userRoles = ['member'];
+            }
+
+            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
+            const allDashboards = [
+                { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
+                { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
+                { id: 'host', role: 'host', label: 'Host', href: '/host' },
+                { id: 'partner', role: 'partner', label: 'Partner', href: '/partners' },
+                { id: 'dj', role: 'dj', label: 'DJ', href: '/dj' },
+                { id: 'member', role: 'member', label: 'Member', href: '/members' }
+            ];
+
+            // Filter to only user's roles
+            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
+
+            const navLinks = document.getElementById('navLinks');
+            if (!navLinks) return;
+            const divider = navLinks.querySelector('.nav-divider');
+            if (!divider) return;
+
+            // Remove any existing dashboard links
+            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
+
+            // Add dashboard links after divider (reverse to maintain order)
+            dashboards.reverse().forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                divider.insertAdjacentElement('afterend', link);
+            });
+        }
         let currentEvents = [];
         let currentGuests = [];
         let selectedEventSlug = null;
@@ -671,6 +715,7 @@
         function showDashboard() {
             document.getElementById('authView').style.display = 'none';
             document.getElementById('dashboardView').style.display = 'block';
+            buildRoleNav();
         }
 
         function logout() {

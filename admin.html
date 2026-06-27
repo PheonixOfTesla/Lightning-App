@@ -1013,25 +1013,39 @@
         let adminToken = null;
         let currentRefundPassId = null;
 
-        // Build role-based navigation (Admin sees ALL)
+        // Build role-based navigation from user's roles
         function buildRoleNav() {
             const currentPage = 'admin';
 
-            // Admin sees all dashboards
-            const dashboards = [
-                { id: 'member', label: 'Member', href: '/members' },
-                { id: 'dj', label: 'DJ', href: '/dj' },
-                { id: 'partner', label: 'Partner', href: '/partners' },
-                { id: 'host', label: 'Host', href: '/host' },
-                { id: 'venue', label: 'Venue', href: '/venue' },
-                { id: 'admin', label: 'Admin', href: '/admin' }
+            // Get user's roles from localStorage
+            let userRoles = [];
+            try {
+                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            } catch (e) {
+                userRoles = ['member'];
+            }
+
+            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
+            const allDashboards = [
+                { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
+                { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
+                { id: 'host', role: 'host', label: 'Host', href: '/host' },
+                { id: 'partner', role: 'partner', label: 'Partner', href: '/partners' },
+                { id: 'dj', role: 'dj', label: 'DJ', href: '/dj' },
+                { id: 'member', role: 'member', label: 'Member', href: '/members' }
             ];
+
+            // Filter to only user's roles
+            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
 
             const navLinks = document.getElementById('navLinks');
             const divider = navLinks.querySelector('.nav-divider');
 
-            // Add dashboard links after divider
-            dashboards.forEach(dash => {
+            // Remove any existing dashboard links
+            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
+
+            // Add dashboard links after divider (reverse to maintain order)
+            dashboards.reverse().forEach(dash => {
                 const link = document.createElement('a');
                 link.href = dash.href;
                 link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
