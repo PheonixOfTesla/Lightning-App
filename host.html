@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Host Dashboard | Lightning Pass</title>
+    <meta name="description" content="Host Dashboard - Manage your events, check-in guests, and track attendance on Lightning Pass.">
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--pure-black);
+            border-bottom: 1px solid var(--border-dark);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.875rem 1.5rem;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--white);
+        }
+
+        .logo-img {
+            width: 36px;
+            height: 36px;
+        }
+
+        .nav-badge {
+            background: var(--electric-purple);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--white);
+        }
+
+        .btn-logout {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--danger-red);
+            border-radius: 6px;
+            color: var(--danger-red);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 6rem 1.5rem 2rem;
+        }
+
+        .welcome-section {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-section h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-section p {
+            color: var(--gray);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+        }
+
+        .stat-value.green {
+            color: var(--neon-green);
+        }
+
+        .stat-value.blue {
+            color: var(--electric-blue);
+        }
+
+        /* Section */
+        .section {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Event Cards */
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .event-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .event-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .event-info p {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .event-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .event-stat {
+            text-align: center;
+        }
+
+        .event-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+        }
+
+        .event-stat-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--lightning-yellow);
+            color: #000;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #e6c700;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
+        }
+
+        /* Guest List Table */
+        .guest-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .guest-table th {
+            text-align: left;
+            padding: 0.75rem;
+            color: var(--gray);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .guest-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-dark);
+            font-size: 0.9rem;
+        }
+
+        .guest-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-checked-in {
+            background: rgba(57, 255, 20, 0.2);
+            color: var(--neon-green);
+        }
+
+        .status-pending {
+            background: rgba(255, 221, 0, 0.2);
+            color: var(--lightning-yellow);
+        }
+
+        .btn-checkin {
+            padding: 0.35rem 0.75rem;
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-checkin:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Search */
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+
+        .search-input::placeholder {
+            color: var(--gray);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+        }
+
+        /* Auth View */
+        #authView {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-card p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .auth-form input {
+            padding: 0.875rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+
+        .auth-form button {
+            padding: 0.875rem;
+            background: var(--lightning-yellow);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-error {
+            color: var(--danger-red);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .event-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .event-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .event-actions {
+                width: 100%;
+            }
+
+            .event-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .guest-table {
+                font-size: 0.8rem;
+            }
+
+            .guest-table th, .guest-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth View -->
+    <div id="authView">
+        <div class="auth-card">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--lightning-yellow)" style="margin-bottom: 1rem;">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            <h2>Host Login</h2>
+            <p>Access your event dashboard</p>
+            <form class="auth-form" onsubmit="handleLogin(event)">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" id="loginBtn">LOGIN</button>
+            </form>
+            <div id="authError" class="auth-error" style="display: none;"></div>
+            <p style="margin-top: 1.5rem; font-size: 0.85rem;">
+                <a href="/" style="color: var(--lightning-yellow);">Back to Lightning Pass</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboardView" style="display: none;">
+        <nav>
+            <div class="nav-container">
+                <a href="/" class="logo">
+                    <img src="logo.png" alt="Lightning Pass" class="logo-img">
+                    <span>Lightning Pass</span>
+                    <span class="nav-badge">Host</span>
+                </a>
+                <div class="nav-links">
+                    <a href="/" class="nav-link">Events</a>
+                    <a href="/members" class="nav-link">My Passes</a>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <div class="welcome-section">
+                <h1>Welcome back, <span id="hostName">Host</span></h1>
+                <p>Manage your events and check-in guests</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">My Events</div>
+                    <div class="stat-value" id="totalEvents">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Guests</div>
+                    <div class="stat-value blue" id="totalGuests">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Checked In</div>
+                    <div class="stat-value green" id="checkedIn">0</div>
+                </div>
+            </div>
+
+            <!-- My Events -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">My Events</h2>
+                </div>
+                <div id="eventsList" class="event-list">
+                    <div class="loading">Loading events...</div>
+                </div>
+            </div>
+
+            <!-- Guest List (shown when event selected) -->
+            <div class="section" id="guestListSection" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Guest List: <span id="selectedEventName"></span></h2>
+                    <button class="btn btn-secondary" onclick="hideGuestList()">Close</button>
+                </div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="guestSearch" placeholder="Search by name or email..." oninput="filterGuests()">
+                </div>
+                <div id="guestListContainer">
+                    <table class="guest-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Tickets</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guestTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        let currentUser = null;
+        let currentEvents = [];
+        let currentGuests = [];
+        let selectedEventSlug = null;
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('hostToken');
+            const userEmail = localStorage.getItem('hostEmail');
+            if (token && userEmail) {
+                currentUser = { email: userEmail, token };
+                showDashboard();
+                loadHostData();
+            }
+        });
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('authError');
+
+            btn.textContent = 'LOGGING IN...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            try {
+                // First check if user has host role
+                const rolesRes = await fetch(`${API_BASE}/api/v1/auth/user-roles?email=${encodeURIComponent(email)}`);
+                const rolesData = await rolesRes.json();
+
+                if (!rolesRes.ok) {
+                    throw new Error(rolesData.error || 'User not found');
+                }
+
+                if (!rolesData.availableRoles.includes('host')) {
+                    if (rolesData.pendingRoles?.host) {
+                        throw new Error('Host access pending approval');
+                    }
+                    throw new Error('No host access. Contact admin for approval.');
+                }
+
+                // Login
+                const loginRes = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, userType: 'host' })
+                });
+
+                const loginData = await loginRes.json();
+
+                if (!loginRes.ok) {
+                    throw new Error(loginData.error || 'Login failed');
+                }
+
+                // Save session
+                localStorage.setItem('hostToken', loginData.token);
+                localStorage.setItem('hostEmail', email);
+                currentUser = { email, token: loginData.token };
+
+                showDashboard();
+                loadHostData();
+
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            }
+
+            btn.textContent = 'LOGIN';
+            btn.disabled = false;
+        }
+
+        function showDashboard() {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('hostToken');
+            localStorage.removeItem('hostEmail');
+            currentUser = null;
+            document.getElementById('authView').style.display = 'flex';
+            document.getElementById('dashboardView').style.display = 'none';
+        }
+
+        async function loadHostData() {
+            // Set host name from email
+            const name = currentUser.email.split('@')[0];
+            document.getElementById('hostName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+
+            // Load events assigned to this host
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events`);
+                const data = await res.json();
+
+                if (data.success) {
+                    // For now, show all live events - later filter by host assignment
+                    currentEvents = data.events.filter(e => e.status === 'live');
+                    renderEvents();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Load events error:', error);
+                document.getElementById('eventsList').innerHTML = '<div class="empty-state">Failed to load events</div>';
+            }
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('eventsList');
+
+            if (currentEvents.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <p>No events assigned yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = currentEvents.map(event => {
+                const date = new Date(event.date);
+                const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                const totalTickets = event.tickets?.reduce((sum, t) => sum + (t.sold || 0), 0) || 0;
+
+                return `
+                    <div class="event-card">
+                        <div class="event-info">
+                            <h3>${event.name}</h3>
+                            <p>${dateStr} at ${timeStr} - ${event.venueName || 'TBD'}</p>
+                        </div>
+                        <div class="event-stats">
+                            <div class="event-stat">
+                                <div class="event-stat-value">${totalTickets}</div>
+                                <div class="event-stat-label">Tickets</div>
+                            </div>
+                        </div>
+                        <div class="event-actions">
+                            <button class="btn btn-primary" onclick="showGuestList('${event.slug}', '${event.name}')">Guest List</button>
+                            <a href="/checkin?event=${event.slug}" class="btn btn-secondary" target="_blank">Check-in Page</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalEvents').textContent = currentEvents.length;
+
+            const totalTickets = currentEvents.reduce((sum, e) => {
+                return sum + (e.tickets?.reduce((s, t) => s + (t.sold || 0), 0) || 0);
+            }, 0);
+            document.getElementById('totalGuests').textContent = totalTickets;
+        }
+
+        async function showGuestList(slug, name) {
+            selectedEventSlug = slug;
+            document.getElementById('selectedEventName').textContent = name;
+            document.getElementById('guestListSection').style.display = 'block';
+            document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gray);">Loading...</td></tr>';
+
+            try {
+                // Fetch passes for this event
+                const res = await fetch(`${API_BASE}/api/v1/embed/event/${slug}/checkin?code=0704`);
+                const data = await res.json();
+
+                if (data.success) {
+                    currentGuests = [...(data.guests.team || []), ...(data.guests.comp || []), ...(data.guests.paid || [])];
+                    document.getElementById('checkedIn').textContent = currentGuests.filter(g => g.checkedIn).length;
+                    renderGuests();
+                }
+            } catch (error) {
+                console.error('Load guest list error:', error);
+                document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger-red);">Failed to load guest list</td></tr>';
+            }
+        }
+
+        function renderGuests() {
+            const tbody = document.getElementById('guestTableBody');
+            const search = document.getElementById('guestSearch').value.toLowerCase();
+
+            const filtered = currentGuests.filter(g => {
+                const name = `${g.firstName || ''} ${g.lastName || ''}`.toLowerCase();
+                const email = (g.email || '').toLowerCase();
+                return name.includes(search) || email.includes(search);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gray);">No guests found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(guest => {
+                const isCheckedIn = guest.checkedIn || guest.status === 'used';
+                return `
+                    <tr>
+                        <td>${guest.firstName || ''} ${guest.lastName || ''}</td>
+                        <td>${guest.email || '-'}</td>
+                        <td>${guest.quantity || 1}</td>
+                        <td>
+                            <span class="status-badge ${isCheckedIn ? 'status-checked-in' : 'status-pending'}">
+                                ${isCheckedIn ? 'Checked In' : 'Not Yet'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-checkin" onclick="checkInGuest('${guest.passId}')" ${isCheckedIn ? 'disabled' : ''}>
+                                ${isCheckedIn ? 'Done' : 'Check In'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterGuests() {
+            renderGuests();
+        }
+
+        function hideGuestList() {
+            document.getElementById('guestListSection').style.display = 'none';
+            selectedEventSlug = null;
+        }
+
+        async function checkInGuest(passId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/embed/pass/${passId}/checkin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentUser.token}`
+                    }
+                });
+
+                if (res.ok) {
+                    // Update local state
+                    const guest = currentGuests.find(g => g.passId === passId);
+                    if (guest) {
+                        guest.checkedIn = true;
+                        guest.status = 'used';
+                    }
+                    renderGuests();
+                    document.getElementById('checkedIn').textContent = currentGuests.filter(g => g.checkedIn || g.status === 'used').length;
+                } else {
+                    alert('Check-in failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Check-in error:', error);
+                alert('Check-in failed. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

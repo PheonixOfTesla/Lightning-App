@@ -639,6 +639,10 @@
             .deals-grid {
                 grid-template-columns: 1fr;
             }
+
+            #quickLinksSection {
+                grid-template-columns: 1fr !important;
+            }
         }
 
         .mobile-menu {
@@ -729,6 +733,39 @@
                         <div class="user-name" id="userName">Member</div>
                         <div class="user-email" id="userEmail">member@example.com</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Quick Links Section -->
+            <div id="quickLinksSection" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <!-- Partner Code Card -->
+                <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="color: var(--gray); font-size: 0.85rem;">Your Partner Code</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div id="partnerCodeDisplay" style="font-size: 1.5rem; font-weight: 700; color: var(--lightning-yellow); letter-spacing: 0.1em;">---</div>
+                    <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.5rem;">Share to earn 10% on referrals</p>
+                    <button id="copyPartnerCodeBtn" onclick="copyPartnerCode()" style="margin-top: 0.75rem; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-dark); border-radius: 6px; color: var(--white); font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
+                        Copy Code
+                    </button>
+                </div>
+
+                <!-- DJ Request Card -->
+                <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="color: var(--gray); font-size: 0.85rem;">Song Requests</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--electric-purple)" stroke-width="2">
+                            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                        </svg>
+                    </div>
+                    <div style="font-size: 1.1rem; font-weight: 600; color: var(--white); margin-bottom: 0.25rem;">Request a Song</div>
+                    <p style="color: var(--gray); font-size: 0.75rem; margin-bottom: 0.75rem;">Pay to skip the queue at live events</p>
+                    <a href="/dj" style="display: inline-block; padding: 0.5rem 1rem; background: var(--electric-purple); border-radius: 6px; color: white; font-size: 0.8rem; text-decoration: none; font-weight: 600;">
+                        Go to DJ System
+                    </a>
                 </div>
             </div>
 
@@ -918,6 +955,9 @@
 
                 // Load deals
                 loadDeals();
+
+                // Load partner code
+                loadPartnerCode(email);
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -1239,6 +1279,59 @@
 
         // Load subscription status when dashboard is ready
         setTimeout(loadSubscriptionStatus, 500);
+
+        // Partner Code Functions
+        let userPartnerCode = null;
+
+        async function loadPartnerCode(email) {
+            if (!email) return;
+
+            try {
+                // Try to get existing partner code from user-roles endpoint
+                const res = await fetch(`${API_BASE}/api/v1/auth/user-roles?email=${encodeURIComponent(email)}`);
+                const data = await res.json();
+
+                if (res.ok && data.availableRoles?.includes('partner')) {
+                    // User is a partner, fetch their code
+                    // For now, generate a code based on email if not stored
+                    userPartnerCode = generatePartnerCode(email);
+                    document.getElementById('partnerCodeDisplay').textContent = userPartnerCode;
+                } else {
+                    // Generate a code for them (all members get one)
+                    userPartnerCode = generatePartnerCode(email);
+                    document.getElementById('partnerCodeDisplay').textContent = userPartnerCode;
+                }
+            } catch (error) {
+                console.error('Load partner code error:', error);
+                // Fallback: generate from email
+                userPartnerCode = generatePartnerCode(email);
+                document.getElementById('partnerCodeDisplay').textContent = userPartnerCode;
+            }
+        }
+
+        function generatePartnerCode(email) {
+            // Generate a simple partner code from email
+            const name = email.split('@')[0].toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6) || 'MEMBER';
+            const hash = email.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 100;
+            return name + hash.toString().padStart(2, '0');
+        }
+
+        function copyPartnerCode() {
+            if (!userPartnerCode) return;
+
+            navigator.clipboard.writeText(userPartnerCode).then(() => {
+                const btn = document.getElementById('copyPartnerCodeBtn');
+                btn.textContent = 'Copied!';
+                btn.style.borderColor = 'var(--neon-green)';
+                btn.style.color = 'var(--neon-green)';
+
+                setTimeout(() => {
+                    btn.textContent = 'Copy Code';
+                    btn.style.borderColor = 'var(--border-dark)';
+                    btn.style.color = 'var(--white)';
+                }, 2000);
+            });
+        }
     </script>
 </body>
 </html>
