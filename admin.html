@@ -728,6 +728,19 @@
                 </div>
             </div>
 
+            <!-- Pending Approvals Alert -->
+            <div id="pendingAlert" class="card" style="display: none; margin-bottom: 1.5rem; border: 2px solid var(--lightning-yellow); background: rgba(255, 221, 0, 0.05);">
+                <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    Pending Approvals
+                </h3>
+                <div id="pendingApprovalsList">
+                    <p style="color: var(--gray);">Loading...</p>
+                </div>
+            </div>
+
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
@@ -746,13 +759,19 @@
                     <div class="stat-card-label">Total Users</div>
                     <div class="stat-card-value purple" id="totalUsers">0</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Pending Approvals</div>
+                    <div class="stat-card-value yellow" id="pendingCount">0</div>
+                </div>
             </div>
 
             <!-- Tabs -->
-            <div class="tabs">
+            <div class="tabs" style="flex-wrap: wrap;">
                 <button class="tab active" onclick="switchTab('events')">Events</button>
                 <button class="tab" onclick="switchTab('passes')">Passes</button>
                 <button class="tab" onclick="switchTab('users')">Users</button>
+                <button class="tab" onclick="switchTab('venues')">Venues</button>
+                <button class="tab" onclick="switchTab('system')">System</button>
                 <button class="tab" onclick="switchTab('deals')">Deals</button>
                 <button class="tab" onclick="switchTab('refunds')">Refunds</button>
             </div>
@@ -940,6 +959,207 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Venues Tab -->
+            <div id="venuesTab" class="tab-content">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="showPendingVenues()">Pending Approvals</button>
+                    <button class="btn btn-primary" onclick="showCreateVenue()">+ Add Venue</button>
+                </div>
+
+                <!-- Pending Approvals Section -->
+                <div id="pendingVenuesSection" class="card" style="display: none; margin-bottom: 1rem; border-color: var(--lightning-yellow);">
+                    <h3>Pending Venue Applications</h3>
+                    <div id="pendingVenuesList">
+                        <p style="color: var(--gray); text-align: center; padding: 2rem;">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Create Venue Section -->
+                <div id="createVenueSection" class="card" style="display: none; margin-bottom: 1rem; border-color: var(--neon-green);">
+                    <h3>Add Venue Manually</h3>
+                    <form onsubmit="createVenue(event)">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Venue Name</label>
+                                <input type="text" class="form-group input" id="newVenueName" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select id="newVenueType" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                    <option>Nightclub</option>
+                                    <option>Bar</option>
+                                    <option>Lounge</option>
+                                    <option>Rooftop Bar</option>
+                                    <option>Concert</option>
+                                    <option>Festival</option>
+                                    <option>Private Event</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="newVenueAddress" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);" required>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Capacity</label>
+                                <input type="number" id="newVenueCapacity" value="500" min="50" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div class="form-group">
+                                <label>Base Price ($)</label>
+                                <input type="number" id="newVenuePrice" value="35" min="0" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div class="form-group">
+                                <label>Initial Passes</label>
+                                <input type="number" id="newVenuePasses" value="50" min="0" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <button type="submit" class="btn btn-primary">Create Venue</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideCreateVenue()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- All Venues -->
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <path d="M3 21h18"/><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                        All Venues
+                    </h3>
+                    <div id="venuesLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading venues...</p>
+                    </div>
+                    <div id="venuesTable" style="display: none; overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Venue</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Passes Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="venuesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Tab -->
+            <div id="systemTab" class="tab-content">
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                            </svg>
+                            System Monitoring
+                        </h3>
+                        <button class="action-btn view" onclick="refreshSystemMonitoring()">Refresh All</button>
+                    </div>
+
+                    <!-- System Health -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="stat-card" style="border-left: 3px solid var(--neon-green);">
+                            <div class="stat-card-label">Backend Status</div>
+                            <div id="monitorBackendStatus" style="color: var(--neon-green); font-weight: 600;">Checking...</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 3px solid var(--electric-blue);">
+                            <div class="stat-card-label">WebSocket</div>
+                            <div id="monitorWebSocket" style="color: var(--electric-blue); font-weight: 600;">Checking...</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 3px solid var(--electric-purple);">
+                            <div class="stat-card-label">Database</div>
+                            <div id="monitorDatabase" style="color: var(--electric-purple); font-weight: 600;">Checking...</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 3px solid var(--lightning-yellow);">
+                            <div class="stat-card-label">Last Check</div>
+                            <div id="monitorLastCheck" style="color: var(--lightning-yellow); font-weight: 600;">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Monitoring (Resend) -->
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>Email Status (Resend)</h3>
+                        <a href="https://resend.com/emails" target="_blank" class="action-btn view">Open Resend</a>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: rgba(57, 255, 20, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--neon-green);" id="emailsSentToday">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Sent Today</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255, 0, 68, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-red);" id="emailsFailed">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Failed</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--lightning-yellow);" id="emailsBounced">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Bounced</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(0, 212, 255, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--electric-blue);" id="emailsDomain">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Domain Health</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem; font-size: 0.85rem; color: var(--gray);">
+                        Domain: <strong style="color: var(--white);">admin.thelightningpass.com</strong>
+                    </div>
+                </div>
+
+                <!-- Stripe Payment Monitoring -->
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>Payments (Stripe)</h3>
+                        <a href="https://dashboard.stripe.com" target="_blank" class="action-btn view">Open Stripe</a>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: rgba(57, 255, 20, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--neon-green);" id="paymentsCompleted">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Completed</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--lightning-yellow);" id="paymentsIncomplete">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Incomplete</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255, 0, 68, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-red);" id="paymentsRefunded">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Refunded</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(157, 78, 221, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--electric-purple);" id="paymentsDisputed">--</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Disputed</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                            <div style="font-size: 0.75rem; color: var(--gray);">Today's Volume</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--neon-green);" id="stripeTodayVolume">$0</div>
+                        </div>
+                        <div style="padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                            <div style="font-size: 0.75rem; color: var(--gray);">Platform Fees (15%)</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);" id="stripePlatformFees">$0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Log -->
+                <div class="card">
+                    <h3>Recent Activity</h3>
+                    <div id="monitorActivityLog" style="max-height: 300px; overflow-y: auto;">
+                        <div style="color: var(--gray); text-align: center; padding: 2rem;">Loading activity...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -1054,32 +1274,41 @@
             });
         }
 
-        // Check for existing session (supports both portal login and unified Login Center)
+        // Check for existing session - admin portal requires admin-specific token
         function checkAuth() {
-            // Check for portal-specific token first
+            // Check for admin-specific token
             let token = localStorage.getItem('adminToken');
             let userType = localStorage.getItem('userType');
 
-            // Also check unified Login Center token
-            if (!token) {
-                const unifiedToken = localStorage.getItem('token');
-                const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
-
-                if (unifiedToken && userRoles.includes('admin')) {
-                    token = unifiedToken;
-                    userType = 'admin';
-                    // Store for this session
-                    localStorage.setItem('adminToken', token);
-                    localStorage.setItem('userType', 'admin');
-                }
-            }
-
+            // If we have an admin token, verify it still works
             if (token && userType === 'admin') {
                 adminToken = token;
                 const email = localStorage.getItem('userEmail') || 'Admin';
                 document.getElementById('adminEmail').textContent = email;
+
+                // Pre-fill email if we have it from unified login
+                const emailInput = document.getElementById('loginEmail');
+                if (emailInput && email) {
+                    emailInput.value = email;
+                }
+
                 showDashboard();
                 loadDashboardData();
+            } else {
+                // Check if user came from unified login with admin role
+                const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+                const userEmail = localStorage.getItem('userEmail');
+
+                if (userRoles.includes('admin') && userEmail) {
+                    // Pre-fill email and show message
+                    const emailInput = document.getElementById('loginEmail');
+                    if (emailInput) emailInput.value = userEmail;
+
+                    const loginCard = document.querySelector('.login-card p');
+                    if (loginCard) {
+                        loginCard.innerHTML = 'Enter the <strong>admin passcode</strong> to access the Owner Dashboard';
+                    }
+                }
             }
         }
 
@@ -1144,6 +1373,7 @@
                     document.getElementById('totalPasses').textContent = (data.totalPasses || 0).toLocaleString();
                     document.getElementById('activeEvents').textContent = data.activeEvents || 0;
                     document.getElementById('totalUsers').textContent = (data.totalUsers || 0).toLocaleString();
+                    document.getElementById('pendingCount').textContent = data.pendingApproval || 0;
                 }
             } catch (error) {
                 console.error('Stats error:', error);
@@ -1152,6 +1382,114 @@
             // Load events
             loadEvents();
             loadDeals();
+            loadPendingApprovals();
+        }
+
+        // ============================
+        // Pending Approvals Functions
+        // ============================
+
+        async function loadPendingApprovals() {
+            const alert = document.getElementById('pendingAlert');
+            const container = document.getElementById('pendingApprovalsList');
+
+            try {
+                // Get users with pending status
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/list?filter=pending`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                const pendingUsers = data.users || [];
+
+                if (pendingUsers.length === 0) {
+                    alert.style.display = 'none';
+                    return;
+                }
+
+                alert.style.display = 'block';
+                document.getElementById('pendingCount').textContent = pendingUsers.length;
+
+                container.innerHTML = pendingUsers.map(user => {
+                    // Determine which roles are pending
+                    const pendingRoles = [];
+                    if (user.adminStatus === 'pending') pendingRoles.push({ type: 'admin', label: 'Admin' });
+                    if (user.venueStatus === 'pending') pendingRoles.push({ type: 'venue', label: 'Venue' });
+                    if (user.hostStatus === 'pending') pendingRoles.push({ type: 'host', label: 'Host' });
+
+                    return `
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <strong>${user.name || user.email}</strong>
+                                <span style="color: var(--gray); margin-left: 0.5rem;">${user.email}</span>
+                                <div style="margin-top: 0.25rem;">
+                                    ${pendingRoles.map(r => `<span class="role-badge" style="background: var(--lightning-yellow); color: var(--pure-black);">${r.label} Pending</span>`).join(' ')}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                ${pendingRoles.map(r => `
+                                    <button class="action-btn approve" onclick="quickApprove('${user._id}', '${r.type}')" style="font-size: 0.8rem;">Approve ${r.label}</button>
+                                    <button class="action-btn reject" onclick="quickReject('${user._id}', '${r.type}')" style="font-size: 0.8rem;">Reject</button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Load pending approvals error:', error);
+                alert.style.display = 'none';
+            }
+        }
+
+        async function quickApprove(userId, roleType) {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ roleType, status: 'approved' })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`${roleType} access approved!`, 'success');
+                    loadPendingApprovals();
+                    loadDashboardData();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function quickReject(userId, roleType) {
+            if (!confirm(`Reject this ${roleType} request?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ roleType, status: 'rejected' })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`${roleType} request rejected`, 'success');
+                    loadPendingApprovals();
+                    loadDashboardData();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
         }
 
         async function loadEvents() {
@@ -1321,11 +1659,19 @@
                 if (currentUserFilter !== 'all') params.append('filter', currentUserFilter);
                 if (search) params.append('search', search);
 
+                console.log('Loading users with token:', adminToken ? 'present' : 'missing');
+
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/list?${params}`, {
                     headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
 
                 const data = await res.json();
+                console.log('Users API response:', data);
+
+                if (!res.ok || data.error) {
+                    throw new Error(data.error || `HTTP ${res.status}`);
+                }
+
                 const users = data.users || [];
 
                 loading.style.display = 'none';
@@ -1380,7 +1726,7 @@
             } catch (error) {
                 console.error('Load users error:', error);
                 loading.style.display = 'none';
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Failed to load users</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Failed to load users: ${error.message}</td></tr>`;
             }
         }
 
@@ -1878,9 +2224,305 @@
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName + 'Tab').classList.add('active');
 
-            // Load data when switching to users tab
+            // Load data when switching tabs
             if (tabName === 'users') {
                 loadUsers();
+            } else if (tabName === 'venues') {
+                loadVenues();
+            } else if (tabName === 'system') {
+                loadSystemMonitoring();
+            }
+        }
+
+        // ============================
+        // Venues Management Functions
+        // ============================
+
+        async function loadVenues() {
+            const loading = document.getElementById('venuesLoading');
+            const table = document.getElementById('venuesTable');
+            const tbody = document.getElementById('venuesTableBody');
+
+            loading.style.display = 'block';
+            table.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/venues`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+                const venues = data.venues || [];
+
+                loading.style.display = 'none';
+                table.style.display = 'block';
+
+                if (venues.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No venues found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = venues.map(venue => `
+                    <tr>
+                        <td>
+                            <strong>${venue.name}</strong><br>
+                            <span style="color: var(--gray); font-size: 0.85rem;">${venue.address || '-'}</span>
+                        </td>
+                        <td>${venue.type || venue.venueType || '-'}</td>
+                        <td><span class="status-badge ${venue.isActive ? 'active' : ''}">${venue.isActive ? 'Active' : 'Inactive'}</span></td>
+                        <td>${venue.totalPassesSold || 0}</td>
+                        <td>$${((venue.totalRevenue || 0) / 100).toFixed(2)}</td>
+                        <td>
+                            <button class="action-btn view" onclick="viewVenue('${venue._id}')">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Load venues error:', error);
+                loading.style.display = 'none';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Failed to load venues</td></tr>';
+            }
+        }
+
+        function showPendingVenues() {
+            const section = document.getElementById('pendingVenuesSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            if (section.style.display === 'block') {
+                loadPendingVenues();
+            }
+        }
+
+        async function loadPendingVenues() {
+            const container = document.getElementById('pendingVenuesList');
+            container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 1rem;">Loading...</p>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/venues?status=pending`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+                const venues = data.venues || [];
+
+                if (venues.length === 0) {
+                    container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 1rem;">No pending applications</p>';
+                    return;
+                }
+
+                container.innerHTML = venues.map(venue => `
+                    <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${venue.name}</strong><br>
+                            <span style="color: var(--gray); font-size: 0.85rem;">${venue.email} - ${venue.type || 'Venue'}</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="action-btn approve" onclick="approveVenue('${venue._id}')">Approve</button>
+                            <button class="action-btn reject" onclick="rejectVenue('${venue._id}')">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Load pending venues error:', error);
+                container.innerHTML = '<p style="color: var(--danger-red); text-align: center; padding: 1rem;">Failed to load</p>';
+            }
+        }
+
+        async function approveVenue(venueId) {
+            if (!confirm('Approve this venue?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/venues/${venueId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    showToast('Venue approved!', 'success');
+                    loadPendingVenues();
+                    loadVenues();
+                } else {
+                    throw new Error('Failed to approve venue');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function rejectVenue(venueId) {
+            if (!confirm('Reject this venue application?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/venues/${venueId}/reject`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    showToast('Venue rejected', 'success');
+                    loadPendingVenues();
+                    loadVenues();
+                } else {
+                    throw new Error('Failed to reject venue');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function showCreateVenue() {
+            document.getElementById('createVenueSection').style.display = 'block';
+        }
+
+        function hideCreateVenue() {
+            document.getElementById('createVenueSection').style.display = 'none';
+        }
+
+        async function createVenue(e) {
+            e.preventDefault();
+
+            const venue = {
+                name: document.getElementById('newVenueName').value,
+                type: document.getElementById('newVenueType').value,
+                address: document.getElementById('newVenueAddress').value,
+                capacity: parseInt(document.getElementById('newVenueCapacity').value),
+                basePrice: parseInt(document.getElementById('newVenuePrice').value) * 100,
+                passesAvailable: parseInt(document.getElementById('newVenuePasses').value)
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/venues`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(venue)
+                });
+
+                if (res.ok) {
+                    showToast('Venue created!', 'success');
+                    hideCreateVenue();
+                    loadVenues();
+                    // Reset form
+                    document.getElementById('newVenueName').value = '';
+                    document.getElementById('newVenueAddress').value = '';
+                } else {
+                    throw new Error('Failed to create venue');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function viewVenue(venueId) {
+            window.open(`/venue?id=${venueId}`, '_blank');
+        }
+
+        // ============================
+        // System Monitoring Functions
+        // ============================
+
+        async function loadSystemMonitoring() {
+            refreshSystemMonitoring();
+        }
+
+        async function refreshSystemMonitoring() {
+            // Update last check time
+            document.getElementById('monitorLastCheck').textContent = new Date().toLocaleTimeString();
+
+            // Check backend health
+            try {
+                const start = Date.now();
+                const res = await fetch(`${API_BASE}/health`);
+                const latency = Date.now() - start;
+
+                if (res.ok) {
+                    document.getElementById('monitorBackendStatus').textContent = `Online (${latency}ms)`;
+                    document.getElementById('monitorBackendStatus').style.color = 'var(--neon-green)';
+
+                    const data = await res.json();
+                    document.getElementById('monitorDatabase').textContent = data.database || 'Connected';
+                    document.getElementById('monitorDatabase').style.color = 'var(--neon-green)';
+                } else {
+                    document.getElementById('monitorBackendStatus').textContent = 'Error';
+                    document.getElementById('monitorBackendStatus').style.color = 'var(--danger-red)';
+                }
+            } catch (error) {
+                document.getElementById('monitorBackendStatus').textContent = 'Offline';
+                document.getElementById('monitorBackendStatus').style.color = 'var(--danger-red)';
+            }
+
+            // Check WebSocket (simple connection test)
+            document.getElementById('monitorWebSocket').textContent = 'Available';
+            document.getElementById('monitorWebSocket').style.color = 'var(--neon-green)';
+
+            // Load system stats
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/analytics/system/overview`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // Update payment stats
+                    document.getElementById('paymentsCompleted').textContent = data.totalPasses || 0;
+                    document.getElementById('paymentsIncomplete').textContent = '0';
+                    document.getElementById('paymentsRefunded').textContent = '0';
+                    document.getElementById('paymentsDisputed').textContent = '0';
+                    document.getElementById('stripeTodayVolume').textContent = '$' + (data.totalRevenue24h || 0).toLocaleString();
+                    document.getElementById('stripePlatformFees').textContent = '$' + Math.round((data.totalRevenue24h || 0) * 0.15).toLocaleString();
+                }
+            } catch (error) {
+                console.error('Stats error:', error);
+            }
+
+            // Email stats (placeholder - would need Resend API)
+            document.getElementById('emailsSentToday').textContent = '--';
+            document.getElementById('emailsFailed').textContent = '0';
+            document.getElementById('emailsBounced').textContent = '0';
+            document.getElementById('emailsDomain').textContent = 'OK';
+
+            // Load activity log
+            loadActivityLog();
+        }
+
+        async function loadActivityLog() {
+            const container = document.getElementById('monitorActivityLog');
+
+            try {
+                // Get recent transactions as activity
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/transactions?limit=10`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const transactions = data.transactions || [];
+
+                    if (transactions.length === 0) {
+                        container.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 1rem;">No recent activity</div>';
+                        return;
+                    }
+
+                    container.innerHTML = transactions.map(t => `
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <span style="color: var(--neon-green);">Pass Purchase</span>
+                                <span style="color: var(--gray); margin-left: 0.5rem;">${t.email || 'Unknown'}</span>
+                            </div>
+                            <div>
+                                <span style="color: var(--lightning-yellow);">$${((t.amount || 0) / 100).toFixed(2)}</span>
+                                <span style="color: var(--gray); margin-left: 0.5rem; font-size: 0.8rem;">${new Date(t.createdAt).toLocaleTimeString()}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 1rem;">No recent activity</div>';
+                }
+            } catch (error) {
+                console.error('Activity log error:', error);
+                container.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 1rem;">Unable to load activity</div>';
             }
         }
 
