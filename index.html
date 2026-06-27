@@ -11086,7 +11086,20 @@
             const lastName = document.getElementById('createLastName').value;
             const email = document.getElementById('createEmail').value;
             const phone = document.getElementById('createPhone').value;
+            const passcode = document.getElementById('createPasscode').value;
+            const passcodeConfirm = document.getElementById('createPasscodeConfirm').value;
             const btn = e.target.querySelector('button');
+
+            // Validate passcodes match
+            if (passcode !== passcodeConfirm) {
+                alert('Passcodes do not match');
+                return;
+            }
+
+            if (passcode.length < 4) {
+                alert('Passcode must be at least 4 characters');
+                return;
+            }
 
             btn.textContent = 'Creating...';
             btn.disabled = true;
@@ -11104,6 +11117,7 @@
                         lastName,
                         email,
                         phone,
+                        password: passcode,
                         userType: primaryRole,
                         roles: selectedRoles, // Send all selected roles
                         venueStatus: selectedRoles.includes('venue') ? 'pending' : null
@@ -11257,6 +11271,8 @@
                         <input type="text" id="createLastName" placeholder="Last name" required>
                         <input type="email" id="createEmail" placeholder="Email" required>
                         <input type="tel" id="createPhone" placeholder="Phone">
+                        <input type="password" id="createPasscode" placeholder="Passcode" required>
+                        <input type="password" id="createPasscodeConfirm" placeholder="Confirm passcode" required>
                         <button type="submit">CREATE ACCOUNT</button>
                     </form>
                     <div style="text-align: center; margin-top: 1rem;">
