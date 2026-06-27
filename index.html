@@ -11143,35 +11143,117 @@
         function showQuickLogin() {
             document.getElementById('userTypeSelect').style.display = 'none';
             document.getElementById('quickLoginSection').style.display = 'block';
+            document.getElementById('roleSelectSection').style.display = 'none';
+            document.getElementById('loginFormContainer').style.display = 'none';
+            document.getElementById('loginEmailLookup').value = '';
+            document.getElementById('loginLookupError').style.display = 'none';
+        }
+
+        // Fetch user roles from API
+        let loginUserEmail = '';
+        async function fetchUserRoles(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmailLookup').value.trim().toLowerCase();
+            const btn = document.getElementById('lookupBtn');
+            const errorDiv = document.getElementById('loginLookupError');
+
+            btn.textContent = 'LOADING...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/user-roles?email=${encodeURIComponent(email)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    errorDiv.textContent = data.error || 'User not found';
+                    errorDiv.style.display = 'block';
+                    btn.textContent = 'CONTINUE';
+                    btn.disabled = false;
+                    return;
+                }
+
+                loginUserEmail = email;
+                document.getElementById('loginEmailDisplay').textContent = email;
+
+                // Build role buttons based on available roles
+                const container = document.getElementById('availableRolesContainer');
+                container.innerHTML = '';
+
+                const roleLabels = {
+                    member: 'Member',
+                    dj: 'DJ',
+                    venue: 'Venue',
+                    partner: 'Partner',
+                    admin: 'Admin',
+                    host: 'Host'
+                };
+
+                data.availableRoles.forEach(role => {
+                    const btn = document.createElement('button');
+                    btn.className = 'user-type-btn login-type-btn';
+                    btn.dataset.type = role;
+                    btn.style.cssText = 'padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;';
+                    btn.innerHTML = `<div style="font-weight: 600;">${roleLabels[role] || role}</div>`;
+                    btn.onclick = () => selectLoginType(role);
+                    container.appendChild(btn);
+                });
+
+                // Show pending roles notice
+                const pendingNotice = document.getElementById('pendingRolesNotice');
+                const pendingRoles = [];
+                if (data.pendingRoles?.venue) pendingRoles.push('Venue');
+                if (data.pendingRoles?.admin) pendingRoles.push('Admin');
+                if (data.pendingRoles?.host) pendingRoles.push('Host');
+
+                if (pendingRoles.length > 0) {
+                    pendingNotice.textContent = `Pending approval: ${pendingRoles.join(', ')}`;
+                    pendingNotice.style.display = 'block';
+                } else {
+                    pendingNotice.style.display = 'none';
+                }
+
+                // Show role selection
+                document.getElementById('quickLoginSection').style.display = 'none';
+                document.getElementById('roleSelectSection').style.display = 'block';
+
+            } catch (error) {
+                console.error('Fetch roles error:', error);
+                errorDiv.textContent = 'Connection error. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+
+            btn.textContent = 'CONTINUE';
+            btn.disabled = false;
         }
 
         // Select login type (single select for login)
         function selectLoginType(type) {
             selectedUserType = type;
 
-            // Highlight selected
-            document.querySelectorAll('.login-type-btn').forEach(btn => {
-                btn.style.border = '1px solid var(--border-dark)';
-                btn.style.background = 'rgba(255,255,255,0.05)';
-            });
-            event.target.closest('.login-type-btn').style.border = '2px solid var(--lightning-yellow)';
-            event.target.closest('.login-type-btn').style.background = 'rgba(255,221,0,0.1)';
-
             // Show login form
             document.getElementById('quickLoginSection').style.display = 'none';
+            document.getElementById('roleSelectSection').style.display = 'none';
             document.getElementById('loginFormContainer').style.display = 'block';
             document.getElementById('selectedTypeLabel').textContent = type.toUpperCase() + ' LOGIN';
             document.getElementById('createAccountLink').style.display = type === 'admin' ? 'none' : 'block';
+
+            // Pre-fill email if we already have it from role lookup
+            if (loginUserEmail) {
+                document.getElementById('lcEmail').value = loginUserEmail;
+            }
         }
 
         function showUserTypes() {
             document.getElementById('userTypeSelect').style.display = 'block';
             document.getElementById('quickLoginSection').style.display = 'none';
+            document.getElementById('roleSelectSection').style.display = 'none';
             document.getElementById('loginFormContainer').style.display = 'none';
             document.getElementById('memberSignup').style.display = 'none';
             document.getElementById('createAccountForm').style.display = 'none';
             selectedUserType = null;
             selectedRoles = ['member'];
+            loginUserEmail = '';
 
             // Reset role checkboxes
             document.querySelectorAll('#userTypeSelect .user-type-btn').forEach(btn => {
@@ -11310,6 +11392,7 @@
                         roles: selectedRoles, // Send all selected roles
                         venueStatus: selectedRoles.includes('venue') ? 'pending' : null,
                         adminStatus: selectedRoles.includes('admin') ? 'pending' : null,
+                        hostStatus: selectedRoles.includes('host') ? 'pending' : null,
                         partnerCode: partnerCode || null
                     })
                 });
@@ -11330,10 +11413,14 @@
                         });
                     }
 
-                    // Show success with pending notice if venue or admin
+                    // Show success with pending notice if venue, admin, or host
                     const successEl = document.querySelector('.pass-modal-success');
-                    if (selectedRoles.includes('venue') || selectedRoles.includes('admin')) {
-                        const pendingRole = selectedRoles.includes('admin') ? 'Admin' : 'Venue';
+                    if (selectedRoles.includes('venue') || selectedRoles.includes('admin') || selectedRoles.includes('host')) {
+                        const pendingRoles = [];
+                        if (selectedRoles.includes('admin')) pendingRoles.push('Admin');
+                        if (selectedRoles.includes('venue')) pendingRoles.push('Venue');
+                        if (selectedRoles.includes('host')) pendingRoles.push('Host');
+                        const pendingRole = pendingRoles.join(', ');
                         successEl.innerHTML = `
                             <div style="font-size: 60px; margin-bottom: 1rem;">⏳</div>
                             <h3 style="margin-bottom: 0.5rem;">Account Created!</h3>
@@ -11406,6 +11493,11 @@
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                             <div style="flex: 1;"><span style="font-weight: 600;">Admin</span> <span style="font-size: 0.75rem; color: var(--lightning-yellow);">• Requires approval</span></div>
                         </label>
+                        <label class="user-type-btn" data-type="host" onclick="toggleRoleSelect(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="checkbox" name="userTypes" value="host" style="display: none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                            <div style="flex: 1;"><span style="font-weight: 600;">Host</span> <span style="font-size: 0.75rem; color: var(--lightning-yellow);">• Requires approval</span></div>
+                        </label>
                     </div>
                     <div style="text-align: center; margin-top: 1.5rem;">
                         <button onclick="proceedToSignup()" class="btn btn-primary" style="width: 100%;">CONTINUE</button>
@@ -11415,24 +11507,27 @@
                     </p>
                 </div>
 
-                <!-- Quick Login (Admin can login here) -->
+                <!-- Quick Login - Step 1: Email -->
                 <div id="quickLoginSection" style="display: none;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
-                        <button onclick="selectLoginType('member')" class="user-type-btn login-type-btn" data-type="member" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
-                            <div style="font-weight: 600;">Member</div>
-                        </button>
-                        <button onclick="selectLoginType('dj')" class="user-type-btn login-type-btn" data-type="dj" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
-                            <div style="font-weight: 600;">DJ</div>
-                        </button>
-                        <button onclick="selectLoginType('venue')" class="user-type-btn login-type-btn" data-type="venue" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
-                            <div style="font-weight: 600;">Venue</div>
-                        </button>
-                        <button onclick="selectLoginType('admin')" class="user-type-btn login-type-btn" data-type="admin" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;">
-                            <div style="font-weight: 600;">Admin</div>
-                        </button>
-                    </div>
-                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem;">
+                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your email to see your roles</p>
+                    <form class="pass-modal-form" onsubmit="fetchUserRoles(event)">
+                        <input type="email" id="loginEmailLookup" placeholder="Email" required>
+                        <button type="submit" id="lookupBtn">CONTINUE</button>
+                    </form>
+                    <div id="loginLookupError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
                         <a href="#" onclick="showUserTypes()" style="color: var(--lightning-yellow);">← Back to signup</a>
+                    </p>
+                </div>
+
+                <!-- Quick Login - Step 2: Role Selection (dynamic based on user) -->
+                <div id="roleSelectSection" style="display: none;">
+                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem; text-align: center;">Logging in as:</p>
+                    <p id="loginEmailDisplay" style="color: var(--lightning-yellow); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;"></p>
+                    <div id="availableRolesContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;"></div>
+                    <div id="pendingRolesNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid var(--lightning-yellow); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--lightning-yellow);"></div>
+                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem;">
+                        <a href="#" onclick="showQuickLogin()" style="color: var(--lightning-yellow);">← Use different email</a>
                     </p>
                 </div>
 
