@@ -11086,21 +11086,25 @@
             }
         }
 
-        // Show quick login section
+        // Show quick login section (email entry)
         function showQuickLogin() {
+            document.getElementById('loginCenterSubtitle').style.display = 'block';
             document.getElementById('userTypeSelect').style.display = 'none';
             document.getElementById('quickLoginSection').style.display = 'block';
-            document.getElementById('roleSelectSection').style.display = 'none';
+            document.getElementById('loginPasscodeSection').style.display = 'none';
+            document.getElementById('forgotPasscodeSection').style.display = 'none';
             document.getElementById('loginFormContainer').style.display = 'none';
-            document.getElementById('loginEmailLookup').value = '';
+            document.getElementById('loginEmailInput').value = '';
             document.getElementById('loginLookupError').style.display = 'none';
         }
 
-        // Fetch user roles from API
+        // Step 1: Look up user roles by email
         let loginUserEmail = '';
-        async function fetchUserRoles(event) {
+        let loginUserRoles = [];
+
+        async function lookupUserRoles(event) {
             event.preventDefault();
-            const email = document.getElementById('loginEmailLookup').value.trim().toLowerCase();
+            const email = document.getElementById('loginEmailInput').value.trim().toLowerCase();
             const btn = document.getElementById('lookupBtn');
             const errorDiv = document.getElementById('loginLookupError');
 
@@ -11121,30 +11125,18 @@
                 }
 
                 loginUserEmail = email;
+                loginUserRoles = data.availableRoles || ['member'];
+
+                // Display email
                 document.getElementById('loginEmailDisplay').textContent = email;
 
-                // Build role buttons based on available roles
-                const container = document.getElementById('availableRolesContainer');
-                container.innerHTML = '';
-
-                const roleLabels = {
-                    member: 'Member',
-                    dj: 'DJ',
-                    venue: 'Venue',
-                    partner: 'Partner',
-                    admin: 'Admin',
-                    host: 'Host'
-                };
-
-                data.availableRoles.forEach(role => {
-                    const btn = document.createElement('button');
-                    btn.className = 'user-type-btn login-type-btn';
-                    btn.dataset.type = role;
-                    btn.style.cssText = 'padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer;';
-                    btn.innerHTML = `<div style="font-weight: 600;">${roleLabels[role] || role}</div>`;
-                    btn.onclick = () => selectLoginType(role);
-                    container.appendChild(btn);
-                });
+                // Display roles as informational badges in a grid
+                const rolesDisplay = document.getElementById('userRolesDisplay');
+                const roleLabels = { member: 'Member', dj: 'DJ', venue: 'Venue', partner: 'Partner', admin: 'Admin', host: 'Host' };
+                const roleBadges = loginUserRoles.map(r =>
+                    `<div style="padding: 0.75rem 1rem; background: rgba(255,221,0,0.1); border: 1px solid var(--lightning-yellow); border-radius: 8px; color: white; text-align: center;"><span style="font-weight: 600;">${roleLabels[r] || r}</span></div>`
+                ).join('');
+                rolesDisplay.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;">${roleBadges}</div>`;
 
                 // Show pending roles notice
                 const pendingNotice = document.getElementById('pendingRolesNotice');
@@ -11160,12 +11152,16 @@
                     pendingNotice.style.display = 'none';
                 }
 
-                // Show role selection
+                // Show passcode section, hide subtitle
+                document.getElementById('loginCenterSubtitle').style.display = 'none';
                 document.getElementById('quickLoginSection').style.display = 'none';
-                document.getElementById('roleSelectSection').style.display = 'block';
+                document.getElementById('loginPasscodeSection').style.display = 'block';
+                document.getElementById('loginPasscode').value = '';
+                document.getElementById('loginPasscode').focus();
+                document.getElementById('loginError').style.display = 'none';
 
             } catch (error) {
-                console.error('Fetch roles error:', error);
+                console.error('Lookup error:', error);
                 errorDiv.textContent = 'Connection error. Please try again.';
                 errorDiv.style.display = 'block';
             }
@@ -11174,33 +11170,95 @@
             btn.disabled = false;
         }
 
-        // Select login type (single select for login)
-        function selectLoginType(type) {
-            selectedUserType = type;
+        // Step 2: Login with passcode
+        async function submitQuickLogin(event) {
+            event.preventDefault();
+            const passcode = document.getElementById('loginPasscode').value;
+            const btn = document.getElementById('quickLoginBtn');
+            const errorDiv = document.getElementById('loginError');
 
-            // Show login form
-            document.getElementById('quickLoginSection').style.display = 'none';
-            document.getElementById('roleSelectSection').style.display = 'none';
-            document.getElementById('loginFormContainer').style.display = 'block';
-            document.getElementById('selectedTypeLabel').textContent = type.toUpperCase() + ' LOGIN';
-            document.getElementById('createAccountLink').style.display = type === 'admin' ? 'none' : 'block';
+            btn.textContent = 'LOGGING IN...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
 
-            // Pre-fill email if we already have it from role lookup
-            if (loginUserEmail) {
-                document.getElementById('lcEmail').value = loginUserEmail;
+            try {
+                // Try to login - attempt each role until one works
+                let loginSuccess = false;
+                let loginData = null;
+                let successRole = null;
+
+                for (const role of loginUserRoles) {
+                    try {
+                        const loginRes = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: loginUserEmail, password: passcode, userType: role })
+                        });
+                        const data = await loginRes.json();
+
+                        if (data.token) {
+                            loginSuccess = true;
+                            loginData = data;
+                            successRole = role;
+                            break;
+                        }
+                    } catch (e) {
+                        // Try next role
+                    }
+                }
+
+                if (!loginSuccess) {
+                    errorDiv.textContent = 'Invalid passcode';
+                    errorDiv.style.display = 'block';
+                    btn.textContent = 'LOGIN';
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Store token and ALL available roles
+                localStorage.setItem('token', loginData.token);
+                localStorage.setItem('userEmail', loginUserEmail);
+                localStorage.setItem('userRole', successRole);
+                localStorage.setItem('userRoles', JSON.stringify(loginUserRoles));
+
+                // Navigate based on highest-priority role
+                const rolePriority = ['admin', 'venue', 'host', 'partner', 'dj', 'member'];
+                const primaryRole = rolePriority.find(r => loginUserRoles.includes(r)) || 'member';
+
+                const roleRedirects = {
+                    admin: '/admin',
+                    venue: '/venue',
+                    host: '/host',
+                    partner: '/partners',
+                    dj: '/dj',
+                    member: '/members'
+                };
+
+                window.location.href = roleRedirects[primaryRole];
+
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'Connection error. Please try again.';
+                errorDiv.style.display = 'block';
             }
+
+            btn.textContent = 'LOGIN';
+            btn.disabled = false;
         }
 
         function showUserTypes() {
+            document.getElementById('loginCenterSubtitle').style.display = 'block';
             document.getElementById('userTypeSelect').style.display = 'block';
             document.getElementById('quickLoginSection').style.display = 'none';
-            document.getElementById('roleSelectSection').style.display = 'none';
+            document.getElementById('loginPasscodeSection').style.display = 'none';
+            document.getElementById('forgotPasscodeSection').style.display = 'none';
             document.getElementById('loginFormContainer').style.display = 'none';
             document.getElementById('memberSignup').style.display = 'none';
             document.getElementById('createAccountForm').style.display = 'none';
             selectedUserType = null;
             selectedRoles = ['member'];
             loginUserEmail = '';
+            loginUserRoles = [];
 
             // Reset role checkboxes
             document.querySelectorAll('#userTypeSelect .user-type-btn').forEach(btn => {
@@ -11213,6 +11271,53 @@
                 }
             });
             return false;
+        }
+
+        // Show forgot passcode section
+        function showForgotPasscode() {
+            document.getElementById('loginPasscodeSection').style.display = 'none';
+            document.getElementById('forgotPasscodeSection').style.display = 'block';
+            document.getElementById('forgotPhone').value = '';
+            document.getElementById('forgotError').style.display = 'none';
+            document.getElementById('forgotSuccess').style.display = 'none';
+        }
+
+        // Submit forgot passcode request
+        async function submitForgotPasscode(event) {
+            event.preventDefault();
+            const phone = document.getElementById('forgotPhone').value;
+            const btn = document.getElementById('forgotBtn');
+            const errorDiv = document.getElementById('forgotError');
+            const successDiv = document.getElementById('forgotSuccess');
+
+            btn.textContent = 'SENDING...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    successDiv.textContent = 'If an account exists with this phone, a code has been sent.';
+                    successDiv.style.display = 'block';
+                } else {
+                    errorDiv.textContent = data.error || 'Failed to send code';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Forgot passcode error:', error);
+                errorDiv.textContent = 'Connection error. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+
+            btn.textContent = 'SEND CODE';
+            btn.disabled = false;
         }
 
         function showMemberLogin() {
@@ -11408,7 +11513,7 @@
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </div>
                 <h2 style="margin-bottom: 0.5rem;">Login Center</h2>
-                <p style="color: var(--gray); margin-bottom: 1.5rem;">Select your account type</p>
+                <p id="loginCenterSubtitle" style="color: var(--gray); margin-bottom: 1.5rem;">Select your account type</p>
 
                 <!-- User Type Selection (Multi-select for signup, single for login) -->
                 <div id="userTypeSelect" style="margin-bottom: 1.5rem;">
@@ -11456,9 +11561,9 @@
 
                 <!-- Quick Login - Step 1: Email -->
                 <div id="quickLoginSection" style="display: none;">
-                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your email to see your roles</p>
-                    <form class="pass-modal-form" onsubmit="fetchUserRoles(event)">
-                        <input type="email" id="loginEmailLookup" placeholder="Email" required>
+                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your email</p>
+                    <form class="pass-modal-form" onsubmit="lookupUserRoles(event)">
+                        <input type="email" id="loginEmailInput" placeholder="Email" required>
                         <button type="submit" id="lookupBtn">CONTINUE</button>
                     </form>
                     <div id="loginLookupError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
@@ -11467,14 +11572,38 @@
                     </p>
                 </div>
 
-                <!-- Quick Login - Step 2: Role Selection (dynamic based on user) -->
-                <div id="roleSelectSection" style="display: none;">
-                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem; text-align: center;">Logging in as:</p>
-                    <p id="loginEmailDisplay" style="color: var(--lightning-yellow); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;"></p>
-                    <div id="availableRolesContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;"></div>
+                <!-- Quick Login - Step 2: Show Roles + Passcode -->
+                <div id="loginPasscodeSection" style="display: none;">
+                    <p id="loginEmailDisplay" style="color: var(--lightning-yellow); font-size: 1rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
+
+                    <!-- Your Roles (informational badges) -->
+                    <div id="userRolesDisplay" style="margin-bottom: 1rem;"></div>
                     <div id="pendingRolesNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid var(--lightning-yellow); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--lightning-yellow);"></div>
-                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem;">
-                        <a href="#" onclick="showQuickLogin()" style="color: var(--lightning-yellow);">← Use different email</a>
+
+                    <form class="pass-modal-form" onsubmit="submitQuickLogin(event)">
+                        <input type="password" id="loginPasscode" placeholder="Enter Passcode" required style="text-align: center;">
+                        <button type="submit" id="quickLoginBtn">LOGIN</button>
+                    </form>
+                    <div id="loginError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
+                        <a href="#" onclick="showForgotPasscode()" style="color: var(--lightning-yellow);">Forgot passcode?</a>
+                    </p>
+                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 0.5rem;">
+                        <a href="#" onclick="showQuickLogin()" style="color: var(--gray);">← Use different email</a>
+                    </p>
+                </div>
+
+                <!-- Forgot Passcode Section -->
+                <div id="forgotPasscodeSection" style="display: none;">
+                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your phone number to reset your passcode</p>
+                    <form class="pass-modal-form" onsubmit="submitForgotPasscode(event)">
+                        <input type="tel" id="forgotPhone" placeholder="Phone number" required>
+                        <button type="submit" id="forgotBtn">SEND CODE</button>
+                    </form>
+                    <div id="forgotError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                    <div id="forgotSuccess" style="display: none; color: var(--neon-green); text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
+                        <a href="#" onclick="showQuickLogin()" style="color: var(--lightning-yellow);">← Back to login</a>
                     </p>
                 </div>
 

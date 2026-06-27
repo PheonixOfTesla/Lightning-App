@@ -1035,11 +1035,11 @@
         const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/referral';
         // const API_URL = 'http://localhost:3000/api/v1/referral'; // Dev
 
-        // State - check both partner auth and main auth
-        let token = localStorage.getItem('partnerToken');
-        let user = JSON.parse(localStorage.getItem('partnerUser') || 'null');
-        const mainAuthToken = localStorage.getItem('authToken');
-        const mainUserType = localStorage.getItem('userType');
+        // State - use unified auth system
+        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        let token = localStorage.getItem('token');
+        let userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+        let userEmail = localStorage.getItem('userEmail');
 
         // Elements
         const landingSection = document.getElementById('landing-section');
@@ -1047,83 +1047,138 @@
         const loginForm = document.getElementById('login-form');
         const dashboard = document.getElementById('dashboard');
 
-        // Build role-based navigation
+        // Build role-based navigation from stored roles
         function buildRoleNav() {
-            const userType = localStorage.getItem('userType');
-            const adminToken = localStorage.getItem('adminToken');
-            const partnerToken = localStorage.getItem('partnerToken');
-            const djToken = localStorage.getItem('djToken');
-            const venueToken = localStorage.getItem('venueToken');
-
-            const isAdmin = userType === 'admin' || adminToken;
+            const roles = JSON.parse(localStorage.getItem('userRoles') || '[]');
             const currentPage = 'partner';
 
-            // Define all possible dashboards
-            const dashboards = [
-                { id: 'member', label: 'Member', href: '/members', show: true },
-                { id: 'dj', label: 'DJ', href: '/dj', show: isAdmin || userType === 'dj' || djToken },
-                { id: 'venue', label: 'Venue', href: '/venue', show: isAdmin || userType === 'venue' || venueToken },
-                { id: 'partner', label: 'Partner', href: '/partners', show: true },
-                { id: 'admin', label: 'Admin', href: '/admin', show: isAdmin }
-            ];
+            const roleToNav = {
+                member: { id: 'member', label: 'Member', href: '/members' },
+                dj: { id: 'dj', label: 'DJ', href: '/dj' },
+                partner: { id: 'partner', label: 'Partner', href: '/partners' },
+                host: { id: 'host', label: 'Host', href: '/host' },
+                venue: { id: 'venue', label: 'Venue', href: '/venue' },
+                admin: { id: 'admin', label: 'Admin', href: '/admin' }
+            };
 
             const dashboardNav = document.getElementById('dashboardNav');
+            if (!dashboardNav) return;
             dashboardNav.innerHTML = '';
 
-            dashboards.filter(d => d.show).forEach(dash => {
-                const link = document.createElement('a');
-                link.href = dash.href;
-                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
-                link.textContent = dash.label;
-                dashboardNav.appendChild(link);
+            roles.forEach(role => {
+                const nav = roleToNav[role];
+                if (nav) {
+                    const link = document.createElement('a');
+                    link.href = nav.href;
+                    link.className = 'nav-link dashboard-link' + (nav.id === currentPage ? ' active' : '');
+                    link.textContent = nav.label;
+                    dashboardNav.appendChild(link);
+                }
             });
 
             dashboardNav.classList.add('show');
         }
 
-        // Update nav based on any auth state
+        // Update nav based on auth state
         function updateNavAuth() {
             const navBtn = document.getElementById('nav-login');
-            if (mainAuthToken || token) {
+            if (token) {
                 navBtn.textContent = 'LOGOUT';
                 navBtn.onclick = function(e) {
                     e.preventDefault();
-                    // Clear all auth
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('userType');
-                    localStorage.removeItem('userEmail');
-                    localStorage.removeItem('partnerToken');
-                    localStorage.removeItem('partnerUser');
-                    token = null;
-                    user = null;
-                    window.location.reload();
+                    logout();
                 };
             }
         }
 
-        // Check if logged in
+        // Check if logged in and has partner role
         function checkAuth() {
             updateNavAuth();
-            if (token && user) {
-                // Partner logged in - show dashboard
+
+            if (token && userRoles.includes('partner')) {
+                // Has partner role - show dashboard
                 showDashboard();
                 loadDashboard();
-            } else if (mainAuthToken) {
-                // Logged in via main site but not a partner yet
-                // Auto-show signup with email pre-filled
-                const mainEmail = localStorage.getItem('userEmail');
-                showSignup();
-                if (mainEmail) {
-                    document.getElementById('signup-email').value = mainEmail;
-                }
-                // Show a friendly message
-                const successEl = document.getElementById('signup-success');
-                successEl.innerHTML = 'You\'re logged in! Complete the form below to become a partner.';
-                successEl.style.display = 'block';
-                successEl.style.background = 'rgba(255,221,0,0.1)';
-                successEl.style.color = '#ffdd00';
+            } else if (token) {
+                // Logged in but no partner role - show "Add Partner Role" option
+                showAddPartnerRole();
             } else {
+                // Not logged in - show landing with login redirect
                 showLanding();
+            }
+        }
+
+        // Show option to add partner role to existing account
+        function showAddPartnerRole() {
+            landingSection.style.display = 'none';
+            signupForm.classList.remove('active');
+            loginForm.classList.remove('active');
+            dashboard.classList.remove('active');
+
+            // Create add partner section if it doesn't exist
+            let addSection = document.getElementById('add-partner-section');
+            if (!addSection) {
+                addSection = document.createElement('div');
+                addSection.id = 'add-partner-section';
+                addSection.style.cssText = 'padding: 8rem 2rem 4rem; max-width: 500px; margin: 0 auto; text-align: center;';
+                addSection.innerHTML = `
+                    <h2 style="color: var(--lightning-yellow); margin-bottom: 1rem;">Become a Partner</h2>
+                    <p style="color: var(--gray); margin-bottom: 2rem;">You're logged in as <strong style="color: var(--white);">${userEmail}</strong>. Add the Partner role to your account to start earning referral commissions.</p>
+                    <button onclick="addPartnerRole()" class="btn btn-primary" id="addPartnerBtn">Add Partner Role</button>
+                    <p style="color: var(--gray); margin-top: 1.5rem; font-size: 0.85rem;">Earn 10% of platform revenue from every venue you refer. Forever.</p>
+                `;
+                document.body.insertBefore(addSection, document.querySelector('footer'));
+            }
+            addSection.style.display = 'block';
+            buildRoleNav();
+        }
+
+        // Add partner role to existing account
+        async function addPartnerRole() {
+            const btn = document.getElementById('addPartnerBtn');
+            btn.textContent = 'Adding...';
+            btn.disabled = true;
+
+            try {
+                // Call the referral signup endpoint which will add partner role
+                const res = await fetch(`${API_URL}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: localStorage.getItem('userName') || userEmail.split('@')[0],
+                        email: userEmail,
+                        phone: '',
+                        association: 'existing_member',
+                        password: 'existing_account' // Backend should handle this
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.token || data.partnerCode) {
+                    // Update stored roles
+                    if (!userRoles.includes('partner')) {
+                        userRoles.push('partner');
+                        localStorage.setItem('userRoles', JSON.stringify(userRoles));
+                    }
+                    if (data.token) {
+                        localStorage.setItem('partnerToken', data.token);
+                    }
+                    if (data.user) {
+                        localStorage.setItem('partnerUser', JSON.stringify(data.user));
+                    }
+
+                    // Hide add section and show dashboard
+                    document.getElementById('add-partner-section').style.display = 'none';
+                    showDashboard();
+                    loadDashboard();
+                } else {
+                    throw new Error(data.error || 'Failed to add partner role');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                btn.textContent = 'Add Partner Role';
+                btn.disabled = false;
             }
         }
 

@@ -559,6 +559,111 @@
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+
+        /* Filter Chips */
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: var(--white);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--lightning-yellow);
+        }
+
+        .filter-chip.active {
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            border-color: var(--lightning-yellow);
+            font-weight: 600;
+        }
+
+        /* Role Badges */
+        .role-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .role-badge.member { background: var(--electric-blue); color: var(--pure-black); }
+        .role-badge.dj { background: var(--electric-purple); color: white; }
+        .role-badge.partner { background: var(--neon-green); color: var(--pure-black); }
+        .role-badge.host { background: #ff8c00; color: var(--pure-black); }
+        .role-badge.venue { background: var(--lightning-yellow); color: var(--pure-black); }
+        .role-badge.admin { background: var(--danger-red); color: white; }
+
+        /* User Detail Styles */
+        .user-detail-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .user-detail-section h4 {
+            color: var(--lightning-yellow);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .user-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .user-detail-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .user-detail-value {
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        .approval-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .approval-actions button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .pass-history-item {
+            background: rgba(255,255,255,0.03);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -734,25 +839,45 @@
                         </svg>
                         User Management
                     </h3>
-                    <div class="search-bar">
-                        <input type="text" id="userSearch" placeholder="Search by email or name...">
-                        <button onclick="searchUsers()">Search</button>
+
+                    <!-- Role Filter Chips -->
+                    <div class="role-filters" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button class="filter-chip active" onclick="filterUsers('all')">All</button>
+                        <button class="filter-chip" onclick="filterUsers('pending')">Pending Approval</button>
+                        <button class="filter-chip" onclick="filterUsers('member')">Members</button>
+                        <button class="filter-chip" onclick="filterUsers('dj')">DJs</button>
+                        <button class="filter-chip" onclick="filterUsers('partner')">Partners</button>
+                        <button class="filter-chip" onclick="filterUsers('host')">Hosts</button>
+                        <button class="filter-chip" onclick="filterUsers('venue')">Venues</button>
+                        <button class="filter-chip" onclick="filterUsers('admin')">Admins</button>
                     </div>
+
+                    <div class="search-bar">
+                        <input type="text" id="userSearch" placeholder="Search by email or name..." onkeypress="if(event.key==='Enter') loadUsers()">
+                        <button onclick="loadUsers()">Search</button>
+                    </div>
+
+                    <div id="usersLoading" class="loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Loading users...</p>
+                    </div>
+
                     <div id="usersTable" style="overflow-x: auto;">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Email</th>
-                                    <th>Name</th>
-                                    <th>Type</th>
+                                    <th>User</th>
+                                    <th>Roles</th>
+                                    <th>Status</th>
+                                    <th>Stats</th>
                                     <th>Joined</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody">
                                 <tr>
-                                    <td colspan="5" style="text-align: center; color: var(--gray);">
-                                        Enter a search term to find users
+                                    <td colspan="6" style="text-align: center; color: var(--gray);">
+                                        Loading users...
                                     </td>
                                 </tr>
                             </tbody>
@@ -867,6 +992,20 @@
         </div>
     </div>
 
+    <!-- User Detail Modal -->
+    <div id="userDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" onclick="closeModal('userDetailModal')">&times;</button>
+            <h3 style="margin-bottom: 1rem;">User Details</h3>
+            <div id="userDetailContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading user details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
@@ -882,8 +1021,9 @@
             const dashboards = [
                 { id: 'member', label: 'Member', href: '/members' },
                 { id: 'dj', label: 'DJ', href: '/dj' },
-                { id: 'venue', label: 'Venue', href: '/venue' },
                 { id: 'partner', label: 'Partner', href: '/partners' },
+                { id: 'host', label: 'Host', href: '/host' },
+                { id: 'venue', label: 'Venue', href: '/venue' },
                 { id: 'admin', label: 'Admin', href: '/admin' }
             ];
 
@@ -1129,8 +1269,403 @@
             }
         }
 
-        function viewUser(userId) {
-            alert('User details view coming soon');
+        // ============================
+        // User Management Functions
+        // ============================
+
+        let currentUserFilter = 'all';
+        let currentUserData = null;
+
+        async function loadUsers() {
+            const search = document.getElementById('userSearch').value;
+            const loading = document.getElementById('usersLoading');
+            const tbody = document.getElementById('usersTableBody');
+
+            loading.style.display = 'block';
+
+            try {
+                const params = new URLSearchParams();
+                if (currentUserFilter !== 'all') params.append('filter', currentUserFilter);
+                if (search) params.append('search', search);
+
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/list?${params}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                const users = data.users || [];
+
+                loading.style.display = 'none';
+
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No users found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => {
+                    // Build role badges
+                    const roles = user.roles || [user.role || 'member'];
+                    const roleBadges = roles.map(r => `<span class="role-badge ${r}">${r.toUpperCase()}</span>`).join('');
+
+                    // Build status info
+                    let statusHtml = '-';
+                    const pendingRoles = [];
+                    if (user.venueStatus === 'pending') pendingRoles.push('Venue');
+                    if (user.adminStatus === 'pending') pendingRoles.push('Admin');
+                    if (user.hostStatus === 'pending') pendingRoles.push('Host');
+
+                    if (pendingRoles.length > 0) {
+                        statusHtml = `<span class="status-badge pending">${pendingRoles.join(', ')} Pending</span>`;
+                    } else {
+                        statusHtml = '<span style="color: var(--neon-green);">Active</span>';
+                    }
+
+                    // Build stats
+                    let stats = [];
+                    if (user.passCount > 0) stats.push(`${user.passCount} passes`);
+                    if (user.totalSpentFromPasses > 0) stats.push(`$${user.totalSpentFromPasses.toFixed(0)} spent`);
+                    if (user.partnerCode) stats.push(`Partner: ${user.partnerCode}`);
+                    const statsHtml = stats.length > 0 ? stats.join('<br>') : '-';
+
+                    return `
+                        <tr>
+                            <td>
+                                <strong>${user.name || '-'}</strong><br>
+                                <span style="color: var(--gray); font-size: 0.85rem;">${user.email}</span>
+                            </td>
+                            <td>${roleBadges}</td>
+                            <td>${statusHtml}</td>
+                            <td style="font-size: 0.85rem;">${statsHtml}</td>
+                            <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</td>
+                            <td>
+                                <button class="action-btn view" onclick="viewUser('${user._id}')">View</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Load users error:', error);
+                loading.style.display = 'none';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Failed to load users</td></tr>';
+            }
+        }
+
+        function filterUsers(filter) {
+            currentUserFilter = filter;
+
+            // Update active chip
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            event.target.classList.add('active');
+
+            loadUsers();
+        }
+
+        async function viewUser(userId) {
+            document.getElementById('userDetailModal').classList.add('active');
+            const content = document.getElementById('userDetailContent');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading user details...</p></div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/details`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                currentUserData = data.user;
+                renderUserDetails(data.user);
+
+            } catch (error) {
+                console.error('View user error:', error);
+                content.innerHTML = `<p style="color: var(--danger-red);">Failed to load user details</p>`;
+            }
+        }
+
+        function renderUserDetails(user) {
+            const content = document.getElementById('userDetailContent');
+
+            // Build role badges
+            const roles = user.roles || [user.role || 'member'];
+            const roleBadges = roles.map(r => `<span class="role-badge ${r}">${r.toUpperCase()}</span>`).join(' ');
+
+            // Build pending approval section
+            let approvalHtml = '';
+            const pendingRoles = [];
+            if (user.venueStatus === 'pending') pendingRoles.push({ type: 'venue', label: 'Venue Owner' });
+            if (user.adminStatus === 'pending') pendingRoles.push({ type: 'admin', label: 'Admin' });
+            if (user.hostStatus === 'pending') pendingRoles.push({ type: 'host', label: 'Host' });
+
+            if (pendingRoles.length > 0) {
+                approvalHtml = `
+                    <div class="user-detail-section" style="border: 1px solid var(--lightning-yellow);">
+                        <h4>Pending Approval</h4>
+                        ${pendingRoles.map(pr => `
+                            <div style="margin-bottom: 0.75rem;">
+                                <p style="margin-bottom: 0.5rem;">${pr.label} access requested</p>
+                                <div class="approval-actions">
+                                    <button style="background: var(--neon-green); color: var(--pure-black);" onclick="approveUser('${user._id}', '${pr.type}')">Approve</button>
+                                    <button style="background: var(--danger-red); color: white;" onclick="rejectUser('${user._id}', '${pr.type}')">Reject</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Build stats sections based on roles
+            let statsHtml = '';
+
+            // Member stats
+            if (roles.includes('member')) {
+                statsHtml += `
+                    <div class="user-detail-section">
+                        <h4>Member Stats</h4>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Total Passes</span>
+                            <span class="user-detail-value">${user.passes?.length || 0}</span>
+                        </div>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Total Spent</span>
+                            <span class="user-detail-value">$${(user.totalSpent || 0).toFixed(2)}</span>
+                        </div>
+                        ${user.partnerCode ? `
+                            <div class="user-detail-row">
+                                <span class="user-detail-label">Partner Code</span>
+                                <span class="user-detail-value" style="color: var(--neon-green);">${user.partnerCode}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Partner stats
+            if (roles.includes('partner') || user.partnerCode) {
+                statsHtml += `
+                    <div class="user-detail-section">
+                        <h4>Partner Stats</h4>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Partner Code</span>
+                            <span class="user-detail-value" style="color: var(--neon-green);">${user.partnerCode || 'N/A'}</span>
+                        </div>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Referrals</span>
+                            <span class="user-detail-value">${user.referralCount || 0}</span>
+                        </div>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Lifetime Earnings</span>
+                            <span class="user-detail-value">$${(user.partnerLifetimeEarnings || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Commission Rate</span>
+                            <span class="user-detail-value">${((user.partnerCommissionRate || 0.10) * 100).toFixed(0)}%</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // DJ stats
+            if (roles.includes('dj') && user.djProfile) {
+                statsHtml += `
+                    <div class="user-detail-section">
+                        <h4>DJ Profile</h4>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Stage Name</span>
+                            <span class="user-detail-value">${user.djProfile.stageName || user.djProfile.name || '-'}</span>
+                        </div>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Total Earnings</span>
+                            <span class="user-detail-value">$${((user.djProfile.totalEarnings || 0) / 100).toFixed(2)}</span>
+                        </div>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Stripe Connected</span>
+                            <span class="user-detail-value">${user.djProfile.stripeConnectAccountId ? 'Yes' : 'No'}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Venue stats
+            if (roles.includes('venue') && user.venueProfile) {
+                statsHtml += `
+                    <div class="user-detail-section">
+                        <h4>Venue Profile</h4>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Venue Name</span>
+                            <span class="user-detail-value">${user.venueProfile.name || '-'}</span>
+                        </div>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Stripe Connected</span>
+                            <span class="user-detail-value">${user.venueProfile.isConnected ? 'Yes' : 'No'}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Host stats
+            if (roles.includes('host')) {
+                statsHtml += `
+                    <div class="user-detail-section">
+                        <h4>Host Status</h4>
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Status</span>
+                            <span class="user-detail-value">${user.hostStatus === 'approved' ? '<span style="color: var(--neon-green);">Approved</span>' : user.hostStatus || 'N/A'}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Pass history
+            let passHistoryHtml = '';
+            if (user.passes && user.passes.length > 0) {
+                passHistoryHtml = `
+                    <div class="user-detail-section">
+                        <h4>Recent Passes</h4>
+                        ${user.passes.slice(0, 5).map(pass => `
+                            <div class="pass-history-item">
+                                <div>
+                                    <strong>${pass.eventName || 'Unknown Event'}</strong><br>
+                                    <span style="color: var(--gray); font-size: 0.8rem;">${new Date(pass.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div>
+                                    <span class="status-badge ${pass.status}">${pass.status}</span>
+                                    <span style="color: var(--neon-green); margin-left: 0.5rem;">$${((pass.amount || 0) / 100).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Role management section
+            const allRoles = ['member', 'dj', 'partner', 'host', 'venue', 'admin'];
+            const availableToAdd = allRoles.filter(r => !roles.includes(r));
+            const roleManagementHtml = `
+                <div class="user-detail-section">
+                    <h4>Role Management</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                        ${availableToAdd.map(r => `
+                            <button class="filter-chip" onclick="addRoleToUser('${user._id}', '${r}')" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                                + Add ${r.toUpperCase()}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <p style="color: var(--gray); font-size: 0.8rem;">Current roles: ${roleBadges}</p>
+                </div>
+            `;
+
+            content.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <h2 style="margin-bottom: 0.25rem;">${user.name || 'No Name'}</h2>
+                    <p style="color: var(--gray); margin-bottom: 0.5rem;">${user.email}</p>
+                    <p style="color: var(--gray); font-size: 0.85rem;">${user.phone || 'No phone'}</p>
+                    <div style="margin-top: 0.5rem;">${roleBadges}</div>
+                </div>
+
+                ${approvalHtml}
+
+                <div class="user-detail-section">
+                    <h4>Account Info</h4>
+                    <div class="user-detail-row">
+                        <span class="user-detail-label">Joined</span>
+                        <span class="user-detail-value">${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</span>
+                    </div>
+                    ${user.referredBy ? `
+                        <div class="user-detail-row">
+                            <span class="user-detail-label">Referred By</span>
+                            <span class="user-detail-value">${user.referredBy}</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                ${statsHtml}
+                ${passHistoryHtml}
+                ${roleManagementHtml}
+            `;
+        }
+
+        async function approveUser(userId, roleType) {
+            if (!confirm(`Approve this user for ${roleType} access?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ roleType, status: 'approved' })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`User approved for ${roleType} access!`, 'success');
+                    viewUser(userId); // Refresh details
+                    loadUsers(); // Refresh list
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function rejectUser(userId, roleType) {
+            if (!confirm(`Reject this user's ${roleType} access request?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ roleType, status: 'rejected' })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`User ${roleType} access rejected`, 'success');
+                    viewUser(userId);
+                    loadUsers();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function addRoleToUser(userId, role) {
+            if (!confirm(`Add ${role} role to this user?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/add-role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ role })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Added ${role} role to user!`, 'success');
+                    viewUser(userId);
+                    loadUsers();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        // Keep old searchUsers for backwards compatibility
+        function searchUsers() {
+            loadUsers();
         }
 
         async function loadDeals() {
@@ -1309,6 +1844,11 @@
 
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName + 'Tab').classList.add('active');
+
+            // Load data when switching to users tab
+            if (tabName === 'users') {
+                loadUsers();
+            }
         }
 
         function closeModal(id) {
