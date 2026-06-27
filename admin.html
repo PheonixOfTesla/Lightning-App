@@ -3015,20 +3015,47 @@
                             </div>
                         </div>
                         <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark); color: var(--gray); font-size: 0.85rem;">
-                            ${totals.passCount} paid passes | ${totals.refundCount} refunds
+                            ${totals.passCount} passes | ${totals.refundCount} refunds
+                            ${totals.activeSubscriptions ? ` | ${totals.activeSubscriptions} active members` : ''}
+                            ${totals.experienceBookings ? ` | ${totals.experienceBookings} experience bookings` : ''}
                         </div>
                     </div>
 
+                    <!-- Revenue by Source Summary -->
+                    ${(totals.subscriptionRevenue > 0 || totals.experienceRevenue > 0) ? `
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; text-align: center;">
+                            <div style="font-size: 0.7rem; color: var(--lightning-yellow); text-transform: uppercase; margin-bottom: 0.25rem;">Tickets</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--white);">$${(totals.ticketRevenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; text-align: center;">
+                            <div style="font-size: 0.7rem; color: var(--electric-blue); text-transform: uppercase; margin-bottom: 0.25rem;">Subscriptions</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--white);">$${(totals.subscriptionRevenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; text-align: center;">
+                            <div style="font-size: 0.7rem; color: var(--electric-purple); text-transform: uppercase; margin-bottom: 0.25rem;">Experiences</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--white);">$${(totals.experienceRevenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+
                     <!-- By Event Section -->
-                    <h4 style="margin-bottom: 1rem; color: var(--lightning-yellow);">Revenue by Event</h4>
+                    <h4 style="margin-bottom: 1rem; color: var(--lightning-yellow);">Revenue by Source</h4>
                 `;
 
-                if (byEvent.length === 0 && !noEventPasses) {
+                if (byEvent.length === 0) {
                     html += `<div style="color: var(--gray); text-align: center; padding: 2rem;">No revenue data available</div>`;
                 } else {
                     html += `<div style="display: flex; flex-direction: column; gap: 0.75rem;">`;
 
                     byEvent.forEach(event => {
+                        // Determine category badge
+                        const categoryBadge = event.category === 'recurring'
+                            ? '<span style="background: var(--electric-blue); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem;">RECURRING</span>'
+                            : event.category === 'experiences'
+                            ? '<span style="background: var(--electric-purple); color: #fff; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem;">EXPERIENCE</span>'
+                            : '<span style="background: var(--lightning-yellow); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem;">TICKETS</span>';
+
                         html += `
                             <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; cursor: pointer; transition: border-color 0.2s;"
                                  onclick="toggleEventPasses('${event.eventId}')"
@@ -3036,8 +3063,8 @@
                                  onmouseout="this.style.borderColor='var(--border-dark)'">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <div>
-                                        <div style="font-weight: 600; color: var(--white); margin-bottom: 0.25rem;">${event.eventName}</div>
-                                        <div style="font-size: 0.8rem; color: var(--gray);">${event.passCount} passes${event.refundCount > 0 ? ` | ${event.refundCount} refunds` : ''}</div>
+                                        <div style="font-weight: 600; color: var(--white); margin-bottom: 0.25rem;">${event.eventName}${categoryBadge}</div>
+                                        <div style="font-size: 0.8rem; color: var(--gray);">${event.passCount} ${event.category === 'recurring' ? 'members' : event.category === 'experiences' ? 'bookings' : 'passes'}${event.refundCount > 0 ? ` | ${event.refundCount} refunds` : ''}</div>
                                     </div>
                                     <div style="text-align: right;">
                                         <div style="font-size: 1.25rem; font-weight: 700; color: var(--neon-green);">$${event.net.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
