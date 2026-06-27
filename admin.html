@@ -1160,7 +1160,9 @@
             const tbody = document.getElementById('eventsTableBody');
 
             try {
-                const res = await fetch(`${API_BASE}/api/v1/lightning/events`);
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
                 const data = await res.json();
                 const events = data.events || [];
 
