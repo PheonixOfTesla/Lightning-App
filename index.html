@@ -2455,6 +2455,18 @@
                 <div id="homepageSpotlightEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
                     <!-- Lightning/promotional events load here -->
                 </div>
+                <!-- Member Teaser Card (shows for guests only) -->
+                <div id="memberTeaser" class="guest-only-teaser" style="margin-top: 1.25rem; background: linear-gradient(135deg, rgba(255,221,0,0.05) 0%, rgba(255,221,0,0.02) 100%); border: 2px dashed rgba(255,221,0,0.3); border-radius: 1rem; padding: 2rem; text-align: center;">
+                    <div style="width: 60px; height: 60px; background: rgba(255,221,0,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Members Get Early Access</h3>
+                    <p style="color: #888; font-size: 0.95rem; margin-bottom: 1.25rem; max-width: 400px; margin-left: auto; margin-right: auto;">See upcoming spotlight events before they go public. Members get first dibs on tickets.</p>
+                    <button onclick="showPassModal()" style="background: var(--lightning-yellow); color: #000; border: none; padding: 0.875rem 2rem; border-radius: 0.5rem; font-weight: 600; font-size: 1rem; cursor: pointer; font-family: inherit;">Become a Member</button>
+                </div>
             </div>
 
             <!-- THE SCENE - Free no-cover venues -->
@@ -4392,6 +4404,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             const skipSplash = urlParams.has('browse') || urlParams.has('events');
 
+            // Hide member teaser for logged-in users
+            const memberTeaser = document.getElementById('memberTeaser');
+            if (memberTeaser) {
+                memberTeaser.style.display = existingToken ? 'none' : 'block';
+            }
+
             if (existingToken || skipSplash) {
                 // User logged in OR coming from another page - skip splash, go straight to events
                 document.getElementById('splashScreen').classList.add('hidden');
@@ -5167,6 +5185,12 @@
 
         function handleAuthSuccess(user) {
             updateNavigation(user);
+
+            // Hide member teaser for logged-in users
+            const memberTeaser = document.getElementById('memberTeaser');
+            if (memberTeaser) {
+                memberTeaser.style.display = 'none';
+            }
 
             // Show "My Passes" section for logged in customers
             const myPassesSection = document.getElementById('myPassesSection');
