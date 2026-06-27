@@ -945,12 +945,28 @@
 
             <!-- Refunds Tab -->
             <div id="refundsTab" class="tab-content">
+                <!-- Recent Refunds Section -->
+                <div class="card" style="margin-bottom: 1rem;">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger-red)" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Processed Refunds
+                    </h3>
+                    <div id="refundsLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading refunds...</p>
+                    </div>
+                    <div id="refundsList"></div>
+                </div>
+
+                <!-- Search & Process New Refund -->
                 <div class="card">
                     <h3>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
-                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
-                        Refund Processing
+                        Process New Refund
                     </h3>
                     <div class="search-bar">
                         <input type="text" id="refundSearch" placeholder="Search pass ID or email...">
@@ -2222,6 +2238,49 @@
             }
         }
 
+        async function loadRefunds() {
+            const loading = document.getElementById('refundsLoading');
+            const list = document.getElementById('refundsList');
+
+            loading.style.display = 'block';
+            list.innerHTML = '';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/refunds`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                const refunds = data.refunds || [];
+
+                loading.style.display = 'none';
+
+                if (refunds.length === 0) {
+                    list.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 1rem;">No refunds processed yet</p>';
+                    return;
+                }
+
+                list.innerHTML = refunds.map(r => `
+                    <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <strong style="color: var(--danger-red);">${r.passId}</strong><br>
+                            <span style="color: var(--gray); font-size: 0.85rem;">${r.eventName || r.venueName || '-'}</span><br>
+                            <span style="color: var(--gray); font-size: 0.85rem;">${r.email || r.guestName || '-'}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: var(--danger-red); font-weight: 600;">-$${((r.amount || 0) / 100).toFixed(2)}</span><br>
+                            <span style="color: var(--gray); font-size: 0.8rem;">${r.refundedAt ? new Date(r.refundedAt).toLocaleDateString() : '-'}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Load refunds error:', error);
+                loading.style.display = 'none';
+                list.innerHTML = '<p style="color: var(--danger-red); text-align: center; padding: 1rem;">Failed to load refunds</p>';
+            }
+        }
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
@@ -2236,6 +2295,8 @@
                 loadVenues();
             } else if (tabName === 'system') {
                 loadSystemMonitoring();
+            } else if (tabName === 'refunds') {
+                loadRefunds();
             }
         }
 
