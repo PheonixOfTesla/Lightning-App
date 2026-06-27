@@ -748,16 +748,20 @@
                     <div class="stat-card-value green" id="totalRevenue">$0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-label">Total Passes Sold</div>
+                    <div class="stat-card-label">Passes Sold</div>
                     <div class="stat-card-value yellow" id="totalPasses">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-label">Active Events</div>
-                    <div class="stat-card-value blue" id="activeEvents">0</div>
+                    <div class="stat-card-label">Customers</div>
+                    <div class="stat-card-value blue" id="totalCustomers">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-label">Total Users</div>
-                    <div class="stat-card-value purple" id="totalUsers">0</div>
+                    <div class="stat-card-label">Active Events</div>
+                    <div class="stat-card-value purple" id="activeEvents">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Registered Users</div>
+                    <div class="stat-card-value" id="totalUsers">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-card-label">Pending Approvals</div>
@@ -1371,6 +1375,7 @@
                     const data = await res.json();
                     document.getElementById('totalRevenue').textContent = '$' + (data.totalRevenue || 0).toLocaleString();
                     document.getElementById('totalPasses').textContent = (data.totalPasses || 0).toLocaleString();
+                    document.getElementById('totalCustomers').textContent = (data.totalCustomers || 0).toLocaleString();
                     document.getElementById('activeEvents').textContent = data.activeEvents || 0;
                     document.getElementById('totalUsers').textContent = (data.totalUsers || 0).toLocaleString();
                     document.getElementById('pendingCount').textContent = data.pendingApproval || 0;
