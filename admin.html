@@ -2850,7 +2850,7 @@
                                 <span style="color: var(--gray); margin-left: 0.5rem;">${t.email || 'Unknown'}</span>
                             </div>
                             <div>
-                                <span style="color: var(--lightning-yellow);">$${((t.amount || 0) / 100).toFixed(2)}</span>
+                                <span style="color: var(--lightning-yellow);">$${(t.amount || 0).toFixed(0)}</span>
                                 <span style="color: var(--gray); margin-left: 0.5rem; font-size: 0.8rem;">${new Date(t.createdAt).toLocaleTimeString()}</span>
                             </div>
                         </div>
