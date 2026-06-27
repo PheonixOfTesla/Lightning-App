@@ -526,6 +526,101 @@
             color: var(--white);
         }
 
+        /* Live Signup Card */
+        .signup-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .signup-card:last-child {
+            border-bottom: none;
+        }
+
+        .signup-card.new {
+            background: rgba(255, 221, 0, 0.1);
+            border-left: 3px solid var(--lightning-yellow);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .signup-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .signup-name {
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .signup-email {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .signup-role {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255, 221, 0, 0.2);
+            color: var(--lightning-yellow);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .signup-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .signup-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(57, 255, 20, 0.15);
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        .live-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
         /* Stripe Connect Button */
         .stripe-connect-btn {
             background: #635bff;
@@ -897,6 +992,23 @@
             <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.5rem;">
                 Link your bank account to receive automatic payouts
             </p>
+        </div>
+
+        <!-- Live Signups Section -->
+        <div class="venues-section" id="live-signups-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>Live Signups</h3>
+                <div id="connection-status" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+                    <span id="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #888;"></span>
+                    <span id="status-text" style="color: #888;">Connecting...</span>
+                </div>
+            </div>
+            <div id="live-signups-list">
+                <div class="empty-state" id="no-signups-yet">
+                    <h4>Waiting for signups...</h4>
+                    <p>When someone uses your partner code, they'll appear here in real-time</p>
+                </div>
+            </div>
         </div>
 
         <!-- Venues Section -->
@@ -1492,6 +1604,150 @@
             window.location.reload();
         }
         document.addEventListener('DOMContentLoaded', updateAuthButton);
+    </script>
+
+    <!-- Socket.IO for Live Updates -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // WebSocket connection for live signup notifications
+        const SOCKET_URL = 'https://lightning-backend-production.up.railway.app';
+        let socket = null;
+        let currentPartnerCode = null;
+        const liveSignups = [];
+
+        function initWebSocket(partnerCode) {
+            if (!partnerCode) return;
+            currentPartnerCode = partnerCode;
+
+            // Connect to Socket.IO
+            socket = io(SOCKET_URL, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000
+            });
+
+            // Update connection status
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+
+            socket.on('connect', () => {
+                console.log('🔌 Connected to WebSocket');
+                statusDot.style.background = '#39ff14';
+                statusText.textContent = 'Connected';
+                statusText.style.color = '#39ff14';
+
+                // Join partner room
+                socket.emit('join:partner', partnerCode, (response) => {
+                    if (response.success) {
+                        console.log(`📡 Joined partner room: ${partnerCode}`);
+                    } else {
+                        console.error('Failed to join partner room:', response.error);
+                    }
+                });
+            });
+
+            socket.on('disconnect', () => {
+                console.log('🔌 Disconnected from WebSocket');
+                statusDot.style.background = '#888';
+                statusText.textContent = 'Disconnected';
+                statusText.style.color = '#888';
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('WebSocket connection error:', error);
+                statusDot.style.background = '#ff0044';
+                statusText.textContent = 'Connection Error';
+                statusText.style.color = '#ff0044';
+            });
+
+            // Listen for new signups
+            socket.on('partner:signup', (data) => {
+                console.log('📥 New signup received:', data);
+                addLiveSignup(data);
+            });
+        }
+
+        function addLiveSignup(data) {
+            const list = document.getElementById('live-signups-list');
+            const emptyState = document.getElementById('no-signups-yet');
+
+            // Hide empty state
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+
+            // Create signup card
+            const card = document.createElement('div');
+            card.className = 'signup-card new';
+
+            const time = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const roleLabel = data.user.role === 'customer' ? 'Member' : data.user.role.charAt(0).toUpperCase() + data.user.role.slice(1);
+
+            card.innerHTML = `
+                <div class="signup-info">
+                    <span class="signup-name">${data.user.name}</span>
+                    <span class="signup-email">${data.user.email}</span>
+                </div>
+                <div class="signup-badge">
+                    <span class="live-badge">LIVE</span>
+                    <span class="signup-role">${roleLabel}</span>
+                    <span class="signup-time">${time}</span>
+                </div>
+            `;
+
+            // Insert at top
+            list.insertBefore(card, list.firstChild);
+
+            // Play notification sound (optional, can be added later)
+            // playNotificationSound();
+
+            // Remove 'new' highlight after animation
+            setTimeout(() => {
+                card.classList.remove('new');
+                // Change LIVE badge to timestamp
+                const liveBadge = card.querySelector('.live-badge');
+                if (liveBadge) {
+                    liveBadge.innerHTML = `<span style="margin-right: 0.25rem;">✓</span> New`;
+                    liveBadge.style.background = 'rgba(255, 221, 0, 0.15)';
+                    liveBadge.style.borderColor = 'rgba(255, 221, 0, 0.3)';
+                    liveBadge.style.color = 'var(--lightning-yellow)';
+                }
+            }, 5000);
+
+            // Store in array
+            liveSignups.unshift(data);
+
+            // Update stats
+            updateSignupCount();
+        }
+
+        function updateSignupCount() {
+            // Could update a counter badge if needed
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+
+        // Initialize WebSocket when user data is loaded
+        const originalLoadDashboard = window.loadDashboard;
+        if (typeof loadDashboard === 'function') {
+            const _loadDashboard = loadDashboard;
+            window.loadDashboard = async function() {
+                await _loadDashboard.apply(this, arguments);
+                // Get partner code from display and initialize WebSocket
+                setTimeout(() => {
+                    const partnerCodeDisplay = document.getElementById('partner-code-display');
+                    if (partnerCodeDisplay && partnerCodeDisplay.textContent) {
+                        initWebSocket(partnerCodeDisplay.textContent);
+                    }
+                }, 500);
+            };
+        }
     </script>
 
     <!-- Auth Modal -->

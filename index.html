@@ -11097,6 +11097,7 @@
             const phone = document.getElementById('createPhone').value;
             const passcode = document.getElementById('createPasscode').value;
             const passcodeConfirm = document.getElementById('createPasscodeConfirm').value;
+            const partnerCode = document.getElementById('createPartnerCode').value.trim().toUpperCase();
             const btn = e.target.querySelector('button');
 
             // Validate passcodes match
@@ -11130,7 +11131,8 @@
                         userType: primaryRole,
                         roles: selectedRoles, // Send all selected roles
                         venueStatus: selectedRoles.includes('venue') ? 'pending' : null,
-                        adminStatus: selectedRoles.includes('admin') ? 'pending' : null
+                        adminStatus: selectedRoles.includes('admin') ? 'pending' : null,
+                        partnerCode: partnerCode || null
                     })
                 });
 
@@ -11286,6 +11288,7 @@
                         <input type="tel" id="createPhone" placeholder="Phone">
                         <input type="password" id="createPasscode" placeholder="Passcode" required>
                         <input type="password" id="createPasscodeConfirm" placeholder="Confirm passcode" required>
+                        <input type="text" id="createPartnerCode" placeholder="Partner code (optional)" style="text-transform: uppercase;">
                         <button type="submit">CREATE ACCOUNT</button>
                     </form>
                     <div style="text-align: center; margin-top: 1rem;">
