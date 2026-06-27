@@ -11129,7 +11129,8 @@
                         password: passcode,
                         userType: primaryRole,
                         roles: selectedRoles, // Send all selected roles
-                        venueStatus: selectedRoles.includes('venue') ? 'pending' : null
+                        venueStatus: selectedRoles.includes('venue') ? 'pending' : null,
+                        adminStatus: selectedRoles.includes('admin') ? 'pending' : null
                     })
                 });
 
@@ -11149,14 +11150,15 @@
                         });
                     }
 
-                    // Show success with pending notice if venue
+                    // Show success with pending notice if venue or admin
                     const successEl = document.querySelector('.pass-modal-success');
-                    if (selectedRoles.includes('venue')) {
+                    if (selectedRoles.includes('venue') || selectedRoles.includes('admin')) {
+                        const pendingRole = selectedRoles.includes('admin') ? 'Admin' : 'Venue';
                         successEl.innerHTML = `
                             <div style="font-size: 60px; margin-bottom: 1rem;">⏳</div>
                             <h3 style="margin-bottom: 0.5rem;">Account Created!</h3>
-                            <p style="color: var(--lightning-yellow); margin-bottom: 1rem;">Venue access is pending approval</p>
-                            <p style="color: var(--gray); font-size: 0.9rem;">You'll be notified once your venue is approved. In the meantime, you can access your Member dashboard.</p>
+                            <p style="color: var(--lightning-yellow); margin-bottom: 1rem;">${pendingRole} access is pending approval</p>
+                            <p style="color: var(--gray); font-size: 0.9rem;">You'll be notified once your ${pendingRole.toLowerCase()} access is approved. In the meantime, you can access your Member dashboard.</p>
                             <button onclick="window.location.href='/members'" class="btn btn-primary" style="margin-top: 1.5rem;">Go to Dashboard</button>
                         `;
                     }
@@ -11221,6 +11223,12 @@
                             <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
                             <div style="font-weight: 600;">Partner</div>
                             <div style="font-size: 0.75rem; color: var(--gray);">Referral program</div>
+                        </label>
+                        <label class="user-type-btn" data-type="admin" onclick="toggleRoleSelect(this)" style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 10px; color: white; cursor: pointer; transition: all 0.2s; display: block; text-align: center;">
+                            <input type="checkbox" name="userTypes" value="admin" style="display: none;">
+                            <div style="margin-bottom: 0.25rem;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M12 15v2"/><path d="M12 11v.01"/><path d="M3 21h18l-9-18-9 18z"/></svg></div>
+                            <div style="font-weight: 600;">Admin</div>
+                            <div style="font-size: 0.7rem; color: var(--lightning-yellow);">Requires approval</div>
                         </label>
                     </div>
                     <div style="text-align: center; margin-top: 1.5rem;">
