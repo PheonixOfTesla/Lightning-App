@@ -4437,26 +4437,33 @@
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
             const existingToken = localStorage.getItem('token');
+            const memberLoggedIn = localStorage.getItem('memberLoggedIn') === 'true';
+            const isLoggedIn = existingToken || memberLoggedIn;
             const urlParams = new URLSearchParams(window.location.search);
             const skipSplash = urlParams.has('browse') || urlParams.has('events');
 
             // Hide member teaser for logged-in users
             const memberTeaser = document.getElementById('memberTeaser');
             if (memberTeaser) {
-                memberTeaser.style.display = existingToken ? 'none' : 'block';
+                memberTeaser.style.display = isLoggedIn ? 'none' : 'block';
             }
             const memberTeaserLink = document.getElementById('memberTeaserLink');
             if (memberTeaserLink) {
-                memberTeaserLink.style.display = existingToken ? 'none' : 'flex';
+                memberTeaserLink.style.display = isLoggedIn ? 'none' : 'flex';
             }
 
-            if (existingToken || skipSplash) {
+            // Check member login state for nav buttons
+            if (memberLoggedIn) {
+                setTimeout(checkMemberLoginState, 500); // Wait for nav to render
+            }
+
+            if (isLoggedIn || skipSplash) {
                 // User logged in OR coming from another page - skip splash, go straight to events
                 document.getElementById('splashScreen').classList.add('hidden');
                 document.getElementById('landingPage').style.display = 'none';
 
                 // If skip splash, also enter the app directly
-                if (skipSplash && !existingToken) {
+                if (skipSplash && !isLoggedIn) {
                     showView('customer');
                     loadVenues();
                     loadHomepageSpotlightEvents();
@@ -10866,9 +10873,47 @@
             }
         }
 
-        function goToDeals() {
+        function onMemberLoginSuccess() {
             closePassModal();
-            window.location.href = '/deals';
+
+            // Hide the "Unlock other Spotlight events" teaser
+            const teaserLink = document.getElementById('memberTeaserLink');
+            if (teaserLink) teaserLink.style.display = 'none';
+
+            // Update nav LOGIN to LOGOUT (desktop and mobile)
+            document.querySelectorAll('.btn-pass').forEach(btn => {
+                if (btn.textContent.trim() === 'LOGIN') {
+                    btn.textContent = 'LOGOUT';
+                    btn.onclick = function() { logoutMember(); return false; };
+                }
+            });
+
+            // Set logged in state
+            localStorage.setItem('memberLoggedIn', 'true');
+        }
+
+        function logoutMember() {
+            localStorage.removeItem('memberLoggedIn');
+            localStorage.removeItem('lightningPassEmail');
+            localStorage.removeItem('lightningPassName');
+            window.location.reload();
+        }
+
+        // Check if member is logged in on page load
+        function checkMemberLoginState() {
+            if (localStorage.getItem('memberLoggedIn') === 'true') {
+                // Hide teaser
+                const teaserLink = document.getElementById('memberTeaserLink');
+                if (teaserLink) teaserLink.style.display = 'none';
+
+                // Update LOGIN to LOGOUT
+                document.querySelectorAll('.btn-pass').forEach(btn => {
+                    if (btn.textContent.trim() === 'LOGIN') {
+                        btn.textContent = 'LOGOUT';
+                        btn.onclick = function() { logoutMember(); return false; };
+                    }
+                });
+            }
         }
 
         let selectedUserType = null;
@@ -11244,7 +11289,7 @@
                 </div>
                 <h2>You're In!</h2>
                 <p>Your Lightning Pass is active. Check your email for confirmation.</p>
-                <button onclick="goToDeals()" style="margin-top: 1rem; padding: 1rem 2rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">VIEW DEALS</button>
+                <button onclick="onMemberLoginSuccess()" style="margin-top: 1rem; padding: 1rem 2rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">CONTINUE</button>
             </div>
         </div>
         </div>
