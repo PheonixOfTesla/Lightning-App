@@ -2470,10 +2470,10 @@
                 if (res.ok) {
                     const data = await res.json();
 
-                    // Update payment stats
-                    document.getElementById('paymentsCompleted').textContent = data.totalPasses || 0;
+                    // Update payment stats from real database
+                    document.getElementById('paymentsCompleted').textContent = data.completedPayments || data.totalPasses || 0;
                     document.getElementById('paymentsIncomplete').textContent = '0';
-                    document.getElementById('paymentsRefunded').textContent = '0';
+                    document.getElementById('paymentsRefunded').textContent = data.refundedPayments || 0;
                     document.getElementById('paymentsDisputed').textContent = '0';
                     document.getElementById('stripeTodayVolume').textContent = '$' + (data.totalRevenue24h || 0).toLocaleString();
                     document.getElementById('stripePlatformFees').textContent = '$' + Math.round((data.totalRevenue24h || 0) * 0.15).toLocaleString();
