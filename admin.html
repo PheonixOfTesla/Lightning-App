@@ -1298,6 +1298,19 @@
         </div>
     </div>
 
+    <div id="refundModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <button class="modal-close" onclick="closeModal('refundModal')">&times;</button>
+            <h3 style="margin-bottom: 1rem; color: var(--danger-red);">Process Refund</h3>
+            <div id="refundModalContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading passes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
@@ -1801,6 +1814,7 @@
                     const deleteBtn = user.isGuest ? '' : `<button class="action-btn reject" onclick="deleteUser('${user._id}')" style="margin-left: 0.25rem;">Delete</button>`;
                     const viewBtn = user.isGuest ? '' : `<button class="action-btn view" onclick="viewUser('${user._id}')">View</button>`;
                     const passesBtn = user.passCount > 0 ? `<button class="action-btn" style="background: var(--electric-purple); margin-left: 0.25rem;" onclick="viewUserPasses('${user.email}')">Passes</button>` : '';
+                    const refundBtn = user.passCount > 0 ? `<button class="action-btn" style="background: var(--danger-red); margin-left: 0.25rem;" onclick="initiateUserRefund('${user.email}')">Refund</button>` : '';
 
                     return `
                         <tr style="${user.isGuest ? 'opacity: 0.7;' : ''}">
@@ -1813,7 +1827,7 @@
                             <td style="font-size: 0.85rem;">${statsHtml}</td>
                             <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</td>
                             <td>
-                                ${viewBtn}${passesBtn}${deleteBtn}
+                                ${viewBtn}${passesBtn}${refundBtn}${deleteBtn}
                             </td>
                         </tr>
                     `;
@@ -2156,6 +2170,94 @@
             } catch (error) {
                 console.error('View passes error:', error);
                 content.innerHTML = `<p style="color: var(--danger-red);">Failed to load passes: ${error.message}</p>`;
+            }
+        }
+
+        async function initiateUserRefund(email) {
+            const code = prompt('Enter security code to proceed with refund:');
+            if (code !== '3898') {
+                if (code !== null) showToast('Invalid security code', 'error');
+                return;
+            }
+
+            // Show refund modal with passes
+            document.getElementById('refundModal').classList.add('active');
+            const content = document.getElementById('refundModalContent');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading passes...</p></div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/by-email?email=${encodeURIComponent(email)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                const passes = data.passes || [];
+                const activePasses = passes.filter(p => p.status === 'active' && p.amount > 0);
+
+                if (activePasses.length === 0) {
+                    content.innerHTML = '<p style="text-align: center; color: var(--gray);">No active paid passes to refund.</p>';
+                    return;
+                }
+
+                content.innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="color: var(--danger-red); margin-bottom: 0.5rem;">Refund Passes for ${email}</h3>
+                        <p style="color: var(--gray); font-size: 0.9rem;">Select a pass to refund. This will mark it as refunded in the system.</p>
+                    </div>
+                    <table class="data-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Pass ID</th>
+                                <th>Event</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activePasses.map(p => `
+                                <tr>
+                                    <td style="font-family: monospace; font-size: 0.8rem; color: var(--lightning-yellow);">${(p.passId || '').substring(0, 20)}...</td>
+                                    <td style="font-size: 0.85rem;">${p.eventName || p.venueName || '-'}</td>
+                                    <td style="color: var(--neon-green); font-weight: 600;">$${(p.amount || 0).toFixed(0)}</td>
+                                    <td style="font-size: 0.8rem;">${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</td>
+                                    <td><button class="action-btn reject" onclick="processRefund('${p.passId}', '${email}')">Refund</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Load refund passes error:', error);
+                content.innerHTML = `<p style="color: var(--danger-red);">Failed to load passes: ${error.message}</p>`;
+            }
+        }
+
+        async function processRefund(passId, email) {
+            if (!confirm(`Are you sure you want to refund pass ${passId}?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/${passId}/refund`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Pass refunded successfully', 'success');
+                    closeModal('refundModal');
+                    loadUsers();
+                    loadRefunds();
+                } else {
+                    throw new Error(data.error || 'Refund failed');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
             }
         }
 
