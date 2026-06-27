@@ -880,6 +880,22 @@
                         <button onclick="loadUsers()">Search</button>
                     </div>
 
+                    <!-- Users Summary -->
+                    <div id="usersSummary" style="display: flex; gap: 2rem; margin-bottom: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                        <div>
+                            <span style="color: var(--gray); font-size: 0.85rem;">Total Users</span>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--lightning-yellow);" id="usersSummaryCount">-</div>
+                        </div>
+                        <div>
+                            <span style="color: var(--gray); font-size: 0.85rem;">Total Spent</span>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--neon-green);" id="usersSummarySpent">-</div>
+                        </div>
+                        <div>
+                            <span style="color: var(--gray); font-size: 0.85rem;">Total Passes</span>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--electric-blue);" id="usersSummaryPasses">-</div>
+                        </div>
+                    </div>
+
                     <div id="usersLoading" class="loading" style="display: none;">
                         <div class="spinner"></div>
                         <p>Loading users...</p>
@@ -1694,6 +1710,15 @@
                 }
 
                 const users = data.users || [];
+
+                // Calculate and display summary stats
+                const totalUsers = users.length;
+                const totalSpent = users.reduce((sum, u) => sum + (u.totalSpentFromPasses || 0), 0);
+                const totalPasses = users.reduce((sum, u) => sum + (u.passCount || 0), 0);
+
+                document.getElementById('usersSummaryCount').textContent = totalUsers.toLocaleString();
+                document.getElementById('usersSummarySpent').textContent = '$' + totalSpent.toLocaleString();
+                document.getElementById('usersSummaryPasses').textContent = totalPasses.toLocaleString();
 
                 loading.style.display = 'none';
 
