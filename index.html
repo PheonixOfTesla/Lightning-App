@@ -11049,10 +11049,19 @@
                     // Route based on user type
                     closePassModal();
                     switch(selectedUserType) {
-                        case 'dj': window.location.href = '/dj'; break;
-                        case 'venue': window.location.href = '/partners'; break;
-                        case 'admin': window.location.href = '/admin'; break;
-                        case 'member': window.location.href = '/members'; break;
+                        case 'dj':
+                            showView('dj');
+                            loadDJDashboard();
+                            break;
+                        case 'venue':
+                            window.location.href = '/partners';
+                            break;
+                        case 'admin':
+                            window.location.href = '/admin';
+                            break;
+                        case 'member':
+                            onMemberLoginSuccess();
+                            break;
                     }
                 } else {
                     alert(data.error || 'Login failed');
