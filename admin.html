@@ -1644,52 +1644,6 @@
             window.open(`/?event=${eventId}`, '_blank');
         }
 
-        async function searchPasses() {
-            const query = document.getElementById('passSearch').value;
-            if (!query) return;
-
-            const loading = document.getElementById('passesLoading');
-            const tbody = document.getElementById('passesTableBody');
-
-            loading.style.display = 'block';
-
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/search?q=${encodeURIComponent(query)}`, {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-
-                const data = await res.json();
-                const passes = data.passes || [];
-
-                loading.style.display = 'none';
-
-                if (passes.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No passes found</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = passes.map(pass => `
-                    <tr>
-                        <td><code>${pass.passId || pass._id}</code></td>
-                        <td>${pass.eventName || '-'}</td>
-                        <td>${pass.customerEmail || pass.email || '-'}</td>
-                        <td>$${((pass.amount || 0) / 100).toFixed(2)}</td>
-                        <td><span class="status-badge ${pass.status}">${pass.status}</span></td>
-                        <td>
-                            ${pass.status !== 'refunded' ? `
-                                <button class="action-btn refund" onclick="showRefundModal('${pass.passId || pass._id}')">Refund</button>
-                            ` : '<span style="color: var(--gray);">Refunded</span>'}
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (error) {
-                console.error('Search error:', error);
-                loading.style.display = 'none';
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Search failed</td></tr>';
-            }
-        }
-
         async function searchUsers() {
             const query = document.getElementById('userSearch').value;
             if (!query) return;
