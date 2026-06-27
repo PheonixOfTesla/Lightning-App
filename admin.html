@@ -821,30 +821,52 @@
                         </svg>
                         Pass Management
                     </h3>
+
+                    <!-- Passes Summary -->
+                    <div id="passesSummary" style="display: flex; gap: 2rem; margin-bottom: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                        <div>
+                            <span style="color: var(--gray); font-size: 0.85rem;">Total Passes</span>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--lightning-yellow);" id="passesSummaryCount">-</div>
+                        </div>
+                        <div>
+                            <span style="color: var(--gray); font-size: 0.85rem;">Total Revenue</span>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--neon-green);" id="passesSummaryRevenue">-</div>
+                        </div>
+                        <div>
+                            <span style="color: var(--gray); font-size: 0.85rem;">Total Tickets</span>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--electric-blue);" id="passesSummaryTickets">-</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <button class="btn btn-primary" onclick="loadAllPasses()">Load All Passes</button>
+                    </div>
+
                     <div class="search-bar">
                         <input type="text" id="passSearch" placeholder="Search by email, pass ID, or event...">
                         <button onclick="searchPasses()">Search</button>
                     </div>
                     <div id="passesLoading" class="loading" style="display: none;">
                         <div class="spinner"></div>
-                        <p>Searching passes...</p>
+                        <p>Loading passes...</p>
                     </div>
                     <div id="passesTable" style="overflow-x: auto;">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Pass ID</th>
-                                    <th>Event</th>
                                     <th>Customer</th>
+                                    <th>Event</th>
+                                    <th>Qty</th>
                                     <th>Amount</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Link</th>
                                 </tr>
                             </thead>
                             <tbody id="passesTableBody">
                                 <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--gray);">
-                                        Enter a search term to find passes
+                                    <td colspan="7" style="text-align: center; color: var(--gray);">
+                                        Click "Load All Passes" or search
                                     </td>
                                 </tr>
                             </tbody>
@@ -873,6 +895,7 @@
                         <button class="filter-chip" onclick="filterUsers('host')">Hosts</button>
                         <button class="filter-chip" onclick="filterUsers('venue')">Venues</button>
                         <button class="filter-chip" onclick="filterUsers('admin')">Admins</button>
+                        <button class="filter-chip" onclick="filterUsers('no_account')" style="border-color: var(--gray);">No Account</button>
                     </div>
 
                     <div class="search-bar">
@@ -1728,21 +1751,30 @@
                 }
 
                 tbody.innerHTML = users.map(user => {
-                    // Build role badges
-                    const roles = user.roles || [user.role || 'member'];
-                    const roleBadges = roles.map(r => `<span class="role-badge ${r}">${r.toUpperCase()}</span>`).join('');
+                    // Build role badges - handle guests (no account)
+                    let roleBadges = '';
+                    if (user.isGuest) {
+                        roleBadges = '<span style="color: var(--gray); font-style: italic; font-size: 0.8rem;">No Account</span>';
+                    } else {
+                        const roles = user.roles && user.roles.length > 0 ? user.roles : [user.role || 'member'];
+                        roleBadges = roles.filter(r => r).map(r => `<span class="role-badge ${r}">${r.toUpperCase()}</span>`).join('');
+                    }
 
                     // Build status info
                     let statusHtml = '-';
-                    const pendingRoles = [];
-                    if (user.venueStatus === 'pending') pendingRoles.push('Venue');
-                    if (user.adminStatus === 'pending') pendingRoles.push('Admin');
-                    if (user.hostStatus === 'pending') pendingRoles.push('Host');
-
-                    if (pendingRoles.length > 0) {
-                        statusHtml = `<span class="status-badge pending">${pendingRoles.join(', ')} Pending</span>`;
+                    if (user.isGuest) {
+                        statusHtml = '<span style="color: var(--gray);">Guest</span>';
                     } else {
-                        statusHtml = '<span style="color: var(--neon-green);">Active</span>';
+                        const pendingRoles = [];
+                        if (user.venueStatus === 'pending') pendingRoles.push('Venue');
+                        if (user.adminStatus === 'pending') pendingRoles.push('Admin');
+                        if (user.hostStatus === 'pending') pendingRoles.push('Host');
+
+                        if (pendingRoles.length > 0) {
+                            statusHtml = `<span class="status-badge pending">${pendingRoles.join(', ')} Pending</span>`;
+                        } else {
+                            statusHtml = '<span style="color: var(--neon-green);">Active</span>';
+                        }
                     }
 
                     // Build stats
@@ -1752,8 +1784,12 @@
                     if (user.partnerCode) stats.push(`Partner: ${user.partnerCode}`);
                     const statsHtml = stats.length > 0 ? stats.join('<br>') : '-';
 
+                    // Only show delete for registered users
+                    const deleteBtn = user.isGuest ? '' : `<button class="action-btn reject" onclick="deleteUser('${user._id}')" style="margin-left: 0.25rem;">Delete</button>`;
+                    const viewBtn = user.isGuest ? '' : `<button class="action-btn view" onclick="viewUser('${user._id}')">View</button>`;
+
                     return `
-                        <tr>
+                        <tr style="${user.isGuest ? 'opacity: 0.7;' : ''}">
                             <td>
                                 <strong>${user.name || '-'}</strong><br>
                                 <span style="color: var(--gray); font-size: 0.85rem;">${user.email}</span>
@@ -1763,8 +1799,7 @@
                             <td style="font-size: 0.85rem;">${statsHtml}</td>
                             <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</td>
                             <td>
-                                <button class="action-btn view" onclick="viewUser('${user._id}')">View</button>
-                                <button class="action-btn reject" onclick="deleteUser('${user._id}')" style="margin-left: 0.25rem;">Delete</button>
+                                ${viewBtn}${deleteBtn}
                             </td>
                         </tr>
                     `;
