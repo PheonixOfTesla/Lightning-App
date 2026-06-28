@@ -4149,10 +4149,15 @@
         }
 
         function logout() {
+            // Clear all auth tokens
             localStorage.removeItem('adminToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
             localStorage.removeItem('userType');
             localStorage.removeItem('userEmail');
-            window.location.reload();
+            localStorage.removeItem('userRoles');
+            // Redirect to main page
+            window.location.href = '/';
         }
 
         // Initialize
