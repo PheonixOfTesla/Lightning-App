@@ -435,6 +435,12 @@
             display: flex;
             gap: 2rem;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.2s ease-in;
+        }
+
+        .nav-links.nav-ready {
+            opacity: 1;
         }
 
         .nav-link {
@@ -4488,6 +4494,7 @@
                     <a href="#" onclick="showPassModal(); return false;" class="btn btn-pass">LOGIN</a>
                 `;
                 navLinks.style.display = 'flex';
+                navLinks.classList.add('nav-ready');
             }
         }
 
@@ -5902,80 +5909,43 @@
             state.approvalCheckInterval = setInterval(checkApprovalStatus, 10000);
         }
 
+        // Get primary dashboard URL based on user roles (priority order)
+        function getPrimaryDashboardUrl() {
+            const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            const isAdmin = userRoles.includes('admin') || localStorage.getItem('adminToken');
+            const isVenue = userRoles.includes('venue') || localStorage.getItem('venueToken');
+            const isHost = userRoles.includes('host');
+            const isPartner = userRoles.includes('partner') || localStorage.getItem('partnerToken');
+            const isDJ = userRoles.includes('dj') || localStorage.getItem('djToken');
+
+            // Priority: admin > venue > host > partner > dj > member
+            if (isAdmin) return '/admin';
+            if (isVenue) return '/admin'; // venue uses admin portal
+            if (isHost) return '/host';
+            if (isPartner) return '/partners';
+            if (isDJ) return '/dj';
+            return '/members';
+        }
+
         function updateNavigation(user) {
             const navLinks = document.getElementById('navLinks');
             const mobileMenu = document.getElementById('mobileMenu');
 
-            // Check for all role tokens
-            const isAdmin = user.role === 'admin' || localStorage.getItem('adminToken');
-            const isVenue = user.role === 'venue' || localStorage.getItem('venueToken');
-            const isDJ = user.role === 'dj' || localStorage.getItem('djToken');
-            const isPartner = localStorage.getItem('partnerToken');
+            // Simple nav for Main pages: Dashboard | Logout
+            const dashboardUrl = getPrimaryDashboardUrl();
 
-            // Build dashboard links based on roles
-            let dashboardLinks = '';
-            let mobileDashboardLinks = '';
+            navLinks.innerHTML = `
+                <a href="${dashboardUrl}" class="nav-link">Dashboard</a>
+                <button class="btn btn-danger" onclick="logout()" style="margin-left:1rem;">SIGN OUT</button>
+            `;
 
-            // Events link always first
-            dashboardLinks += `<a href="#" class="nav-link" onclick="browseEvents()">Events</a>`;
-            dashboardLinks += `<span class="nav-divider" style="width:1px;height:20px;background:rgba(255,255,255,0.2);margin:0 0.5rem;"></span>`;
-            mobileDashboardLinks += `<a href="#" onclick="browseEvents(); toggleMenu();">Events</a>`;
+            mobileMenu.innerHTML = `
+                <a href="${dashboardUrl}">Dashboard</a>
+                <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Sign Out</a>
+            `;
 
-            // Member (everyone has this)
-            dashboardLinks += `<a href="/members" class="nav-link dashboard-link">Member</a>`;
-            mobileDashboardLinks += `<a href="/members">Member</a>`;
-
-            // DJ
-            if (isAdmin || isDJ) {
-                if (user.role === 'dj') {
-                    dashboardLinks += `<a href="#" class="nav-link dashboard-link active" onclick="showView('dj')">DJ</a>`;
-                    mobileDashboardLinks += `<a href="#" onclick="showView('dj'); toggleMenu();">DJ</a>`;
-                } else {
-                    dashboardLinks += `<a href="#" class="nav-link dashboard-link" onclick="showView('dj')">DJ</a>`;
-                    mobileDashboardLinks += `<a href="#" onclick="showView('dj'); toggleMenu();">DJ</a>`;
-                }
-            }
-
-            // Venue
-            if (isAdmin || isVenue) {
-                if (user.role === 'venue') {
-                    dashboardLinks += `<a href="#" class="nav-link dashboard-link active" onclick="showView('venue')">Venue</a>`;
-                    mobileDashboardLinks += `<a href="#" onclick="showView('venue'); toggleMenu();">Venue</a>`;
-                } else {
-                    dashboardLinks += `<a href="#" class="nav-link dashboard-link" onclick="showView('venue')">Venue</a>`;
-                    mobileDashboardLinks += `<a href="#" onclick="showView('venue'); toggleMenu();">Venue</a>`;
-                }
-            }
-
-            // Partner
-            if (isAdmin || isPartner) {
-                dashboardLinks += `<a href="/partners" class="nav-link dashboard-link">Partner</a>`;
-                mobileDashboardLinks += `<a href="/partners">Partner</a>`;
-            }
-
-            // Admin
-            if (isAdmin) {
-                if (user.role === 'admin') {
-                    dashboardLinks += `<a href="/admin" class="nav-link dashboard-link active">Admin</a>`;
-                    mobileDashboardLinks += `<a href="/admin">Admin</a>`;
-                } else {
-                    dashboardLinks += `<a href="/admin" class="nav-link dashboard-link">Admin</a>`;
-                    mobileDashboardLinks += `<a href="/admin">Admin</a>`;
-                }
-            }
-
-            // Add scanner for venue
-            if (isVenue || isAdmin) {
-                dashboardLinks += `<a href="#" class="nav-link" onclick="showView('scanner')" style="margin-left:0.5rem;">Scanner</a>`;
-            }
-
-            // Logout button
-            dashboardLinks += `<button class="btn btn-danger" onclick="logout()" style="margin-left:1rem;">SIGN OUT</button>`;
-            mobileDashboardLinks += `<a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Log Out</a>`;
-
-            navLinks.innerHTML = dashboardLinks;
-            mobileMenu.innerHTML = mobileDashboardLinks;
             navLinks.style.display = 'flex';
+            navLinks.classList.add('nav-ready');
         }
 
         function logout() {
@@ -5998,6 +5968,7 @@
                 <a href="/login" class="btn btn-primary">LOGIN</a>
             `;
             navLinks.style.display = 'flex';
+            navLinks.classList.add('nav-ready');
 
             // Update mobile menu for guest mode
             const mobileMenu = document.getElementById('mobileMenu');
