@@ -529,6 +529,175 @@
 
         .modal-close:hover { color: var(--white); }
 
+        /* Event Editor Modal - Large with Split View */
+        .editor-modal-content {
+            max-width: 1200px;
+            width: 95%;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .editor-form-side {
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+
+        .editor-preview-side {
+            background: var(--pure-black);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border-left: 1px solid var(--border-dark);
+        }
+
+        .editor-preview-side h3 {
+            color: var(--lightning-yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .editor-preview-card {
+            background: var(--card-black);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid var(--border-dark);
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #1b2838, #0d1b2a);
+            object-fit: cover;
+        }
+
+        .preview-content {
+            padding: 1.25rem;
+        }
+
+        .preview-date {
+            font-size: 0.85rem;
+            color: var(--lightning-yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-location {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .preview-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--neon-green);
+        }
+
+        .preview-available {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .ticket-row {
+            display: grid;
+            grid-template-columns: 1fr 80px 80px 40px;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .ticket-row input {
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.25rem;
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+
+        .ticket-row button {
+            padding: 0.5rem;
+            background: var(--danger-red);
+            border: none;
+            border-radius: 0.25rem;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .add-ticket-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 221, 0, 0.2);
+            border: 1px dashed var(--lightning-yellow);
+            border-radius: 0.5rem;
+            color: var(--lightning-yellow);
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .editor-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .editor-form-grid .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .section-settings {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-dark);
+        }
+
+        .section-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .section-toggle.spotlight {
+            background: rgba(255, 221, 0, 0.15);
+            color: var(--lightning-yellow);
+            border: 1px solid var(--lightning-yellow);
+        }
+
+        .section-toggle.scene {
+            background: rgba(57, 255, 20, 0.15);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .section-toggle input {
+            accent-color: currentColor;
+        }
+
+        @media (max-width: 900px) {
+            .editor-modal-content {
+                grid-template-columns: 1fr;
+            }
+            .editor-preview-side {
+                display: none;
+            }
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
             nav { padding: 0.75rem 1rem; }
@@ -803,6 +972,7 @@
                 <button class="tab" onclick="switchTab('system')">System</button>
                 <button class="tab" onclick="switchTab('deals')">Deals</button>
                 <button class="tab" onclick="switchTab('refunds')">Refunds</button>
+                <button class="tab" onclick="switchTab('experiences')">Experiences</button>
             </div>
 
             <!-- Events Tab -->
@@ -1137,6 +1307,43 @@
                 </div>
             </div>
 
+            <!-- Experiences Tab -->
+            <div id="experiencesTab" class="tab-content">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                            <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/>
+                            <path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"/>
+                        </svg>
+                        Experience Management
+                    </h3>
+                    <button class="btn btn-primary" style="margin-bottom: 1rem;" onclick="openExperienceEditor()">
+                        + Add Experience
+                    </button>
+                    <div id="experiencesLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading experiences...</p>
+                    </div>
+                    <div id="experiencesTable" style="display: none; overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Experience</th>
+                                    <th>Category</th>
+                                    <th>Guest Price</th>
+                                    <th>Member Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="experiencesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- System Tab -->
             <div id="systemTab" class="tab-content">
                 <div class="card" style="margin-bottom: 1rem;">
@@ -1353,10 +1560,297 @@
         </div>
     </div>
 
+    <!-- Event Editor Modal -->
+    <div id="eventEditorModal" class="modal">
+        <div class="modal-content editor-modal-content">
+            <button class="modal-close" onclick="closeModal('eventEditorModal')">&times;</button>
+
+            <!-- Left Side: Form -->
+            <div class="editor-form-side">
+                <h3 style="margin-bottom: 1.5rem;">Edit Event</h3>
+                <input type="hidden" id="editEventId">
+
+                <div class="editor-form-grid">
+                    <div class="form-group full-width">
+                        <label>Event Name</label>
+                        <input type="text" id="editEventName" oninput="updateEventPreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="datetime-local" id="editEventDate" oninput="updateEventPreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="datetime-local" id="editEventEndDate">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Location</label>
+                        <input type="text" id="editEventLocation" oninput="updateEventPreview()">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Image</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="url" id="editEventImage" placeholder="https://..." oninput="updateEventPreview()" style="flex: 1;">
+                            <label style="padding: 0.75rem 1rem; background: var(--electric-purple); color: white; border-radius: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Upload
+                                <input type="file" id="editEventImageFile" accept="image/*" onchange="uploadEventImage(this)" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        <textarea id="editEventDescription" rows="3" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Tickets Section -->
+                <div style="margin-top: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                        Tickets
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 80px 80px 40px; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--gray); text-transform: uppercase;">
+                        <span>Name</span>
+                        <span>Price ($)</span>
+                        <span>Qty</span>
+                        <span></span>
+                    </div>
+                    <div id="editEventTickets"></div>
+                    <button type="button" class="add-ticket-btn" onclick="addTicketRow()">+ Add Ticket</button>
+                </div>
+
+                <!-- Section Settings -->
+                <div class="section-settings">
+                    <label class="section-toggle spotlight">
+                        <input type="checkbox" id="editEventSpotlight" onchange="updateEventPreview()">
+                        Spotlight
+                    </label>
+                    <label class="section-toggle scene">
+                        <input type="checkbox" id="editEventScene" onchange="updateEventPreview()">
+                        The Scene
+                    </label>
+                    <div style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;">
+                        <label style="color: var(--gray); font-size: 0.85rem;">Status:</label>
+                        <select id="editEventStatus" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.25rem; color: var(--white);">
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="live">Live</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="saveEventChanges()" style="width: 100%;">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Preview (Matches index.html event cards) -->
+            <div class="editor-preview-side">
+                <h3>Live Preview</h3>
+
+                <!-- Lightning Event Card (Featured) -->
+                <div id="previewCardLightning" class="editor-preview-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: 1rem; border: 2px solid var(--lightning-yellow); padding: 1.5rem; display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <p id="previewDateLightning" style="color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; margin: 0 0 0.5rem 0;">Fri, Jul 4 · 2:00 PM</p>
+                            <h3 id="previewNameLightning" style="color: #fff; margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2;">Event Name</h3>
+                        </div>
+                        <img id="previewImageLightning" src="" alt="" style="width: 48px; height: 48px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; display: none;">
+                    </div>
+                    <a id="previewLocationLightning" href="#" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; display: block; margin-bottom: 0.75rem; text-decoration: underline;">Location</a>
+                    <p id="previewDescLightning" style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0 0 1.25rem 0; line-height: 1.5;"></p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div>
+                            <div id="previewPriceLightning" style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">$15</div>
+                            <div id="previewAvailLightning" style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">50 tickets available</div>
+                        </div>
+                        <button style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">Get Tickets</button>
+                    </div>
+                </div>
+
+                <!-- Scene Event Card (Regular) -->
+                <div id="previewCardScene" class="editor-preview-card" style="background: rgba(255,255,255,0.03); border-radius: 1rem; border: 1px solid rgba(255,255,255,0.08); padding: 1.25rem;">
+                    <p id="previewDateScene" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; font-weight: 500; margin: 0 0 0.5rem 0;">Fri, Jul 4 · 2:00 PM</p>
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.5rem;">
+                        <img id="previewImageScene" src="" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: rgba(255,255,255,0.1); padding: 4px; flex-shrink: 0; display: none;">
+                        <h3 id="previewNameScene" style="color: #fff; margin: 0; font-weight: 600; font-size: 1.1rem; line-height: 1.25;">Event Name</h3>
+                    </div>
+                    <a id="previewLocationScene" href="#" style="color: rgba(255,255,255,0.6); font-size: 0.8rem; display: block; margin-bottom: 0.4rem; text-decoration: underline;">Location</a>
+                    <p id="previewDescScene" style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin: 0; line-height: 1.5;"></p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08);">
+                        <div>
+                            <div id="previewPriceScene" style="font-size: 1rem; font-weight: 600; color: #fff;">$15</div>
+                            <div id="previewAvailScene" style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">50 available</div>
+                        </div>
+                        <button style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">Get Tickets</button>
+                    </div>
+                </div>
+
+                <!-- Status Badges -->
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <span id="previewSpotlightBadge" style="display: none; background: var(--lightning-yellow); color: var(--pure-black); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700;">SPOTLIGHT</span>
+                    <span id="previewSceneBadge" style="display: none; background: var(--neon-green); color: var(--pure-black); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700;">THE SCENE</span>
+                    <span id="previewStatusBadge" class="status-badge">LIVE</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experience Editor Modal -->
+    <div id="experienceEditorModal" class="modal">
+        <div class="modal-content editor-modal-content">
+            <button class="modal-close" onclick="closeModal('experienceEditorModal')">&times;</button>
+
+            <!-- Left Side: Form -->
+            <div class="editor-form-side">
+                <h3 style="margin-bottom: 1.5rem;" id="experienceEditorTitle">Add Experience</h3>
+                <input type="hidden" id="editExperienceId">
+
+                <div class="editor-form-grid">
+                    <div class="form-group full-width">
+                        <label>Experience Name</label>
+                        <input type="text" id="editExperienceName" oninput="updateExperiencePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Slug</label>
+                        <input type="text" id="editExperienceSlug" placeholder="e.g., 1-jet-ski">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="editExperienceCategory" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            <option value="rental">Rental</option>
+                            <option value="tour">Tour</option>
+                            <option value="class">Class</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Guest Price ($)</label>
+                        <input type="number" id="editExperienceBasePrice" oninput="updateExperiencePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Member Price ($)</label>
+                        <input type="number" id="editExperienceMemberPrice" oninput="updateExperiencePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <input type="text" id="editExperienceDuration" placeholder="e.g., per hour">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Partner</label>
+                        <input type="text" id="editExperiencePartner" placeholder="e.g., black-flag-watersports">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        <textarea id="editExperienceDescription" rows="2" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Image</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="url" id="editExperienceImage" placeholder="https://..." oninput="updateExperiencePreview()" style="flex: 1;">
+                            <label style="padding: 0.75rem 1rem; background: var(--electric-purple); color: white; border-radius: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Upload
+                                <input type="file" id="editExperienceImageFile" accept="image/*" onchange="uploadExperienceImage(this)" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Features (one per line)</label>
+                        <textarea id="editExperienceFeatures" rows="3" placeholder="Solo rider&#10;High performance&#10;Easy to operate" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-family: inherit; resize: vertical;" oninput="updateExperiencePreview()"></textarea>
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <input type="checkbox" id="editExperienceActive" checked style="width: 18px; height: 18px; accent-color: var(--neon-green);">
+                        <label for="editExperienceActive" style="margin: 0; cursor: pointer;">Active</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Display Order</label>
+                        <input type="number" id="editExperienceOrder" value="0">
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="saveExperienceChanges()" style="width: 100%;">Save Experience</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Preview (Matches experiences.html rental-card) -->
+            <div class="editor-preview-side">
+                <h3>Live Preview</h3>
+                <div class="editor-preview-card" style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-dark);">
+                    <!-- Image -->
+                    <div style="width: 100%; height: 180px; background: linear-gradient(135deg, #1a3a5c 0%, #0d2840 100%); position: relative; overflow: hidden;">
+                        <img id="expPreviewImage" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                        <span id="expPreviewCategoryTag" style="position: absolute; top: 12px; right: 12px; background: var(--electric-purple); color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">RENTAL</span>
+                    </div>
+
+                    <!-- Content -->
+                    <div style="padding: 1.25rem;">
+                        <h4 id="expPreviewName" style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">Experience Name</h4>
+
+                        <!-- Features List -->
+                        <ul id="expPreviewFeatures" style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem; padding-left: 0; list-style: none;">
+                            <li style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--lightning-yellow);">•</span> Feature 1</li>
+                            <li style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--lightning-yellow);">•</span> Feature 2</li>
+                            <li style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--lightning-yellow);">•</span> Feature 3</li>
+                        </ul>
+
+                        <!-- Pricing Box -->
+                        <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <!-- Guest Price Row -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <span style="color: var(--gray); font-size: 0.85rem;">Guest Price</span>
+                                <span id="expPreviewBasePrice" style="font-weight: 600; text-decoration: line-through; color: var(--gray);">$130/hr</span>
+                            </div>
+                            <!-- Member Discount Row -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <span style="color: var(--lightning-yellow); font-size: 0.85rem;">Member Discount</span>
+                                <span id="expPreviewDiscountPct" style="color: #4ade80; font-weight: 600;">-23%</span>
+                            </div>
+                            <!-- You Pay Row -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0;">
+                                <span style="color: var(--lightning-yellow); font-size: 0.9rem; font-weight: 600;">You Pay</span>
+                                <span id="expPreviewMemberPrice" style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">$100/hr</span>
+                            </div>
+                        </div>
+
+                        <!-- Book Button -->
+                        <button style="width: 100%; padding: 0.875rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer;">Book Now</button>
+                    </div>
+                </div>
+
+                <!-- Duration Badge -->
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                    <span id="expPreviewDuration" style="background: rgba(255,255,255,0.1); color: var(--gray); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem;">per hour</span>
+                    <span id="expPreviewPartner" style="background: rgba(157, 78, 221, 0.2); color: var(--electric-purple); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem;">black-flag-watersports</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <script>
-        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        // For local testing: change to 'http://localhost:3000'
+        const API_BASE = 'http://localhost:3000';
         let adminToken = null;
         let currentRefundPassId = null;
 
@@ -1662,6 +2156,7 @@
                         <td><span class="status-badge ${event.status}">${event.status}</span></td>
                         <td>${event.ticketsSold || 0}</td>
                         <td>
+                            <button class="action-btn" style="background: var(--lightning-yellow); color: var(--pure-black);" onclick="openEventEditor('${event._id}')">Edit</button>
                             <button class="action-btn view" onclick="viewEvent('${event._id}')">View</button>
                             ${event.status === 'pending' ? `
                                 <button class="action-btn approve" onclick="approveEvent('${event._id}')">Approve</button>
@@ -2669,6 +3164,8 @@
                 loadSystemMonitoring();
             } else if (tabName === 'refunds') {
                 loadRefunds();
+            } else if (tabName === 'experiences') {
+                loadExperiences();
             }
         }
 
@@ -3114,6 +3611,527 @@
             const el = document.getElementById(`passes-${eventId}`);
             if (el) {
                 el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // ============================
+        // Event Editor Functions
+        // ============================
+
+        let currentEventData = null;
+
+        async function openEventEditor(eventId) {
+            document.getElementById('eventEditorModal').classList.add('active');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/spotlight-events/${eventId}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+                const event = data.event || data;
+
+                currentEventData = event;
+                document.getElementById('editEventId').value = event._id;
+                document.getElementById('editEventName').value = event.name || '';
+                document.getElementById('editEventLocation').value = event.location || '';
+                document.getElementById('editEventImage').value = event.imageUrl || '';
+                document.getElementById('editEventDescription').value = event.description || '';
+                document.getElementById('editEventSpotlight').checked = event.isLightningEvent || false;
+                document.getElementById('editEventScene').checked = event.showInScene || false;
+                document.getElementById('editEventStatus').value = event.status || 'live';
+
+                // Format dates for datetime-local input
+                if (event.date) {
+                    const d = new Date(event.date);
+                    document.getElementById('editEventDate').value = d.toISOString().slice(0, 16);
+                }
+                if (event.endDate) {
+                    const d = new Date(event.endDate);
+                    document.getElementById('editEventEndDate').value = d.toISOString().slice(0, 16);
+                }
+
+                // Populate tickets
+                const ticketsContainer = document.getElementById('editEventTickets');
+                ticketsContainer.innerHTML = '';
+                if (event.tickets && event.tickets.length > 0) {
+                    event.tickets.forEach((ticket, i) => {
+                        addTicketRow(ticket);
+                    });
+                } else {
+                    addTicketRow();
+                }
+
+                updateEventPreview();
+
+            } catch (error) {
+                console.error('Load event error:', error);
+                showToast('Failed to load event data', 'error');
+            }
+        }
+
+        function addTicketRow(ticket = null) {
+            const container = document.getElementById('editEventTickets');
+            const row = document.createElement('div');
+            row.className = 'ticket-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Ticket Name" value="${ticket?.name || ''}" class="ticket-name" oninput="updateEventPreview()">
+                <input type="number" placeholder="0" value="${ticket ? ticket.price / 100 : ''}" class="ticket-price" oninput="updateEventPreview()">
+                <input type="number" placeholder="-1" value="${ticket?.available ?? ''}" class="ticket-available" oninput="updateEventPreview()">
+                <button type="button" onclick="this.parentElement.remove(); updateEventPreview();">X</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function updateEventPreview() {
+            const name = document.getElementById('editEventName').value || 'Event Name';
+            const location = document.getElementById('editEventLocation').value || 'Location';
+            const description = document.getElementById('editEventDescription').value || '';
+            const imageUrl = document.getElementById('editEventImage').value;
+            const dateInput = document.getElementById('editEventDate').value;
+            const isSpotlight = document.getElementById('editEventSpotlight').checked;
+            const isScene = document.getElementById('editEventScene').checked;
+            const status = document.getElementById('editEventStatus').value;
+
+            // Format date
+            let dateStr = 'Fri, Jul 4 · 2:00 PM';
+            if (dateInput) {
+                const date = new Date(dateInput);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                dateStr = `${dayName}, ${monthDay} · ${time}`;
+            }
+
+            // Get lowest ticket price and total available
+            const ticketRows = document.querySelectorAll('#editEventTickets .ticket-row');
+            let lowestPrice = Infinity;
+            let totalAvailable = 0;
+            ticketRows.forEach(row => {
+                const price = parseFloat(row.querySelector('.ticket-price').value) || 0;
+                const available = parseInt(row.querySelector('.ticket-available').value);
+                if (price > 0 && price < lowestPrice) lowestPrice = price;
+                if (available > 0) totalAvailable += available;
+            });
+            const priceStr = lowestPrice === Infinity || lowestPrice === 0 ? 'FREE' : `$${lowestPrice}`;
+            const availStr = totalAvailable > 0 ? `${totalAvailable} tickets available` : 'Unlimited';
+
+            // Show appropriate card style
+            const lightningCard = document.getElementById('previewCardLightning');
+            const sceneCard = document.getElementById('previewCardScene');
+
+            if (isSpotlight) {
+                lightningCard.style.display = 'block';
+                sceneCard.style.display = 'none';
+
+                // Populate Lightning card
+                document.getElementById('previewDateLightning').textContent = dateStr;
+                document.getElementById('previewNameLightning').textContent = name;
+                document.getElementById('previewLocationLightning').textContent = location;
+                document.getElementById('previewDescLightning').textContent = description;
+                document.getElementById('previewPriceLightning').textContent = priceStr;
+                document.getElementById('previewAvailLightning').textContent = availStr;
+
+                const imgLightning = document.getElementById('previewImageLightning');
+                if (imageUrl) {
+                    imgLightning.src = imageUrl;
+                    imgLightning.style.display = 'block';
+                } else {
+                    imgLightning.style.display = 'none';
+                }
+            } else {
+                lightningCard.style.display = 'none';
+                sceneCard.style.display = 'block';
+
+                // Populate Scene card
+                document.getElementById('previewDateScene').textContent = dateStr;
+                document.getElementById('previewNameScene').textContent = name;
+                document.getElementById('previewLocationScene').textContent = location;
+                document.getElementById('previewDescScene').textContent = description;
+                document.getElementById('previewPriceScene').textContent = priceStr;
+                document.getElementById('previewAvailScene').textContent = availStr;
+
+                const imgScene = document.getElementById('previewImageScene');
+                if (imageUrl) {
+                    imgScene.src = imageUrl;
+                    imgScene.style.display = 'block';
+                } else {
+                    imgScene.style.display = 'none';
+                }
+            }
+
+            // Update badges
+            document.getElementById('previewSpotlightBadge').style.display = isSpotlight ? 'inline-block' : 'none';
+            document.getElementById('previewSceneBadge').style.display = isScene ? 'inline-block' : 'none';
+            document.getElementById('previewStatusBadge').textContent = status.toUpperCase();
+            document.getElementById('previewStatusBadge').className = `status-badge ${status}`;
+        }
+
+        async function uploadEventImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                showToast('Uploading image...', 'info');
+
+                const res = await fetch(`${API_BASE}/api/v1/lightning/upload-image`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` },
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (data.imageUrl) {
+                    document.getElementById('editEventImage').value = data.imageUrl;
+                    updateEventPreview();
+                    showToast('Image uploaded!', 'success');
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showToast(error.message, 'error');
+            }
+
+            input.value = ''; // Reset file input
+        }
+
+        async function saveEventChanges() {
+            const eventId = document.getElementById('editEventId').value;
+
+            // Collect ticket data
+            const ticketRows = document.querySelectorAll('#editEventTickets .ticket-row');
+            const tickets = [];
+            ticketRows.forEach(row => {
+                const name = row.querySelector('.ticket-name').value;
+                const price = parseFloat(row.querySelector('.ticket-price').value) || 0;
+                const available = parseInt(row.querySelector('.ticket-available').value);
+                if (name) {
+                    // Determine ticket type from name
+                    let type = 'general';
+                    const nameLower = name.toLowerCase();
+                    if (nameLower.includes('vip')) type = 'vip';
+                    else if (nameLower.includes('rsvp') || nameLower.includes('free')) type = 'rsvp';
+                    else if (nameLower.includes('early')) type = 'early_bird';
+                    else if (nameLower.includes('cabana')) type = 'cabana';
+                    else if (nameLower.includes('group')) type = 'group';
+
+                    tickets.push({
+                        type,
+                        name,
+                        price: Math.round(price * 100), // Convert to cents
+                        available: isNaN(available) ? -1 : available,
+                        sold: currentEventData?.tickets?.find(t => t.name === name)?.sold || 0
+                    });
+                }
+            });
+
+            const updates = {
+                name: document.getElementById('editEventName').value,
+                location: document.getElementById('editEventLocation').value,
+                imageUrl: document.getElementById('editEventImage').value,
+                description: document.getElementById('editEventDescription').value,
+                date: document.getElementById('editEventDate').value,
+                endDate: document.getElementById('editEventEndDate').value || null,
+                isLightningEvent: document.getElementById('editEventSpotlight').checked,
+                showInScene: document.getElementById('editEventScene').checked,
+                status: document.getElementById('editEventStatus').value,
+                tickets
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(updates)
+                });
+
+                const data = await res.json();
+                if (data.success || data.event) {
+                    showToast('Event updated successfully!', 'success');
+                    closeModal('eventEditorModal');
+                    loadEvents();
+                } else {
+                    throw new Error(data.error || 'Failed to update event');
+                }
+            } catch (error) {
+                console.error('Save event error:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        // ============================
+        // Experience Management Functions
+        // ============================
+
+        let currentExperienceData = null;
+
+        async function loadExperiences() {
+            const loading = document.getElementById('experiencesLoading');
+            const table = document.getElementById('experiencesTable');
+            const tbody = document.getElementById('experiencesTableBody');
+
+            loading.style.display = 'block';
+            table.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/experiences`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+                const experiences = data.experiences || [];
+
+                loading.style.display = 'none';
+                table.style.display = 'block';
+
+                if (experiences.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No experiences found. Click "Add Experience" to create one.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = experiences.map(exp => `
+                    <tr style="${!exp.isActive ? 'opacity: 0.5;' : ''}">
+                        <td>
+                            <strong>${exp.name}</strong><br>
+                            <span style="color: var(--gray); font-size: 0.85rem;">${exp.slug}</span>
+                        </td>
+                        <td><span class="status-badge" style="background: var(--electric-purple);">${exp.category}</span></td>
+                        <td>$${exp.basePrice}</td>
+                        <td style="color: var(--neon-green); font-weight: 600;">$${exp.memberPrice}</td>
+                        <td><span class="status-badge ${exp.isActive ? 'active' : ''}">${exp.isActive ? 'Active' : 'Inactive'}</span></td>
+                        <td>
+                            <button class="action-btn" style="background: var(--lightning-yellow); color: var(--pure-black);" onclick="openExperienceEditor('${exp._id}')">Edit</button>
+                            <button class="action-btn reject" onclick="deleteExperience('${exp._id}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Load experiences error:', error);
+                loading.style.display = 'none';
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Failed to load experiences: ${error.message}</td></tr>`;
+            }
+        }
+
+        async function openExperienceEditor(experienceId = null) {
+            document.getElementById('experienceEditorModal').classList.add('active');
+            currentExperienceData = null;
+
+            // Reset form
+            document.getElementById('editExperienceId').value = '';
+            document.getElementById('editExperienceName').value = '';
+            document.getElementById('editExperienceSlug').value = '';
+            document.getElementById('editExperienceCategory').value = 'rental';
+            document.getElementById('editExperienceBasePrice').value = '';
+            document.getElementById('editExperienceMemberPrice').value = '';
+            document.getElementById('editExperienceDuration').value = 'per hour';
+            document.getElementById('editExperiencePartner').value = '';
+            document.getElementById('editExperienceDescription').value = '';
+            document.getElementById('editExperienceImage').value = '';
+            document.getElementById('editExperienceFeatures').value = '';
+            document.getElementById('editExperienceActive').checked = true;
+            document.getElementById('editExperienceOrder').value = '0';
+
+            if (experienceId) {
+                document.getElementById('experienceEditorTitle').textContent = 'Edit Experience';
+                try {
+                    const res = await fetch(`${API_BASE}/api/v1/lightning/experiences/${experienceId}`, {
+                        headers: { 'Authorization': `Bearer ${adminToken}` }
+                    });
+                    const data = await res.json();
+                    const exp = data.experience || data;
+
+                    currentExperienceData = exp;
+                    document.getElementById('editExperienceId').value = exp._id;
+                    document.getElementById('editExperienceName').value = exp.name || '';
+                    document.getElementById('editExperienceSlug').value = exp.slug || '';
+                    document.getElementById('editExperienceCategory').value = exp.category || 'rental';
+                    document.getElementById('editExperienceBasePrice').value = exp.basePrice || '';
+                    document.getElementById('editExperienceMemberPrice').value = exp.memberPrice || '';
+                    document.getElementById('editExperienceDuration').value = exp.duration || 'per hour';
+                    document.getElementById('editExperiencePartner').value = exp.partner || '';
+                    document.getElementById('editExperienceDescription').value = exp.description || '';
+                    document.getElementById('editExperienceImage').value = exp.imageUrl || '';
+                    document.getElementById('editExperienceFeatures').value = (exp.features || []).join('\n');
+                    document.getElementById('editExperienceActive').checked = exp.isActive !== false;
+                    document.getElementById('editExperienceOrder').value = exp.displayOrder || 0;
+
+                    updateExperiencePreview();
+                } catch (error) {
+                    console.error('Load experience error:', error);
+                    showToast('Failed to load experience data', 'error');
+                }
+            } else {
+                document.getElementById('experienceEditorTitle').textContent = 'Add Experience';
+                updateExperiencePreview();
+            }
+        }
+
+        function updateExperiencePreview() {
+            const name = document.getElementById('editExperienceName').value || 'Experience Name';
+            const basePrice = parseFloat(document.getElementById('editExperienceBasePrice').value) || 0;
+            const memberPrice = parseFloat(document.getElementById('editExperienceMemberPrice').value) || 0;
+            const imageUrl = document.getElementById('editExperienceImage').value;
+            const duration = document.getElementById('editExperienceDuration').value || 'per hour';
+            const partner = document.getElementById('editExperiencePartner').value || 'partner';
+            const category = document.getElementById('editExperienceCategory').value || 'rental';
+            const featuresText = document.getElementById('editExperienceFeatures').value;
+            const features = featuresText ? featuresText.split('\n').filter(f => f.trim()) : ['Feature 1', 'Feature 2', 'Feature 3'];
+
+            // Name
+            document.getElementById('expPreviewName').textContent = name;
+
+            // Pricing
+            document.getElementById('expPreviewBasePrice').textContent = `$${basePrice}/${duration.replace('per ', '')}`;
+            document.getElementById('expPreviewMemberPrice').textContent = `$${memberPrice}/${duration.replace('per ', '')}`;
+
+            // Calculate discount percentage
+            const discountPct = basePrice > 0 ? Math.round((1 - memberPrice / basePrice) * 100) : 0;
+            document.getElementById('expPreviewDiscountPct').textContent = discountPct > 0 ? `-${discountPct}%` : '0%';
+
+            // Image
+            if (imageUrl) {
+                document.getElementById('expPreviewImage').src = imageUrl;
+                document.getElementById('expPreviewImage').style.display = 'block';
+            } else {
+                document.getElementById('expPreviewImage').style.display = 'none';
+            }
+
+            // Category tag
+            const categoryTag = document.getElementById('expPreviewCategoryTag');
+            categoryTag.textContent = category.toUpperCase();
+            if (category === 'tour') {
+                categoryTag.style.background = 'var(--neon-green)';
+                categoryTag.style.color = 'var(--pure-black)';
+            } else if (category === 'class') {
+                categoryTag.style.background = 'var(--electric-blue)';
+                categoryTag.style.color = 'var(--pure-black)';
+            } else {
+                categoryTag.style.background = 'var(--electric-purple)';
+                categoryTag.style.color = 'white';
+            }
+
+            // Features list
+            const featuresEl = document.getElementById('expPreviewFeatures');
+            featuresEl.innerHTML = features.slice(0, 4).map(f =>
+                `<li style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--lightning-yellow);">•</span> ${f}</li>`
+            ).join('');
+
+            // Duration and partner badges
+            document.getElementById('expPreviewDuration').textContent = duration;
+            document.getElementById('expPreviewPartner').textContent = partner;
+        }
+
+        async function saveExperienceChanges() {
+            const experienceId = document.getElementById('editExperienceId').value;
+
+            const experienceData = {
+                name: document.getElementById('editExperienceName').value,
+                slug: document.getElementById('editExperienceSlug').value,
+                category: document.getElementById('editExperienceCategory').value,
+                basePrice: parseFloat(document.getElementById('editExperienceBasePrice').value) || 0,
+                memberPrice: parseFloat(document.getElementById('editExperienceMemberPrice').value) || 0,
+                duration: document.getElementById('editExperienceDuration').value,
+                partner: document.getElementById('editExperiencePartner').value,
+                description: document.getElementById('editExperienceDescription').value,
+                imageUrl: document.getElementById('editExperienceImage').value,
+                features: document.getElementById('editExperienceFeatures').value.split('\n').filter(f => f.trim()),
+                isActive: document.getElementById('editExperienceActive').checked,
+                displayOrder: parseInt(document.getElementById('editExperienceOrder').value) || 0
+            };
+
+            // Calculate member discount percentage
+            if (experienceData.basePrice > 0 && experienceData.memberPrice > 0) {
+                experienceData.memberDiscount = Math.round((1 - experienceData.memberPrice / experienceData.basePrice) * 100);
+            }
+
+            try {
+                let url = `${API_BASE}/api/v1/lightning/experiences`;
+                let method = 'POST';
+                if (experienceId) {
+                    url += `/${experienceId}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(experienceData)
+                });
+
+                const data = await res.json();
+                if (data.success || data.experience) {
+                    showToast(`Experience ${experienceId ? 'updated' : 'created'} successfully!`, 'success');
+                    closeModal('experienceEditorModal');
+                    loadExperiences();
+                } else {
+                    throw new Error(data.error || 'Failed to save experience');
+                }
+            } catch (error) {
+                console.error('Save experience error:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function uploadExperienceImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                showToast('Uploading image...', 'info');
+
+                const res = await fetch(`${API_BASE}/api/v1/lightning/upload-image`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` },
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (data.imageUrl) {
+                    document.getElementById('editExperienceImage').value = data.imageUrl;
+                    updateExperiencePreview();
+                    showToast('Image uploaded!', 'success');
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showToast(error.message, 'error');
+            }
+
+            input.value = ''; // Reset file input
+        }
+
+        async function deleteExperience(experienceId) {
+            if (!confirm('Are you sure you want to delete this experience?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/experiences/${experienceId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Experience deleted', 'success');
+                    loadExperiences();
+                } else {
+                    throw new Error(data.error || 'Failed to delete experience');
+                }
+            } catch (error) {
+                console.error('Delete experience error:', error);
+                showToast(error.message, 'error');
             }
         }
 
