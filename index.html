@@ -4556,7 +4556,27 @@
 
             // Always go straight to events (no splash screen)
             document.getElementById('landingPage').style.display = 'none';
-            setupGuestNav();
+
+            // Check if user is already logged in and set up appropriate nav
+            if (existingToken) {
+                try {
+                    const userEmail = localStorage.getItem('userEmail');
+                    const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+                    const userRole = localStorage.getItem('userType') || (userRoles.includes('admin') ? 'admin' : 'member');
+
+                    // Create user object for updateNavigation
+                    const user = { email: userEmail, role: userRole };
+                    state.user = user;
+                    state.token = existingToken;
+                    updateNavigation(user);
+                } catch (e) {
+                    console.log('Auth state check failed, using guest nav');
+                    setupGuestNav();
+                }
+            } else {
+                setupGuestNav();
+            }
+
             showView('customer');
             loadVenues();
             loadHomepageSpotlightEvents();
