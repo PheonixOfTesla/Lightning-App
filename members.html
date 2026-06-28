@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Member Dashboard - Lightning Pass</title>
     <meta name="description" content="View your Lightning Pass tickets, exclusive deals, and member perks.">
 
@@ -878,7 +882,8 @@
     </footer>
 
     <script>
-        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        // For local testing: change to 'http://localhost:3000'
+        const API_BASE = 'http://localhost:3000';
         let memberData = null;
 
         // Build role-based navigation from user's roles

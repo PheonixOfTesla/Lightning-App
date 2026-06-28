@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <!-- SEO Meta Tags -->
     <title>Partner with Lightning Pass | Sarasota Venue & Event Partners</title>
@@ -795,10 +799,7 @@
                 <span class="logo-text">Lightning Pass</span>
             </a>
             <div class="nav-links" id="navLinks">
-                <a href="/" class="nav-link">Events</a>
-                <div class="nav-divider" style="width: 1px; height: 20px; background: var(--border-dark); margin: 0 0.5rem;"></div>
-                <!-- Role-based nav links injected by JS -->
-                <a href="#" onclick="logout(); return false;" class="nav-link btn-login" id="nav-login">Logout</a>
+                <!-- Populated by JS based on auth state -->
             </div>
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span>
@@ -1030,11 +1031,11 @@
     </footer>
 
     <script>
-        const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/referral';
-        // const API_URL = 'http://localhost:3000/api/v1/referral'; // Dev
+        // const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/referral';
+        const API_URL = 'http://localhost:3000/api/v1/referral'; // Dev
 
         // State - use unified auth system
-        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        const API_BASE = 'http://localhost:3000';
         let token = localStorage.getItem('token');
         let userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
         let userEmail = localStorage.getItem('userEmail');
@@ -1045,46 +1046,55 @@
         const loginForm = document.getElementById('login-form');
         const dashboard = document.getElementById('dashboard');
 
-        // Build role-based navigation from user's roles
-        function buildRoleNav() {
-            const currentPage = 'partner';
+        // Build navigation based on auth state
+        function buildNav() {
+            const navLinks = document.getElementById('navLinks');
+            const mainToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+            const isLoggedIn = !!mainToken;
 
-            // Get user's roles from localStorage
-            let userRoles = [];
-            try {
-                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
-            } catch (e) {
-                userRoles = ['member'];
+            // Get primary dashboard URL
+            function getDashboardUrl() {
+                const roles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+                if (roles.includes('admin')) return '/admin.html';
+                if (roles.includes('venue')) return '/admin.html';
+                if (roles.includes('host')) return '/host.html';
+                if (roles.includes('partner')) return '/partners.html';
+                if (roles.includes('dj')) return '/dj.html';
+                return '/members.html';
             }
 
-            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
-            const allDashboards = [
-                { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
-                { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
-                { id: 'host', role: 'host', label: 'Host', href: '/host' },
-                { id: 'partner', role: 'partner', label: 'Partner', href: '/partners' },
-                { id: 'dj', role: 'dj', label: 'DJ', href: '/dj' },
-                { id: 'member', role: 'member', label: 'Member', href: '/members' }
-            ];
+            if (isLoggedIn) {
+                // Logged in: Dashboard | Events | Experiences | Partners | Calendar | About | SIGN OUT
+                navLinks.innerHTML = `
+                    <a href="${getDashboardUrl()}" class="nav-link">Dashboard</a>
+                    <a href="/" class="nav-link">Events</a>
+                    <a href="/experiences.html" class="nav-link">Experiences</a>
+                    <a href="/partners.html" class="nav-link active">Partners</a>
+                    <a href="/calendar.html" class="nav-link">Calendar</a>
+                    <a href="/about.html" class="nav-link">About</a>
+                    <button class="btn btn-danger" onclick="logout()">SIGN OUT</button>
+                `;
+            } else {
+                // Guest: Events | Experiences | Partners | Calendar | About | LOGIN
+                navLinks.innerHTML = `
+                    <a href="/" class="nav-link">Events</a>
+                    <a href="/experiences.html" class="nav-link">Experiences</a>
+                    <a href="/partners.html" class="nav-link active">Partners</a>
+                    <a href="/calendar.html" class="nav-link">Calendar</a>
+                    <a href="/about.html" class="nav-link">About</a>
+                    <a href="#" onclick="showLoginCenter(); return false;" class="btn btn-pass">LOGIN</a>
+                `;
+            }
+        }
 
-            // Filter to only user's roles
-            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
+        // Show Login Center (redirect to index.html with login modal)
+        function showLoginCenter() {
+            window.location.href = '/?login=1';
+        }
 
-            const navLinks = document.getElementById('navLinks');
-            const divider = navLinks.querySelector('.nav-divider');
-            if (!divider) return;
-
-            // Remove any existing dashboard links
-            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
-
-            // Add dashboard links after divider (reverse to maintain order)
-            dashboards.reverse().forEach(dash => {
-                const link = document.createElement('a');
-                link.href = dash.href;
-                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
-                link.textContent = dash.label;
-                divider.insertAdjacentElement('afterend', link);
-            });
+        // Legacy function for compatibility
+        function buildRoleNav() {
+            buildNav();
         }
 
         // Update nav based on auth state
@@ -1101,7 +1111,7 @@
 
         // Check if logged in and has partner role
         function checkAuth() {
-            updateNavAuth();
+            buildNav(); // Build nav based on auth state
 
             if (token && userRoles.includes('partner')) {
                 // Has partner role - show dashboard
@@ -1197,7 +1207,8 @@
             loginForm.classList.remove('active');
             dashboard.classList.remove('active');
             // Only show Login if not logged in via main auth
-            if (!mainAuthToken) {
+            const mainToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (!mainToken) {
                 document.getElementById('nav-login').textContent = 'LOGIN';
             }
         }
@@ -1533,8 +1544,7 @@
         // Scroll to top on page load
         window.scrollTo(0, 0);
 
-        // Unified Auth System
-        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        // Unified Auth System (uses API_BASE defined above)
 
         function showLoginModal() {
             document.getElementById('authModal').style.display = 'flex';
@@ -1673,7 +1683,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         // WebSocket connection for live signup notifications
-        const SOCKET_URL = 'https://lightning-backend-production.up.railway.app';
+        const SOCKET_URL = 'http://localhost:3000';
         let socket = null;
         let currentPartnerCode = null;
         const liveSignups = [];
