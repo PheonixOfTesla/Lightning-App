@@ -1,0 +1,179 @@
+// Lightning Pass - Shared Navigation Component
+// Single source of truth for header/nav across all pages
+
+(function() {
+    'use strict';
+
+    // Get user roles from token (graceful degradation for old tokens)
+    function getUserRolesFromToken() {
+        let userRoles = [];
+        try {
+            userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+        } catch (e) {
+            userRoles = [];
+        }
+        if (userRoles.length > 0) return userRoles;
+
+        const token = localStorage.getItem('token');
+        if (!token) return [];
+
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
+                userRoles = payload.roles;
+            } else if (payload.role) {
+                userRoles = [payload.role];
+            } else {
+                userRoles = ['member'];
+            }
+            localStorage.setItem('userRoles', JSON.stringify(userRoles));
+            return userRoles;
+        } catch (e) {
+            return [];
+        }
+    }
+
+    // Get dashboard URL based on highest role
+    function getDashboardUrl() {
+        const roles = getUserRolesFromToken();
+        if (roles.includes('admin')) return '/admin';
+        if (roles.includes('venue')) return '/venue';
+        if (roles.includes('host')) return '/host';
+        if (roles.includes('partner')) return '/partner-portal';
+        if (roles.includes('dj')) return '/dj';
+        return '/members';
+    }
+
+    // Logout function
+    function logout() {
+        // Clear all auth-related localStorage
+        const keysToRemove = [
+            'token', 'userEmail', 'userRoles', 'userType', 'userId',
+            'memberLoggedIn', 'adminToken', 'venueToken', 'partnerToken',
+            'djToken', 'hostToken', 'authToken', 'refreshToken', 'sessionId'
+        ];
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        window.location.href = '/';
+    }
+
+    // Make logout available globally
+    window.logout = logout;
+
+    // Update navigation based on auth state
+    function updateNav() {
+        const navLinks = document.getElementById('navLinks');
+        const mobileMenu = document.getElementById('mobileMenu');
+        if (!navLinks) return;
+
+        const token = localStorage.getItem('token');
+        const isLoggedIn = !!token;
+        const currentPath = window.location.pathname;
+
+        // Determine active page
+        const isEvents = currentPath === '/' || currentPath.includes('browse');
+        const isExperiences = currentPath.includes('experiences');
+        const isPartners = currentPath.includes('partners') && !currentPath.includes('partner-portal');
+        const isCalendar = currentPath.includes('calendar');
+        const isAbout = currentPath.includes('about');
+
+        if (isLoggedIn) {
+            const dashboardUrl = getDashboardUrl();
+            navLinks.innerHTML = `
+                <a href="${dashboardUrl}" class="btn btn-dashboard">Dashboard</a>
+                <a href="/?browse=1" class="nav-link${isEvents ? ' active' : ''}">Events</a>
+                <a href="/experiences" class="nav-link${isExperiences ? ' active' : ''}">Experiences</a>
+                <a href="/partners" class="nav-link${isPartners ? ' active' : ''}">Partners</a>
+                <a href="/calendar" class="nav-link${isCalendar ? ' active' : ''}">Calendar</a>
+                <a href="/about" class="nav-link${isAbout ? ' active' : ''}">About</a>
+                <a href="#" class="btn btn-logout" onclick="logout(); return false;">LOGOUT</a>
+            `;
+            if (mobileMenu) {
+                mobileMenu.innerHTML = `
+                    <a href="${dashboardUrl}" style="color: var(--electric-blue); font-weight: 700;">Dashboard</a>
+                    <a href="/?browse=1"${isEvents ? ' class="active"' : ''}>Events</a>
+                    <a href="/experiences"${isExperiences ? ' class="active"' : ''}>Experiences</a>
+                    <a href="/partners"${isPartners ? ' class="active"' : ''}>Partners</a>
+                    <a href="/calendar"${isCalendar ? ' class="active"' : ''}>Calendar</a>
+                    <a href="/about"${isAbout ? ' class="active"' : ''}>About</a>
+                    <a href="#" onclick="logout(); return false;" style="color: var(--lightning-yellow);">Logout</a>
+                `;
+            }
+        } else {
+            navLinks.innerHTML = `
+                <a href="/?browse=1" class="nav-link${isEvents ? ' active' : ''}">Events</a>
+                <a href="/experiences" class="nav-link${isExperiences ? ' active' : ''}">Experiences</a>
+                <a href="/partners" class="nav-link${isPartners ? ' active' : ''}">Partners</a>
+                <a href="/calendar" class="nav-link${isCalendar ? ' active' : ''}">Calendar</a>
+                <a href="/about" class="nav-link${isAbout ? ' active' : ''}">About</a>
+                <a href="#" class="btn btn-login" onclick="if(typeof showPassModal==='function'){showPassModal();}else if(typeof showLoginModal==='function'){showLoginModal();}else{window.location.href='/?login=1';} return false;">LOGIN</a>
+            `;
+            if (mobileMenu) {
+                mobileMenu.innerHTML = `
+                    <a href="/?browse=1"${isEvents ? ' class="active"' : ''}>Events</a>
+                    <a href="/experiences"${isExperiences ? ' class="active"' : ''}>Experiences</a>
+                    <a href="/partners"${isPartners ? ' class="active"' : ''}>Partners</a>
+                    <a href="/calendar"${isCalendar ? ' class="active"' : ''}>Calendar</a>
+                    <a href="/about"${isAbout ? ' class="active"' : ''}>About</a>
+                    <a href="#" onclick="if(typeof showPassModal==='function'){showPassModal();}else if(typeof showLoginModal==='function'){showLoginModal();}else{window.location.href='/?login=1';} return false;">Login</a>
+                `;
+            }
+        }
+    }
+
+    // CSS for nav buttons (inject if not present)
+    function injectNavStyles() {
+        if (document.getElementById('nav-component-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'nav-component-styles';
+        styles.textContent = `
+            .btn-dashboard {
+                padding: 0.5rem 1.25rem;
+                background: var(--electric-blue, #00d4ff);
+                color: var(--pure-black, #0d1b2a);
+                border: none;
+                border-radius: 2rem;
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-decoration: none;
+                transition: all 0.2s ease;
+            }
+            .btn-dashboard:hover {
+                background: #fff;
+                color: var(--pure-black, #0d1b2a);
+            }
+            .btn-logout, .btn-login {
+                padding: 0.5rem 1.25rem;
+                background: var(--lightning-yellow, #ffdd00);
+                color: var(--pure-black, #0d1b2a);
+                border: none;
+                border-radius: 2rem;
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-decoration: none;
+                transition: all 0.2s ease;
+            }
+            .btn-logout:hover, .btn-login:hover {
+                background: #fff;
+                color: var(--pure-black, #0d1b2a);
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+
+    // Initialize on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            injectNavStyles();
+            updateNav();
+        });
+    } else {
+        injectNavStyles();
+        updateNav();
+    }
+
+    // Export for manual calls
+    window.updateNav = updateNav;
+    window.getDashboardUrl = getDashboardUrl;
+    window.getUserRolesFromToken = getUserRolesFromToken;
+})();
