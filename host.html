@@ -599,7 +599,10 @@
     </div>
 
     <script>
-        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        // ===== CONFIGURATION =====
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://lightning-backend-production.up.railway.app';
         let currentUser = null;
 
         // Build role-based navigation from user's roles

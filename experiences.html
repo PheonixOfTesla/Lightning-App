@@ -548,7 +548,7 @@
                 <div class="logo-img"><img src="/logo.png" alt="Lightning Pass"></div>
                 <span class="logo-text">Lightning Pass</span>
             </a>
-            <div class="nav-links">
+            <div class="nav-links" id="navLinks">
                 <a href="/?browse=1" class="nav-link">Events</a>
                 <a href="/experiences" class="nav-link active">Experiences</a>
                 <a href="/partners" class="nav-link">Partners</a>
@@ -902,8 +902,10 @@
 
     <script>
         const STRIPE_KEY = 'pk_live_51TcHI8K7yd8VSKfWfiACy9DhKpnUdTym0GqWWA3qkAd3sFPIlNM3RBR9YBKjBXPfFF8OssF2kXlb5UQRsHP4vrlX00qXxmW6D1';
-        // For local testing: change to 'http://localhost:3000'
-        const API_URL = 'https://lightning-backend-production.up.railway.app';
+        // ===== CONFIGURATION =====
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://lightning-backend-production.up.railway.app';
 
         // Slideshow for Tours
         let currentSlide = 0;

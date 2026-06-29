@@ -1031,11 +1031,11 @@
     </footer>
 
     <script>
-        // const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/referral';
-        const API_URL = 'http://localhost:3000/api/v1/referral'; // Dev
-
-        // State - use unified auth system
-        const API_BASE = 'http://localhost:3000';
+        // ===== CONFIGURATION =====
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://lightning-backend-production.up.railway.app';
+        const API_URL = `${API_BASE}/api/v1/referral`;
         let token = localStorage.getItem('token');
         let userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
         let userEmail = localStorage.getItem('userEmail');
@@ -1683,7 +1683,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         // WebSocket connection for live signup notifications
-        const SOCKET_URL = 'http://localhost:3000';
+        const SOCKET_URL = API_BASE; // Uses same base URL as API
         let socket = null;
         let currentPartnerCode = null;
         const liveSignups = [];
