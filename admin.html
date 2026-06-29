@@ -122,17 +122,26 @@
             color: var(--lightning-yellow);
         }
 
-        .nav-link.btn-logout {
-            padding: 0.5rem 1.5rem;
-            border: 1px solid var(--danger-red);
-            border-radius: 0.5rem;
-            color: var(--danger-red);
-            font-weight: 600;
+        .btn-logout {
+            padding: 0.5rem 1.25rem;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
 
-        .nav-link.btn-logout:hover {
-            background: var(--danger-red);
-            color: white;
+        .btn-logout:hover {
+            background: #fff;
+            color: var(--pure-black);
+            box-shadow: 0 0 25px rgba(255, 221, 0, 0.6);
+            transform: scale(1.05);
         }
 
         /* Main Content */
@@ -850,7 +859,7 @@
                 <a href="/" class="nav-link">Events</a>
                 <div class="nav-divider"></div>
                 <!-- Role-based nav links injected by JS -->
-                <a href="#" onclick="logout(); return false;" class="nav-link btn-logout">Logout</a>
+                <a href="#" onclick="logout(); return false;" class="btn-logout">LOGOUT</a>
             </div>
         </div>
     </nav>

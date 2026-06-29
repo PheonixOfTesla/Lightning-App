@@ -531,6 +531,27 @@
             transform: scale(1.05);
         }
 
+        .btn-dashboard {
+            background: var(--electric-blue);
+            color: var(--pure-black);
+            border: none;
+            font-weight: 700;
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-dashboard:hover {
+            background: #fff;
+            color: var(--pure-black);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+            transform: scale(1.05);
+        }
+
         /* Pass Signup Modal */
         .pass-modal-overlay {
             display: none;
@@ -5983,23 +6004,23 @@
             const dashboardUrl = getPrimaryDashboardUrl();
 
             navLinks.innerHTML = `
-                <a href="${dashboardUrl}" class="nav-link">Dashboard</a>
+                <a href="${dashboardUrl}" class="btn btn-dashboard">Dashboard</a>
                 <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
                 <a href="/experiences" class="nav-link">Experiences</a>
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link">About</a>
-                <button class="btn btn-danger" onclick="logout()" style="margin-left:1rem;">LOGOUT</button>
+                <a href="#" class="btn btn-pass" onclick="logout(); return false;">LOGOUT</a>
             `;
 
             mobileMenu.innerHTML = `
-                <a href="${dashboardUrl}">Dashboard</a>
+                <a href="${dashboardUrl}" style="color: var(--electric-blue); font-weight: 700;">Dashboard</a>
                 <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
                 <a href="/experiences">Experiences</a>
                 <a href="/partners">Partners</a>
                 <a href="/calendar">Calendar</a>
                 <a href="/about">About</a>
-                <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Logout</a>
+                <a href="#" onclick="logout(); toggleMenu();" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>
             `;
 
             navLinks.style.display = 'flex';

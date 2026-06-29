@@ -131,6 +131,44 @@
             color: var(--pure-black);
         }
 
+        .btn-dashboard {
+            padding: 0.5rem 1.25rem;
+            background: var(--electric-blue);
+            color: var(--pure-black);
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-dashboard:hover {
+            background: #fff;
+            color: var(--pure-black);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+        }
+
+        .btn-logout {
+            padding: 0.5rem 1.25rem;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #fff;
+            color: var(--pure-black);
+            box-shadow: 0 0 25px rgba(255, 221, 0, 0.6);
+        }
+
         /* Hamburger */
         .hamburger {
             display: none;
@@ -1194,23 +1232,23 @@
                 // User is logged in - show Dashboard + nav + LOGOUT
                 const dashboardUrl = getPrimaryDashboardUrl();
                 navLinks.innerHTML = `
-                    <a href="${dashboardUrl}" class="nav-link">Dashboard</a>
+                    <a href="${dashboardUrl}" class="btn btn-dashboard">Dashboard</a>
                     <a href="/?browse=1" class="nav-link">Events</a>
                     <a href="/experiences" class="nav-link active">Experiences</a>
                     <a href="/partners" class="nav-link">Partners</a>
                     <a href="/calendar" class="nav-link">Calendar</a>
                     <a href="/about" class="nav-link">About</a>
-                    <button class="btn btn-danger" onclick="logout()">LOGOUT</button>
+                    <a href="#" class="btn btn-logout" onclick="logout(); return false;">LOGOUT</a>
                 `;
                 if (mobileMenu) {
                     mobileMenu.innerHTML = `
-                        <a href="${dashboardUrl}">Dashboard</a>
+                        <a href="${dashboardUrl}" style="color: var(--electric-blue); font-weight: 700;">Dashboard</a>
                         <a href="/?browse=1">Events</a>
                         <a href="/experiences" class="active">Experiences</a>
                         <a href="/partners">Partners</a>
                         <a href="/calendar">Calendar</a>
                         <a href="/about">About</a>
-                        <a href="#" onclick="logout(); return false;" style="color: #ff4466;">Logout</a>
+                        <a href="#" onclick="logout(); return false;" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>
                     `;
                 }
                 // Auto-verify member if logged in

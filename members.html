@@ -115,20 +115,26 @@
             color: var(--lightning-yellow);
         }
 
-        .nav-link.btn-login {
-            padding: 0.5rem 1.5rem;
-            border: 1px solid var(--lightning-yellow);
-            border-radius: 0.5rem;
-            color: var(--lightning-yellow);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.875rem;
-        }
-
-        .nav-link.btn-login:hover {
+        .btn-logout {
+            padding: 0.5rem 1.25rem;
             background: var(--lightning-yellow);
             color: var(--pure-black);
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-logout:hover {
+            background: #fff;
+            color: var(--pure-black);
+            box-shadow: 0 0 25px rgba(255, 221, 0, 0.6);
+            transform: scale(1.05);
         }
 
         .nav-divider {
@@ -687,7 +693,7 @@
                 <a href="/" class="nav-link">Events</a>
                 <div class="nav-divider"></div>
                 <!-- Role-based nav links injected by JS -->
-                <a href="#" onclick="logout(); return false;" class="nav-link btn-login">Logout</a>
+                <a href="#" onclick="logout(); return false;" class="btn-logout">LOGOUT</a>
             </div>
             <div class="hamburger" onclick="toggleMobileMenu()">
                 <span></span>
@@ -701,7 +707,7 @@
     <div class="mobile-menu" id="mobileMenu">
         <a href="/">Events</a>
         <a href="/members" class="active">Member</a>
-        <a href="#" onclick="logout()">Logout</a>
+        <a href="#" onclick="logout()" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>
     </div>
 
     <main class="main-content">
@@ -959,7 +965,7 @@
                     dashboards.reverse().map(dash =>
                         `<a href="${dash.href}"${dash.id === currentPage ? ' class="active"' : ''}>${dash.label}</a>`
                     ).join('') +
-                    '<a href="#" onclick="logout()">Logout</a>';
+                    '<a href="#" onclick="logout()" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>';
             }
         }
 
@@ -1025,12 +1031,13 @@
                 // Calculate stats
                 const totalPasses = passes.length;
                 const now = new Date();
-                const upcomingPasses = passes.filter(p => new Date(p.eventDate) > now);
+                const upcomingPasses = passes.filter(p => new Date(p.validUntil || p.eventDate || p.createdAt) > now);
+                // amount is stored in dollars (not cents)
                 const totalSpent = passes.reduce((sum, p) => sum + (p.amount || 0), 0);
 
                 document.getElementById('totalPasses').textContent = totalPasses;
                 document.getElementById('upcomingEvents').textContent = upcomingPasses.length;
-                document.getElementById('totalSpent').textContent = '$' + (totalSpent / 100).toFixed(0);
+                document.getElementById('totalSpent').textContent = '$' + totalSpent.toFixed(0);
 
                 // Render passes
                 renderPasses(passes);
@@ -1066,19 +1073,27 @@
             }
 
             grid.innerHTML = passes.map(pass => {
-                const eventDate = new Date(pass.eventDate);
-                const isUpcoming = eventDate > new Date();
-                const status = pass.status === 'used' ? 'used' : (isUpcoming ? 'valid' : 'expired');
+                // Use validUntil for experience bookings, eventDate for event passes
+                const passDate = new Date(pass.validUntil || pass.eventDate || pass.createdAt);
+                const isUpcoming = passDate > new Date();
+                const status = pass.status === 'used' ? 'used' : (pass.status === 'refunded' ? 'refunded' : (isUpcoming ? 'valid' : 'expired'));
+
+                // Determine pass name: passName for experiences, eventName for events, fallback to venueName
+                const displayName = pass.passName || pass.eventName || pass.venueName || 'Pass';
+                // Determine description: passDescription for experiences, ticketType for events
+                const displayType = pass.passDescription || pass.ticketType || 'General';
+                // Format date display
+                const dateDisplay = passDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 
                 return `
                     <div class="pass-card">
                         <div class="pass-card-header">
-                            <div class="pass-event-name">${pass.eventName || 'Event'}</div>
-                            <div class="pass-event-date">${eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                            <div class="pass-event-name">${displayName}</div>
+                            <div class="pass-event-date">${dateDisplay}</div>
                         </div>
                         <div class="pass-card-body">
                             <div class="pass-details">
-                                <span class="pass-type">${(pass.ticketType || 'General').toUpperCase()}</span>
+                                <span class="pass-type">${displayType.toUpperCase()}</span>
                                 <span class="pass-quantity">${pass.quantity || 1} ticket(s)</span>
                             </div>
                             <div class="pass-qr-container">
@@ -1088,6 +1103,7 @@
                             <div class="pass-status ${status}">
                                 ${status === 'valid' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Valid' :
                                   status === 'used' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Used' :
+                                  status === 'refunded' ? 'Refunded' :
                                   'Expired'}
                             </div>
                         </div>
