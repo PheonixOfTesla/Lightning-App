@@ -1157,8 +1157,9 @@
                             ${pass.venueName ? `
                             <div style="background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem;">
                                 <div style="font-weight: 600; margin-bottom: 0.25rem;">${pass.venueName}</div>
-                                <div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.25rem;">${pass.venueAddress || (pass.venueName === 'Black Flag Watersports' ? '1602 Ken Thompson Pkwy, Sarasota, FL 34236' : '')}</div>
-                                <div style="color: var(--electric-blue); font-size: 0.85rem;"><a href="tel:${(pass.venuePhone || (pass.venueName === 'Black Flag Watersports' ? '9417062782' : '')).replace(/[^0-9]/g, '')}" style="color: inherit; text-decoration: none;">${pass.venuePhone || (pass.venueName === 'Black Flag Watersports' ? '(941) 706-2782' : '')}</a></div>
+                                <div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.25rem;">${pass.venueAddress || (pass.venueName === 'Black Flag Watersports' ? '1059 N Tamiami Trail, Sarasota, FL 34236' : '')}</div>
+                                <div style="color: var(--electric-blue); font-size: 0.85rem;"><a href="tel:${(pass.venuePhone || (pass.venueName === 'Black Flag Watersports' ? '9414222222' : '')).replace(/[^0-9]/g, '')}" style="color: inherit; text-decoration: none;">${pass.venuePhone || (pass.venueName === 'Black Flag Watersports' ? '(941) 422-2222' : '')}</a></div>
+                                ${pass.venueName === 'Black Flag Watersports' ? '<div style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Call or text before you arrive</div>' : ''}
                             </div>
                             ` : ''}
 
