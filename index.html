@@ -2212,7 +2212,7 @@
         <a href="/partners">Partners</a>
         <a href="/calendar">Calendar</a>
         <a href="/about">About</a>
-        <a href="/login" id="mobileLogin">Login</a>
+        <a href="#" id="mobileLogin" onclick="toggleMenu(); showLoginModal(); return false;">Login</a>
     </div>
 
     <!-- Premium Background Effects -->
@@ -3900,7 +3900,7 @@
             <div id="purchaseStatus" style="display: none; margin-top: 1rem;"></div>
 
             <p style="text-align: center; margin-top: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
-                <a href="/login" style="color: var(--electric-blue);">Sign in</a> to view all your purchases
+                <a href="#" onclick="showLoginModal(); return false;" style="color: var(--electric-blue);">Sign in</a> to view all your purchases
             </p>
         </div>
     </div>
@@ -4180,13 +4180,14 @@
         }
 
         function goToLogin() {
-            // Redirect to login page
-            window.location.href = '/login';
+            // Show login modal
+            showLoginModal();
         }
 
         function goToSignup() {
-            // Redirect to login page with register mode
-            window.location.href = '/login?mode=register';
+            // Show login modal in register mode
+            showLoginModal();
+            setTimeout(() => switchToRegister(), 100);
         }
 
         function browseVenuesFromLanding() {
@@ -4838,11 +4839,10 @@
 
                         handleAuthSuccess(state.user);
                     } else {
-                        // Token invalid, clear and show guest mode
+                        // Token invalid, clear and continue as guest
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
-                        // Redirect to login page
-                        window.location.href = '/login';
+                        // Stay on page, user can login via modal when needed
                     }
                 } catch (error) {
                     console.error('Auth verification failed:', error);
@@ -6091,9 +6091,9 @@
 
         // ===== VIEW MANAGEMENT =====
         function showView(view) {
-            // Redirect to /login if trying to show auth view
+            // Show login modal if trying to show auth view
             if (view === 'auth') {
-                window.location.href = '/login';
+                showLoginModal();
                 return;
             }
 

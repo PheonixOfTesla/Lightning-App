@@ -12,7 +12,6 @@
     { "source": "/members", "destination": "/members.html" },
     { "source": "/dashboard", "destination": "/members.html" },
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/login", "destination": "/login.html" },
     { "source": "/host", "destination": "/host.html" },
     { "source": "/venue", "destination": "/venue.html" },
     { "source": "/dj", "destination": "/dj.html" },
