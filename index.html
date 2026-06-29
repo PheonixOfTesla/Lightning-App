@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <!-- Nav failsafe: reveal after 2s if nav.js fails to load -->
+    <style>
+        @keyframes navFailsafe { to { visibility: visible; } }
+        #navLinks, #mobileMenu { animation: navFailsafe 0s 2s forwards; }
+    </style>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="view-transition" content="same-origin">
+    <link rel="stylesheet" href="/css/transitions.css">
 
     <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://lightning-backend-production.up.railway.app">
@@ -2205,9 +2212,8 @@
         <div class="nav-container">
             <a href="/" class="logo">
                 <div class="logo-img"><img src="/logo.png" alt="Lightning Pass"></div>
-                <span class="logo-text">Lightning Pass</span>
             </a>
-            <div class="nav-links" id="navLinks">
+            <div class="nav-links" id="navLinks" style="visibility: hidden;">
                 <a href="/?browse=1" class="nav-link">Events</a>
                 <a href="/experiences" class="nav-link">Experiences</a>
                 <a href="/partners" class="nav-link">Partners</a>
@@ -2224,7 +2230,7 @@
     </nav>
 
     <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu" id="mobileMenu" style="visibility: hidden;">
         <a href="/?browse=1">Events</a>
         <a href="/experiences">Experiences</a>
         <a href="/partners">Partners</a>
@@ -2302,7 +2308,7 @@
 
     <main>
         <!-- AUTH SCREEN (Login/Register) -->
-        <div id="authView" class="container">
+        <div id="authView" class="container hidden">
 
             <div style="max-width: 500px; margin: 4rem auto; position: relative; z-index: 10;">
                 <h1 style="text-align: center; margin-bottom: 2rem; background: linear-gradient(90deg, var(--lightning-yellow), var(--electric-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
