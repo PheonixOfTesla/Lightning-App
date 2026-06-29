@@ -6205,7 +6205,7 @@
 
                 grid.innerHTML = '';
 
-                state.venues.forEach(venue => {
+                state.venues.filter(v => v.type?.toLowerCase() !== 'watersports' && !v.name?.toLowerCase().includes('black flag')).forEach(venue => {
                     // Get associated event for this venue (matched by venueId or name)
                     const venueEvent = venueEvents[venue._id];
                     const card = document.createElement('div');
