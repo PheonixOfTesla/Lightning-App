@@ -3,31 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Cache Control -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Venue Dashboard - Lightning Pass</title>
+    <meta name="description" content="Manage your venue bookings and customers on Lightning Pass.">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
             --pure-black: #0d1b2a;
             --card-black: #1b2838;
             --border-dark: #2d3748;
             --lightning-yellow: #ffdd00;
             --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
             --neon-green: #39ff14;
             --danger-red: #ff0044;
             --white: #ffffff;
             --gray: #888;
         }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--pure-black);
             color: var(--white);
-            min-height: 100vh;
             line-height: 1.6;
+            min-height: 100vh;
         }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 50% 30%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 60%, rgba(255, 255, 255, 0.03) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Navigation */
         nav {
             background: var(--pure-black);
             position: fixed;
@@ -37,20 +70,51 @@
             z-index: 1000;
             padding: 0.875rem 2rem;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .logo {
             font-size: 1.25rem;
-            font-weight: 600;
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             text-decoration: none;
             color: var(--white);
         }
-        .logo img { width: 40px; height: 40px; border-radius: 50%; }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--lightning-yellow);
+        }
+
         .btn-logout {
             padding: 0.5rem 1.25rem;
             background: var(--lightning-yellow);
@@ -58,74 +122,153 @@
             border: none;
             border-radius: 25px;
             font-weight: 700;
-            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
+            transition: all 0.3s ease;
             text-decoration: none;
+            cursor: pointer;
         }
+
+        .btn-logout:hover {
+            background: #fff;
+            color: var(--pure-black);
+            box-shadow: 0 0 25px rgba(255, 221, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            margin: 0 0.5rem;
+        }
+
+        .dashboard-link {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-link.active {
+            background: rgba(255,221,0,0.15);
+            color: var(--lightning-yellow);
+        }
+
+        /* Main Content */
         .main-content {
             padding: 6rem 2rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 10;
         }
+
+        /* Dashboard Header */
         .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
+
         .dashboard-header h1 {
             font-size: 2rem;
-            color: var(--lightning-yellow);
-            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--lightning-yellow), var(--lightning-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
+
         .stat-card {
             background: var(--card-black);
             padding: 1.5rem;
             border-radius: 0.75rem;
-            border: 1px solid var(--border-dark);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .stat-label { color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem; }
-        .stat-value { font-size: 1.75rem; font-weight: 700; }
-        .stat-value.yellow { color: var(--lightning-yellow); }
-        .stat-value.green { color: var(--neon-green); }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+
+        .stat-card-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
         }
-        .section-header h2 { font-size: 1.25rem; }
+
+        .stat-card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .stat-card-value.yellow { color: var(--lightning-yellow); }
+        .stat-card-value.green { color: var(--neon-green); }
+        .stat-card-value.blue { color: var(--electric-blue); }
+
+        /* Bookings Grid */
         .bookings-grid {
             display: grid;
             gap: 1rem;
         }
+
         .booking-card {
             background: var(--card-black);
             border-radius: 1rem;
-            border: 1px solid var(--border-dark);
+            border: 1px solid rgba(255,255,255,0.1);
             padding: 1.25rem;
             display: grid;
             grid-template-columns: 1fr auto;
             gap: 1rem;
             align-items: center;
+            transition: border-color 0.2s;
         }
-        .booking-card:hover { border-color: var(--lightning-yellow); }
-        .booking-info h3 { font-size: 1rem; margin-bottom: 0.25rem; }
-        .booking-meta { color: var(--gray); font-size: 0.85rem; }
-        .booking-meta span { margin-right: 1rem; }
+
+        .booking-card:hover {
+            border-color: var(--lightning-yellow);
+        }
+
+        .booking-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .booking-meta {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .booking-meta span {
+            margin-right: 1rem;
+        }
+
         .booking-date {
             text-align: right;
         }
-        .booking-date .date { font-weight: 600; color: var(--lightning-yellow); }
-        .booking-date .time { color: var(--gray); font-size: 0.9rem; }
+
+        .booking-date .date {
+            font-weight: 600;
+            color: var(--lightning-yellow);
+        }
+
+        .booking-date .time {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
         .booking-amount {
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--neon-green);
             margin-top: 0.5rem;
         }
+
         .status-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -134,15 +277,52 @@
             font-weight: 600;
             text-transform: uppercase;
         }
+
         .status-badge.upcoming { background: rgba(0, 212, 255, 0.2); color: var(--electric-blue); }
         .status-badge.completed { background: rgba(57, 255, 20, 0.2); color: var(--neon-green); }
         .status-badge.cancelled { background: rgba(255, 0, 68, 0.2); color: var(--danger-red); }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .filter-tab:hover { border-color: var(--lightning-yellow); }
+
+        .filter-tab.active {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+
+        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
             color: var(--gray);
         }
-        .loading { text-align: center; padding: 4rem; }
+
+        .empty-state h3 { color: var(--white); margin-bottom: 0.5rem; }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+        }
+
         .spinner {
             width: 50px;
             height: 50px;
@@ -152,76 +332,151 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
+
         @keyframes spin { to { transform: rotate(360deg); } }
-        .filter-tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .filter-tab {
-            padding: 0.5rem 1rem;
-            background: transparent;
-            border: 1px solid var(--border-dark);
-            border-radius: 0.5rem;
-            color: var(--white);
+
+        /* Mobile Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
             cursor: pointer;
-            font-family: inherit;
+            padding: 5px;
         }
-        .filter-tab:hover { border-color: var(--lightning-yellow); }
-        .filter-tab.active {
-            background: var(--lightning-yellow);
-            border-color: var(--lightning-yellow);
-            color: var(--pure-black);
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--white);
+            transition: all 0.3s;
         }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 27, 42, 0.98);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .mobile-menu.active { display: flex; }
+
+        .mobile-menu a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile */
         @media (max-width: 768px) {
+            nav { padding: 0.75rem 1rem; }
+            .nav-links { display: none; }
+            .hamburger { display: flex; }
+            .main-content { padding: 5rem 1rem 1rem; }
+            .dashboard-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .dashboard-header h1 { font-size: 1.5rem; }
             .booking-card { grid-template-columns: 1fr; }
             .booking-date { text-align: left; margin-top: 0.5rem; }
-            .main-content { padding: 5rem 1rem 1rem; }
         }
     </style>
 </head>
 <body>
     <nav>
-        <a href="/" class="logo">
-            <img src="logo.png" alt="Lightning Pass">
-            <span>Lightning Pass</span>
-        </a>
-        <button class="btn-logout" onclick="logout()">LOGOUT</button>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <img src="logo.png" alt="Lightning Pass">
+                <span>Lightning Pass</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="/" class="nav-link">Events</a>
+                <div class="nav-divider"></div>
+                <!-- Role-based nav links injected by JS -->
+                <a href="#" onclick="logout(); return false;" class="btn-logout">LOGOUT</a>
+            </div>
+            <div class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
     </nav>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/">Events</a>
+        <a href="/venue" class="active">Venue</a>
+        <a href="#" onclick="logout()" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>
+    </div>
+
     <main class="main-content">
+        <!-- Loading State -->
         <div id="loadingState" class="loading">
             <div class="spinner"></div>
             <p>Loading your dashboard...</p>
         </div>
 
+        <!-- Login Required State -->
+        <div id="loginRequired" style="display: none;">
+            <div class="empty-state">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <h3>Login Required</h3>
+                <p>Please log in to view your venue dashboard</p>
+                <a href="/" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: var(--lightning-yellow); color: var(--pure-black); border-radius: 0.5rem; text-decoration: none; font-weight: 600;">Login</a>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
         <div id="dashboardContent" style="display: none;">
             <div class="dashboard-header">
-                <h1 id="venueName">Venue Dashboard</h1>
-                <p style="color: var(--gray);" id="venueAddress"></p>
+                <div>
+                    <h1 id="venueName">Venue Dashboard</h1>
+                    <p style="color: var(--gray);" id="venueAddress"></p>
+                </div>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-label">Total Bookings</div>
-                    <div class="stat-value yellow" id="totalBookings">0</div>
+                    <div class="stat-card-label">Total Bookings</div>
+                    <div class="stat-card-value yellow" id="totalBookings">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Upcoming</div>
-                    <div class="stat-value" style="color: var(--electric-blue);" id="upcomingBookings">0</div>
+                    <div class="stat-card-label">Upcoming</div>
+                    <div class="stat-card-value blue" id="upcomingBookings">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">This Month</div>
-                    <div class="stat-value" id="monthlyBookings">0</div>
+                    <div class="stat-card-label">This Month</div>
+                    <div class="stat-card-value" id="monthlyBookings">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Total Revenue</div>
-                    <div class="stat-value green" id="totalRevenue">$0</div>
+                    <div class="stat-card-label">Total Revenue</div>
+                    <div class="stat-card-value green" id="totalRevenue">$0</div>
                 </div>
             </div>
 
-            <div class="section-header">
-                <h2>Bookings</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.25rem;">Bookings</h2>
             </div>
 
             <div class="filter-tabs">
@@ -239,7 +494,12 @@
         </div>
     </main>
 
+    <footer>
+        <p>Lightning Pass &copy; 2026</p>
+    </footer>
+
     <script>
+        // ===== CONFIGURATION =====
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'
             : 'https://lightning-backend-production.up.railway.app';
@@ -247,28 +507,108 @@
         let allBookings = [];
         let currentFilter = 'all';
 
+        // Graceful degradation for OLD tokens (pre-roles[])
+        function getUserRolesFromToken() {
+            let userRoles = [];
+            try {
+                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            } catch (e) {
+                userRoles = [];
+            }
+            if (userRoles.length > 0) return userRoles;
+
+            const token = localStorage.getItem('token');
+            if (!token) return ['member'];
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
+                    userRoles = payload.roles;
+                } else if (payload.role) {
+                    userRoles = [payload.role];
+                } else {
+                    userRoles = ['member'];
+                }
+                localStorage.setItem('userRoles', JSON.stringify(userRoles));
+                return userRoles;
+            } catch (e) {
+                return ['member'];
+            }
+        }
+
+        // Build role-based navigation from user's roles
+        function buildRoleNav() {
+            const currentPage = 'venue';
+
+            // Get user's roles (graceful old-token handling)
+            const userRoles = getUserRolesFromToken();
+
+            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
+            const allDashboards = [
+                { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
+                { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
+                { id: 'host', role: 'host', label: 'Host', href: '/host' },
+                { id: 'partner', role: 'partner', label: 'Partner', href: '/partners' },
+                { id: 'dj', role: 'dj', label: 'DJ', href: '/dj' },
+                { id: 'member', role: 'member', label: 'Member', href: '/members' }
+            ];
+
+            // Filter to only user's roles
+            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
+
+            const navLinks = document.getElementById('navLinks');
+            const divider = navLinks.querySelector('.nav-divider');
+
+            // Remove any existing dashboard links
+            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
+
+            // Add dashboard links after divider (reverse to maintain order)
+            dashboards.reverse().forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                divider.insertAdjacentElement('afterend', link);
+            });
+
+            // Also update mobile menu
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileMenu) {
+                mobileMenu.innerHTML = '<a href="/">Events</a>' +
+                    dashboards.reverse().map(dash =>
+                        `<a href="${dash.href}"${dash.id === currentPage ? ' class="active"' : ''}>${dash.label}</a>`
+                    ).join('') +
+                    '<a href="#" onclick="logout()" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>';
+            }
+        }
+
+        // Check authentication on load
         async function checkAuth() {
             const token = localStorage.getItem('token');
+            const userRoles = getUserRolesFromToken();
+
             if (!token) {
-                window.location.href = '/?login=venue';
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+                return;
+            }
+
+            // Check if user has venue role
+            if (!userRoles.includes('venue') && !userRoles.includes('admin')) {
+                document.getElementById('loadingState').innerHTML = `
+                    <p style="color: var(--danger-red);">Access Denied</p>
+                    <p style="color: var(--gray);">You don't have venue access</p>
+                    <a href="/" style="color: var(--lightning-yellow); margin-top: 1rem; display: inline-block;">Go to Events</a>
+                `;
                 return;
             }
 
             try {
-                // Decode token to check role
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const roles = payload.roles || [payload.role];
-
-                if (!roles.includes('venue') && !roles.includes('admin')) {
-                    alert('You do not have venue access');
-                    window.location.href = '/';
-                    return;
-                }
-
                 await loadDashboard(token);
             } catch (error) {
-                console.error('Auth error:', error);
-                window.location.href = '/?login=venue';
+                console.error('Dashboard error:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
             }
         }
 
@@ -279,7 +619,11 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (!venueRes.ok) throw new Error('Failed to load venue');
+                if (!venueRes.ok) {
+                    const errData = await venueRes.json();
+                    throw new Error(errData.error || 'Failed to load venue');
+                }
+
                 const venueData = await venueRes.json();
                 const venue = venueData.venue;
 
@@ -308,6 +652,9 @@
                 document.getElementById('upcomingBookings').textContent = upcoming.length;
                 document.getElementById('monthlyBookings').textContent = thisMonth.length;
                 document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(0);
+
+                // Build role-based navigation
+                buildRoleNav();
 
                 // Render bookings
                 renderBookings(allBookings);
@@ -394,12 +741,17 @@
             });
         });
 
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+
         function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userRoles');
+            // Clear ALL auth keys
+            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'partnerUser', 'dealUser'].forEach(k => localStorage.removeItem(k));
             window.location.href = '/';
         }
 
+        // Initialize
         checkAuth();
     </script>
 </body>
