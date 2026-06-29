@@ -2090,6 +2090,9 @@
             .splash-content { transform: translateY(-10vh); }
         }
     </style>
+
+    <!-- Analytics Module (PostHog + Native) -->
+    <script src="/js/analytics.js"></script>
 </head>
 <body>
     <!-- IMMEDIATE SETTINGS APPLICATION (no network delay) -->
@@ -4568,7 +4571,8 @@
             if (existingToken) {
                 try {
                     const userEmail = localStorage.getItem('userEmail');
-                    const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+                    // Use graceful token extraction for old tokens
+                    const userRoles = getUserRolesFromToken();
                     const userRole = localStorage.getItem('userType') || (userRoles.includes('admin') ? 'admin' : 'member');
 
                     // Create user object for updateNavigation
@@ -5909,21 +5913,65 @@
             state.approvalCheckInterval = setInterval(checkApprovalStatus, 10000);
         }
 
-        // Get primary dashboard URL based on user roles (priority order)
+        // Graceful degradation for OLD tokens (pre-roles[])
+        // If userRoles missing but token exists, decode JWT and cache roles
+        function getUserRolesFromToken() {
+            // First check localStorage cache
+            let userRoles = [];
+            try {
+                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            } catch (e) {
+                userRoles = [];
+            }
+
+            // If we have cached roles, use them
+            if (userRoles.length > 0) {
+                return userRoles;
+            }
+
+            // No cached roles - try to extract from token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return ['member']; // No token = guest treated as member
+            }
+
+            try {
+                // Decode JWT payload (base64)
+                const payload = JSON.parse(atob(token.split('.')[1]));
+
+                // New tokens have roles[] array
+                if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
+                    userRoles = payload.roles;
+                }
+                // Old tokens only have role (singular)
+                else if (payload.role) {
+                    userRoles = [payload.role];
+                }
+                // No roles at all - default to member
+                else {
+                    userRoles = ['member'];
+                }
+
+                // Cache for future reads
+                localStorage.setItem('userRoles', JSON.stringify(userRoles));
+                return userRoles;
+            } catch (e) {
+                console.log('Token decode failed, treating as member');
+                return ['member'];
+            }
+        }
+
+        // Get primary dashboard URL based on user roles[] (priority order)
+        // Uses getUserRolesFromToken() for graceful old-token handling
         function getPrimaryDashboardUrl() {
-            const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
-            const isAdmin = userRoles.includes('admin') || localStorage.getItem('adminToken');
-            const isVenue = userRoles.includes('venue') || localStorage.getItem('venueToken');
-            const isHost = userRoles.includes('host');
-            const isPartner = userRoles.includes('partner') || localStorage.getItem('partnerToken');
-            const isDJ = userRoles.includes('dj') || localStorage.getItem('djToken');
+            const userRoles = getUserRolesFromToken();
 
             // Priority: admin > venue > host > partner > dj > member
-            if (isAdmin) return '/admin';
-            if (isVenue) return '/admin'; // venue uses admin portal
-            if (isHost) return '/host';
-            if (isPartner) return '/partners';
-            if (isDJ) return '/dj';
+            if (userRoles.includes('admin')) return '/admin';
+            if (userRoles.includes('venue')) return '/admin'; // venue uses admin portal
+            if (userRoles.includes('host')) return '/host';
+            if (userRoles.includes('partner')) return '/partners';
+            if (userRoles.includes('dj')) return '/dj';
             return '/members';
         }
 
@@ -5949,8 +5997,8 @@
         }
 
         function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            // Clear ALL auth keys to prevent phantom sessions
+            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId'].forEach(k => localStorage.removeItem(k));
             state.token = null;
             state.user = null;
 
@@ -6394,6 +6442,11 @@
                 tagline = selectedOption.dataset.tagline || '';
             }
 
+            // Track booking started
+            if (window.LPAnalytics) {
+                LPAnalytics.bookingStarted(state.selectedVenue._id, passName, numPasses, price * numPasses);
+            }
+
             // Disable button
             purchaseBtn.disabled = true;
             purchaseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; vertical-align: middle;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> PROCESSING...';
@@ -6484,6 +6537,18 @@
                 `;
 
                 showToast('Pass purchased successfully!', 'success');
+
+                // Track purchase completed
+                if (window.LPAnalytics) {
+                    LPAnalytics.purchaseCompleted(
+                        confirmData.passId,
+                        state.selectedVenue._id,
+                        state.selectedVenue.name,
+                        price * numPasses,
+                        numPasses,
+                        passName
+                    );
+                }
 
                 // Wait 3 seconds then close modal and reload
                 setTimeout(async () => {
@@ -7893,7 +7958,7 @@
                 const response = await fetch(API_BASE + '/api/v1/lightning/upload-image', {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
                     },
                     body: formData
                 });
@@ -8513,6 +8578,11 @@
         function openEventTicketModal(event) {
             selectedEvent = event;
 
+            // Track event view
+            if (window.LPAnalytics) {
+                LPAnalytics.viewedEvent(event._id, event.name, event.slug);
+            }
+
             let modal = document.getElementById('eventTicketModal');
             if (!modal) {
                 modal = document.createElement('div');
@@ -8828,6 +8898,19 @@
                     });
 
                     showToast('🎟️ Ticket purchased! Check your phone for SMS.', 'success');
+
+                    // Track purchase completed
+                    if (window.LPAnalytics) {
+                        LPAnalytics.purchaseCompleted(
+                            confirmData?.passId || paymentIntent.id,
+                            selectedEvent._id,
+                            selectedEvent.name,
+                            eventTicketTotal,
+                            eventTicketQuantity,
+                            selectedEvent.ticketTypes?.[eventSelectedTicketIndex]?.name || 'General'
+                        );
+                    }
+
                     closeModal('eventTicketModal');
                 } catch (error) {
                     ev.complete('fail');
@@ -8930,6 +9013,19 @@
 
                     const purchaseLabel = ticketCount > 1 ? `${ticketCount} tickets` : 'Ticket';
                     showToast(`🎟️ ${purchaseLabel} purchased! Check your phone for SMS.`, 'success');
+
+                    // Track purchase completed
+                    if (window.LPAnalytics) {
+                        LPAnalytics.purchaseCompleted(
+                            confirmData?.passId || paymentIntent.id,
+                            selectedEvent._id,
+                            selectedEvent.name,
+                            eventTicketTotal,
+                            ticketCount,
+                            selectedEvent.ticketTypes?.[eventSelectedTicketIndex]?.name || 'General'
+                        );
+                    }
+
                     closeModal('eventTicketModal');
                 }
             } catch (error) {
@@ -11429,12 +11525,22 @@
                 console.log('Response data:', data);
 
                 if (data.token) {
-                    localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('userType', selectedUserType);
+                    // PURGE all legacy keys first to prevent desync
+                    ['authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken'].forEach(k => localStorage.removeItem(k));
+
+                    // Write canonical token + user data
+                    localStorage.setItem('token', data.token);
                     localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || [selectedUserType]));
+                    if (data.userId || data.user?.id) localStorage.setItem('userId', data.userId || data.user?.id);
 
                     // Set state.token for API calls
                     state.token = data.token;
+
+                    // Track login for attribution
+                    if (window.LPAnalytics) {
+                        LPAnalytics.loginCompleted(data.userId || email, email);
+                    }
 
                     // Route based on user type
                     closePassModal();
@@ -11467,6 +11573,11 @@
         }
 
         function showCreateAccount() {
+            // Track signup click
+            if (window.LPAnalytics) {
+                LPAnalytics.clickedSignup('create_account_link');
+            }
+
             document.getElementById('loginFormContainer').style.display = 'none';
             document.getElementById('createAccountForm').style.display = 'block';
             document.getElementById('createTypeLabel').textContent = 'CREATE ' + selectedUserType.toUpperCase() + ' ACCOUNT';
@@ -11504,6 +11615,11 @@
             btn.textContent = 'Creating...';
             btn.disabled = true;
 
+            // Track signup started
+            if (window.LPAnalytics) {
+                LPAnalytics.signupStarted('email');
+            }
+
             // Determine primary role and all roles
             const primaryRole = selectedRoles.includes('venue') ? 'venue' :
                                selectedRoles.includes('dj') ? 'dj' : 'member';
@@ -11530,17 +11646,20 @@
                 const data = await response.json();
 
                 if (data.token || data.success) {
-                    if (data.token) {
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('userType', primaryRole);
-                        localStorage.setItem('userEmail', email);
+                    // Track signup completed
+                    if (window.LPAnalytics) {
+                        LPAnalytics.signupCompleted(data.userId || email, email, 'email', partnerCode || null);
+                    }
 
-                        // Store role-specific tokens
-                        selectedRoles.forEach(role => {
-                            if (role !== 'member') {
-                                localStorage.setItem(role + 'Token', data.token);
-                            }
-                        });
+                    if (data.token) {
+                        // PURGE all legacy keys first to prevent desync
+                        ['authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken'].forEach(k => localStorage.removeItem(k));
+
+                        // Write canonical token + user data
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('userEmail', email);
+                        localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || selectedRoles));
+                        if (data.userId || data.user?.id) localStorage.setItem('userId', data.userId || data.user?.id);
                     }
 
                     // Show success with pending notice if venue, admin, or host

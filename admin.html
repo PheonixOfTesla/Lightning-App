@@ -1922,17 +1922,43 @@
         let adminToken = null;
         let currentRefundPassId = null;
 
-        // Build role-based navigation from user's roles
-        function buildRoleNav() {
-            const currentPage = 'admin';
-
-            // Get user's roles from localStorage
+        // Graceful degradation for OLD tokens (pre-roles[])
+        // If userRoles missing but token exists, decode JWT and cache roles
+        function getUserRolesFromToken() {
             let userRoles = [];
             try {
                 userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
             } catch (e) {
-                userRoles = ['member'];
+                userRoles = [];
             }
+
+            if (userRoles.length > 0) return userRoles;
+
+            const token = localStorage.getItem('token');
+            if (!token) return ['member'];
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
+                    userRoles = payload.roles;
+                } else if (payload.role) {
+                    userRoles = [payload.role];
+                } else {
+                    userRoles = ['member'];
+                }
+                localStorage.setItem('userRoles', JSON.stringify(userRoles));
+                return userRoles;
+            } catch (e) {
+                return ['member'];
+            }
+        }
+
+        // Build role-based navigation from user's roles
+        function buildRoleNav() {
+            const currentPage = 'admin';
+
+            // Get user's roles (graceful old-token handling)
+            const userRoles = getUserRolesFromToken();
 
             // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
             const allDashboards = [
@@ -1963,32 +1989,15 @@
             });
         }
 
-        // Check for existing session - seamless auth from main site
+        // Check for existing session - single canonical token
         function checkAuth() {
-            // Check for admin-specific token first
-            let token = localStorage.getItem('adminToken');
-            let userType = localStorage.getItem('userType');
-
-            // If we have an admin token, use it
-            if (token && userType === 'admin') {
-                adminToken = token;
-                const email = localStorage.getItem('userEmail') || 'Admin';
-                document.getElementById('adminEmail').textContent = email;
-                showDashboard();
-                loadDashboardData();
-                return;
-            }
-
-            // Check for main token with admin role (seamless portal navigation)
-            const mainToken = localStorage.getItem('token');
-            const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            const token = localStorage.getItem('token');
+            const userRoles = getUserRolesFromToken();
             const userEmail = localStorage.getItem('userEmail');
 
-            if (mainToken && userRoles.includes('admin')) {
-                // User is logged in with admin role from main site - grant access
-                adminToken = mainToken;
-                localStorage.setItem('adminToken', mainToken);  // Sync for future visits
-                localStorage.setItem('userType', 'admin');
+            // Check if user has admin role
+            if (token && userRoles.includes('admin')) {
+                adminToken = token;
                 document.getElementById('adminEmail').textContent = userEmail || 'Admin';
                 showDashboard();
                 loadDashboardData();
@@ -2023,10 +2032,12 @@
                 const data = await res.json();
 
                 if (data.token) {
+                    // PURGE legacy keys, write canonical token
+                    ['authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken'].forEach(k => localStorage.removeItem(k));
                     adminToken = data.token;
-                    localStorage.setItem('adminToken', data.token);
-                    localStorage.setItem('userType', 'admin');
+                    localStorage.setItem('token', data.token);
                     localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || ['admin']));
 
                     document.getElementById('adminEmail').textContent = email;
                     showDashboard();
@@ -4219,13 +4230,8 @@
         }
 
         function logout() {
-            // Clear all auth tokens
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('token');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userType');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userRoles');
+            // Clear ALL auth keys
+            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId'].forEach(k => localStorage.removeItem(k));
             // Redirect to main page
             window.location.href = '/';
         }

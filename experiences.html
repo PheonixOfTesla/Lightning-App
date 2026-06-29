@@ -41,6 +41,7 @@
             --white: #ffffff;
             --gray: #888;
             --light-gray: #cccccc;
+            --neon-green: #39ff14;
         }
 
         body {
@@ -831,7 +832,7 @@
                     <div id="memberCheckSection" style="background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
                         <div style="font-weight: 600; color: white; margin-bottom: 0.75rem; font-size: 0.95rem;">Are you a member?</div>
                         <div id="memberButtons" style="display: flex; gap: 0.75rem;">
-                            <button type="button" onclick="showMemberLogin()" style="flex: 1; padding: 0.75rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Yes</button>
+                            <button type="button" onclick="LoginCenter.open()" style="flex: 1; padding: 0.75rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Yes, Login</button>
                             <button type="button" onclick="setNonMember()" style="flex: 1; padding: 0.75rem; background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--border-dark); border-radius: 8px; font-weight: 600; cursor: pointer;">No</button>
                         </div>
 
@@ -841,7 +842,7 @@
                                 <input type="email" id="memberEmail" placeholder="Email" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 0.95rem;">
                             </div>
                             <div style="margin-bottom: 0.75rem;">
-                                <input type="password" id="memberPasscode" placeholder="Passcode" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 0.95rem;">
+                                <input type="password" id="memberPasscode" placeholder="Password" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; font-size: 0.95rem;">
                             </div>
                             <button type="button" onclick="verifyMember()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: var(--pure-black); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Verify</button>
                             <div id="memberError" style="color: #ff4444; font-size: 0.8rem; margin-top: 0.5rem; display: none;"></div>
@@ -855,7 +856,7 @@
                         <!-- Non-Member State -->
                         <div id="nonMemberState" style="display: none; margin-top: 0.75rem;">
                             <div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem;">Paying regular price</div>
-                            <a href="/" onclick="closeBookingModal()" style="display: inline-block; padding: 0.5rem 1.25rem; background: var(--lightning-yellow); color: var(--pure-black); font-size: 0.85rem; font-weight: 600; border-radius: 6px; text-decoration: none;">Login</a>
+                            <button type="button" onclick="LoginCenter.open()" style="display: inline-block; padding: 0.5rem 1.25rem; background: var(--lightning-yellow); color: var(--pure-black); font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer;">Login or Sign Up</button>
                         </div>
                     </div>
 
@@ -1136,11 +1137,10 @@
         });
 
         function updateAuthState() {
-            const mainToken = localStorage.getItem('token');
-            const authToken = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token');
             const authButton = document.getElementById('authButton');
             const mobileLogin = document.querySelector('#mobileMenu a:last-child');
-            const isLoggedIn = mainToken || authToken;
+            const isLoggedIn = !!token;
 
             // Toggle pricing visibility
             document.querySelectorAll('.guest-only').forEach(el => {
@@ -1176,12 +1176,8 @@
         }
 
         function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('dealToken');
-            localStorage.removeItem('dealUser');
+            // Clear ALL auth keys
+            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'dealUser'].forEach(k => localStorage.removeItem(k));
             window.location.reload();
         }
 
@@ -1193,11 +1189,11 @@
 
         async function verifyMember() {
             const email = document.getElementById('memberEmail').value;
-            const passcode = document.getElementById('memberPasscode').value;
+            const password = document.getElementById('memberPasscode').value;
             const errorEl = document.getElementById('memberError');
 
-            if (!email || !passcode) {
-                errorEl.textContent = 'Please enter email and passcode.';
+            if (!email || !password) {
+                errorEl.textContent = 'Please enter email and password.';
                 errorEl.style.display = 'block';
                 return;
             }
@@ -1214,14 +1210,14 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             email: email,
-                            password: passcode,
+                            password: password,
                             userType: role
                         })
                     });
 
                     const data = await response.json();
 
-                    if (response.ok && data.success) {
+                    if (response.ok && data.token) {
                         authenticated = true;
                         authData = data;
                         break;
@@ -1237,12 +1233,12 @@
                 document.getElementById('memberVerified').style.display = 'block';
                 document.getElementById('memberCheckSection').style.borderColor = '#4ade80';
                 document.getElementById('memberCheckSection').style.background = 'rgba(74, 222, 128, 0.1)';
-                // Save token to localStorage
-                localStorage.setItem('authToken', authData.token);
+                // Save token to localStorage using canonical key
+                localStorage.setItem('token', authData.token);
                 localStorage.setItem('userEmail', email);
                 updateTotal();
             } else {
-                errorEl.textContent = 'Invalid passcode. Try again or pay regular price.';
+                errorEl.textContent = 'Invalid password. Try again or pay regular price.';
                 errorEl.style.display = 'block';
             }
         }
@@ -1254,9 +1250,11 @@
             updateTotal();
         }
 
+        // showLoginFromNonMember removed - now using LoginCenter.open() directly
+
         function resetMemberState() {
             // Only reset if not logged in
-            if (!localStorage.getItem('authToken')) {
+            if (!localStorage.getItem('token')) {
                 isMemberVerified = false;
                 document.getElementById('memberButtons').style.display = 'flex';
                 document.getElementById('memberLoginFields').style.display = 'none';
@@ -1461,7 +1459,7 @@
             document.getElementById('rentalHours').value = '1';
 
             // Check if user is logged in
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token');
             if (token) {
                 // User is logged in - auto-verify member
                 isMemberVerified = true;
@@ -1603,6 +1601,53 @@
         if (urlParams.get('canceled') === 'true') {
             // Clean URL
             window.history.replaceState({}, document.title, '/experiences');
+        }
+    </script>
+
+    <!-- Login Center Modal (shared component) -->
+    <script src="/js/login-center.js"></script>
+    <script>
+        // Initialize Login Center with success callback for member discount
+        LoginCenter.init({
+            apiBase: API_URL,
+            onSuccess: function(data) {
+                // User logged in or signed up successfully
+                // data = { token, email, roles, userId }
+                // NOTE: This callback is called immediately when login/signup succeeds.
+                // The modal will close when user clicks CONTINUE or X.
+
+                // Set member verified state
+                isMemberVerified = true;
+
+                // Update the member check section UI (with null checks)
+                try {
+                    var memberButtons = document.getElementById('memberButtons');
+                    var memberLoginFields = document.getElementById('memberLoginFields');
+                    var nonMemberState = document.getElementById('nonMemberState');
+                    var memberVerified = document.getElementById('memberVerified');
+                    var memberCheckSection = document.getElementById('memberCheckSection');
+
+                    if (memberButtons) memberButtons.style.display = 'none';
+                    if (memberLoginFields) memberLoginFields.style.display = 'none';
+                    if (nonMemberState) nonMemberState.style.display = 'none';
+                    if (memberVerified) memberVerified.style.display = 'block';
+                    if (memberCheckSection) {
+                        memberCheckSection.style.borderColor = '#4ade80';
+                        memberCheckSection.style.background = 'rgba(74, 222, 128, 0.1)';
+                    }
+
+                    // Update total to apply member discount
+                    updateTotal();
+                } catch (e) {
+                    console.error('LoginCenter onSuccess UI update error:', e);
+                }
+                // Modal closes when user clicks CONTINUE or X (not here)
+            }
+        });
+
+        // Override setNonMember to open Login Center instead of inline form
+        function openLoginCenterFromCheckout() {
+            LoginCenter.open();
         }
     </script>
 </body>

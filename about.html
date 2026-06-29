@@ -851,8 +851,11 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.token) {
-                    localStorage.setItem('dealToken', data.token);
-                    localStorage.setItem('dealUser', JSON.stringify(data.user));
+                    // PURGE legacy keys, write canonical token
+                    ['authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken'].forEach(k => localStorage.removeItem(k));
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userEmail', document.getElementById('authSignupEmail').value);
+                    localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || ['member']));
                     hideLoginModal();
                     updateAuthButton();
                 } else {
@@ -876,8 +879,11 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.token) {
-                    localStorage.setItem('dealToken', data.token);
-                    localStorage.setItem('dealUser', JSON.stringify(data.user));
+                    // PURGE legacy keys, write canonical token
+                    ['authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken'].forEach(k => localStorage.removeItem(k));
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userEmail', document.getElementById('authLoginEmail').value);
+                    localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || ['member']));
                     hideLoginModal();
                     updateAuthButton();
                 } else {
@@ -905,16 +911,13 @@
             btn.disabled = false; btn.textContent = 'Send Reset Link';
         }
         function handleLogout() {
-            localStorage.removeItem('dealToken');
-            localStorage.removeItem('dealUser');
-            updateAuthButton();
+            logout();
         }
         function updateAuthButton() {
             const btn = document.getElementById('nav-login');
             const mobileBtn = document.getElementById('mobile-login');
-            const mainToken = localStorage.getItem('token');
-            const authToken = localStorage.getItem('authToken');
-            if (mainToken || authToken) {
+            const token = localStorage.getItem('token');
+            if (token) {
                 if (btn) { btn.textContent = 'LOGOUT'; btn.href = '#'; btn.onclick = function(e) { e.preventDefault(); logout(); }; }
                 if (mobileBtn) { mobileBtn.textContent = 'Logout'; mobileBtn.href = '#'; mobileBtn.onclick = function(e) { e.preventDefault(); logout(); }; }
             } else {
@@ -923,12 +926,8 @@
             }
         }
         function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('dealToken');
-            localStorage.removeItem('dealUser');
+            // Clear ALL auth keys
+            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'dealUser'].forEach(k => localStorage.removeItem(k));
             window.location.reload();
         }
         document.addEventListener('DOMContentLoaded', updateAuthButton);
