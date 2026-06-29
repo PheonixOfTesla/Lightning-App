@@ -118,6 +118,12 @@
                 `;
             }
         }
+
+        // Reveal nav after content is updated (prevents flash of hardcoded HTML)
+        navLinks.style.visibility = 'visible';
+        if (mobileMenu) {
+            mobileMenu.style.visibility = 'visible';
+        }
     }
 
     // CSS for nav - overrides page-level styles with !important
@@ -127,6 +133,10 @@
         const styles = document.createElement('style');
         styles.id = 'nav-component-styles';
         styles.textContent = `
+            /* Failsafe: reveal nav after 2s if JS fails */
+            @keyframes navFailsafe { to { visibility: visible; } }
+            #navLinks, #mobileMenu { animation: navFailsafe 0s 2s forwards; }
+
             /* Logo anchor - icon only, no text styling bleed-through */
             a.logo {
                 color: #ffffff !important;
