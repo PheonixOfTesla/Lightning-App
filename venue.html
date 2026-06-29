@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Venue Dashboard - Lightning Pass</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        nav {
+            background: var(--pure-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.875rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--white);
+        }
+        .logo img { width: 40px; height: 40px; border-radius: 50%; }
+        .btn-logout {
+            padding: 0.5rem 1.25rem;
+            background: var(--lightning-yellow);
+            color: var(--pure-black);
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .main-content {
+            padding: 6rem 2rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+        .dashboard-header h1 {
+            font-size: 2rem;
+            color: var(--lightning-yellow);
+            margin-bottom: 0.5rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card-black);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+        }
+        .stat-label { color: var(--gray); font-size: 0.85rem; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.75rem; font-weight: 700; }
+        .stat-value.yellow { color: var(--lightning-yellow); }
+        .stat-value.green { color: var(--neon-green); }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .section-header h2 { font-size: 1.25rem; }
+        .bookings-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .booking-card {
+            background: var(--card-black);
+            border-radius: 1rem;
+            border: 1px solid var(--border-dark);
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+        .booking-card:hover { border-color: var(--lightning-yellow); }
+        .booking-info h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+        .booking-meta { color: var(--gray); font-size: 0.85rem; }
+        .booking-meta span { margin-right: 1rem; }
+        .booking-date {
+            text-align: right;
+        }
+        .booking-date .date { font-weight: 600; color: var(--lightning-yellow); }
+        .booking-date .time { color: var(--gray); font-size: 0.9rem; }
+        .booking-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            margin-top: 0.5rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.upcoming { background: rgba(0, 212, 255, 0.2); color: var(--electric-blue); }
+        .status-badge.completed { background: rgba(57, 255, 20, 0.2); color: var(--neon-green); }
+        .status-badge.cancelled { background: rgba(255, 0, 68, 0.2); color: var(--danger-red); }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray);
+        }
+        .loading { text-align: center; padding: 4rem; }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-dark);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .filter-tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            color: var(--white);
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .filter-tab:hover { border-color: var(--lightning-yellow); }
+        .filter-tab.active {
+            background: var(--lightning-yellow);
+            border-color: var(--lightning-yellow);
+            color: var(--pure-black);
+        }
+        @media (max-width: 768px) {
+            .booking-card { grid-template-columns: 1fr; }
+            .booking-date { text-align: left; margin-top: 0.5rem; }
+            .main-content { padding: 5rem 1rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">
+            <img src="logo.png" alt="Lightning Pass">
+            <span>Lightning Pass</span>
+        </a>
+        <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </nav>
+
+    <main class="main-content">
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p>Loading your dashboard...</p>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <div class="dashboard-header">
+                <h1 id="venueName">Venue Dashboard</h1>
+                <p style="color: var(--gray);" id="venueAddress"></p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value yellow" id="totalBookings">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Upcoming</div>
+                    <div class="stat-value" style="color: var(--electric-blue);" id="upcomingBookings">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value" id="monthlyBookings">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value green" id="totalRevenue">$0</div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2>Bookings</h2>
+            </div>
+
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="upcoming">Upcoming</button>
+                <button class="filter-tab" data-filter="past">Past</button>
+            </div>
+
+            <div id="bookingsGrid" class="bookings-grid">
+                <div class="empty-state">
+                    <h3>No Bookings Yet</h3>
+                    <p>Bookings will appear here when customers make reservations.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://lightning-backend-production.up.railway.app';
+
+        let allBookings = [];
+        let currentFilter = 'all';
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/?login=venue';
+                return;
+            }
+
+            try {
+                // Decode token to check role
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const roles = payload.roles || [payload.role];
+
+                if (!roles.includes('venue') && !roles.includes('admin')) {
+                    alert('You do not have venue access');
+                    window.location.href = '/';
+                    return;
+                }
+
+                await loadDashboard(token);
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = '/?login=venue';
+            }
+        }
+
+        async function loadDashboard(token) {
+            try {
+                // Get venue info
+                const venueRes = await fetch(`${API_BASE}/api/v1/lightning/venue/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!venueRes.ok) throw new Error('Failed to load venue');
+                const venueData = await venueRes.json();
+                const venue = venueData.venue;
+
+                document.getElementById('venueName').textContent = venue.name;
+                document.getElementById('venueAddress').textContent = venue.address || '';
+
+                // Get bookings/passes for this venue
+                const passesRes = await fetch(`${API_BASE}/api/v1/lightning/venue/passes`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (passesRes.ok) {
+                    const passesData = await passesRes.json();
+                    allBookings = passesData.passes || [];
+                }
+
+                // Calculate stats
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+                const upcoming = allBookings.filter(b => new Date(b.validUntil || b.bookingDate) >= now);
+                const thisMonth = allBookings.filter(b => new Date(b.createdAt) >= startOfMonth);
+                const totalRevenue = allBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+
+                document.getElementById('totalBookings').textContent = allBookings.length;
+                document.getElementById('upcomingBookings').textContent = upcoming.length;
+                document.getElementById('monthlyBookings').textContent = thisMonth.length;
+                document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(0);
+
+                // Render bookings
+                renderBookings(allBookings);
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                document.getElementById('loadingState').innerHTML = `
+                    <p style="color: var(--danger-red);">Failed to load dashboard</p>
+                    <p style="color: var(--gray);">${error.message}</p>
+                `;
+            }
+        }
+
+        function renderBookings(bookings) {
+            const grid = document.getElementById('bookingsGrid');
+            const now = new Date();
+
+            // Apply filter
+            let filtered = bookings;
+            if (currentFilter === 'upcoming') {
+                filtered = bookings.filter(b => new Date(b.validUntil || b.bookingDate) >= now);
+            } else if (currentFilter === 'past') {
+                filtered = bookings.filter(b => new Date(b.validUntil || b.bookingDate) < now);
+            }
+
+            // Sort by date (newest first for past, soonest first for upcoming)
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.validUntil || a.bookingDate || a.createdAt);
+                const dateB = new Date(b.validUntil || b.bookingDate || b.createdAt);
+                return currentFilter === 'past' ? dateB - dateA : dateA - dateB;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No ${currentFilter === 'all' ? '' : currentFilter} bookings</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(booking => {
+                const bookingDate = new Date(booking.bookingDate || booking.validUntil || booking.createdAt);
+                const isUpcoming = bookingDate >= now;
+                const status = booking.status === 'refunded' ? 'cancelled' : (isUpcoming ? 'upcoming' : 'completed');
+
+                const dateStr = bookingDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                const timeStr = booking.bookingTime || bookingDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+                return `
+                    <div class="booking-card">
+                        <div class="booking-info">
+                            <h3>${booking.guestName || booking.email}</h3>
+                            <div class="booking-meta">
+                                <span>${booking.passName || 'Booking'}</span>
+                                <span>${booking.duration || ''}</span>
+                            </div>
+                            <div class="booking-meta" style="margin-top: 0.5rem;">
+                                <span>Email: ${booking.email}</span>
+                                ${booking.phone ? `<span>Phone: ${booking.phone}</span>` : ''}
+                            </div>
+                            <span class="status-badge ${status}">${status}</span>
+                        </div>
+                        <div class="booking-date">
+                            <div class="date">${dateStr}</div>
+                            <div class="time">${timeStr}</div>
+                            <div class="booking-amount">$${booking.amount || 0}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentFilter = tab.dataset.filter;
+                renderBookings(allBookings);
+            });
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRoles');
+            window.location.href = '/';
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

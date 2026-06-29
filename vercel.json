@@ -14,6 +14,7 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/login", "destination": "/login.html" },
     { "source": "/host", "destination": "/host.html" },
+    { "source": "/venue", "destination": "/venue.html" },
     { "source": "/dj", "destination": "/dj.html" },
     { "source": "/dj/:djId", "destination": "/dj.html" },
     { "source": "/dj-display/:djId", "destination": "/dj-display.html" },
