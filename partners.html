@@ -919,6 +919,9 @@
         </div>
 
         <div class="cta-section">
+            <!-- For logged-in partners: show dashboard button -->
+            <a href="/partner-portal" class="btn btn-primary" id="go-to-dashboard" style="display: none; text-decoration: none;">Go to Partner Dashboard</a>
+            <!-- For non-partners: show signup/login -->
             <button class="btn btn-primary" id="show-signup">Request Access</button>
             <button class="btn btn-secondary" id="show-login">Already a partner? Log in</button>
         </div>
@@ -1186,9 +1189,11 @@
             buildNav(); // Build nav based on auth state
 
             if (token && userRoles.includes('partner')) {
-                // Has partner role - show dashboard
-                showDashboard();
-                loadDashboard();
+                // Has partner role - show prominent button to partner dashboard
+                document.getElementById('go-to-dashboard').style.display = 'inline-block';
+                document.getElementById('show-signup').style.display = 'none';
+                document.getElementById('show-login').style.display = 'none';
+                showLanding(); // Keep landing visible with dashboard button
             } else if (token) {
                 // Logged in but no partner role - show "Add Partner Role" option
                 showAddPartnerRole();
