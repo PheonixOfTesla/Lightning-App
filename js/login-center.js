@@ -29,7 +29,7 @@ const LoginCenter = (function() {
             <span class="pass-modal-close" onclick="LoginCenter.close()">&times;</span>
             <div class="pass-modal-form-container">
                 <div class="pass-modal-icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#ffdd00"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </div>
                 <h2 style="margin-bottom: 0.5rem;">Login Center</h2>
                 <p id="lcSubtitle" style="color: var(--gray); margin-bottom: 1.5rem;">Select your account type</p>
@@ -38,43 +38,43 @@ const LoginCenter = (function() {
                 <div id="lcUserTypeSelect" style="margin-bottom: 1.5rem;">
                     <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem; text-align: center;">Select your role(s)</p>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <label class="user-type-btn" data-type="member" style="padding: 0.75rem 1rem; background: rgba(255,221,0,0.1); border: 2px solid var(--lightning-yellow); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
+                        <label class="user-type-btn" data-type="member" style="padding: 0.75rem 1rem; background: rgba(255,221,0,0.1); border: 2px solid #ffdd00; border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
                             <input type="checkbox" name="lcUserTypes" value="member" checked disabled style="display: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            <div style="flex: 1;"><span style="font-weight: 600;">Member</span> <span style="font-size: 0.75rem; color: var(--neon-green);">Always included</span></div>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--lightning-yellow)" stroke="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <div style="flex: 1;"><span style="font-weight: 600;">Member</span> <span style="font-size: 0.75rem; color: #39ff14;">Always included</span></div>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffdd00" stroke="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                         </label>
                         <label class="user-type-btn" data-type="dj" onclick="LoginCenter.toggleRole(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
                             <input type="checkbox" name="lcUserTypes" value="dj" style="display: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
                             <div style="flex: 1;"><span style="font-weight: 600;">DJ</span> <span style="font-size: 0.75rem; color: var(--gray);">Song request system access</span></div>
                         </label>
                         <label class="user-type-btn" data-type="partner" onclick="LoginCenter.toggleRole(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
                             <input type="checkbox" name="lcUserTypes" value="partner" style="display: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             <div style="flex: 1;"><span style="font-weight: 600;">Partner</span> <span style="font-size: 0.75rem; color: var(--gray);">Referral program</span></div>
                         </label>
                         <label class="user-type-btn" data-type="host" onclick="LoginCenter.toggleRole(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
                             <input type="checkbox" name="lcUserTypes" value="host" style="display: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-                            <div style="flex: 1;"><span style="font-weight: 600;">Host</span> <span style="font-size: 0.75rem; color: var(--lightning-yellow);">Requires approval</span></div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                            <div style="flex: 1;"><span style="font-weight: 600;">Host</span> <span style="font-size: 0.75rem; color: #ffdd00;">Requires approval</span></div>
                         </label>
                         <label class="user-type-btn" data-type="venue" onclick="LoginCenter.toggleRole(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
                             <input type="checkbox" name="lcUserTypes" value="venue" style="display: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
-                            <div style="flex: 1;"><span style="font-weight: 600;">Venue</span> <span style="font-size: 0.75rem; color: var(--lightning-yellow);">Requires approval</span></div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+                            <div style="flex: 1;"><span style="font-weight: 600;">Venue</span> <span style="font-size: 0.75rem; color: #ffdd00;">Requires approval</span></div>
                         </label>
                         <label class="user-type-btn" data-type="admin" onclick="LoginCenter.toggleRole(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
                             <input type="checkbox" name="lcUserTypes" value="admin" style="display: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <div style="flex: 1;"><span style="font-weight: 600;">Admin</span> <span style="font-size: 0.75rem; color: var(--lightning-yellow);">Requires approval</span></div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <div style="flex: 1;"><span style="font-weight: 600;">Admin</span> <span style="font-size: 0.75rem; color: #ffdd00;">Requires approval</span></div>
                         </label>
                     </div>
                     <div style="text-align: center; margin-top: 1.5rem;">
-                        <button onclick="LoginCenter.proceedToSignup()" class="btn btn-primary" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; cursor: pointer;">CONTINUE</button>
+                        <button onclick="LoginCenter.proceedToSignup()" class="btn btn-primary" style="width: 100%; padding: 1rem; background: #ffdd00; color: #000; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; cursor: pointer;">CONTINUE</button>
                     </div>
                     <p style="text-align: center; margin-top: 1rem; color: var(--gray); font-size: 0.85rem;">
-                        Already have an account? <a href="#" onclick="LoginCenter.showQuickLogin(); return false;" style="color: var(--lightning-yellow);">Login</a>
+                        Already have an account? <a href="#" onclick="LoginCenter.showQuickLogin(); return false;" style="color: #ffdd00;">Login</a>
                     </p>
                 </div>
 
@@ -87,22 +87,22 @@ const LoginCenter = (function() {
                     </form>
                     <div id="lcLoginLookupError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
                     <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
-                        <a href="#" onclick="LoginCenter.showUserTypes(); return false;" style="color: var(--lightning-yellow);">Back to signup</a>
+                        <a href="#" onclick="LoginCenter.showUserTypes(); return false;" style="color: #ffdd00;">Back to signup</a>
                     </p>
                 </div>
 
                 <!-- Quick Login - Step 2: Password -->
                 <div id="lcLoginPasswordSection" style="display: none;">
-                    <p id="lcLoginEmailDisplay" style="color: var(--lightning-yellow); font-size: 1rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
+                    <p id="lcLoginEmailDisplay" style="color: #ffdd00; font-size: 1rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
                     <div id="lcUserRolesDisplay" style="margin-bottom: 1rem;"></div>
-                    <div id="lcPendingRolesNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid var(--lightning-yellow); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--lightning-yellow);"></div>
+                    <div id="lcPendingRolesNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid #ffdd00; border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; color: #ffdd00;"></div>
                     <form class="pass-modal-form" onsubmit="LoginCenter.submitLogin(event); return false;">
                         <input type="password" id="lcLoginPassword" placeholder="Enter Password" required style="text-align: center;">
                         <button type="submit" id="lcLoginBtn">LOGIN</button>
                     </form>
                     <div id="lcLoginError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
                     <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
-                        <a href="#" onclick="LoginCenter.showForgotPassword(); return false;" style="color: var(--lightning-yellow);">Forgot password?</a>
+                        <a href="#" onclick="LoginCenter.showForgotPassword(); return false;" style="color: #ffdd00;">Forgot password?</a>
                     </p>
                     <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 0.5rem;">
                         <a href="#" onclick="LoginCenter.showQuickLogin(); return false;" style="color: var(--gray);">Use different email</a>
@@ -117,18 +117,18 @@ const LoginCenter = (function() {
                         <button type="submit" id="lcForgotBtn">SEND CODE</button>
                     </form>
                     <div id="lcForgotError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
-                    <div id="lcForgotSuccess" style="display: none; color: var(--neon-green); text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                    <div id="lcForgotSuccess" style="display: none; color: #39ff14; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
                     <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
-                        <a href="#" onclick="LoginCenter.showQuickLogin(); return false;" style="color: var(--lightning-yellow);">Back to login</a>
+                        <a href="#" onclick="LoginCenter.showQuickLogin(); return false;" style="color: #ffdd00;">Back to login</a>
                     </p>
                 </div>
 
                 <!-- Create Account Form -->
                 <div id="lcCreateAccountForm" style="display: none;">
                     <div style="text-align: center; margin-bottom: 1rem;">
-                        <span id="lcCreateTypeLabel" style="background: var(--lightning-yellow); color: #000; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;"></span>
+                        <span id="lcCreateTypeLabel" style="background: #ffdd00; color: #000; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;"></span>
                     </div>
-                    <div id="lcVenueNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid var(--lightning-yellow); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--lightning-yellow);">Venue/Host/Admin access requires approval. You'll be notified once approved.</div>
+                    <div id="lcVenueNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid #ffdd00; border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; color: #ffdd00;">Venue/Host/Admin access requires approval. You'll be notified once approved.</div>
                     <form class="pass-modal-form" onsubmit="LoginCenter.submitCreateAccount(event); return false;">
                         <input type="text" id="lcCreateFirstName" placeholder="First name" required>
                         <input type="text" id="lcCreateLastName" placeholder="Last name" required>
@@ -150,11 +150,11 @@ const LoginCenter = (function() {
             </div>
             <div class="pass-modal-success" id="lcSuccess">
                 <div class="pass-modal-icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--neon-green)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#39ff14"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                 </div>
                 <h2>You're In!</h2>
                 <p>Your Lightning Pass is active.</p>
-                <button onclick="LoginCenter.onSuccessClick()" style="margin-top: 1rem; padding: 1rem 2rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">CONTINUE</button>
+                <button onclick="LoginCenter.onSuccessClick()" style="margin-top: 1rem; padding: 1rem 2rem; background: #ffdd00; color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">CONTINUE</button>
             </div>
         </div>
         </div>
@@ -189,7 +189,7 @@ const LoginCenter = (function() {
         }
         .pass-modal {
             background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%);
-            border: 2px solid var(--lightning-yellow);
+            border: 2px solid #ffdd00;
             border-radius: 20px;
             padding: 2rem;
             max-width: 450px;
@@ -215,7 +215,7 @@ const LoginCenter = (function() {
             margin-bottom: 1rem;
         }
         .pass-modal h2 {
-            color: var(--lightning-yellow);
+            color: #ffdd00;
             font-size: 1.75rem;
             margin-bottom: 0.5rem;
         }
@@ -238,11 +238,11 @@ const LoginCenter = (function() {
         }
         .pass-modal-form input:focus {
             outline: none;
-            border-color: var(--lightning-yellow);
+            border-color: #ffdd00;
         }
         .pass-modal-form button {
             padding: 1rem;
-            background: var(--lightning-yellow);
+            background: #ffdd00;
             color: #000;
             border: none;
             border-radius: 10px;
@@ -262,7 +262,7 @@ const LoginCenter = (function() {
             display: block;
         }
         .pass-modal-success h2 {
-            color: var(--neon-green);
+            color: #39ff14;
         }
         @media (max-width: 480px) {
             .pass-modal {
@@ -328,7 +328,7 @@ const LoginCenter = (function() {
         checkbox.checked = !checkbox.checked;
 
         if (checkbox.checked) {
-            label.style.border = '2px solid var(--lightning-yellow)';
+            label.style.border = '2px solid #ffdd00';
             label.style.background = 'rgba(255,221,0,0.1)';
             if (!selectedRoles.includes(type)) selectedRoles.push(type);
         } else {
@@ -419,16 +419,16 @@ const LoginCenter = (function() {
 
             // Display roles as badges
             const roleConfig = {
-                member: { label: 'Member', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
-                dj: { label: 'DJ', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>' },
-                partner: { label: 'Partner', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
-                host: { label: 'Host', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' },
-                venue: { label: 'Venue', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>' },
-                admin: { label: 'Admin', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' }
+                member: { label: 'Member', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
+                dj: { label: 'DJ', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>' },
+                partner: { label: 'Partner', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+                host: { label: 'Host', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' },
+                venue: { label: 'Venue', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>' },
+                admin: { label: 'Admin', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' }
             };
             const roleBadges = loginUserRoles.map(r => {
                 const cfg = roleConfig[r] || { label: r, icon: '' };
-                return `<div style="padding: 0.75rem 1rem; background: rgba(255,221,0,0.1); border: 1px solid var(--lightning-yellow); border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">${cfg.icon}<span style="font-weight: 600;">${cfg.label}</span></div>`;
+                return `<div style="padding: 0.75rem 1rem; background: rgba(255,221,0,0.1); border: 1px solid #ffdd00; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">${cfg.icon}<span style="font-weight: 600;">${cfg.label}</span></div>`;
             }).join('');
             document.getElementById('lcUserRolesDisplay').innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;">${roleBadges}</div>`;
 
@@ -670,10 +670,10 @@ const LoginCenter = (function() {
                     const pendingRole = pendingRoles.join(', ');
                     successEl.innerHTML = `
                         <div style="font-size: 60px; margin-bottom: 1rem;">&#9203;</div>
-                        <h3 style="margin-bottom: 0.5rem; color: var(--lightning-yellow);">Account Created!</h3>
-                        <p style="color: var(--lightning-yellow); margin-bottom: 1rem;">${pendingRole} access is pending approval</p>
+                        <h3 style="margin-bottom: 0.5rem; color: #ffdd00;">Account Created!</h3>
+                        <p style="color: #ffdd00; margin-bottom: 1rem;">${pendingRole} access is pending approval</p>
                         <p style="color: var(--gray); font-size: 0.9rem;">You can access member features right away.</p>
-                        <button onclick="LoginCenter.onSuccessClick()" style="margin-top: 1.5rem; padding: 1rem 2rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">CONTINUE</button>
+                        <button onclick="LoginCenter.onSuccessClick()" style="margin-top: 1.5rem; padding: 1rem 2rem; background: #ffdd00; color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">CONTINUE</button>
                     `;
                 }
 
