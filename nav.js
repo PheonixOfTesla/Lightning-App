@@ -120,42 +120,87 @@
         }
     }
 
-    // CSS for nav buttons (inject if not present)
+    // CSS for nav - overrides page-level styles with !important
     function injectNavStyles() {
         if (document.getElementById('nav-component-styles')) return;
 
         const styles = document.createElement('style');
         styles.id = 'nav-component-styles';
         styles.textContent = `
+            /* Logo anchor - icon only, no text styling bleed-through */
+            a.logo {
+                color: #ffffff !important;
+                text-decoration: none !important;
+                font-weight: 700 !important;
+            }
+            a.logo:hover {
+                color: #ffffff !important;
+                text-decoration: none !important;
+            }
+            a.logo:visited {
+                color: #ffffff !important;
+            }
+            .logo-text {
+                color: #ffffff !important;
+                font-weight: 700 !important;
+            }
+            /* Nav links - white, no underline, active = yellow */
+            .nav-links .nav-link {
+                color: #ffffff !important;
+                text-decoration: none !important;
+                font-weight: 500 !important;
+                font-size: 0.95rem !important;
+            }
+            .nav-links .nav-link:hover {
+                color: #ffdd00 !important;
+            }
+            .nav-links .nav-link:visited {
+                color: #ffffff !important;
+            }
+            .nav-links .nav-link.active {
+                color: #ffdd00 !important;
+            }
+            .nav-links .nav-link.active:visited {
+                color: #ffdd00 !important;
+            }
+            /* Dashboard button - cyan pill */
             .btn-dashboard {
-                padding: 0.5rem 1.25rem;
-                background: var(--electric-blue, #00d4ff);
-                color: var(--pure-black, #0d1b2a);
-                border: none;
-                border-radius: 2rem;
-                font-weight: 600;
-                font-size: 0.9rem;
-                text-decoration: none;
-                transition: all 0.2s ease;
+                padding: 0.5rem 1.25rem !important;
+                background: #00d4ff !important;
+                color: #0d1b2a !important;
+                border: none !important;
+                border-radius: 2rem !important;
+                font-weight: 600 !important;
+                font-size: 0.85rem !important;
+                text-decoration: none !important;
+                transition: all 0.2s ease !important;
+                box-shadow: 0 0 15px rgba(0, 212, 255, 0.4) !important;
             }
             .btn-dashboard:hover {
-                background: #fff;
-                color: var(--pure-black, #0d1b2a);
+                background: #fff !important;
+                color: #0d1b2a !important;
             }
+            .btn-dashboard:visited {
+                color: #0d1b2a !important;
+            }
+            /* Login/Logout buttons - yellow pill */
             .btn-logout, .btn-login {
-                padding: 0.5rem 1.25rem;
-                background: var(--lightning-yellow, #ffdd00);
-                color: var(--pure-black, #0d1b2a);
-                border: none;
-                border-radius: 2rem;
-                font-weight: 600;
-                font-size: 0.9rem;
-                text-decoration: none;
-                transition: all 0.2s ease;
+                padding: 0.5rem 1.25rem !important;
+                background: #ffdd00 !important;
+                color: #0d1b2a !important;
+                border: none !important;
+                border-radius: 2rem !important;
+                font-weight: 600 !important;
+                font-size: 0.85rem !important;
+                text-decoration: none !important;
+                transition: all 0.2s ease !important;
             }
             .btn-logout:hover, .btn-login:hover {
-                background: #fff;
-                color: var(--pure-black, #0d1b2a);
+                background: #fff !important;
+                color: #0d1b2a !important;
+            }
+            .btn-logout:visited, .btn-login:visited {
+                color: #0d1b2a !important;
             }
         `;
         document.head.appendChild(styles);
