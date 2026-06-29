@@ -1515,10 +1515,15 @@
 
                     ev.complete('success');
 
-                    // Confirm with backend
+                    // Confirm with backend - include auth token if logged in
+                    const confirmHeaders = { 'Content-Type': 'application/json' };
+                    const authToken = localStorage.getItem('token');
+                    if (authToken) {
+                        confirmHeaders['Authorization'] = `Bearer ${authToken}`;
+                    }
                     await fetch(`${API_URL}/api/v1/experiences/confirm`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: confirmHeaders,
                         body: JSON.stringify({ paymentIntentId: paymentIntent.id, ...formData })
                     });
 
@@ -1671,10 +1676,15 @@
                 }
 
                 if (paymentIntent.status === 'succeeded') {
-                    // Confirm with backend and send email
+                    // Confirm with backend and send email - include auth token if logged in
+                    const confirmHeaders = { 'Content-Type': 'application/json' };
+                    const authToken = localStorage.getItem('token');
+                    if (authToken) {
+                        confirmHeaders['Authorization'] = `Bearer ${authToken}`;
+                    }
                     await fetch(`${API_URL}/api/v1/experiences/confirm`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: confirmHeaders,
                         body: JSON.stringify({
                             paymentIntentId: paymentIntent.id,
                             ...formData

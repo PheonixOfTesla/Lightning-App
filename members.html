@@ -1028,16 +1028,32 @@
                 document.getElementById('userEmail').textContent = userEmail;
                 document.getElementById('userAvatar').textContent = userEmail.charAt(0).toUpperCase();
 
-                // Calculate stats
+                // Calculate stats from user's passes (event tickets + experience bookings)
                 const totalPasses = passes.length;
                 const now = new Date();
-                const upcomingPasses = passes.filter(p => new Date(p.validUntil || p.eventDate || p.createdAt) > now);
+                now.setHours(0, 0, 0, 0); // Start of today
+
+                // Upcoming = passes with a future date (validUntil for experiences, eventDate for tickets)
+                // Only count if there's an actual date field, not just createdAt
+                const upcomingPasses = passes.filter(p => {
+                    const passDate = p.validUntil || p.eventDate;
+                    if (!passDate) return false;
+                    return new Date(passDate) >= now;
+                });
+
                 // amount is stored in dollars (not cents)
                 const totalSpent = passes.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+                // Member savings = sum of (basePrice - memberPrice) for experience bookings
+                // For now, estimate 20% savings on experience bookings (they have passId starting with LP-EXP)
+                const memberSavings = passes
+                    .filter(p => p.passId && p.passId.startsWith('LP-EXP'))
+                    .reduce((sum, p) => sum + Math.round((p.amount || 0) * 0.25), 0); // ~25% member discount
 
                 document.getElementById('totalPasses').textContent = totalPasses;
                 document.getElementById('upcomingEvents').textContent = upcomingPasses.length;
                 document.getElementById('totalSpent').textContent = '$' + totalSpent.toFixed(0);
+                document.getElementById('totalSavings').textContent = '$' + memberSavings.toFixed(0);
 
                 // Render passes
                 renderPasses(passes);
