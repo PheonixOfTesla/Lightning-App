@@ -1136,10 +1136,50 @@
             updateAuthState();
         });
 
+        // Get user roles from token (graceful degradation for old tokens)
+        function getUserRolesFromToken() {
+            let userRoles = [];
+            try {
+                userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            } catch (e) {
+                userRoles = [];
+            }
+            if (userRoles.length > 0) return userRoles;
+
+            const token = localStorage.getItem('token');
+            if (!token) return ['member'];
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
+                    userRoles = payload.roles;
+                } else if (payload.role) {
+                    userRoles = [payload.role];
+                } else {
+                    userRoles = ['member'];
+                }
+                localStorage.setItem('userRoles', JSON.stringify(userRoles));
+                return userRoles;
+            } catch (e) {
+                return ['member'];
+            }
+        }
+
+        // Get dashboard URL based on role hierarchy
+        function getPrimaryDashboardUrl() {
+            const userRoles = getUserRolesFromToken();
+            if (userRoles.includes('admin')) return '/admin';
+            if (userRoles.includes('venue')) return '/admin';
+            if (userRoles.includes('host')) return '/host';
+            if (userRoles.includes('partner')) return '/partners';
+            if (userRoles.includes('dj')) return '/dj';
+            return '/members';
+        }
+
         function updateAuthState() {
             const token = localStorage.getItem('token');
-            const authButton = document.getElementById('authButton');
-            const mobileLogin = document.querySelector('#mobileMenu a:last-child');
+            const navLinks = document.getElementById('navLinks');
+            const mobileMenu = document.getElementById('mobileMenu');
             const isLoggedIn = !!token;
 
             // Toggle pricing visibility
@@ -1151,33 +1191,56 @@
             });
 
             if (isLoggedIn) {
-                // User is logged in - show LOGOUT
-                authButton.textContent = 'LOGOUT';
-                authButton.href = '#';
-                authButton.onclick = function(e) { e.preventDefault(); logout(); };
-                if (mobileLogin) {
-                    mobileLogin.textContent = 'Logout';
-                    mobileLogin.href = '#';
-                    mobileLogin.onclick = function(e) { e.preventDefault(); logout(); };
+                // User is logged in - show Dashboard + nav + LOGOUT
+                const dashboardUrl = getPrimaryDashboardUrl();
+                navLinks.innerHTML = `
+                    <a href="${dashboardUrl}" class="nav-link">Dashboard</a>
+                    <a href="/?browse=1" class="nav-link">Events</a>
+                    <a href="/experiences" class="nav-link active">Experiences</a>
+                    <a href="/partners" class="nav-link">Partners</a>
+                    <a href="/calendar" class="nav-link">Calendar</a>
+                    <a href="/about" class="nav-link">About</a>
+                    <button class="btn btn-danger" onclick="logout()">LOGOUT</button>
+                `;
+                if (mobileMenu) {
+                    mobileMenu.innerHTML = `
+                        <a href="${dashboardUrl}">Dashboard</a>
+                        <a href="/?browse=1">Events</a>
+                        <a href="/experiences" class="active">Experiences</a>
+                        <a href="/partners">Partners</a>
+                        <a href="/calendar">Calendar</a>
+                        <a href="/about">About</a>
+                        <a href="#" onclick="logout(); return false;" style="color: #ff4466;">Logout</a>
+                    `;
                 }
                 // Auto-verify member if logged in
                 isMemberVerified = true;
             } else {
-                // Not logged in - show LOGIN
-                authButton.textContent = 'LOGIN';
-                authButton.href = '/';
-                authButton.onclick = null;
-                if (mobileLogin) {
-                    mobileLogin.textContent = 'Login';
-                    mobileLogin.href = '/';
-                    mobileLogin.onclick = null;
+                // Not logged in - show guest nav with LOGIN
+                navLinks.innerHTML = `
+                    <a href="/?browse=1" class="nav-link">Events</a>
+                    <a href="/experiences" class="nav-link active">Experiences</a>
+                    <a href="/partners" class="nav-link">Partners</a>
+                    <a href="/calendar" class="nav-link">Calendar</a>
+                    <a href="/about" class="nav-link">About</a>
+                    <a href="#" onclick="showLoginFromNonMember(); return false;" class="btn btn-login">LOGIN</a>
+                `;
+                if (mobileMenu) {
+                    mobileMenu.innerHTML = `
+                        <a href="/?browse=1">Events</a>
+                        <a href="/experiences" class="active">Experiences</a>
+                        <a href="/partners">Partners</a>
+                        <a href="/calendar">Calendar</a>
+                        <a href="/about">About</a>
+                        <a href="#" onclick="showLoginFromNonMember(); return false;">Login</a>
+                    `;
                 }
             }
         }
 
         function logout() {
-            // Clear ALL auth keys
-            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'dealUser'].forEach(k => localStorage.removeItem(k));
+            // Clear ALL auth keys including pendingRoles
+            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'dealUser', 'pendingRoles'].forEach(k => localStorage.removeItem(k));
             window.location.reload();
         }
 

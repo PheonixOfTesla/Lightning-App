@@ -5979,17 +5979,27 @@
             const navLinks = document.getElementById('navLinks');
             const mobileMenu = document.getElementById('mobileMenu');
 
-            // Simple nav for Main pages: Dashboard | Logout
+            // Logged-in nav: Dashboard | Events | Experiences | Partners | Calendar | About | LOGOUT
             const dashboardUrl = getPrimaryDashboardUrl();
 
             navLinks.innerHTML = `
                 <a href="${dashboardUrl}" class="nav-link">Dashboard</a>
-                <button class="btn btn-danger" onclick="logout()" style="margin-left:1rem;">SIGN OUT</button>
+                <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
+                <a href="/experiences" class="nav-link">Experiences</a>
+                <a href="/partners" class="nav-link">Partners</a>
+                <a href="/calendar" class="nav-link">Calendar</a>
+                <a href="/about" class="nav-link">About</a>
+                <button class="btn btn-danger" onclick="logout()" style="margin-left:1rem;">LOGOUT</button>
             `;
 
             mobileMenu.innerHTML = `
                 <a href="${dashboardUrl}">Dashboard</a>
-                <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Sign Out</a>
+                <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
+                <a href="/experiences">Experiences</a>
+                <a href="/partners">Partners</a>
+                <a href="/calendar">Calendar</a>
+                <a href="/about">About</a>
+                <a href="#" onclick="logout(); toggleMenu();" style="color: #ff4466;">Logout</a>
             `;
 
             navLinks.style.display = 'flex';
@@ -5998,7 +6008,7 @@
 
         function logout() {
             // Clear ALL auth keys to prevent phantom sessions
-            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId'].forEach(k => localStorage.removeItem(k));
+            ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'pendingRoles'].forEach(k => localStorage.removeItem(k));
             state.token = null;
             state.user = null;
 
@@ -6008,12 +6018,15 @@
                 myPassesSection.style.display = 'none';
             }
 
-            // Update nav for guest mode
+            // Update nav for guest mode (matches setupGuestNav)
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
                 <a href="#" class="nav-link" onclick="browseEvents()">Events</a>
+                <a href="/experiences" class="nav-link">Experiences</a>
                 <a href="/partners" class="nav-link">Partners</a>
-                <a href="/login" class="btn btn-primary">LOGIN</a>
+                <a href="/calendar" class="nav-link">Calendar</a>
+                <a href="/about" class="nav-link">About</a>
+                <a href="#" onclick="showPassModal(); return false;" class="btn btn-pass">LOGIN</a>
             `;
             navLinks.style.display = 'flex';
             navLinks.classList.add('nav-ready');
@@ -6022,10 +6035,11 @@
             const mobileMenu = document.getElementById('mobileMenu');
             mobileMenu.innerHTML = `
                 <a href="#" onclick="browseEvents(); toggleMenu();">Events</a>
+                <a href="/experiences">Experiences</a>
                 <a href="/partners">Partners</a>
                 <a href="/calendar">Calendar</a>
                 <a href="/about">About</a>
-                <a href="/login">Login</a>
+                <a href="#" onclick="showPassModal(); toggleMenu();">Login</a>
             `;
 
             showView('customer');
@@ -11533,6 +11547,8 @@
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || [selectedUserType]));
                     if (data.userId || data.user?.id) localStorage.setItem('userId', data.userId || data.user?.id);
+                    // Store pending roles for "awaiting approval" UX
+                    if (data.pendingRoles) localStorage.setItem('pendingRoles', JSON.stringify(data.pendingRoles));
 
                     // Set state.token for API calls
                     state.token = data.token;
@@ -11542,22 +11558,22 @@
                         LPAnalytics.loginCompleted(data.userId || email, email);
                     }
 
-                    // Route based on user type
+                    // Route based on APPROVED roles only (gated roles may be pending)
                     closePassModal();
-                    switch(selectedUserType) {
-                        case 'dj':
-                            showView('dj');
-                            loadDJDashboard();
-                            break;
-                        case 'venue':
-                            window.location.href = '/partners';
-                            break;
-                        case 'admin':
-                            window.location.href = '/admin';
-                            break;
-                        case 'member':
-                            onMemberLoginSuccess();
-                            break;
+                    const approvedRoles = data.user?.roles || [];
+                    // Check if requested role is approved, otherwise route to /members
+                    if (selectedUserType === 'dj' && approvedRoles.includes('dj')) {
+                        showView('dj');
+                        loadDJDashboard();
+                    } else if (selectedUserType === 'venue' && approvedRoles.includes('venue')) {
+                        window.location.href = '/partners';
+                    } else if (selectedUserType === 'admin' && approvedRoles.includes('admin')) {
+                        window.location.href = '/admin';
+                    } else if (selectedUserType === 'member' || approvedRoles.includes('member')) {
+                        onMemberLoginSuccess();
+                    } else {
+                        // Gated role pending - route to members with pending notice
+                        onMemberLoginSuccess();
                     }
                 } else {
                     alert(data.error || 'Login failed');
@@ -11658,20 +11674,23 @@
                         // Write canonical token + user data
                         localStorage.setItem('token', data.token);
                         localStorage.setItem('userEmail', email);
-                        localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || selectedRoles));
+                        localStorage.setItem('userRoles', JSON.stringify(data.user?.roles || ['member']));
                         if (data.userId || data.user?.id) localStorage.setItem('userId', data.userId || data.user?.id);
+                        // Store pending roles for "awaiting approval" UX
+                        if (data.pendingRoles) localStorage.setItem('pendingRoles', JSON.stringify(data.pendingRoles));
                     }
 
-                    // Show success with pending notice if venue, admin, or host
+                    // Show success with pending notice if venue, admin, or host was requested
                     const successEl = document.querySelector('.pass-modal-success');
-                    if (selectedRoles.includes('venue') || selectedRoles.includes('admin') || selectedRoles.includes('host')) {
-                        const pendingRoles = [];
-                        if (selectedRoles.includes('admin')) pendingRoles.push('Admin');
-                        if (selectedRoles.includes('venue')) pendingRoles.push('Venue');
-                        if (selectedRoles.includes('host')) pendingRoles.push('Host');
-                        const pendingRole = pendingRoles.join(', ');
+                    const hasPending = data.pendingRoles && (data.pendingRoles.venue || data.pendingRoles.admin || data.pendingRoles.host);
+                    if (hasPending) {
+                        const pendingNames = [];
+                        if (data.pendingRoles.admin) pendingNames.push('Admin');
+                        if (data.pendingRoles.venue) pendingNames.push('Venue');
+                        if (data.pendingRoles.host) pendingNames.push('Host');
+                        const pendingRole = pendingNames.join(', ');
                         successEl.innerHTML = `
-                            <div style="font-size: 60px; margin-bottom: 1rem;">⏳</div>
+                            <div style="font-size: 60px; margin-bottom: 1rem;">&#9203;</div>
                             <h3 style="margin-bottom: 0.5rem;">Account Created!</h3>
                             <p style="color: var(--lightning-yellow); margin-bottom: 1rem;">${pendingRole} access is pending approval</p>
                             <p style="color: var(--gray); font-size: 0.9rem;">You'll be notified once your ${pendingRole.toLowerCase()} access is approved. In the meantime, you can access your Member dashboard.</p>
