@@ -105,7 +105,7 @@
                 <a href="/partners" class="nav-link${isPartners ? ' active' : ''}">Partners</a>
                 <a href="/calendar" class="nav-link${isCalendar ? ' active' : ''}">Calendar</a>
                 <a href="/about" class="nav-link${isAbout ? ' active' : ''}">About</a>
-                <a href="#" class="btn btn-login" onclick="if(typeof showPassModal==='function'){showPassModal();}else if(typeof showLoginModal==='function'){showLoginModal();}else{window.location.href='/?login=1';} return false;">LOGIN</a>
+                <a href="#" class="btn btn-login" onclick="if(typeof LoginCenter!=='undefined'){LoginCenter.open();}else if(typeof showPassModal==='function'){showPassModal();}else{window.location.href='/';} return false;">LOGIN</a>
             `;
             if (mobileMenu) {
                 mobileMenu.innerHTML = `
@@ -114,7 +114,7 @@
                     <a href="/partners"${isPartners ? ' class="active"' : ''}>Partners</a>
                     <a href="/calendar"${isCalendar ? ' class="active"' : ''}>Calendar</a>
                     <a href="/about"${isAbout ? ' class="active"' : ''}>About</a>
-                    <a href="#" onclick="if(typeof showPassModal==='function'){showPassModal();}else if(typeof showLoginModal==='function'){showLoginModal();}else{window.location.href='/?login=1';} return false;">Login</a>
+                    <a href="#" onclick="if(typeof LoginCenter!=='undefined'){LoginCenter.open();}else if(typeof showPassModal==='function'){showPassModal();}else{window.location.href='/';} return false;">Login</a>
                 `;
             }
         }

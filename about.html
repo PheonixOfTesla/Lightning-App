@@ -981,6 +981,11 @@
         .auth-form { display: none; }
         .auth-form.active { display: block; }
     </style>
+    <!-- Login Center Modal (shared component) -->
+    <script src="/js/login-center.js"></script>
+    <script>
+        LoginCenter.init({ apiBase: API_BASE });
+    </script>
     <script src="/nav.js"></script>
 </body>
 </html>
