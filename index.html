@@ -5989,9 +5989,9 @@
 
             // Priority: admin > venue > host > partner > dj > member
             if (userRoles.includes('admin')) return '/admin';
-            if (userRoles.includes('venue')) return '/admin'; // venue uses admin portal
+            if (userRoles.includes('venue')) return '/venue';
             if (userRoles.includes('host')) return '/host';
-            if (userRoles.includes('partner')) return '/partners';
+            if (userRoles.includes('partner')) return '/partner-portal';
             if (userRoles.includes('dj')) return '/dj';
             return '/members';
         }

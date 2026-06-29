@@ -1207,9 +1207,9 @@
         function getPrimaryDashboardUrl() {
             const userRoles = getUserRolesFromToken();
             if (userRoles.includes('admin')) return '/admin';
-            if (userRoles.includes('venue')) return '/admin';
+            if (userRoles.includes('venue')) return '/venue';
             if (userRoles.includes('host')) return '/host';
-            if (userRoles.includes('partner')) return '/partners';
+            if (userRoles.includes('partner')) return '/partner-portal';
             if (userRoles.includes('dj')) return '/dj';
             return '/members';
         }

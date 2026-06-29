@@ -1127,12 +1127,12 @@
             // Get primary dashboard URL
             function getDashboardUrl() {
                 const roles = getUserRolesFromToken();
-                if (roles.includes('admin')) return '/admin.html';
-                if (roles.includes('venue')) return '/admin.html';
-                if (roles.includes('host')) return '/host.html';
-                if (roles.includes('partner')) return '/partners.html';
-                if (roles.includes('dj')) return '/dj.html';
-                return '/members.html';
+                if (roles.includes('admin')) return '/admin';
+                if (roles.includes('venue')) return '/venue';
+                if (roles.includes('host')) return '/host';
+                if (roles.includes('partner')) return '/partner-portal';
+                if (roles.includes('dj')) return '/dj';
+                return '/members';
             }
 
             if (isLoggedIn) {
