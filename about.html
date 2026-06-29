@@ -649,18 +649,16 @@
     <nav>
         <div class="nav-container">
             <a href="/" class="logo">
-                <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;">
-                    <img src="logo.png" alt="Lightning Pass" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
+                <div class="logo-img"><img src="/logo.png" alt="Lightning Pass"></div>
                 <span class="logo-text">Lightning Pass</span>
             </a>
-            <div class="nav-links">
+            <div class="nav-links" id="navLinks">
                 <a href="/?browse=1" class="nav-link">Events</a>
                 <a href="/experiences" class="nav-link">Experiences</a>
                 <a href="/partners" class="nav-link">Partners</a>
                 <a href="/calendar" class="nav-link">Calendar</a>
                 <a href="/about" class="nav-link active">About</a>
-                <a href="#" onclick="showLoginModal(); return false;" class="nav-link btn-login" id="nav-login">LOGIN</a>
+                <a href="/" class="btn btn-login" id="authButton">LOGIN</a>
             </div>
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span>
@@ -677,7 +675,7 @@
         <a href="/partners">Partners</a>
         <a href="/calendar">Calendar</a>
         <a href="/about" class="active">About</a>
-        <a href="#" id="mobile-login" onclick="showLoginModal(); return false;">Login</a>
+        <a href="/">Login</a>
     </div>
 
     <!-- Hero -->
