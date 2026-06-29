@@ -629,6 +629,41 @@
 
         let socket = null;
         let partnerCode = null;
+        let userEmail = null;
+
+        // Generate deterministic partner code from email (SAME as members.html)
+        function generatePartnerCode(email) {
+            const name = email.split('@')[0].toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6) || 'MEMBER';
+            const hash = email.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 100;
+            return name + hash.toString().padStart(2, '0');
+        }
+
+        // Get email from token or localStorage
+        function getUserEmail() {
+            // Try localStorage first
+            let email = localStorage.getItem('userEmail');
+            if (email) return email;
+
+            // Try to extract from user object
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (user.email) return user.email;
+                } catch (e) {}
+            }
+
+            // Try to decode from token
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.email) return payload.email;
+                } catch (e) {}
+            }
+
+            return null;
+        }
 
         // Graceful degradation for OLD tokens (pre-roles[])
         function getUserRolesFromToken() {
@@ -748,10 +783,18 @@
 
                 const data = await res.json();
 
+                // Get email and generate partner code client-side (same algorithm as members.html)
+                userEmail = getUserEmail();
+                if (userEmail) {
+                    partnerCode = generatePartnerCode(userEmail);
+                } else {
+                    // Fallback to API code if available
+                    partnerCode = data.partner?.code || '---';
+                }
+
                 // Update UI
                 document.getElementById('partnerName').textContent = data.partner?.name || 'Partner';
-                document.getElementById('partnerCode').textContent = data.partner?.code || '---';
-                partnerCode = data.partner?.code;
+                document.getElementById('partnerCode').textContent = partnerCode;
 
                 document.getElementById('totalReferrals').textContent = data.summary?.totalReferrals || 0;
                 document.getElementById('totalVenues').textContent = data.summary?.totalVenues || 0;
