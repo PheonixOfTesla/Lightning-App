@@ -974,6 +974,7 @@
                 <button class="tab" onclick="switchTab('users')">Users</button>
                 <button class="tab" onclick="switchTab('venues')">Venues</button>
                 <button class="tab" onclick="switchTab('system')">System</button>
+                <button class="tab" onclick="switchTab('diagnostic')">Diagnostic</button>
                 <button class="tab" onclick="switchTab('deals')">Deals</button>
                 <button class="tab" onclick="switchTab('refunds')">Refunds</button>
                 <button class="tab" onclick="switchTab('experiences')">Experiences</button>
@@ -1453,6 +1454,67 @@
                     <div id="monitorActivityLog" style="max-height: 300px; overflow-y: auto;">
                         <div style="color: var(--gray); text-align: center; padding: 2rem;">Loading activity...</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Diagnostic Tab -->
+            <div id="diagnosticTab" class="tab-content">
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                            System Diagnostic
+                        </h3>
+                        <button class="action-btn view" onclick="runDiagnostic()" id="runDiagnosticBtn">Run Diagnostic</button>
+                    </div>
+
+                    <!-- Overall Status Banner -->
+                    <div id="diagnosticBanner" style="display: none; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 700;" id="diagnosticOverallStatus">--</div>
+                        <div style="font-size: 0.85rem; color: var(--gray);" id="diagnosticTimestamp">--</div>
+                    </div>
+
+                    <!-- Summary Stats -->
+                    <div id="diagnosticSummary" style="display: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="text-align: center; padding: 1rem; background: rgba(57, 255, 20, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--neon-green);" id="diagnosticPassed">0</div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">Passed</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--lightning-yellow);" id="diagnosticWarned">0</div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">Warnings</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255, 0, 68, 0.1); border-radius: 0.5rem;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--danger-red);" id="diagnosticFailed">0</div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">Failed</div>
+                        </div>
+                    </div>
+
+                    <!-- Check Results -->
+                    <div id="diagnosticLoading" style="display: none; text-align: center; padding: 2rem; color: var(--gray);">
+                        <div class="spinner" style="margin: 0 auto 1rem;"></div>
+                        Running diagnostic checks...
+                    </div>
+
+                    <div id="diagnosticChecks" style="display: none;">
+                        <h4 style="margin-bottom: 1rem; color: var(--gray); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Check Results</h4>
+                        <div id="diagnosticChecksList"></div>
+                    </div>
+
+                    <div id="diagnosticEmpty" style="text-align: center; padding: 3rem; color: var(--gray);">
+                        Click "Run Diagnostic" to check system health
+                    </div>
+                </div>
+
+                <!-- Diagnostic History -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Recent Diagnostic Runs</h3>
+                    <div id="diagnosticHistoryLoading" style="display: none; text-align: center; padding: 1rem; color: var(--gray);">
+                        Loading history...
+                    </div>
+                    <div id="diagnosticHistory" style="max-height: 300px; overflow-y: auto;"></div>
                 </div>
             </div>
         </div>
@@ -3172,6 +3234,8 @@
                 loadRefunds();
             } else if (tabName === 'experiences') {
                 loadExperiences();
+            } else if (tabName === 'diagnostic') {
+                loadDiagnosticHistory();
             }
         }
 
@@ -4164,6 +4228,144 @@
             localStorage.removeItem('userRoles');
             // Redirect to main page
             window.location.href = '/';
+        }
+
+        // ===== SYSTEM DIAGNOSTIC =====
+
+        async function runDiagnostic() {
+            const btn = document.getElementById('runDiagnosticBtn');
+            const loading = document.getElementById('diagnosticLoading');
+            const empty = document.getElementById('diagnosticEmpty');
+            const banner = document.getElementById('diagnosticBanner');
+            const summary = document.getElementById('diagnosticSummary');
+            const checks = document.getElementById('diagnosticChecks');
+
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            banner.style.display = 'none';
+            summary.style.display = 'none';
+            checks.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/diagnostic`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (!res.ok) throw new Error('Diagnostic failed');
+
+                const data = await res.json();
+                renderDiagnosticResults(data);
+                loadDiagnosticHistory();
+            } catch (error) {
+                console.error('Diagnostic error:', error);
+                showToast('Diagnostic failed: ' + error.message, 'error');
+                empty.style.display = 'block';
+                empty.textContent = 'Diagnostic failed. Check console for details.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Diagnostic';
+                loading.style.display = 'none';
+            }
+        }
+
+        function renderDiagnosticResults(data) {
+            const banner = document.getElementById('diagnosticBanner');
+            const summary = document.getElementById('diagnosticSummary');
+            const checks = document.getElementById('diagnosticChecks');
+            const checksList = document.getElementById('diagnosticChecksList');
+
+            // Overall status banner
+            const statusColors = {
+                pass: { bg: 'rgba(57, 255, 20, 0.15)', border: 'var(--neon-green)', text: 'ALL SYSTEMS OPERATIONAL' },
+                warn: { bg: 'rgba(255, 221, 0, 0.15)', border: 'var(--lightning-yellow)', text: 'WARNINGS DETECTED' },
+                fail: { bg: 'rgba(255, 0, 68, 0.15)', border: 'var(--danger-red)', text: 'FAILURES DETECTED' }
+            };
+            const status = statusColors[data.overallStatus] || statusColors.fail;
+
+            banner.style.display = 'block';
+            banner.style.background = status.bg;
+            banner.style.border = `2px solid ${status.border}`;
+            document.getElementById('diagnosticOverallStatus').textContent = status.text;
+            document.getElementById('diagnosticOverallStatus').style.color = status.border;
+            document.getElementById('diagnosticTimestamp').textContent = new Date(data.timestamp).toLocaleString();
+
+            // Summary stats
+            summary.style.display = 'grid';
+            document.getElementById('diagnosticPassed').textContent = data.summary.passed;
+            document.getElementById('diagnosticWarned').textContent = data.summary.warned;
+            document.getElementById('diagnosticFailed').textContent = data.summary.failed;
+
+            // Individual checks
+            checks.style.display = 'block';
+            checksList.innerHTML = data.checks.map(check => {
+                const colors = {
+                    pass: { bg: 'rgba(57, 255, 20, 0.1)', border: 'var(--neon-green)', icon: 'M20 6L9 17l-5-5' },
+                    warn: { bg: 'rgba(255, 221, 0, 0.1)', border: 'var(--lightning-yellow)', icon: 'M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+                    fail: { bg: 'rgba(255, 0, 68, 0.1)', border: 'var(--danger-red)', icon: 'M6 18L18 6M6 6l12 12' }
+                };
+                const c = colors[check.status] || colors.fail;
+
+                return `
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: ${c.bg}; border-left: 3px solid ${c.border}; border-radius: 0.25rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c.border}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="${c.icon}"/>
+                        </svg>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${check.name}</div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">${check.detail}</div>
+                        </div>
+                        <div style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: ${c.border};">${check.status}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadDiagnosticHistory() {
+            const historyDiv = document.getElementById('diagnosticHistory');
+            const loading = document.getElementById('diagnosticHistoryLoading');
+
+            loading.style.display = 'block';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/diagnostic/history`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (!res.ok) throw new Error('Failed to load history');
+
+                const data = await res.json();
+
+                if (!data.history || data.history.length === 0) {
+                    historyDiv.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--gray);">No diagnostic history yet</div>';
+                } else {
+                    historyDiv.innerHTML = data.history.map(run => {
+                        const statusColors = { pass: 'var(--neon-green)', warn: 'var(--lightning-yellow)', fail: 'var(--danger-red)' };
+                        const color = statusColors[run.overallStatus] || statusColors.fail;
+                        const date = new Date(run.timestamp);
+
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <div>
+                                    <span style="color: ${color}; font-weight: 600; text-transform: uppercase;">${run.overallStatus}</span>
+                                    <span style="color: var(--gray); margin-left: 0.5rem; font-size: 0.85rem;">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
+                                </div>
+                                <div style="font-size: 0.85rem;">
+                                    <span style="color: var(--neon-green);">${run.summary?.passed || 0}P</span>
+                                    <span style="color: var(--lightning-yellow); margin-left: 0.5rem;">${run.summary?.warned || 0}W</span>
+                                    <span style="color: var(--danger-red); margin-left: 0.5rem;">${run.summary?.failed || 0}F</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Load history error:', error);
+                historyDiv.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger-red);">Failed to load history</div>';
+            } finally {
+                loading.style.display = 'none';
+            }
         }
 
         // Initialize
