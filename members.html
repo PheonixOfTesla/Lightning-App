@@ -1096,8 +1096,15 @@
 
                 // Determine pass name: passName for experiences, eventName for events, fallback to venueName
                 const displayName = pass.passName || pass.eventName || pass.venueName || 'Pass';
-                // Determine description: passDescription for experiences, ticketType for events
-                const displayType = pass.passDescription || pass.ticketType || 'General';
+
+                // Check if this is an experience booking (has booking details)
+                const isExperience = pass.passId && pass.passId.startsWith('LP-EXP');
+
+                // Format booking details for experiences
+                const bookingDate = pass.bookingDate || (pass.passDescription ? pass.passDescription.split(' - ')[1]?.split(' at ')[0] : null);
+                const bookingTime = pass.bookingTime || (pass.passDescription ? pass.passDescription.split(' at ')[1] : null);
+                const duration = pass.duration || (pass.passDescription ? pass.passDescription.split(' - ')[0] : null);
+
                 // Format date display
                 const dateDisplay = passDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -1105,13 +1112,56 @@
                     <div class="pass-card">
                         <div class="pass-card-header">
                             <div class="pass-event-name">${displayName}</div>
-                            <div class="pass-event-date">${dateDisplay}</div>
+                            <div class="pass-event-date" style="color: var(--lightning-yellow);">${dateDisplay}</div>
                         </div>
                         <div class="pass-card-body">
+                            ${pass.guestName ? `
+                            <div style="margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.25rem;">Guest Name</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${pass.guestName}</div>
+                            </div>
+                            ` : ''}
+
+                            ${isExperience ? `
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                                ${bookingDate ? `
+                                <div>
+                                    <div style="color: var(--gray); font-size: 0.7rem; text-transform: uppercase;">Date</div>
+                                    <div style="font-weight: 500;">${bookingDate}</div>
+                                </div>
+                                ` : ''}
+                                ${bookingTime ? `
+                                <div>
+                                    <div style="color: var(--gray); font-size: 0.7rem; text-transform: uppercase;">Time</div>
+                                    <div style="font-weight: 500;">${bookingTime}</div>
+                                </div>
+                                ` : ''}
+                                ${duration ? `
+                                <div>
+                                    <div style="color: var(--gray); font-size: 0.7rem; text-transform: uppercase;">Duration</div>
+                                    <div style="font-weight: 500;">${duration}</div>
+                                </div>
+                                ` : ''}
+                                <div>
+                                    <div style="color: var(--gray); font-size: 0.7rem; text-transform: uppercase;">Qty</div>
+                                    <div style="font-weight: 500;">${pass.quantity || 1} ticket(s)</div>
+                                </div>
+                            </div>
+                            ` : `
                             <div class="pass-details">
-                                <span class="pass-type">${displayType.toUpperCase()}</span>
+                                <span class="pass-type">${(pass.ticketType || 'General').toUpperCase()}</span>
                                 <span class="pass-quantity">${pass.quantity || 1} ticket(s)</span>
                             </div>
+                            `}
+
+                            ${pass.venueName ? `
+                            <div style="background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">${pass.venueName}</div>
+                                ${pass.venueAddress ? `<div style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.25rem;">${pass.venueAddress}</div>` : ''}
+                                ${pass.venuePhone ? `<div style="color: var(--electric-blue); font-size: 0.85rem;"><a href="tel:${pass.venuePhone.replace(/[^0-9]/g, '')}" style="color: inherit; text-decoration: none;">${pass.venuePhone}</a></div>` : ''}
+                            </div>
+                            ` : ''}
+
                             <div class="pass-qr-container">
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pass.passId || pass._id)}" alt="QR Code">
                             </div>
