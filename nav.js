@@ -79,7 +79,7 @@
         if (isLoggedIn) {
             const dashboardUrl = getDashboardUrl();
             navLinks.innerHTML = `
-                <a href="${dashboardUrl}" class="btn btn-dashboard">Dashboard</a>
+                <a href="${dashboardUrl}" class="nav-link">Dashboard</a>
                 <a href="/?browse=1" class="nav-link${isEvents ? ' active' : ''}">Events</a>
                 <a href="/experiences" class="nav-link${isExperiences ? ' active' : ''}">Experiences</a>
                 <a href="/partners" class="nav-link${isPartners ? ' active' : ''}">Partners</a>
@@ -89,7 +89,7 @@
             `;
             if (mobileMenu) {
                 mobileMenu.innerHTML = `
-                    <a href="${dashboardUrl}" style="color: var(--electric-blue); font-weight: 700;">Dashboard</a>
+                    <a href="${dashboardUrl}">Dashboard</a>
                     <a href="/?browse=1"${isEvents ? ' class="active"' : ''}>Events</a>
                     <a href="/experiences"${isExperiences ? ' class="active"' : ''}>Experiences</a>
                     <a href="/partners"${isPartners ? ' class="active"' : ''}>Partners</a>

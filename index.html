@@ -8698,22 +8698,16 @@
                                 ${hasMemberDiscount ? `
                                     <div class="guest-only" style="display: flex; flex-direction: column;">
                                         <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
-                                        <div style="font-size: 0.75rem; color: #4ade80; margin-top: 0.25rem;">Login for member pricing -$${memberDiscount}</div>
+                                        <div style="font-size: 0.75rem; color: var(--lightning-yellow); margin-top: 0.25rem;">Login for member pricing -$${memberDiscount}</div>
                                     </div>
                                     <div class="member-only" style="display: none; flex-direction: column;">
                                         <div style="font-size: 0.85rem; color: rgba(255,255,255,0.5); text-decoration: line-through;">${price}</div>
-                                        <div style="font-size: 1.25rem; font-weight: 700; color: #4ade80;">$${memberPrice.toFixed(0)} member</div>
+                                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">$${memberPrice.toFixed(0)} member</div>
                                     </div>
                                 ` : `<div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>`}
                                 ${isSoldOut ? `<div style="font-size: 0.75rem; color: #ff4466; margin-top: 0.25rem; font-weight: 600;">SOLD OUT - 100/100</div>` : availableTickets !== null && !hasMemberDiscount ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
                             </div>
-                            ${isSoldOut ? `<button disabled style="background: rgba(255,255,255,0.1); border: 2px solid #ff4466; color: #ff4466; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: not-allowed; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">
-                                SOLD OUT
-                            </button>` : price !== 'FREE' ? `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
-                                Get Tickets
-                            </button>` : `<button onclick="openNotifyModal('${event.name.replace(/'/g, "\\'")}')" style="background: transparent; border: 2px solid var(--lightning-yellow); color: var(--lightning-yellow); font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;">
-                                Notify Me
-                            </button>`}
+                            ${renderEventButton(event, 'lightning', isSoldOut, price)}
                         </div>
                     </div>
                 `;
@@ -8734,22 +8728,16 @@
                             ${hasMemberDiscount ? `
                                 <div class="guest-only" style="display: flex; flex-direction: column;">
                                     <div style="font-size: 1rem; font-weight: 600; color: #fff;">${price}</div>
-                                    <div style="font-size: 0.7rem; color: #4ade80;">Login for -$${memberDiscount}</div>
+                                    <div style="font-size: 0.7rem; color: var(--lightning-yellow);">Login for -$${memberDiscount}</div>
                                 </div>
                                 <div class="member-only" style="display: none; flex-direction: column;">
                                     <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); text-decoration: line-through;">${price}</div>
-                                    <div style="font-size: 1rem; font-weight: 600; color: #4ade80;">$${memberPrice.toFixed(0)} member</div>
+                                    <div style="font-size: 1rem; font-weight: 600; color: var(--lightning-yellow);">$${memberPrice.toFixed(0)} member</div>
                                 </div>
                             ` : `<div style="font-size: 1rem; font-weight: 600; color: #fff;">${price}</div>`}
                             ${isSoldOut && price !== 'FREE' && !hasMemberDiscount ? `<div style="font-size: 0.7rem; color: #ff4466; font-weight: 600;">SOLD OUT</div>` : ''}
                         </div>
-                        ${price === 'FREE' ? `<button style="background: transparent; border: 2px solid #059669; color: #059669; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: default;">
-                            NO COVER
-                        </button>` : isSoldOut ? `<button disabled style="background: rgba(255,255,255,0.05); border: 2px solid #ff4466; color: #ff4466; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
-                            SOLD OUT
-                        </button>` : `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;">
-                            Get Tickets
-                        </button>`}
+                        ${renderEventButton(event, 'scene', isSoldOut, price)}
                     </div>
                 </div>
             `;
@@ -8840,25 +8828,106 @@
                             ${hasMemberDiscount ? `
                                 <div class="guest-only" style="display: flex; flex-direction: column;">
                                     <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">${price}</div>
-                                    <div style="font-size: 0.7rem; color: #059669; margin-top: 0.15rem;">Login for -$${memberDiscount}</div>
+                                    <div style="font-size: 0.7rem; color: #d97706; margin-top: 0.15rem;">Login for -$${memberDiscount}</div>
                                 </div>
                                 <div class="member-only" style="display: none; flex-direction: column;">
                                     <div style="font-size: 0.8rem; color: #64748b; text-decoration: line-through;">${price}</div>
-                                    <div style="font-size: 1.1rem; font-weight: 700; color: #059669;">$${memberPrice.toFixed(0)} member</div>
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: #d97706;">$${memberPrice.toFixed(0)} member</div>
                                 </div>
                             ` : `<div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">${price}</div>`}
                             ${isSoldOut && price !== 'FREE' && !hasMemberDiscount ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600; margin-top: 0.15rem;">SOLD OUT</div>` : ''}
                         </div>
-                        ${price === 'FREE' ? `<span style="background: #ecfdf5; border: 1px solid #10b981; color: #059669; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem;">
-                            NO COVER
-                        </span>` : isSoldOut ? `<button disabled style="background: #fef2f2; border: 1px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
-                            SOLD OUT
-                        </button>` : `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); border: none; color: #fff; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 2px 8px rgba(8,145,178,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
-                            Get Tickets
-                        </button>`}
+                        ${renderEventButton(event, 'livewire', isSoldOut, price)}
                     </div>
                 </div>
             `;
+        }
+
+        // ===== EVENT BUTTON TYPE SYSTEM =====
+        // Renders CTA button based on event.buttonType field
+        // Types: tickets, noCover, soldOut, membersOnly
+        // Falls back to auto-logic if buttonType not set
+
+        function renderEventButton(event, cardType, autoSoldOut, price) {
+            const buttonType = event.buttonType || 'auto';
+            const eventJson = JSON.stringify(event).replace(/'/g, "\\'");
+
+            // Button style presets based on card type
+            const isLightning = cardType === 'lightning';
+            const isLiveWire = cardType === 'livewire';
+
+            const styles = {
+                tickets: isLightning
+                    ? 'background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;'
+                    : isLiveWire
+                        ? 'background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); border: none; color: #fff; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;'
+                        : 'background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;',
+                noCover: isLiveWire
+                    ? 'background: #ecfdf5; border: 1px solid #10b981; color: #059669; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem;'
+                    : 'background: transparent; border: 2px solid #059669; color: #059669; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: default;',
+                soldOut: isLightning
+                    ? 'background: rgba(255,255,255,0.1); border: 2px solid #ff4466; color: #ff4466; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: not-allowed; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;'
+                    : isLiveWire
+                        ? 'background: #fef2f2; border: 1px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;'
+                        : 'background: rgba(255,255,255,0.05); border: 2px solid #ff4466; color: #ff4466; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;',
+                membersOnly: isLightning
+                    ? 'background: #9333ea; border: none; color: #fff; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;'
+                    : isLiveWire
+                        ? 'background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%); border: none; color: #fff; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;'
+                        : 'background: #9333ea; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;'
+            };
+
+            // If explicit buttonType is set (not 'auto' and not 'tickets'), use it directly
+            if (buttonType !== 'auto' && buttonType !== 'tickets') {
+                switch (buttonType) {
+                    case 'noCover':
+                        return `<span style="${styles.noCover}">NO COVER</span>`;
+                    case 'soldOut':
+                        return `<button disabled style="${styles.soldOut}">SOLD OUT</button>`;
+                    case 'membersOnly':
+                        const isLoggedIn = !!localStorage.getItem('token');
+                        if (isLoggedIn) {
+                            return `<button onclick='openEventTicketModal(${eventJson})' style="${styles.tickets}">Get Tickets</button>`;
+                        } else {
+                            return `<button onclick='openMembersOnlyModal(${eventJson})' style="${styles.membersOnly}">Join to Unlock</button>`;
+                        }
+                }
+            }
+
+            // buttonType is 'tickets' or 'auto' - use auto-logic with sold-out override
+            if (autoSoldOut) {
+                return `<button disabled style="${styles.soldOut}">SOLD OUT</button>`;
+            }
+            if (price === 'FREE') {
+                return `<span style="${styles.noCover}">NO COVER</span>`;
+            }
+            return `<button onclick='openEventTicketModal(${eventJson})' style="${styles.tickets}">Get Tickets</button>`;
+        }
+
+        // Members Only handler - prompts login, then opens ticket modal
+        function openMembersOnlyModal(event) {
+            // Store the event to open after login
+            sessionStorage.setItem('pendingMembersOnlyEvent', JSON.stringify(event));
+            // Open login modal
+            if (window.LoginCenter) {
+                LoginCenter.open();
+            } else if (typeof showPassModal === 'function') {
+                showPassModal();
+            }
+        }
+
+        // Check for pending members-only event after login
+        function checkPendingMembersOnlyEvent() {
+            const pending = sessionStorage.getItem('pendingMembersOnlyEvent');
+            if (pending && localStorage.getItem('token')) {
+                sessionStorage.removeItem('pendingMembersOnlyEvent');
+                try {
+                    const event = JSON.parse(pending);
+                    setTimeout(() => openEventTicketModal(event), 300);
+                } catch (e) {
+                    console.error('Failed to parse pending event:', e);
+                }
+            }
         }
 
         // Event Ticket Purchase
@@ -11694,6 +11763,24 @@
                 localStorage.setItem('userEmail', loginUserEmail);
                 localStorage.setItem('userRole', successRole);
                 localStorage.setItem('userRoles', JSON.stringify(loginUserRoles));
+
+                // Check for pending members-only event (user clicked "Join to Unlock")
+                const pendingEvent = sessionStorage.getItem('pendingMembersOnlyEvent');
+                if (pendingEvent) {
+                    sessionStorage.removeItem('pendingMembersOnlyEvent');
+                    try {
+                        const event = JSON.parse(pendingEvent);
+                        // Close login modal and open ticket modal
+                        closeModal('passModal');
+                        updateAuthState();
+                        setTimeout(() => openEventTicketModal(event), 300);
+                        btn.textContent = 'LOGIN';
+                        btn.disabled = false;
+                        return;
+                    } catch (e) {
+                        console.error('Failed to parse pending event:', e);
+                    }
+                }
 
                 // Navigate based on highest-priority role
                 const rolePriority = ['admin', 'venue', 'host', 'partner', 'dj', 'member'];

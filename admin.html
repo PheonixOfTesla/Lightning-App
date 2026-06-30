@@ -1116,6 +1116,16 @@
                             </label>
                         </div>
 
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Button Type</label>
+                            <select id="spotlightButtonType" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                <option value="tickets">Get Tickets (paid checkout)</option>
+                                <option value="noCover">NO COVER (info badge)</option>
+                                <option value="soldOut">SOLD OUT (disabled)</option>
+                                <option value="membersOnly">Members Only (login required)</option>
+                            </select>
+                        </div>
+
                         <div style="display: flex; gap: 1rem;">
                             <button onclick="createSpotlightEvent()" style="flex: 1; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Create Spotlight Event</button>
                             <button onclick="setEventMode('list')" style="padding: 0.75rem 1.5rem; background: transparent; color: var(--gray); border: 1px solid var(--border-dark); border-radius: 0.5rem; cursor: pointer;">Cancel</button>
@@ -1201,6 +1211,16 @@
                                 <input type="checkbox" id="sceneRecurring" style="margin-right: 0.5rem;">
                                 <span style="color: var(--gray); font-size: 0.85rem;">Recurring Event</span>
                             </label>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Button Type</label>
+                            <select id="sceneButtonType" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                <option value="tickets">Get Tickets (paid checkout)</option>
+                                <option value="noCover">NO COVER (info badge)</option>
+                                <option value="soldOut">SOLD OUT (disabled)</option>
+                                <option value="membersOnly">Members Only (login required)</option>
+                            </select>
                         </div>
 
                         <div style="display: flex; gap: 1rem;">
@@ -2060,6 +2080,18 @@
                     <small style="color: var(--gray); display: block; margin-top: 0.25rem;">Logged-in members pay this amount less per ticket</small>
                 </div>
 
+                <!-- Button Type -->
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="editButtonType" style="color: var(--lightning-yellow); font-weight: 600;">Button Type</label>
+                    <select id="editButtonType" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                        <option value="tickets">Get Tickets (paid checkout)</option>
+                        <option value="noCover">NO COVER (info badge)</option>
+                        <option value="soldOut">SOLD OUT (disabled)</option>
+                        <option value="membersOnly">Members Only (login required)</option>
+                    </select>
+                    <small style="color: var(--gray); display: block; margin-top: 0.25rem;">Controls the CTA button shown on event cards</small>
+                </div>
+
                 <!-- Section Settings -->
                 <div class="section-settings">
                     <label class="section-toggle spotlight">
@@ -2798,6 +2830,7 @@
             const capacity = parseInt(document.getElementById('spotlightCapacity').value) || -1;
             const displayOrder = parseInt(document.getElementById('spotlightOrder').value) || 1;
             const isRecurring = document.getElementById('spotlightRecurring').checked;
+            const buttonType = document.getElementById('spotlightButtonType').value;
 
             // Build date string with the entered time (for Date field storage)
             const date = dateVal ? `${dateVal}T${startTime || '19:00'}:00` : '';
@@ -2842,6 +2875,7 @@
                 displayOrder,
                 isRecurring,
                 eventType: 'club',
+                buttonType,
                 tickets: [{
                     type: 'general',
                     name: 'General Admission',
@@ -2905,6 +2939,7 @@
             document.getElementById('spotlightCapacity').value = '';
             document.getElementById('spotlightOrder').value = '1';
             document.getElementById('spotlightRecurring').checked = false;
+            document.getElementById('spotlightButtonType').value = 'tickets';
             // Reset upload button
             const btn = document.getElementById('spotlightUploadBtn');
             btn.textContent = 'Click to upload image...';
@@ -2927,6 +2962,7 @@
             const price = parseFloat(document.getElementById('scenePrice').value) || 0;
             const capacity = parseInt(document.getElementById('sceneCapacity').value) || -1;
             const isRecurring = document.getElementById('sceneRecurring').checked;
+            const buttonType = document.getElementById('sceneButtonType').value;
 
             // Build date string with the entered time
             const date = dateVal ? `${dateVal}T${startTime || '19:00'}:00` : '';
@@ -2967,6 +3003,7 @@
                 placement: 'scene',
                 isRecurring,
                 eventType: 'club',
+                buttonType,
                 tickets: [{
                     type: 'general',
                     name: 'General Admission',
@@ -3029,6 +3066,7 @@
             document.getElementById('scenePrice').value = '';
             document.getElementById('sceneCapacity').value = '';
             document.getElementById('sceneRecurring').checked = false;
+            document.getElementById('sceneButtonType').value = 'tickets';
             // Reset upload button
             const btn = document.getElementById('sceneUploadBtn');
             btn.textContent = 'Click to upload image...';
@@ -4487,6 +4525,7 @@
                 document.getElementById('editEventScene').checked = event.showInScene || false;
                 document.getElementById('editEventStatus').value = event.status || 'live';
                 document.getElementById('editMemberDiscount').value = event.memberDiscount || 0;
+                document.getElementById('editButtonType').value = event.buttonType || 'tickets';
 
                 // Format dates for separate date + time inputs
                 if (event.date) {
@@ -4726,6 +4765,7 @@
                 showInScene: document.getElementById('editEventScene').checked,
                 status: document.getElementById('editEventStatus').value,
                 memberDiscount: parseInt(document.getElementById('editMemberDiscount').value) || 0,
+                buttonType: document.getElementById('editButtonType').value,
                 tickets
             };
 
