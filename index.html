@@ -5993,6 +5993,61 @@
             }
         }
 
+        // Toggle visibility of guest-only vs member-only elements based on login state
+        // Used for member pricing on event cards - reuses pattern from experiences.html
+        function updateAuthState() {
+            const token = localStorage.getItem('token');
+            const isLoggedIn = !!token;
+
+            document.querySelectorAll('.guest-only').forEach(el => {
+                el.style.display = isLoggedIn ? 'none' : 'flex';
+            });
+            document.querySelectorAll('.member-only').forEach(el => {
+                el.style.display = isLoggedIn ? 'flex' : 'none';
+            });
+        }
+
+        // Open image lightbox - reusable function for event flyer images
+        function openImageLightbox(imageUrl) {
+            if (!imageUrl) return;
+
+            // Create or get lightbox element (one reusable instance)
+            let lightbox = document.getElementById('imageLightbox');
+            if (!lightbox) {
+                lightbox = document.createElement('div');
+                lightbox.id = 'imageLightbox';
+                lightbox.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1rem; cursor: pointer;';
+                lightbox.innerHTML = `
+                    <button onclick="closeImageLightbox()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 2rem; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; z-index: 10001;">&times;</button>
+                    <img id="lightboxImage" src="" alt="Event flyer" style="max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 0.5rem; cursor: default;">
+                `;
+                // Close on backdrop click (but not image click)
+                lightbox.addEventListener('click', (e) => {
+                    if (e.target === lightbox) closeImageLightbox();
+                });
+                // Close on Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && lightbox.style.display !== 'none') {
+                        closeImageLightbox();
+                    }
+                });
+                document.body.appendChild(lightbox);
+            }
+
+            // Set image and show lightbox
+            document.getElementById('lightboxImage').src = imageUrl;
+            lightbox.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        function closeImageLightbox() {
+            const lightbox = document.getElementById('imageLightbox');
+            if (lightbox) {
+                lightbox.style.display = 'none';
+                document.body.style.overflow = ''; // Restore scroll
+            }
+        }
+
         // Get primary dashboard URL based on user roles[] (priority order)
         // Uses getUserRolesFromToken() for graceful old-token handling
         function getPrimaryDashboardUrl() {
@@ -8448,6 +8503,9 @@
                     communitySection.style.display = 'none';
                 }
 
+                // Toggle guest/member pricing visibility based on login state
+                updateAuthState();
+
                 // Check URL params for direct event link
                 const urlParams = new URLSearchParams(window.location.search);
                 const eventSlug = urlParams.get('event');
@@ -8606,7 +8664,12 @@
             }
 
             const timeStr = endTime ? `${startTime} - ${endTime}` : startTime;
-            const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
+            const ticketPrice = event.tickets?.[0]?.price || 0;
+            const priceNum = ticketPrice / 100;
+            const price = ticketPrice ? `$${priceNum.toFixed(0)}` : 'FREE';
+            const memberDiscount = event.memberDiscount || 0;
+            const memberPrice = memberDiscount > 0 ? Math.max(0, priceNum - memberDiscount) : priceNum;
+            const hasMemberDiscount = memberDiscount > 0 && ticketPrice > 0;
             const ticket = event.tickets?.[0];
             const availableTicketsRaw = event.tickets?.reduce((sum, t) => {
                 const guestCount = t.guestCount || 1;
@@ -8626,14 +8689,23 @@
                                 <p style="color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
                                 <h3 style="color: #fff; margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2;">${event.name}</h3>
                             </div>
-                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 48px; height: 48px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px;">` : ''}
+                            ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 48px; height: 48px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; cursor: pointer;" onclick="event.stopPropagation(); openImageLightbox('${event.imageUrl}')">` : ''}
                         </div>
                         ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; display: block; margin-bottom: 0.75rem; text-decoration: underline;">${event.location}</a>` : ''}
                         <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0 0 1.25rem 0; line-height: 1.5;">${event.description || ''}</p>
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
                             <div>
-                                <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
-                                ${isSoldOut ? `<div style="font-size: 0.75rem; color: #ff4466; margin-top: 0.25rem; font-weight: 600;">SOLD OUT - 100/100</div>` : availableTickets !== null ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
+                                ${hasMemberDiscount ? `
+                                    <div class="guest-only" style="display: flex; flex-direction: column;">
+                                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>
+                                        <div style="font-size: 0.75rem; color: #4ade80; margin-top: 0.25rem;">Login for member pricing -$${memberDiscount}</div>
+                                    </div>
+                                    <div class="member-only" style="display: none; flex-direction: column;">
+                                        <div style="font-size: 0.85rem; color: rgba(255,255,255,0.5); text-decoration: line-through;">${price}</div>
+                                        <div style="font-size: 1.25rem; font-weight: 700; color: #4ade80;">$${memberPrice.toFixed(0)} member</div>
+                                    </div>
+                                ` : `<div style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</div>`}
+                                ${isSoldOut ? `<div style="font-size: 0.75rem; color: #ff4466; margin-top: 0.25rem; font-weight: 600;">SOLD OUT - 100/100</div>` : availableTickets !== null && !hasMemberDiscount ? `<div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 0.25rem;">${availableTickets} tickets available</div>` : ''}
                             </div>
                             ${isSoldOut ? `<button disabled style="background: rgba(255,255,255,0.1); border: 2px solid #ff4466; color: #ff4466; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: not-allowed; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">
                                 SOLD OUT
@@ -8652,15 +8724,24 @@
                 <div class="venue-card" style="background: rgba(255,255,255,0.03); border-radius: 1rem; border: 1px solid rgba(255,255,255,0.08); padding: 1.25rem; display: flex; flex-direction: column; height: 100%;">
                     <p style="color: rgba(255,255,255,0.5); font-size: 0.75rem; font-weight: 500; margin: 0 0 0.5rem 0;">${dayName}, ${monthDay} · ${timeStr}</p>
                     <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.5rem;">
-                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: rgba(255,255,255,0.1); padding: 4px; flex-shrink: 0;">` : ''}
+                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: rgba(255,255,255,0.1); padding: 4px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); openImageLightbox('${event.imageUrl}')">` : ''}
                         <h3 style="color: #fff; margin: 0; font-weight: 600; font-size: 1.1rem; line-height: 1.25;">${event.name}</h3>
                     </div>
                     ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.6); font-size: 0.8rem; display: block; margin-bottom: 0.4rem; text-decoration: underline;">${event.location}</a>` : ''}
                     <p style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin: 0; line-height: 1.5; flex-grow: 1;">${event.description || ''}</p>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08);">
                         <div>
-                            <div style="font-size: 1rem; font-weight: 600; color: #fff;">${price}</div>
-                            ${isSoldOut && price !== 'FREE' ? `<div style="font-size: 0.7rem; color: #ff4466; font-weight: 600;">SOLD OUT</div>` : ''}
+                            ${hasMemberDiscount ? `
+                                <div class="guest-only" style="display: flex; flex-direction: column;">
+                                    <div style="font-size: 1rem; font-weight: 600; color: #fff;">${price}</div>
+                                    <div style="font-size: 0.7rem; color: #4ade80;">Login for -$${memberDiscount}</div>
+                                </div>
+                                <div class="member-only" style="display: none; flex-direction: column;">
+                                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); text-decoration: line-through;">${price}</div>
+                                    <div style="font-size: 1rem; font-weight: 600; color: #4ade80;">$${memberPrice.toFixed(0)} member</div>
+                                </div>
+                            ` : `<div style="font-size: 1rem; font-weight: 600; color: #fff;">${price}</div>`}
+                            ${isSoldOut && price !== 'FREE' && !hasMemberDiscount ? `<div style="font-size: 0.7rem; color: #ff4466; font-weight: 600;">SOLD OUT</div>` : ''}
                         </div>
                         ${price === 'FREE' ? `<button style="background: transparent; border: 2px solid #059669; color: #059669; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: default;">
                             NO COVER
@@ -8732,7 +8813,12 @@
             }
 
             const timeStr = endTime ? `${startTime} - ${endTime}` : startTime;
-            const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
+            const ticketPrice = event.tickets?.[0]?.price || 0;
+            const priceNum = ticketPrice / 100;
+            const price = ticketPrice ? `$${priceNum.toFixed(0)}` : 'FREE';
+            const memberDiscount = event.memberDiscount || 0;
+            const memberPrice = memberDiscount > 0 ? Math.max(0, priceNum - memberDiscount) : priceNum;
+            const hasMemberDiscount = memberDiscount > 0 && ticketPrice > 0;
             const availableTicketsRaw = event.tickets?.reduce((sum, t) => {
                 const guestCount = t.guestCount || 1;
                 const remaining = t.available && t.available !== -1 ? (t.available - (t.sold || 0)) : 0;
@@ -8744,15 +8830,24 @@
                 <div style="background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%); border-radius: 0.875rem; border: 1px solid #e2e8f0; padding: 1.25rem; display: flex; flex-direction: column; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                         <p style="color: #0891b2; font-size: 0.75rem; font-weight: 600; margin: 0; letter-spacing: 0.01em;">${dayName}, ${monthDay} · ${timeStr}</p>
-                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 36px; height: 36px; border-radius: 6px; object-fit: contain; background: #f1f5f9; padding: 3px; flex-shrink: 0;">` : ''}
+                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 36px; height: 36px; border-radius: 6px; object-fit: contain; background: #f1f5f9; padding: 3px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); openImageLightbox('${event.imageUrl}')">` : ''}
                     </div>
                     <h3 style="color: #0f172a; margin: 0 0 0.5rem 0; font-weight: 700; font-size: 1.05rem; line-height: 1.3;">${event.name}</h3>
                     ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #64748b; font-size: 0.8rem; display: block; margin-bottom: 0.5rem; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#0891b2'" onmouseout="this.style.color='#64748b'">${event.location}</a>` : ''}
                     ${event.description ? `<p style="color: #64748b; font-size: 0.8rem; margin: 0; line-height: 1.5; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${event.description}</p>` : '<div style="flex-grow: 1;"></div>'}
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.875rem; border-top: 1px solid #e2e8f0;">
                         <div>
-                            <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">${price}</div>
-                            ${isSoldOut && price !== 'FREE' ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600; margin-top: 0.15rem;">SOLD OUT</div>` : ''}
+                            ${hasMemberDiscount ? `
+                                <div class="guest-only" style="display: flex; flex-direction: column;">
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">${price}</div>
+                                    <div style="font-size: 0.7rem; color: #059669; margin-top: 0.15rem;">Login for -$${memberDiscount}</div>
+                                </div>
+                                <div class="member-only" style="display: none; flex-direction: column;">
+                                    <div style="font-size: 0.8rem; color: #64748b; text-decoration: line-through;">${price}</div>
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: #059669;">$${memberPrice.toFixed(0)} member</div>
+                                </div>
+                            ` : `<div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">${price}</div>`}
+                            ${isSoldOut && price !== 'FREE' && !hasMemberDiscount ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600; margin-top: 0.15rem;">SOLD OUT</div>` : ''}
                         </div>
                         ${price === 'FREE' ? `<span style="background: #ecfdf5; border: 1px solid #10b981; color: #059669; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem;">
                             NO COVER

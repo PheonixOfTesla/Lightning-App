@@ -2053,6 +2053,13 @@
                     <button type="button" class="add-ticket-btn" onclick="addTicketRow()">+ Add Ticket</button>
                 </div>
 
+                <!-- Member Discount -->
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="editMemberDiscount" style="color: var(--lightning-yellow); font-weight: 600;">Member Discount ($ off)</label>
+                    <input type="number" id="editMemberDiscount" min="0" step="1" placeholder="0" style="width: 100px; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                    <small style="color: var(--gray); display: block; margin-top: 0.25rem;">Logged-in members pay this amount less per ticket</small>
+                </div>
+
                 <!-- Section Settings -->
                 <div class="section-settings">
                     <label class="section-toggle spotlight">
@@ -4479,6 +4486,7 @@
                 document.getElementById('editEventSpotlight').checked = event.isLightningEvent || false;
                 document.getElementById('editEventScene').checked = event.showInScene || false;
                 document.getElementById('editEventStatus').value = event.status || 'live';
+                document.getElementById('editMemberDiscount').value = event.memberDiscount || 0;
 
                 // Format dates for separate date + time inputs
                 if (event.date) {
@@ -4717,6 +4725,7 @@
                 isLightningEvent: document.getElementById('editEventSpotlight').checked,
                 showInScene: document.getElementById('editEventScene').checked,
                 status: document.getElementById('editEventStatus').value,
+                memberDiscount: parseInt(document.getElementById('editMemberDiscount').value) || 0,
                 tickets
             };
 
