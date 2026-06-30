@@ -987,6 +987,7 @@
                 <button class="tab" onclick="switchTab('deals')">Deals</button>
                 <button class="tab" onclick="switchTab('refunds')">Refunds</button>
                 <button class="tab" onclick="switchTab('experiences')">Experiences</button>
+                <button class="tab" onclick="switchTab('generate')" style="background: var(--lightning-yellow); color: #000;">Generate</button>
             </div>
 
             <!-- Events Tab -->
@@ -1354,6 +1355,123 @@
                             <tbody id="experiencesTableBody">
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Tickets Tab -->
+            <div id="generateTab" class="tab-content">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 002 2h3m-3 4a2 2 0 002 2h3m8-8h3a2 2 0 002-2V7a2 2 0 00-2-2h-3m0 12h3a2 2 0 002-2v-3a2 2 0 00-2-2h-3"/>
+                        </svg>
+                        Ticket Generator
+                    </h3>
+                    <p style="color: var(--gray); margin-bottom: 1.5rem;">Generate comp, bulk, or promo tickets for any event.</p>
+
+                    <!-- Mode Selector -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <button class="mode-btn active" onclick="setGeneratorMode('comp')" id="modeComp" style="padding: 0.5rem 1rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: var(--lightning-yellow); color: #000; cursor: pointer; font-weight: 600;">Comp</button>
+                        <button class="mode-btn" onclick="setGeneratorMode('bulk')" id="modeBulk" style="padding: 0.5rem 1rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: transparent; color: var(--white); cursor: pointer;">Bulk</button>
+                        <button class="mode-btn" onclick="setGeneratorMode('promo')" id="modePromo" style="padding: 0.5rem 1rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: transparent; color: var(--white); cursor: pointer;">Promo</button>
+                    </div>
+
+                    <!-- Event Selector -->
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Event</label>
+                        <select id="genEventSelect" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            <option value="">Select an event...</option>
+                        </select>
+                    </div>
+
+                    <!-- Comp Mode Form -->
+                    <div id="compForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Name</label>
+                                <input type="text" id="compGuestName" placeholder="John Doe" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Email</label>
+                                <input type="email" id="compGuestEmail" placeholder="guest@email.com" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Quantity</label>
+                                <input type="number" id="compQuantity" value="1" min="1" max="10" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div style="display: flex; align-items: center; padding-top: 1.5rem;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="compSendEmail" checked style="margin-right: 0.5rem;">
+                                    <span style="color: var(--gray); font-size: 0.85rem;">Send confirmation email</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button onclick="generateCompTicket()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Comp Ticket</button>
+                    </div>
+
+                    <!-- Bulk Mode Form -->
+                    <div id="bulkForm" style="display: none;">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Recipients (one per line: name, email, quantity)</label>
+                            <textarea id="bulkRecipients" placeholder="John Doe, john@email.com, 2&#10;Jane Smith, jane@email.com, 1" rows="6" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical;"></textarea>
+                        </div>
+                        <div style="margin-bottom: 1rem; display: flex; align-items: center;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="bulkSendEmails" checked style="margin-right: 0.5rem;">
+                                <span style="color: var(--gray); font-size: 0.85rem;">Send confirmation emails</span>
+                            </label>
+                        </div>
+                        <button onclick="generateBulkTickets()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Bulk Tickets</button>
+                    </div>
+
+                    <!-- Promo Mode Form -->
+                    <div id="promoForm" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Name</label>
+                                <input type="text" id="promoGuestName" placeholder="John Doe" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Email</label>
+                                <input type="email" id="promoGuestEmail" placeholder="guest@email.com" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Custom Price ($)</label>
+                                <input type="number" id="promoPrice" value="0" min="0" step="0.01" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Quantity</label>
+                                <input type="number" id="promoQuantity" value="1" min="1" max="10" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Promo Code</label>
+                                <input type="text" id="promoCode" placeholder="VIP2026" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem; display: flex; align-items: center;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="promoSendEmail" checked style="margin-right: 0.5rem;">
+                                <span style="color: var(--gray); font-size: 0.85rem;">Send confirmation email</span>
+                            </label>
+                        </div>
+                        <button onclick="generatePromoTicket()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Promo Ticket</button>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="genResults" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem;">
+                        <h4 style="color: var(--neon-green); margin-bottom: 0.5rem;">Ticket Generated</h4>
+                        <div id="genResultsContent"></div>
+                    </div>
+
+                    <!-- Errors -->
+                    <div id="genError" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(255, 0, 68, 0.1); border: 1px solid var(--danger-red); border-radius: 0.5rem;">
+                        <h4 style="color: var(--danger-red); margin-bottom: 0.5rem;">Error</h4>
+                        <div id="genErrorContent"></div>
                     </div>
                 </div>
             </div>
@@ -3256,6 +3374,8 @@
                 loadExperiences();
             } else if (tabName === 'diagnostic') {
                 loadDiagnosticHistory();
+            } else if (tabName === 'generate') {
+                loadGeneratorEvents();
             }
         }
 
@@ -4381,6 +4501,219 @@
             } finally {
                 loading.style.display = 'none';
             }
+        }
+
+        // ============================
+        // Ticket Generator Functions
+        // ============================
+
+        let currentGenMode = 'comp';
+
+        function setGeneratorMode(mode) {
+            currentGenMode = mode;
+
+            // Update button styles
+            document.querySelectorAll('.mode-btn, #modeComp, #modeBulk, #modePromo').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--white)';
+            });
+            const activeBtn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+            if (activeBtn) {
+                activeBtn.style.background = 'var(--lightning-yellow)';
+                activeBtn.style.color = '#000';
+            }
+
+            // Show/hide forms
+            document.getElementById('compForm').style.display = mode === 'comp' ? 'block' : 'none';
+            document.getElementById('bulkForm').style.display = mode === 'bulk' ? 'block' : 'none';
+            document.getElementById('promoForm').style.display = mode === 'promo' ? 'block' : 'none';
+
+            // Hide results/errors
+            document.getElementById('genResults').style.display = 'none';
+            document.getElementById('genError').style.display = 'none';
+        }
+
+        async function loadGeneratorEvents() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/tickets/events`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const data = await response.json();
+
+                const select = document.getElementById('genEventSelect');
+                select.innerHTML = '<option value="">Select an event...</option>';
+
+                if (data.events) {
+                    data.events.forEach(event => {
+                        const opt = document.createElement('option');
+                        opt.value = event.slug;
+                        const status = event.status === 'live' ? ' [LIVE]' : event.status === 'pending' ? ' [PENDING]' : '';
+                        opt.textContent = `${event.name}${status}`;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to load events for generator:', err);
+            }
+        }
+
+        async function generateCompTicket() {
+            const eventSlug = document.getElementById('genEventSelect').value;
+            const guestName = document.getElementById('compGuestName').value.trim();
+            const guestEmail = document.getElementById('compGuestEmail').value.trim();
+            const quantity = parseInt(document.getElementById('compQuantity').value) || 1;
+            const sendEmail = document.getElementById('compSendEmail').checked;
+
+            if (!eventSlug || !guestName || !guestEmail) {
+                showGenError('Please fill in all required fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/tickets/comp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, sendEmail })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showGenResults(`
+                        <p><strong>Pass ID:</strong> ${data.pass.passId}</p>
+                        <p><strong>Guest:</strong> ${data.pass.guestName}</p>
+                        <p><strong>Tickets:</strong> ${data.pass.quantity}</p>
+                        <p><strong>URL:</strong> <a href="${data.pass.ticketUrl}" target="_blank" style="color: var(--electric-blue);">${data.pass.ticketUrl}</a></p>
+                        <p><strong>Email:</strong> ${data.emailSent ? 'Sent' : 'Not sent'}</p>
+                    `);
+                    // Clear form
+                    document.getElementById('compGuestName').value = '';
+                    document.getElementById('compGuestEmail').value = '';
+                    document.getElementById('compQuantity').value = '1';
+                } else {
+                    showGenError(data.error || 'Failed to generate ticket');
+                }
+            } catch (err) {
+                showGenError(err.message);
+            }
+        }
+
+        async function generateBulkTickets() {
+            const eventSlug = document.getElementById('genEventSelect').value;
+            const recipientsText = document.getElementById('bulkRecipients').value.trim();
+            const sendEmails = document.getElementById('bulkSendEmails').checked;
+
+            if (!eventSlug || !recipientsText) {
+                showGenError('Please select an event and enter recipients.');
+                return;
+            }
+
+            // Parse recipients
+            const lines = recipientsText.split('\n').filter(l => l.trim());
+            const recipients = lines.map(line => {
+                const parts = line.split(',').map(p => p.trim());
+                return {
+                    name: parts[0] || '',
+                    email: parts[1] || '',
+                    quantity: parseInt(parts[2]) || 1
+                };
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/tickets/bulk`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ eventSlug, recipients, sendEmails })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let html = `<p><strong>Created:</strong> ${data.created} tickets</p>`;
+                    if (data.failed > 0) {
+                        html += `<p style="color: var(--danger-red);"><strong>Failed:</strong> ${data.failed}</p>`;
+                    }
+                    html += '<div style="max-height: 200px; overflow-y: auto; margin-top: 0.5rem;">';
+                    data.results.forEach(r => {
+                        html += `<p style="font-size: 0.85rem;">${r.name}: <a href="${r.ticketUrl}" target="_blank" style="color: var(--electric-blue);">${r.passId}</a></p>`;
+                    });
+                    html += '</div>';
+                    showGenResults(html);
+                    document.getElementById('bulkRecipients').value = '';
+                } else {
+                    showGenError(data.error || 'Failed to generate tickets');
+                }
+            } catch (err) {
+                showGenError(err.message);
+            }
+        }
+
+        async function generatePromoTicket() {
+            const eventSlug = document.getElementById('genEventSelect').value;
+            const guestName = document.getElementById('promoGuestName').value.trim();
+            const guestEmail = document.getElementById('promoGuestEmail').value.trim();
+            const customPrice = parseFloat(document.getElementById('promoPrice').value) || 0;
+            const quantity = parseInt(document.getElementById('promoQuantity').value) || 1;
+            const promoCode = document.getElementById('promoCode').value.trim();
+            const sendEmail = document.getElementById('promoSendEmail').checked;
+
+            if (!eventSlug || !guestName || !guestEmail) {
+                showGenError('Please fill in all required fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/tickets/promo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, sendEmail })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showGenResults(`
+                        <p><strong>Pass ID:</strong> ${data.pass.passId}</p>
+                        <p><strong>Guest:</strong> ${data.pass.guestName}</p>
+                        <p><strong>Tickets:</strong> ${data.pass.quantity}</p>
+                        <p><strong>Price:</strong> $${data.pass.customPrice} x ${data.pass.quantity} = $${data.pass.totalAmount}</p>
+                        ${data.pass.promoCode ? `<p><strong>Promo:</strong> ${data.pass.promoCode}</p>` : ''}
+                        <p><strong>URL:</strong> <a href="${data.pass.ticketUrl}" target="_blank" style="color: var(--electric-blue);">${data.pass.ticketUrl}</a></p>
+                        <p><strong>Email:</strong> ${data.emailSent ? 'Sent' : 'Not sent'}</p>
+                    `);
+                    // Clear form
+                    document.getElementById('promoGuestName').value = '';
+                    document.getElementById('promoGuestEmail').value = '';
+                    document.getElementById('promoPrice').value = '0';
+                    document.getElementById('promoQuantity').value = '1';
+                    document.getElementById('promoCode').value = '';
+                } else {
+                    showGenError(data.error || 'Failed to generate ticket');
+                }
+            } catch (err) {
+                showGenError(err.message);
+            }
+        }
+
+        function showGenResults(html) {
+            document.getElementById('genError').style.display = 'none';
+            document.getElementById('genResultsContent').innerHTML = html;
+            document.getElementById('genResults').style.display = 'block';
+        }
+
+        function showGenError(message) {
+            document.getElementById('genResults').style.display = 'none';
+            document.getElementById('genErrorContent').textContent = message;
+            document.getElementById('genError').style.display = 'block';
         }
 
         // Initialize
