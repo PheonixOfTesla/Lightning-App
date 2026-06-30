@@ -2764,6 +2764,10 @@
             const displayOrder = parseInt(document.getElementById('spotlightOrder').value) || 1;
             const isRecurring = document.getElementById('spotlightRecurring').checked;
 
+            // DEBUG: Log which fields are falsy
+            console.log('Spotlight validation:', { name, slug, date, eventLocation });
+            console.log('Falsy check:', { nameEmpty: !name, slugEmpty: !slug, dateEmpty: !date, locationEmpty: !eventLocation });
+
             if (!name || !slug || !date || !eventLocation) {
                 showToast('Please fill in all required fields (name, slug, date, location)', 'error');
                 return;
