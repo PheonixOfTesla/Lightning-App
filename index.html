@@ -6108,11 +6108,12 @@
             }
 
             // Role-based view access guard
+            // All roles can access 'customer' view (public homepage with events/venues)
             const roleViewAccess = {
-                'admin': ['admin'],
-                'venue': ['venue', 'scanner'],
+                'admin': ['admin', 'customer'],
+                'venue': ['venue', 'scanner', 'customer'],
                 'customer': ['customer'],
-                'dj': ['dj']
+                'dj': ['dj', 'customer']
             };
             const userRole = state.user?.role;
             if (userRole) {
