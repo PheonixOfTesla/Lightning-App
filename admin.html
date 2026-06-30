@@ -2764,6 +2764,9 @@
             const displayOrder = parseInt(document.getElementById('spotlightOrder').value) || 1;
             const isRecurring = document.getElementById('spotlightRecurring').checked;
 
+            // DEBUG: Log exactly which fields are empty
+            console.log('VALIDATION CHECK:', { name, slug, date, eventLocation });
+
             // Specific validation messages
             if (!name) {
                 showToast('Event name is required', 'error');
