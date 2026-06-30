@@ -3427,16 +3427,22 @@
                                 <input type="text" class="form-input" id="spotlightSlug" placeholder="saturday-night-lux" required>
                             </div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
                                 <label class="form-label">Event Type</label>
                                 <select class="form-input" id="spotlightType">
-                                    <option value="Nightclub">Nightclub Night</option>
-                                    <option value="Concert">Concert</option>
-                                    <option value="Festival">Festival</option>
-                                    <option value="Party">Party</option>
-                                    <option value="Meetup">Meetup</option>
-                                    <option value="Special">Special Event</option>
+                                    <option value="club">Club / Nightlife</option>
+                                    <option value="experience">Experience / Activity</option>
+                                    <option value="community">Community Event</option>
+                                    <option value="private">Private (Admin Only)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Placement</label>
+                                <select class="form-input" id="spotlightPlacement">
+                                    <option value="spotlight">Spotlight (Featured)</option>
+                                    <option value="scene">The Scene</option>
+                                    <option value="none">Hidden (Ticketable)</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -3462,26 +3468,6 @@
                                     <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Event repeats every week on the same day. Date auto-advances when passed.</div>
                                 </span>
                             </label>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group" style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem;">
-                                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
-                                    <input type="checkbox" id="spotlightIsLightning" style="width: 20px; height: 20px; cursor: pointer;">
-                                    <span>
-                                        <strong style="color: var(--lightning-yellow);">Spotlight</strong>
-                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Premium paid events section</div>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="form-group" style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem; padding: 1rem;">
-                                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
-                                    <input type="checkbox" id="spotlightShowInScene" style="width: 20px; height: 20px; cursor: pointer;">
-                                    <span>
-                                        <strong style="color: var(--neon-green);">The Scene</strong>
-                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Free venues/no-cover section</div>
-                                    </span>
-                                </label>
-                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Description</label>
@@ -7870,13 +7856,14 @@
                     const isPast = eventDate < new Date();
 
                     return `
-                        <div style="background: ${event.isLightningEvent || event.showInScene ? 'linear-gradient(135deg, rgba(255,221,0,0.1), rgba(57,255,20,0.05))' : 'rgba(157,78,221,0.05)'}; border: ${event.isLightningEvent ? '2px solid var(--lightning-yellow)' : event.showInScene ? '2px solid var(--neon-green)' : '1px solid var(--border-dark)'}; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; ${isPast ? 'opacity: 0.5;' : ''}">
+                        <div style="background: ${event.placement === 'spotlight' ? 'linear-gradient(135deg, rgba(255,221,0,0.1), rgba(57,255,20,0.05))' : event.placement === 'scene' ? 'linear-gradient(135deg, rgba(57,255,20,0.05), rgba(0,212,255,0.05))' : 'rgba(157,78,221,0.05)'}; border: ${event.placement === 'spotlight' ? '2px solid var(--lightning-yellow)' : event.placement === 'scene' ? '2px solid var(--neon-green)' : '1px solid var(--border-dark)'}; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; ${isPast ? 'opacity: 0.5;' : ''}">
                             <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
                                         <h3 style="color: var(--electric-purple); margin: 0;">${event.name}</h3>
-                                        ${event.isLightningEvent ? '<span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">SPOTLIGHT</span>' : ''}
-                                        ${event.showInScene ? '<span style="background: rgba(57, 255, 20, 0.3); color: var(--neon-green); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">THE SCENE</span>' : ''}
+                                        ${event.placement === 'spotlight' ? '<span style="background: linear-gradient(90deg, var(--lightning-yellow), var(--neon-green)); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">SPOTLIGHT</span>' : ''}
+                                        ${event.placement === 'scene' ? '<span style="background: rgba(57, 255, 20, 0.3); color: var(--neon-green); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">THE SCENE</span>' : ''}
+                                        ${event.placement === 'none' ? '<span style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">HIDDEN</span>' : ''}
                                         ${event.isRecurring ? '<span style="background: rgba(0, 212, 255, 0.2); color: var(--electric-blue); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem; display: inline-flex; align-items: center; gap: 0.2rem;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> WEEKLY</span>' : ''}
                                         ${isPast && !event.isRecurring ? '<span style="background: rgba(255,0,0,0.2); color: #ff6b6b; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem;">PAST</span>' : ''}
                                     </div>
@@ -7889,13 +7876,12 @@
                                     <p style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">${event.eventType || 'General'}</p>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
-                                <button class="btn" style="${event.isLightningEvent ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleEventLightning('${event._id}', ${!event.isLightningEvent})">
-                                    ${event.isLightningEvent ? 'In Spotlight' : 'Add to Spotlight'}
-                                </button>
-                                <button class="btn" style="${event.showInScene ? 'background: var(--neon-green); color: #000; border-color: var(--neon-green);' : 'border-color: var(--neon-green); color: var(--neon-green);'}" onclick="toggleEventScene('${event._id}', ${!event.showInScene})">
-                                    ${event.showInScene ? 'In Scene' : 'Add to Scene'}
-                                </button>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; align-items: center;">
+                                <select onchange="updateEventPlacement('${event._id}', this.value)" style="background: var(--card-black); color: var(--white); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.8rem; cursor: pointer;">
+                                    <option value="spotlight" ${event.placement === 'spotlight' ? 'selected' : ''}>Spotlight</option>
+                                    <option value="scene" ${event.placement === 'scene' ? 'selected' : ''}>The Scene</option>
+                                    <option value="none" ${event.placement === 'none' ? 'selected' : ''}>Hidden</option>
+                                </select>
                                 <button class="btn" style="${event.isRecurring ? 'background: var(--electric-blue); color: #000; border-color: var(--electric-blue);' : 'border-color: var(--electric-blue); color: var(--electric-blue);'}" onclick="toggleEventRecurring('${event._id}', ${!event.isRecurring})">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle;"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> ${event.isRecurring ? 'Weekly ON' : 'Make Weekly'}
                                 </button>
@@ -8068,14 +8054,13 @@
                 const description = document.getElementById('spotlightDescription').value;
                 const imageUrl = document.getElementById('spotlightImageUrl').value;
                 const isRecurring = document.getElementById('spotlightRecurring').checked;
-                const isLightningEvent = document.getElementById('spotlightIsLightning').checked;
-                const showInScene = document.getElementById('spotlightShowInScene').checked;
+                const placement = document.getElementById('spotlightPlacement').value;
                 const tickets = collectTicketTiers();
 
                 await apiCall('/api/v1/lightning/spotlight-events', {
                     method: 'POST',
                     body: JSON.stringify({
-                        name, slug, eventType, location, date, endDate, description, imageUrl, isRecurring, isLightningEvent, showInScene, tickets
+                        name, slug, eventType, location, date, endDate, description, imageUrl, isRecurring, placement, tickets
                     })
                 });
 
@@ -8109,6 +8094,21 @@
                     body: JSON.stringify({ showInScene: showInScene })
                 });
                 showToast(showInScene ? 'Added to The Scene section!' : 'Removed from The Scene', 'success');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to update: ' + error.message, 'error');
+            }
+        }
+
+        async function updateEventPlacement(eventId, placement) {
+            try {
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ placement })
+                });
+                const labels = { spotlight: 'Spotlight', scene: 'The Scene', none: 'Hidden' };
+                showToast(`Event moved to ${labels[placement]}`, 'success');
                 loadSpotlightEvents();
                 loadHomepageSpotlightEvents();
             } catch (error) {
@@ -8186,17 +8186,24 @@
                                 <label>Event Name</label>
                                 <input type="text" class="form-input" id="editSpotlightName" required>
                             </div>
-                            <div class="form-group">
-                                <label>Event Type</label>
-                                <select class="form-input" id="editSpotlightType">
-                                    <option value="Nightclub">Nightclub Night</option>
-                                    <option value="Concert">Concert</option>
-                                    <option value="Festival">Festival</option>
-                                    <option value="Party">Party</option>
-                                    <option value="Meetup">Meetup</option>
-                                    <option value="Special">Special Event</option>
-                                    <option value="General">General</option>
-                                </select>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label>Event Type</label>
+                                    <select class="form-input" id="editSpotlightType">
+                                        <option value="club">Club / Nightlife</option>
+                                        <option value="experience">Experience / Activity</option>
+                                        <option value="community">Community Event</option>
+                                        <option value="private">Private (Admin Only)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Placement</label>
+                                    <select class="form-input" id="editSpotlightPlacement">
+                                        <option value="spotlight">Spotlight (Featured)</option>
+                                        <option value="scene">The Scene</option>
+                                        <option value="none">Hidden (Ticketable)</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Location</label>
@@ -8215,20 +8222,6 @@
                             <div class="form-group">
                                 <label>Description</label>
                                 <textarea class="form-input" id="editSpotlightDescription" rows="2"></textarea>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div class="form-group" style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 0.75rem;">
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin: 0;">
-                                        <input type="checkbox" id="editSpotlightIsLightning" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span style="color: var(--lightning-yellow); font-weight: 600;">Spotlight</span>
-                                    </label>
-                                </div>
-                                <div class="form-group" style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem; padding: 0.75rem;">
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin: 0;">
-                                        <input type="checkbox" id="editSpotlightShowInScene" style="width: 18px; height: 18px; cursor: pointer;">
-                                        <span style="color: var(--neon-green); font-weight: 600;">The Scene</span>
-                                    </label>
-                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Event Image</label>
@@ -8263,12 +8256,11 @@
             // Populate form
             document.getElementById('editSpotlightId').value = event._id;
             document.getElementById('editSpotlightName').value = event.name || '';
-            document.getElementById('editSpotlightType').value = event.eventType || 'General';
+            document.getElementById('editSpotlightType').value = event.eventType || 'club';
+            document.getElementById('editSpotlightPlacement').value = event.placement || 'scene';
             document.getElementById('editSpotlightLocation').value = event.location || '';
             document.getElementById('editSpotlightDescription').value = event.description || '';
             document.getElementById('editSpotlightImageUrl').value = event.imageUrl || '';
-            document.getElementById('editSpotlightIsLightning').checked = event.isLightningEvent || false;
-            document.getElementById('editSpotlightShowInScene').checked = event.showInScene || false;
 
             // Show existing image preview
             const previewContainer = document.getElementById('editSpotlightImagePreview');
@@ -8318,13 +8310,12 @@
             const updates = {
                 name: document.getElementById('editSpotlightName').value,
                 eventType: document.getElementById('editSpotlightType').value,
+                placement: document.getElementById('editSpotlightPlacement').value,
                 location: document.getElementById('editSpotlightLocation').value,
                 date: dateVal ? new Date(dateVal).toISOString() : null,
                 endDate: endDateVal ? new Date(endDateVal).toISOString() : null,
                 description: document.getElementById('editSpotlightDescription').value,
                 imageUrl: document.getElementById('editSpotlightImageUrl').value,
-                isLightningEvent: document.getElementById('editSpotlightIsLightning').checked,
-                showInScene: document.getElementById('editSpotlightShowInScene').checked,
                 tickets: collectEditTicketTiers()
             };
 
@@ -8375,11 +8366,12 @@
                 // Sort community by date
                 communityEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-                // Split events by explicit flags (admin-controlled)
-                // Spotlight: events marked as isLightningEvent
-                // Scene: events marked as showInScene
-                const lightningEvents = spotlightEvents.filter(e => e.isLightningEvent);
-                const sceneEvents = spotlightEvents.filter(e => e.showInScene);
+                // Split events by placement field (admin-controlled)
+                // Spotlight: placement='spotlight' (featured events, yellow border)
+                // Scene: placement='scene' AND eventType!='community' (club events, green border)
+                // Community events handled separately via eventType='community'
+                const lightningEvents = spotlightEvents.filter(e => e.placement === 'spotlight');
+                const sceneEvents = spotlightEvents.filter(e => e.placement === 'scene' && e.eventType !== 'community');
 
                 // Render SPOTLIGHT (paid promotional events)
                 const spotlightSection = document.getElementById('spotlightEventsSection');
@@ -8555,7 +8547,7 @@
             }, 0);
             const availableTickets = availableTicketsRaw ?? null;
             const isSoldOut = availableTickets === 0;
-            const isLightning = event.isLightningEvent;
+            const isLightning = event.placement === 'spotlight';
 
             if (isLightning) {
                 // FEATURED Lightning Event - Full width, bold
