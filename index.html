@@ -7877,6 +7877,13 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; align-items: center;">
+                                <button class="btn" style="${event.placement === 'spotlight' ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleSpotlight('${event._id}', ${event.placement !== 'spotlight'}, '${event.placement}')">
+                                    ${event.placement === 'spotlight' ? 'In Spotlight' : 'Add to Spotlight'}
+                                </button>
+                                ${event.placement === 'spotlight' ? `<div style="display: flex; align-items: center; gap: 0.25rem;">
+                                    <span style="color: rgba(255,255,255,0.5); font-size: 0.75rem;">Order:</span>
+                                    <input type="number" value="${event.displayOrder || 0}" min="0" max="99" style="width: 50px; background: var(--card-black); color: var(--white); border: 1px solid var(--border-dark); border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.8rem; text-align: center;" onchange="updateDisplayOrder('${event._id}', this.value)">
+                                </div>` : ''}
                                 <select onchange="updateEventPlacement('${event._id}', this.value)" style="background: var(--card-black); color: var(--white); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.8rem; cursor: pointer;">
                                     <option value="spotlight" ${event.placement === 'spotlight' ? 'selected' : ''}>Spotlight</option>
                                     <option value="scene" ${event.placement === 'scene' ? 'selected' : ''}>The Scene</option>
@@ -8109,6 +8116,38 @@
                 });
                 const labels = { spotlight: 'Spotlight', scene: 'The Scene', none: 'Hidden' };
                 showToast(`Event moved to ${labels[placement]}`, 'success');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to update: ' + error.message, 'error');
+            }
+        }
+
+        async function toggleSpotlight(eventId, addToSpotlight, currentPlacement) {
+            try {
+                // When toggling ON: set placement to 'spotlight'
+                // When toggling OFF: revert to 'scene' (default visible placement)
+                const newPlacement = addToSpotlight ? 'spotlight' : 'scene';
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ placement: newPlacement })
+                });
+                showToast(addToSpotlight ? 'Added to Spotlight!' : 'Removed from Spotlight', 'success');
+                loadSpotlightEvents();
+                loadHomepageSpotlightEvents();
+            } catch (error) {
+                showToast('Failed to update: ' + error.message, 'error');
+            }
+        }
+
+        async function updateDisplayOrder(eventId, order) {
+            try {
+                const displayOrder = parseInt(order, 10) || 0;
+                await apiCall(`/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ displayOrder })
+                });
+                showToast(`Display order set to ${displayOrder}`, 'success');
                 loadSpotlightEvents();
                 loadHomepageSpotlightEvents();
             } catch (error) {
@@ -8355,11 +8394,12 @@
                 const spotlightEvents = data.events.filter(e => e.eventType !== 'community');
                 const communityEvents = data.events.filter(e => e.eventType === 'community');
 
-                // Sort spotlight: Lightning first, then by priority/date
+                // Sort spotlight events by displayOrder (ascending), then by date
+                // API already sorts by displayOrder, but ensure consistent order client-side
                 spotlightEvents.sort((a, b) => {
-                    if (a.isLightningEvent && !b.isLightningEvent) return -1;
-                    if (!a.isLightningEvent && b.isLightningEvent) return 1;
-                    if ((a.priority || 0) !== (b.priority || 0)) return (b.priority || 0) - (a.priority || 0);
+                    const orderA = a.displayOrder ?? 0;
+                    const orderB = b.displayOrder ?? 0;
+                    if (orderA !== orderB) return orderA - orderB;
                     return new Date(a.date) - new Date(b.date);
                 });
 
