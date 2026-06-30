@@ -253,9 +253,11 @@
             ? 'http://localhost:3000'
             : 'https://lightning-backend-production.up.railway.app';
 
-        // Get linkId from URL path
+        // Get linkId from URL path or query param
         const pathParts = window.location.pathname.split('/');
-        const linkId = pathParts[pathParts.length - 1];
+        const pathLinkId = pathParts[pathParts.length - 1];
+        const urlParams = new URLSearchParams(window.location.search);
+        const linkId = (pathLinkId && pathLinkId !== 'pay') ? pathLinkId : urlParams.get('id');
 
         let stripe;
         let elements;
