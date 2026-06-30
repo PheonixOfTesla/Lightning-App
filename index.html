@@ -2522,16 +2522,17 @@
                 </div>
             </div>
 
-            <!-- THE SCENE - Free no-cover venues -->
+            <!-- LIVE WIRE - Scene events (placement:'scene') -->
             <div id="theSceneSection" style="margin-bottom: 3rem; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin: 0;">
-                        The Scene
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Live Wire
                     </h2>
-                    <a href="/calendar" style="color: var(--lightning-yellow); font-size: 0.8rem; text-decoration: none; font-weight: 500;">See More →</a>
+                    <a href="/calendar" style="color: #0891b2; font-size: 0.8rem; text-decoration: none; font-weight: 500;">See More →</a>
                 </div>
-                <div id="homepageSceneEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
-                    <!-- Free no-cover venues load here -->
+                <div id="homepageSceneEvents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem;">
+                    <!-- Live Wire events load here -->
                 </div>
             </div>
 
@@ -8425,13 +8426,13 @@
                     spotlightSection.style.display = 'none';
                 }
 
-                // Render THE SCENE (free no-cover venues)
+                // Render LIVE WIRE (placement:'scene' events)
                 const sceneSection = document.getElementById('theSceneSection');
                 const sceneContainer = document.getElementById('homepageSceneEvents');
 
                 if (sceneEvents.length > 0) {
                     sceneSection.style.display = 'block';
-                    sceneContainer.innerHTML = sceneEvents.map(event => renderSpotlightCard(event)).join('');
+                    sceneContainer.innerHTML = sceneEvents.map(event => renderLiveWireCard(event)).join('');
                 } else {
                     sceneSection.style.display = 'none';
                 }
@@ -8697,6 +8698,70 @@
                     <h4 style="color: rgba(255,255,255,0.9); margin: 0 0 0.3rem 0; font-weight: 600; font-size: 0.95rem;">${event.name}</h4>
                     ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; text-decoration: none;">${event.location}</a>` : ''}
                     ${event.isRecurring ? '<p style="color: rgba(255,255,255,0.3); font-size: 0.65rem; margin-top: 0.5rem;">Weekly</p>' : ''}
+                </div>
+            `;
+        }
+
+        // Render a LIVE WIRE event card (white/light box for placement:'scene')
+        function renderLiveWireCard(event) {
+            const eventDate = new Date(event.date);
+            const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
+            const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            // Format time: use startTime string if present, otherwise fall back to date-based time
+            let startTime;
+            if (event.startTime) {
+                const [hours, mins] = event.startTime.split(':');
+                const h = parseInt(hours);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                startTime = `${h12}:${mins} ${ampm}`;
+            } else {
+                startTime = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
+
+            let endTime = null;
+            if (event.endTime) {
+                const [hours, mins] = event.endTime.split(':');
+                const h = parseInt(hours);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                endTime = `${h12}:${mins} ${ampm}`;
+            } else if (event.endDate) {
+                endTime = new Date(event.endDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
+
+            const timeStr = endTime ? `${startTime} - ${endTime}` : startTime;
+            const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
+            const availableTicketsRaw = event.tickets?.reduce((sum, t) => {
+                const guestCount = t.guestCount || 1;
+                const remaining = t.available && t.available !== -1 ? (t.available - (t.sold || 0)) : 0;
+                return sum + (remaining * guestCount);
+            }, 0);
+            const isSoldOut = availableTicketsRaw === 0;
+
+            return `
+                <div style="background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%); border-radius: 0.875rem; border: 1px solid #e2e8f0; padding: 1.25rem; display: flex; flex-direction: column; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <p style="color: #0891b2; font-size: 0.75rem; font-weight: 600; margin: 0; letter-spacing: 0.01em;">${dayName}, ${monthDay} · ${timeStr}</p>
+                        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="" style="width: 36px; height: 36px; border-radius: 6px; object-fit: contain; background: #f1f5f9; padding: 3px; flex-shrink: 0;">` : ''}
+                    </div>
+                    <h3 style="color: #0f172a; margin: 0 0 0.5rem 0; font-weight: 700; font-size: 1.05rem; line-height: 1.3;">${event.name}</h3>
+                    ${event.location ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(event.location)}" target="_blank" style="color: #64748b; font-size: 0.8rem; display: block; margin-bottom: 0.5rem; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#0891b2'" onmouseout="this.style.color='#64748b'">${event.location}</a>` : ''}
+                    ${event.description ? `<p style="color: #64748b; font-size: 0.8rem; margin: 0; line-height: 1.5; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${event.description}</p>` : '<div style="flex-grow: 1;"></div>'}
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.875rem; border-top: 1px solid #e2e8f0;">
+                        <div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">${price}</div>
+                            ${isSoldOut && price !== 'FREE' ? `<div style="font-size: 0.7rem; color: #dc2626; font-weight: 600; margin-top: 0.15rem;">SOLD OUT</div>` : ''}
+                        </div>
+                        ${price === 'FREE' ? `<span style="background: #ecfdf5; border: 1px solid #10b981; color: #059669; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem;">
+                            NO COVER
+                        </span>` : isSoldOut ? `<button disabled style="background: #fef2f2; border: 1px solid #dc2626; color: #dc2626; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: not-allowed;">
+                            SOLD OUT
+                        </button>` : `<button onclick='openEventTicketModal(${JSON.stringify(event).replace(/'/g, "\\'")})' style="background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); border: none; color: #fff; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 2px 8px rgba(8,145,178,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+                            Get Tickets
+                        </button>`}
+                    </div>
                 </div>
             `;
         }
