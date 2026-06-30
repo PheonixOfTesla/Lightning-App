@@ -4574,7 +4574,7 @@
         async function loadGeneratorEvents() {
             try {
                 const response = await fetch(`${API_BASE}/api/v1/admin/tickets/events`, {
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 const data = await response.json();
 
@@ -4612,7 +4612,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${adminToken}`
                     },
                     body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, sendEmail })
                 });
@@ -4665,7 +4665,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${adminToken}`
                     },
                     body: JSON.stringify({ eventSlug, recipients, sendEmails })
                 });
@@ -4711,7 +4711,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${adminToken}`
                     },
                     body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, sendEmail })
                 });
@@ -4765,7 +4765,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${adminToken}`
                     },
                     body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode })
                 });
