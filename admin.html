@@ -999,26 +999,180 @@
                         </svg>
                         Event Management
                     </h3>
-                    <div id="eventsLoading" class="loading">
-                        <div class="spinner"></div>
-                        <p>Loading events...</p>
+
+                    <!-- Sub-tabs for Events -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <button class="event-mode-btn" onclick="setEventMode('list')" id="eventModeList" style="padding: 0.5rem 1rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: var(--lightning-yellow); color: #000; cursor: pointer; font-weight: 600;">All Events</button>
+                        <button class="event-mode-btn" onclick="setEventMode('spotlight')" id="eventModeSpotlight" style="padding: 0.5rem 1rem; border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; background: transparent; color: var(--lightning-yellow); cursor: pointer; font-weight: 600;">+ Spotlight</button>
+                        <button class="event-mode-btn" onclick="setEventMode('scene')" id="eventModeScene" style="padding: 0.5rem 1rem; border: 1px solid var(--electric-blue); border-radius: 0.5rem; background: transparent; color: var(--electric-blue); cursor: pointer; font-weight: 600;">+ Scene</button>
                     </div>
-                    <div id="eventsTable" style="display: none; overflow-x: auto;">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Event</th>
-                                    <th>Date</th>
-                                    <th>Venue</th>
-                                    <th>Status</th>
-                                    <th>Tickets Sold</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="eventsTableBody">
-                            </tbody>
-                        </table>
+
+                    <!-- Event List View -->
+                    <div id="eventListView">
+                        <div id="eventsLoading" class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading events...</p>
+                        </div>
+                        <div id="eventsTable" style="display: none; overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Placement</th>
+                                        <th>Status</th>
+                                        <th>Tickets Sold</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+
+                    <!-- Spotlight Event Creation Form -->
+                    <div id="spotlightForm" style="display: none;">
+                        <div style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                            <strong style="color: var(--lightning-yellow);">Spotlight Event</strong>
+                            <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">Featured prominently on the homepage with yellow border. Best for flagship events.</p>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Event Name *</label>
+                                <input type="text" id="spotlightName" placeholder="Stars, Stripes & Sunsets" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">URL Slug *</label>
+                                <input type="text" id="spotlightSlug" placeholder="stars-stripes-sunsets" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date & Time *</label>
+                                <input type="datetime-local" id="spotlightDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date & Time</label>
+                                <input type="datetime-local" id="spotlightEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Address / Location *</label>
+                            <input type="text" id="spotlightLocation" placeholder="1290 Blvd of the Arts, Sarasota, FL 34236" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Description</label>
+                            <textarea id="spotlightDescription" rows="3" placeholder="Join us for an unforgettable experience..." style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical;"></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Image URL</label>
+                            <input type="text" id="spotlightImage" placeholder="https://res.cloudinary.com/..." style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Ticket Price ($)</label>
+                                <input type="number" id="spotlightPrice" placeholder="15" min="0" step="0.01" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Capacity</label>
+                                <input type="number" id="spotlightCapacity" placeholder="100" min="1" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Display Order</label>
+                                <input type="number" id="spotlightOrder" placeholder="1" min="1" value="1" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="spotlightRecurring" style="margin-right: 0.5rem;">
+                                <span style="color: var(--gray); font-size: 0.85rem;">Recurring Event</span>
+                            </label>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="createSpotlightEvent()" style="flex: 1; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Create Spotlight Event</button>
+                            <button onclick="setEventMode('list')" style="padding: 0.75rem 1.5rem; background: transparent; color: var(--gray); border: 1px solid var(--border-dark); border-radius: 0.5rem; cursor: pointer;">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Scene Event Creation Form -->
+                    <div id="sceneForm" style="display: none;">
+                        <div style="background: rgba(0, 212, 255, 0.1); border: 1px solid var(--electric-blue); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                            <strong style="color: var(--electric-blue);">Scene Event</strong>
+                            <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">Displayed in "The Scene" section. Great for community events and regular programming.</p>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Event Name *</label>
+                                <input type="text" id="sceneName" placeholder="Sunset Social" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">URL Slug *</label>
+                                <input type="text" id="sceneSlug" placeholder="sunset-social" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date & Time *</label>
+                                <input type="datetime-local" id="sceneDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date & Time</label>
+                                <input type="datetime-local" id="sceneEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Address / Location *</label>
+                            <input type="text" id="sceneLocation" placeholder="123 Main St, Sarasota, FL" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Description</label>
+                            <textarea id="sceneDescription" rows="3" placeholder="Weekly social gathering..." style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical;"></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Image URL</label>
+                            <input type="text" id="sceneImage" placeholder="https://res.cloudinary.com/..." style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Ticket Price ($)</label>
+                                <input type="number" id="scenePrice" placeholder="10" min="0" step="0.01" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Capacity</label>
+                                <input type="number" id="sceneCapacity" placeholder="50" min="1" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="sceneRecurring" style="margin-right: 0.5rem;">
+                                <span style="color: var(--gray); font-size: 0.85rem;">Recurring Event</span>
+                            </label>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="createSceneEvent()" style="flex: 1; padding: 0.75rem; background: var(--electric-blue); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Create Scene Event</button>
+                            <button onclick="setEventMode('list')" style="padding: 0.75rem 1.5rem; background: transparent; color: var(--gray); border: 1px solid var(--border-dark); border-radius: 0.5rem; cursor: pointer;">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Event Creation Result -->
+                    <div id="eventCreateResult" style="display: none; margin-top: 1rem;"></div>
                 </div>
             </div>
 
@@ -2385,11 +2539,19 @@
                     return;
                 }
 
-                tbody.innerHTML = events.map(event => `
+                tbody.innerHTML = events.map(event => {
+                    const placement = event.placement || 'scene';
+                    const placementBadge = placement === 'spotlight'
+                        ? '<span style="background: var(--lightning-yellow); color: #000; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600;">SPOTLIGHT</span>'
+                        : placement === 'scene'
+                        ? '<span style="background: var(--electric-blue); color: #000; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600;">SCENE</span>'
+                        : '<span style="background: var(--gray); color: #fff; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">HIDDEN</span>';
+
+                    return `
                     <tr>
                         <td><strong>${event.name}</strong></td>
                         <td>${new Date(event.date).toLocaleDateString()}</td>
-                        <td>${event.venueName || '-'}</td>
+                        <td>${placementBadge}</td>
                         <td><span class="status-badge ${event.status}">${event.status}</span></td>
                         <td>${event.ticketsSold || 0}</td>
                         <td>
@@ -2400,7 +2562,7 @@
                             ` : ''}
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
 
             } catch (error) {
                 console.error('Events error:', error);
@@ -2430,6 +2592,221 @@
 
         function viewEvent(eventId) {
             window.open(`/?event=${eventId}`, '_blank');
+        }
+
+        // Event mode switching (list/spotlight/scene forms)
+        let currentEventMode = 'list';
+
+        function setEventMode(mode) {
+            currentEventMode = mode;
+
+            // Update button styles
+            document.querySelectorAll('.event-mode-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--white)';
+            });
+
+            const listBtn = document.getElementById('eventModeList');
+            const spotlightBtn = document.getElementById('eventModeSpotlight');
+            const sceneBtn = document.getElementById('eventModeScene');
+
+            if (mode === 'list') {
+                listBtn.style.background = 'var(--lightning-yellow)';
+                listBtn.style.color = '#000';
+            } else if (mode === 'spotlight') {
+                spotlightBtn.style.background = 'var(--lightning-yellow)';
+                spotlightBtn.style.color = '#000';
+            } else if (mode === 'scene') {
+                sceneBtn.style.background = 'var(--electric-blue)';
+                sceneBtn.style.color = '#000';
+            }
+
+            // Show/hide views
+            document.getElementById('eventListView').style.display = mode === 'list' ? 'block' : 'none';
+            document.getElementById('spotlightForm').style.display = mode === 'spotlight' ? 'block' : 'none';
+            document.getElementById('sceneForm').style.display = mode === 'scene' ? 'block' : 'none';
+            document.getElementById('eventCreateResult').style.display = 'none';
+        }
+
+        async function createSpotlightEvent() {
+            const name = document.getElementById('spotlightName').value.trim();
+            const slug = document.getElementById('spotlightSlug').value.trim();
+            const date = document.getElementById('spotlightDate').value;
+            const endDate = document.getElementById('spotlightEndDate').value;
+            const location = document.getElementById('spotlightLocation').value.trim();
+            const description = document.getElementById('spotlightDescription').value.trim();
+            const imageUrl = document.getElementById('spotlightImage').value.trim();
+            const price = parseFloat(document.getElementById('spotlightPrice').value) || 0;
+            const capacity = parseInt(document.getElementById('spotlightCapacity').value) || -1;
+            const displayOrder = parseInt(document.getElementById('spotlightOrder').value) || 1;
+            const isRecurring = document.getElementById('spotlightRecurring').checked;
+
+            if (!name || !slug || !date || !location) {
+                showToast('Please fill in all required fields (name, slug, date, location)', 'error');
+                return;
+            }
+
+            const eventData = {
+                name,
+                slug,
+                date: new Date(date).toISOString(),
+                endDate: endDate ? new Date(endDate).toISOString() : null,
+                location,
+                description,
+                imageUrl,
+                placement: 'spotlight',
+                displayOrder,
+                isRecurring,
+                eventType: 'club',
+                tickets: [{
+                    type: 'general',
+                    name: 'General Admission',
+                    price: Math.round(price * 100), // Convert to cents
+                    available: capacity,
+                    sold: 0,
+                    guestCount: 1
+                }]
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/spotlight-events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(eventData)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to create event');
+                }
+
+                // Show success
+                const resultDiv = document.getElementById('eventCreateResult');
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem; padding: 1rem;">
+                        <strong style="color: var(--neon-green);">Spotlight Event Created!</strong>
+                        <p style="color: var(--gray); margin-top: 0.5rem;">Event: ${data.event.name}</p>
+                        <p style="color: var(--gray);">Slug: ${data.event.slug}</p>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <a href="/?event=${data.event.slug}" target="_blank" style="padding: 0.5rem 1rem; background: var(--lightning-yellow); color: #000; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">View on Homepage</a>
+                            <button onclick="clearSpotlightForm(); setEventMode('list'); loadEvents();" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-dark); color: var(--gray); border-radius: 0.5rem; cursor: pointer;">Back to List</button>
+                        </div>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+
+                showToast('Spotlight event created successfully!', 'success');
+
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function clearSpotlightForm() {
+            document.getElementById('spotlightName').value = '';
+            document.getElementById('spotlightSlug').value = '';
+            document.getElementById('spotlightDate').value = '';
+            document.getElementById('spotlightEndDate').value = '';
+            document.getElementById('spotlightLocation').value = '';
+            document.getElementById('spotlightDescription').value = '';
+            document.getElementById('spotlightImage').value = '';
+            document.getElementById('spotlightPrice').value = '';
+            document.getElementById('spotlightCapacity').value = '';
+            document.getElementById('spotlightOrder').value = '1';
+            document.getElementById('spotlightRecurring').checked = false;
+        }
+
+        async function createSceneEvent() {
+            const name = document.getElementById('sceneName').value.trim();
+            const slug = document.getElementById('sceneSlug').value.trim();
+            const date = document.getElementById('sceneDate').value;
+            const endDate = document.getElementById('sceneEndDate').value;
+            const location = document.getElementById('sceneLocation').value.trim();
+            const description = document.getElementById('sceneDescription').value.trim();
+            const imageUrl = document.getElementById('sceneImage').value.trim();
+            const price = parseFloat(document.getElementById('scenePrice').value) || 0;
+            const capacity = parseInt(document.getElementById('sceneCapacity').value) || -1;
+            const isRecurring = document.getElementById('sceneRecurring').checked;
+
+            if (!name || !slug || !date || !location) {
+                showToast('Please fill in all required fields (name, slug, date, location)', 'error');
+                return;
+            }
+
+            const eventData = {
+                name,
+                slug,
+                date: new Date(date).toISOString(),
+                endDate: endDate ? new Date(endDate).toISOString() : null,
+                location,
+                description,
+                imageUrl,
+                placement: 'scene',
+                isRecurring,
+                eventType: 'club',
+                tickets: [{
+                    type: 'general',
+                    name: 'General Admission',
+                    price: Math.round(price * 100), // Convert to cents
+                    available: capacity,
+                    sold: 0,
+                    guestCount: 1
+                }]
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/spotlight-events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(eventData)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to create event');
+                }
+
+                // Show success
+                const resultDiv = document.getElementById('eventCreateResult');
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(0, 212, 255, 0.1); border: 1px solid var(--electric-blue); border-radius: 0.5rem; padding: 1rem;">
+                        <strong style="color: var(--electric-blue);">Scene Event Created!</strong>
+                        <p style="color: var(--gray); margin-top: 0.5rem;">Event: ${data.event.name}</p>
+                        <p style="color: var(--gray);">Slug: ${data.event.slug}</p>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <a href="/" target="_blank" style="padding: 0.5rem 1rem; background: var(--electric-blue); color: #000; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">View on Homepage</a>
+                            <button onclick="clearSceneForm(); setEventMode('list'); loadEvents();" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-dark); color: var(--gray); border-radius: 0.5rem; cursor: pointer;">Back to List</button>
+                        </div>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+
+                showToast('Scene event created successfully!', 'success');
+
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function clearSceneForm() {
+            document.getElementById('sceneName').value = '';
+            document.getElementById('sceneSlug').value = '';
+            document.getElementById('sceneDate').value = '';
+            document.getElementById('sceneEndDate').value = '';
+            document.getElementById('sceneLocation').value = '';
+            document.getElementById('sceneDescription').value = '';
+            document.getElementById('sceneImage').value = '';
+            document.getElementById('scenePrice').value = '';
+            document.getElementById('sceneCapacity').value = '';
+            document.getElementById('sceneRecurring').checked = false;
         }
 
         async function searchUsers() {
