@@ -9052,10 +9052,21 @@
                 }
             }
 
-            const unitPrice = ticket.price / 100;
+            // Apply member discount if logged in
+            const isLoggedIn = !!localStorage.getItem('token');
+            const memberDiscount = selectedEvent.memberDiscount || 0;
+            const basePrice = ticket.price / 100;
+            const unitPrice = (isLoggedIn && memberDiscount > 0) ? Math.max(0, basePrice - memberDiscount) : basePrice;
             const total = unitPrice * eventTicketQuantity;
             const ticketLabel = eventTicketQuantity > 1 ? `${eventTicketQuantity} tickets` : '1 ticket';
-            document.getElementById('eventTicketTotal').textContent = total === 0 ? 'FREE' : '$' + total.toFixed(2);
+
+            // Show discount info if applicable
+            const totalEl = document.getElementById('eventTicketTotal');
+            if (isLoggedIn && memberDiscount > 0 && basePrice > 0) {
+                totalEl.innerHTML = `<span style="text-decoration: line-through; color: rgba(255,255,255,0.5); font-size: 0.9rem;">$${(basePrice * eventTicketQuantity).toFixed(2)}</span> <span style="color: #4ade80;">$${total.toFixed(2)}</span>`;
+            } else {
+                totalEl.textContent = total === 0 ? 'FREE' : '$' + total.toFixed(2);
+            }
 
             // Show/hide payment section based on price
             const paymentSection = document.getElementById('eventPaymentSection');
@@ -9077,8 +9088,8 @@
                     state.eventCardElement.mount('#event-card-element');
                 }
 
-                // Initialize Apple Pay / Google Pay for events
-                initEventPaymentRequest(ticket.price * eventTicketQuantity, ticket.name);
+                // Initialize Apple Pay / Google Pay for events (use discounted price)
+                initEventPaymentRequest(Math.round(total * 100), ticket.name);
             }
         }
 
