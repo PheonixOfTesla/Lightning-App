@@ -2754,8 +2754,8 @@
         async function createSpotlightEvent() {
             const name = document.getElementById('spotlightName').value.trim();
             const slug = document.getElementById('spotlightSlug').value.trim();
-            const date = document.getElementById('spotlightDate').value;
-            const endDate = document.getElementById('spotlightEndDate').value;
+            let date = document.getElementById('spotlightDate').value;
+            let endDate = document.getElementById('spotlightEndDate').value;
             const eventLocation = document.getElementById('spotlightLocation').value.trim();
             const description = document.getElementById('spotlightDescription').value.trim();
             const imageUrl = document.getElementById('spotlightImage').value.trim();
@@ -2764,12 +2764,21 @@
             const displayOrder = parseInt(document.getElementById('spotlightOrder').value) || 1;
             const isRecurring = document.getElementById('spotlightRecurring').checked;
 
-            // DEBUG: Log which fields are falsy
-            console.log('Spotlight validation:', { name, slug, date, eventLocation });
-            console.log('Falsy check:', { nameEmpty: !name, slugEmpty: !slug, dateEmpty: !date, locationEmpty: !eventLocation });
-
-            if (!name || !slug || !date || !eventLocation) {
-                showToast('Please fill in all required fields (name, slug, date, location)', 'error');
+            // Specific validation messages
+            if (!name) {
+                showToast('Event name is required', 'error');
+                return;
+            }
+            if (!slug) {
+                showToast('URL slug is required', 'error');
+                return;
+            }
+            if (!date) {
+                showToast('Start date & time is required (select both date AND time)', 'error');
+                return;
+            }
+            if (!eventLocation) {
+                showToast('Location/address is required', 'error');
                 return;
             }
 
@@ -2858,8 +2867,8 @@
         async function createSceneEvent() {
             const name = document.getElementById('sceneName').value.trim();
             const slug = document.getElementById('sceneSlug').value.trim();
-            const date = document.getElementById('sceneDate').value;
-            const endDate = document.getElementById('sceneEndDate').value;
+            let date = document.getElementById('sceneDate').value;
+            let endDate = document.getElementById('sceneEndDate').value;
             const eventLocation = document.getElementById('sceneLocation').value.trim();
             const description = document.getElementById('sceneDescription').value.trim();
             const imageUrl = document.getElementById('sceneImage').value.trim();
@@ -2867,8 +2876,21 @@
             const capacity = parseInt(document.getElementById('sceneCapacity').value) || -1;
             const isRecurring = document.getElementById('sceneRecurring').checked;
 
-            if (!name || !slug || !date || !eventLocation) {
-                showToast('Please fill in all required fields (name, slug, date, location)', 'error');
+            // Specific validation messages
+            if (!name) {
+                showToast('Event name is required', 'error');
+                return;
+            }
+            if (!slug) {
+                showToast('URL slug is required', 'error');
+                return;
+            }
+            if (!date) {
+                showToast('Start date & time is required (select both date AND time)', 'error');
+                return;
+            }
+            if (!eventLocation) {
+                showToast('Location/address is required', 'error');
                 return;
             }
 
