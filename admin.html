@@ -1051,12 +1051,12 @@
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date & Time *</label>
-                                <input type="datetime-local" id="spotlightDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date * (7 PM default)</label>
+                                <input type="date" id="spotlightDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date & Time</label>
-                                <input type="datetime-local" id="spotlightEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date (11 PM default)</label>
+                                <input type="date" id="spotlightEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                         </div>
 
@@ -1134,12 +1134,12 @@
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date & Time *</label>
-                                <input type="datetime-local" id="sceneDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date * (7 PM default)</label>
+                                <input type="date" id="sceneDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date & Time</label>
-                                <input type="datetime-local" id="sceneEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date (11 PM default)</label>
+                                <input type="date" id="sceneEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                         </div>
 
@@ -2754,8 +2754,8 @@
         async function createSpotlightEvent() {
             const name = document.getElementById('spotlightName').value.trim();
             const slug = document.getElementById('spotlightSlug').value.trim();
-            let date = document.getElementById('spotlightDate').value;
-            let endDate = document.getElementById('spotlightEndDate').value;
+            const dateVal = document.getElementById('spotlightDate').value; // "2026-07-18"
+            const endDateVal = document.getElementById('spotlightEndDate').value;
             const eventLocation = document.getElementById('spotlightLocation').value.trim();
             const description = document.getElementById('spotlightDescription').value.trim();
             const imageUrl = document.getElementById('spotlightImage').value.trim();
@@ -2763,6 +2763,10 @@
             const capacity = parseInt(document.getElementById('spotlightCapacity').value) || -1;
             const displayOrder = parseInt(document.getElementById('spotlightOrder').value) || 1;
             const isRecurring = document.getElementById('spotlightRecurring').checked;
+
+            // Append default times: 7 PM start, 11 PM end
+            const date = dateVal ? `${dateVal}T19:00:00` : '';
+            const endDate = endDateVal ? `${endDateVal}T23:00:00` : '';
 
             // DEBUG: Log exactly which fields are empty
             console.log('VALIDATION CHECK:', { name, slug, date, eventLocation });
@@ -2777,7 +2781,7 @@
                 return;
             }
             if (!date) {
-                showToast('Start date & time is required (select both date AND time)', 'error');
+                showToast('Start date is required', 'error');
                 return;
             }
             if (!eventLocation) {
@@ -2870,14 +2874,18 @@
         async function createSceneEvent() {
             const name = document.getElementById('sceneName').value.trim();
             const slug = document.getElementById('sceneSlug').value.trim();
-            let date = document.getElementById('sceneDate').value;
-            let endDate = document.getElementById('sceneEndDate').value;
+            const dateVal = document.getElementById('sceneDate').value; // "2026-07-18"
+            const endDateVal = document.getElementById('sceneEndDate').value;
             const eventLocation = document.getElementById('sceneLocation').value.trim();
             const description = document.getElementById('sceneDescription').value.trim();
             const imageUrl = document.getElementById('sceneImage').value.trim();
             const price = parseFloat(document.getElementById('scenePrice').value) || 0;
             const capacity = parseInt(document.getElementById('sceneCapacity').value) || -1;
             const isRecurring = document.getElementById('sceneRecurring').checked;
+
+            // Append default times: 7 PM start, 11 PM end
+            const date = dateVal ? `${dateVal}T19:00:00` : '';
+            const endDate = endDateVal ? `${endDateVal}T23:00:00` : '';
 
             // Specific validation messages
             if (!name) {
@@ -2889,7 +2897,7 @@
                 return;
             }
             if (!date) {
-                showToast('Start date & time is required (select both date AND time)', 'error');
+                showToast('Start date is required', 'error');
                 return;
             }
             if (!eventLocation) {
