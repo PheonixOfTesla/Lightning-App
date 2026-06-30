@@ -1071,8 +1071,19 @@
                         </div>
 
                         <div style="margin-bottom: 1rem;">
-                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Image URL</label>
-                            <input type="text" id="spotlightImage" placeholder="https://res.cloudinary.com/..." style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Event Image</label>
+                            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <input type="file" id="spotlightImageFile" accept="image/*" onchange="uploadSpotlightImage(this)" style="display: none;">
+                                    <button type="button" onclick="document.getElementById('spotlightImageFile').click()" id="spotlightUploadBtn" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px dashed var(--border-dark); border-radius: 0.5rem; color: var(--gray); cursor: pointer; text-align: center;">
+                                        Click to upload image...
+                                    </button>
+                                    <input type="hidden" id="spotlightImage" value="">
+                                </div>
+                                <div id="spotlightImagePreview" style="width: 64px; height: 64px; border-radius: 0.5rem; background: var(--card-black); border: 1px solid var(--border-dark); display: none; overflow: hidden;">
+                                    <img id="spotlightPreviewImg" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
@@ -1143,8 +1154,19 @@
                         </div>
 
                         <div style="margin-bottom: 1rem;">
-                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Image URL</label>
-                            <input type="text" id="sceneImage" placeholder="https://res.cloudinary.com/..." style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Event Image</label>
+                            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <input type="file" id="sceneImageFile" accept="image/*" onchange="uploadSceneImage(this)" style="display: none;">
+                                    <button type="button" onclick="document.getElementById('sceneImageFile').click()" id="sceneUploadBtn" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px dashed var(--border-dark); border-radius: 0.5rem; color: var(--gray); cursor: pointer; text-align: center;">
+                                        Click to upload image...
+                                    </button>
+                                    <input type="hidden" id="sceneImage" value="">
+                                </div>
+                                <div id="sceneImagePreview" style="width: 64px; height: 64px; border-radius: 0.5rem; background: var(--card-black); border: 1px solid var(--border-dark); display: none; overflow: hidden;">
+                                    <img id="scenePreviewImg" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
@@ -2628,6 +2650,107 @@
             document.getElementById('eventCreateResult').style.display = 'none';
         }
 
+        // Image upload functions
+        async function uploadSpotlightImage(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const file = input.files[0];
+            const btn = document.getElementById('spotlightUploadBtn');
+            const preview = document.getElementById('spotlightImagePreview');
+            const previewImg = document.getElementById('spotlightPreviewImg');
+            const hiddenInput = document.getElementById('spotlightImage');
+
+            btn.textContent = 'Uploading...';
+            btn.style.borderColor = 'var(--lightning-yellow)';
+            btn.style.color = 'var(--lightning-yellow)';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const res = await fetch(`${API_BASE}/api/v1/lightning/upload-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
+                // Success - show preview and store URL
+                hiddenInput.value = data.imageUrl;
+                previewImg.src = data.imageUrl;
+                preview.style.display = 'block';
+                btn.textContent = 'Image uploaded';
+                btn.style.borderColor = 'var(--neon-green)';
+                btn.style.color = 'var(--neon-green)';
+                btn.style.borderStyle = 'solid';
+
+                showToast('Image uploaded successfully!', 'success');
+
+            } catch (error) {
+                btn.textContent = 'Upload failed - click to retry';
+                btn.style.borderColor = 'var(--danger-red)';
+                btn.style.color = 'var(--danger-red)';
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function uploadSceneImage(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const file = input.files[0];
+            const btn = document.getElementById('sceneUploadBtn');
+            const preview = document.getElementById('sceneImagePreview');
+            const previewImg = document.getElementById('scenePreviewImg');
+            const hiddenInput = document.getElementById('sceneImage');
+
+            btn.textContent = 'Uploading...';
+            btn.style.borderColor = 'var(--electric-blue)';
+            btn.style.color = 'var(--electric-blue)';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const res = await fetch(`${API_BASE}/api/v1/lightning/upload-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
+                // Success - show preview and store URL
+                hiddenInput.value = data.imageUrl;
+                previewImg.src = data.imageUrl;
+                preview.style.display = 'block';
+                btn.textContent = 'Image uploaded';
+                btn.style.borderColor = 'var(--neon-green)';
+                btn.style.color = 'var(--neon-green)';
+                btn.style.borderStyle = 'solid';
+
+                showToast('Image uploaded successfully!', 'success');
+
+            } catch (error) {
+                btn.textContent = 'Upload failed - click to retry';
+                btn.style.borderColor = 'var(--danger-red)';
+                btn.style.color = 'var(--danger-red)';
+                showToast(error.message, 'error');
+            }
+        }
+
         async function createSpotlightEvent() {
             const name = document.getElementById('spotlightName').value.trim();
             const slug = document.getElementById('spotlightSlug').value.trim();
@@ -2714,10 +2837,18 @@
             document.getElementById('spotlightLocation').value = '';
             document.getElementById('spotlightDescription').value = '';
             document.getElementById('spotlightImage').value = '';
+            document.getElementById('spotlightImageFile').value = '';
             document.getElementById('spotlightPrice').value = '';
             document.getElementById('spotlightCapacity').value = '';
             document.getElementById('spotlightOrder').value = '1';
             document.getElementById('spotlightRecurring').checked = false;
+            // Reset upload button
+            const btn = document.getElementById('spotlightUploadBtn');
+            btn.textContent = 'Click to upload image...';
+            btn.style.borderColor = 'var(--border-dark)';
+            btn.style.borderStyle = 'dashed';
+            btn.style.color = 'var(--gray)';
+            document.getElementById('spotlightImagePreview').style.display = 'none';
         }
 
         async function createSceneEvent() {
@@ -2804,9 +2935,17 @@
             document.getElementById('sceneLocation').value = '';
             document.getElementById('sceneDescription').value = '';
             document.getElementById('sceneImage').value = '';
+            document.getElementById('sceneImageFile').value = '';
             document.getElementById('scenePrice').value = '';
             document.getElementById('sceneCapacity').value = '';
             document.getElementById('sceneRecurring').checked = false;
+            // Reset upload button
+            const btn = document.getElementById('sceneUploadBtn');
+            btn.textContent = 'Click to upload image...';
+            btn.style.borderColor = 'var(--border-dark)';
+            btn.style.borderStyle = 'dashed';
+            btn.style.color = 'var(--gray)';
+            document.getElementById('sceneImagePreview').style.display = 'none';
         }
 
         async function searchUsers() {
