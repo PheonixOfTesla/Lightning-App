@@ -1375,6 +1375,7 @@
                         <button class="mode-btn active" onclick="setGeneratorMode('comp')" id="modeComp" style="padding: 0.5rem 1rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: var(--lightning-yellow); color: #000; cursor: pointer; font-weight: 600;">Comp</button>
                         <button class="mode-btn" onclick="setGeneratorMode('bulk')" id="modeBulk" style="padding: 0.5rem 1rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: transparent; color: var(--white); cursor: pointer;">Bulk</button>
                         <button class="mode-btn" onclick="setGeneratorMode('promo')" id="modePromo" style="padding: 0.5rem 1rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: transparent; color: var(--white); cursor: pointer;">Promo</button>
+                        <button class="mode-btn" onclick="setGeneratorMode('link')" id="modeLink" style="padding: 0.5rem 1rem; border: 1px solid var(--electric-blue); border-radius: 0.5rem; background: transparent; color: var(--electric-blue); cursor: pointer;">Paid Link</button>
                     </div>
 
                     <!-- Event Selector -->
@@ -1460,6 +1461,36 @@
                             </label>
                         </div>
                         <button onclick="generatePromoTicket()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Promo Ticket</button>
+                    </div>
+
+                    <!-- Paid Link Mode Form -->
+                    <div id="linkForm" style="display: none;">
+                        <p style="color: var(--electric-blue); font-size: 0.85rem; margin-bottom: 1rem;">Creates a payment link. Guest pays via Stripe, then receives tickets.</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Name</label>
+                                <input type="text" id="linkGuestName" placeholder="John Doe" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Email</label>
+                                <input type="email" id="linkGuestEmail" placeholder="guest@email.com" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Price per Ticket ($)</label>
+                                <input type="number" id="linkPrice" value="10" min="1" step="0.01" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Quantity</label>
+                                <input type="number" id="linkQuantity" value="1" min="1" max="10" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Promo Code (optional)</label>
+                                <input type="text" id="linkPromoCode" placeholder="VIP2026" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                        </div>
+                        <button onclick="generatePaymentLink()" style="width: 100%; padding: 0.75rem; background: var(--electric-blue); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Payment Link</button>
                     </div>
 
                     <!-- Results -->
@@ -4513,13 +4544,19 @@
             currentGenMode = mode;
 
             // Update button styles
-            document.querySelectorAll('.mode-btn, #modeComp, #modeBulk, #modePromo').forEach(btn => {
+            document.querySelectorAll('.mode-btn, #modeComp, #modeBulk, #modePromo, #modeLink').forEach(btn => {
                 btn.style.background = 'transparent';
                 btn.style.color = 'var(--white)';
+                btn.style.borderColor = 'var(--border-dark)';
             });
             const activeBtn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
             if (activeBtn) {
-                activeBtn.style.background = 'var(--lightning-yellow)';
+                if (mode === 'link') {
+                    activeBtn.style.background = 'var(--electric-blue)';
+                    activeBtn.style.borderColor = 'var(--electric-blue)';
+                } else {
+                    activeBtn.style.background = 'var(--lightning-yellow)';
+                }
                 activeBtn.style.color = '#000';
             }
 
@@ -4527,6 +4564,7 @@
             document.getElementById('compForm').style.display = mode === 'comp' ? 'block' : 'none';
             document.getElementById('bulkForm').style.display = mode === 'bulk' ? 'block' : 'none';
             document.getElementById('promoForm').style.display = mode === 'promo' ? 'block' : 'none';
+            document.getElementById('linkForm').style.display = mode === 'link' ? 'block' : 'none';
 
             // Hide results/errors
             document.getElementById('genResults').style.display = 'none';
@@ -4698,6 +4736,60 @@
                     document.getElementById('promoCode').value = '';
                 } else {
                     showGenError(data.error || 'Failed to generate ticket');
+                }
+            } catch (err) {
+                showGenError(err.message);
+            }
+        }
+
+        async function generatePaymentLink() {
+            const eventSlug = document.getElementById('genEventSelect').value;
+            const guestName = document.getElementById('linkGuestName').value.trim();
+            const guestEmail = document.getElementById('linkGuestEmail').value.trim();
+            const customPrice = parseFloat(document.getElementById('linkPrice').value) || 0;
+            const quantity = parseInt(document.getElementById('linkQuantity').value) || 1;
+            const promoCode = document.getElementById('linkPromoCode').value.trim();
+
+            if (!eventSlug || !guestName || !guestEmail) {
+                showGenError('Please fill in all required fields.');
+                return;
+            }
+
+            if (customPrice <= 0) {
+                showGenError('Price must be greater than 0. For free tickets, use Comp mode.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/tickets/link`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showGenResults(`
+                        <p style="color: var(--electric-blue);"><strong>Payment Link Created</strong></p>
+                        <p><strong>Link ID:</strong> ${data.linkId}</p>
+                        <p><strong>Total:</strong> $${data.totalAmount.toFixed(2)}</p>
+                        <p><strong>Expires:</strong> ${new Date(data.expiresAt).toLocaleDateString()}</p>
+                        <p style="margin-top: 1rem;"><strong>Pay URL:</strong></p>
+                        <input type="text" value="${data.payUrl}" readonly onclick="this.select()" style="width: 100%; padding: 0.5rem; background: var(--pure-black); border: 1px solid var(--electric-blue); border-radius: 0.25rem; color: var(--electric-blue); margin-top: 0.25rem;">
+                        <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.5rem;">Click to copy. Send this link to the guest to complete payment.</p>
+                    `);
+                    // Clear form
+                    document.getElementById('linkGuestName').value = '';
+                    document.getElementById('linkGuestEmail').value = '';
+                    document.getElementById('linkPrice').value = '10';
+                    document.getElementById('linkQuantity').value = '1';
+                    document.getElementById('linkPromoCode').value = '';
+                } else {
+                    showGenError(data.error || 'Failed to generate payment link');
                 }
             } catch (err) {
                 showGenError(err.message);

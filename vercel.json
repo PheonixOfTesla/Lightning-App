@@ -28,6 +28,7 @@
     { "source": "/lightning-perks", "destination": "/lightning-perks.html" },
     { "source": "/checkin", "destination": "/checkin.html" },
     { "source": "/receipt/:claimId", "destination": "/receipt.html" },
+    { "source": "/pay/:linkId", "destination": "/pay.html" },
     { "source": "/sarasota-events", "destination": "/sarasota-events.html" },
     { "source": "/sarasota-nightlife", "destination": "/sarasota-nightlife.html" },
     { "source": "/sarasota-july-4th", "destination": "/sarasota-july-4th.html" },

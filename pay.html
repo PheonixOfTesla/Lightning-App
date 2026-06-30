@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment - Lightning Pass</title>
+    <link rel="icon" href="/favicon.ico">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo img {
+            height: 60px;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+            margin-top: 0.5rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .order-summary {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .order-row:last-child {
+            margin-bottom: 0;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-dark);
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .order-row span:last-child {
+            color: var(--white);
+        }
+
+        .event-name {
+            color: var(--lightning-yellow);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .event-date {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        #payment-element {
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--lightning-yellow);
+            color: #000;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 221, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error {
+            background: rgba(255, 0, 68, 0.1);
+            border: 1px solid var(--danger-red);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: var(--danger-red);
+            text-align: center;
+        }
+
+        .success {
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid var(--neon-green);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .success h2 {
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+        }
+
+        .success a {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--lightning-yellow);
+            color: #000;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-dark);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .guest-info {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">
+                <img src="/logo.png" alt="Lightning Pass">
+                <div class="logo-text">Lightning Pass</div>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading payment details...</p>
+            </div>
+
+            <div id="error-container" style="display: none;"></div>
+
+            <div id="payment-form" style="display: none;">
+                <h1>Complete Your Payment</h1>
+
+                <div class="order-summary">
+                    <div class="event-name" id="eventName"></div>
+                    <div class="event-date" id="eventDate"></div>
+                    <div class="guest-info" id="guestInfo"></div>
+                    <hr style="border: none; border-top: 1px solid var(--border-dark); margin: 1rem 0;">
+                    <div class="order-row">
+                        <span>Tickets</span>
+                        <span id="ticketCount"></span>
+                    </div>
+                    <div class="order-row">
+                        <span>Price per ticket</span>
+                        <span id="pricePerTicket"></span>
+                    </div>
+                    <div class="order-row">
+                        <span>Total</span>
+                        <span id="totalAmount"></span>
+                    </div>
+                </div>
+
+                <div id="payment-element"></div>
+
+                <button id="submit-btn" class="btn" onclick="submitPayment()">
+                    Pay Now
+                </button>
+            </div>
+
+            <div id="success-container" style="display: none;" class="success">
+                <h2>Payment Successful!</h2>
+                <p>Your tickets have been sent to your email.</p>
+                <a id="view-tickets-link" href="#">View Your Tickets</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://lightning-backend-production.up.railway.app';
+
+        // Get linkId from URL path
+        const pathParts = window.location.pathname.split('/');
+        const linkId = pathParts[pathParts.length - 1];
+
+        let stripe;
+        let elements;
+        let linkData;
+
+        async function init() {
+            if (!linkId || linkId === 'pay') {
+                showError('Invalid payment link');
+                return;
+            }
+
+            try {
+                // Fetch link details
+                const response = await fetch(`${API_BASE}/api/v1/admin/tickets/link/${linkId}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (data.passId) {
+                        // Already paid - redirect to pass
+                        window.location.href = `/pass/${data.passId}`;
+                        return;
+                    }
+                    throw new Error(data.error || 'Failed to load payment details');
+                }
+
+                linkData = data;
+
+                // Display order summary
+                document.getElementById('eventName').textContent = data.event?.name || 'Event';
+                document.getElementById('eventDate').textContent = data.event?.date
+                    ? new Date(data.event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+                    : '';
+                document.getElementById('guestInfo').textContent = `${data.guestName} (${data.guestEmail})`;
+                document.getElementById('ticketCount').textContent = data.quantity;
+                document.getElementById('pricePerTicket').textContent = `$${data.customPrice.toFixed(2)}`;
+                document.getElementById('totalAmount').textContent = `$${data.totalAmount.toFixed(2)}`;
+
+                // Create payment intent
+                const intentResponse = await fetch(`${API_BASE}/api/v1/admin/tickets/link/${linkId}/create-intent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const intentData = await intentResponse.json();
+
+                if (!intentResponse.ok) {
+                    throw new Error(intentData.error || 'Failed to create payment');
+                }
+
+                // Initialize Stripe
+                stripe = Stripe('pk_live_51SFvASIfYqbb49BvxZiVb0OLnVSW4LcuJOSuKwBMrLZOZt4VY16URePOIXEJuXhpNBcIlcUvp22bJuIfVnZKDxaP00l98mJf5C');
+
+                const appearance = {
+                    theme: 'night',
+                    variables: {
+                        colorPrimary: '#ffdd00',
+                        colorBackground: '#1b2838',
+                        colorText: '#ffffff',
+                        colorDanger: '#ff0044',
+                        fontFamily: 'Inter, -apple-system, sans-serif',
+                        borderRadius: '8px'
+                    }
+                };
+
+                elements = stripe.elements({
+                    clientSecret: intentData.clientSecret,
+                    appearance
+                });
+
+                const paymentElement = elements.create('payment');
+                paymentElement.mount('#payment-element');
+
+                // Show form
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('payment-form').style.display = 'block';
+
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        async function submitPayment() {
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+                const { error, paymentIntent } = await stripe.confirmPayment({
+                    elements,
+                    redirect: 'if_required'
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                if (paymentIntent.status === 'succeeded') {
+                    // Confirm with backend
+                    const confirmResponse = await fetch(`${API_BASE}/api/v1/admin/tickets/link/${linkId}/confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const confirmData = await confirmResponse.json();
+
+                    if (!confirmResponse.ok) {
+                        throw new Error(confirmData.error || 'Failed to confirm payment');
+                    }
+
+                    // Show success
+                    document.getElementById('payment-form').style.display = 'none';
+                    document.getElementById('success-container').style.display = 'block';
+                    document.getElementById('view-tickets-link').href = confirmData.pass.ticketUrl;
+
+                } else {
+                    throw new Error('Payment not completed');
+                }
+
+            } catch (err) {
+                showError(err.message);
+                btn.disabled = false;
+                btn.textContent = 'Pay Now';
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            const container = document.getElementById('error-container');
+            container.innerHTML = `<div class="error">${message}</div>`;
+            container.style.display = 'block';
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
