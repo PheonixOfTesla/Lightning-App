@@ -8576,8 +8576,34 @@
             const eventDate = new Date(event.date);
             const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
             const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const startTime = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-            const endTime = event.endDate ? new Date(event.endDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null;
+
+            // Format time: use startTime string if present, otherwise fall back to date-based time
+            let startTime;
+            if (event.startTime) {
+                // Parse HH:MM to display format (e.g., "14:00" → "2:00 PM")
+                const [hours, mins] = event.startTime.split(':');
+                const h = parseInt(hours);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                startTime = `${h12}:${mins} ${ampm}`;
+            } else {
+                // FALLBACK: existing events use date-based time (current behavior)
+                startTime = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
+
+            // Same pattern for endTime
+            let endTime = null;
+            if (event.endTime) {
+                const [hours, mins] = event.endTime.split(':');
+                const h = parseInt(hours);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                endTime = `${h12}:${mins} ${ampm}`;
+            } else if (event.endDate) {
+                // FALLBACK: existing events
+                endTime = new Date(event.endDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
+
             const timeStr = endTime ? `${startTime} - ${endTime}` : startTime;
             const price = event.tickets?.[0]?.price ? `$${(event.tickets[0].price / 100).toFixed(0)}` : 'FREE';
             const ticket = event.tickets?.[0];
@@ -8652,7 +8678,18 @@
             const eventDate = new Date(event.date);
             const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
             const monthDay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+            // Format time: use startTime string if present, otherwise fall back to date-based time
+            let timeStr;
+            if (event.startTime) {
+                const [hours, mins] = event.startTime.split(':');
+                const h = parseInt(hours);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                timeStr = `${h12}:${mins} ${ampm}`;
+            } else {
+                timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
 
             return `
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; padding: 1rem;">

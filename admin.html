@@ -1049,14 +1049,22 @@
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date * (7 PM default)</label>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date *</label>
                                 <input type="date" id="spotlightDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date (11 PM default)</label>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Time *</label>
+                                <input type="time" id="spotlightStartTime" value="19:00" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date</label>
                                 <input type="date" id="spotlightEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Time</label>
+                                <input type="time" id="spotlightEndTime" value="23:00" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                         </div>
 
@@ -1132,14 +1140,22 @@
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date * (7 PM default)</label>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Date *</label>
                                 <input type="date" id="sceneDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date (11 PM default)</label>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Start Time *</label>
+                                <input type="time" id="sceneStartTime" value="19:00" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Date</label>
                                 <input type="date" id="sceneEndDate" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">End Time</label>
+                                <input type="time" id="sceneEndTime" value="23:00" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                         </div>
 
@@ -1978,12 +1994,22 @@
 
                     <div class="form-group">
                         <label>Start Date</label>
-                        <input type="datetime-local" id="editEventDate" oninput="updateEventPreview()">
+                        <input type="date" id="editEventDate" oninput="updateEventPreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="time" id="editEventStartTime" oninput="updateEventPreview()">
                     </div>
 
                     <div class="form-group">
                         <label>End Date</label>
-                        <input type="datetime-local" id="editEventEndDate">
+                        <input type="date" id="editEventEndDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" id="editEventEndTime">
                     </div>
 
                     <div class="form-group full-width">
@@ -2755,7 +2781,9 @@
             const name = document.getElementById('spotlightName').value.trim();
             const slug = document.getElementById('spotlightSlug').value.trim();
             const dateVal = document.getElementById('spotlightDate').value; // "2026-07-18"
+            const startTime = document.getElementById('spotlightStartTime').value; // "14:00"
             const endDateVal = document.getElementById('spotlightEndDate').value;
+            const endTime = document.getElementById('spotlightEndTime').value; // "22:00"
             const eventLocation = document.getElementById('spotlightLocation').value.trim();
             const description = document.getElementById('spotlightDescription').value.trim();
             const imageUrl = document.getElementById('spotlightImage').value.trim();
@@ -2764,12 +2792,12 @@
             const displayOrder = parseInt(document.getElementById('spotlightOrder').value) || 1;
             const isRecurring = document.getElementById('spotlightRecurring').checked;
 
-            // Append default times: 7 PM start, 11 PM end
-            const date = dateVal ? `${dateVal}T19:00:00` : '';
-            const endDate = endDateVal ? `${endDateVal}T23:00:00` : '';
+            // Build date string with the entered time (for Date field storage)
+            const date = dateVal ? `${dateVal}T${startTime || '19:00'}:00` : '';
+            const endDate = endDateVal ? `${endDateVal}T${endTime || '23:00'}:00` : '';
 
             // DEBUG: Log exactly which fields are empty
-            console.log('VALIDATION CHECK:', { name, slug, date, eventLocation });
+            console.log('VALIDATION CHECK:', { name, slug, date, startTime, eventLocation });
 
             // Specific validation messages
             if (!name) {
@@ -2780,8 +2808,12 @@
                 showToast('URL slug is required', 'error');
                 return;
             }
-            if (!date) {
+            if (!dateVal) {
                 showToast('Start date is required', 'error');
+                return;
+            }
+            if (!startTime) {
+                showToast('Start time is required', 'error');
                 return;
             }
             if (!eventLocation) {
@@ -2794,6 +2826,8 @@
                 slug,
                 date: new Date(date).toISOString(),
                 endDate: endDate ? new Date(endDate).toISOString() : null,
+                startTime: startTime || null,  // Store as HH:MM string
+                endTime: endTime || null,      // Store as HH:MM string
                 location: eventLocation,
                 description,
                 imageUrl,
@@ -2853,7 +2887,9 @@
             document.getElementById('spotlightName').value = '';
             document.getElementById('spotlightSlug').value = '';
             document.getElementById('spotlightDate').value = '';
+            document.getElementById('spotlightStartTime').value = '19:00';
             document.getElementById('spotlightEndDate').value = '';
+            document.getElementById('spotlightEndTime').value = '23:00';
             document.getElementById('spotlightLocation').value = '';
             document.getElementById('spotlightDescription').value = '';
             document.getElementById('spotlightImage').value = '';
@@ -2875,7 +2911,9 @@
             const name = document.getElementById('sceneName').value.trim();
             const slug = document.getElementById('sceneSlug').value.trim();
             const dateVal = document.getElementById('sceneDate').value; // "2026-07-18"
+            const startTime = document.getElementById('sceneStartTime').value; // "14:00"
             const endDateVal = document.getElementById('sceneEndDate').value;
+            const endTime = document.getElementById('sceneEndTime').value; // "22:00"
             const eventLocation = document.getElementById('sceneLocation').value.trim();
             const description = document.getElementById('sceneDescription').value.trim();
             const imageUrl = document.getElementById('sceneImage').value.trim();
@@ -2883,9 +2921,9 @@
             const capacity = parseInt(document.getElementById('sceneCapacity').value) || -1;
             const isRecurring = document.getElementById('sceneRecurring').checked;
 
-            // Append default times: 7 PM start, 11 PM end
-            const date = dateVal ? `${dateVal}T19:00:00` : '';
-            const endDate = endDateVal ? `${endDateVal}T23:00:00` : '';
+            // Build date string with the entered time
+            const date = dateVal ? `${dateVal}T${startTime || '19:00'}:00` : '';
+            const endDate = endDateVal ? `${endDateVal}T${endTime || '23:00'}:00` : '';
 
             // Specific validation messages
             if (!name) {
@@ -2896,8 +2934,12 @@
                 showToast('URL slug is required', 'error');
                 return;
             }
-            if (!date) {
+            if (!dateVal) {
                 showToast('Start date is required', 'error');
+                return;
+            }
+            if (!startTime) {
+                showToast('Start time is required', 'error');
                 return;
             }
             if (!eventLocation) {
@@ -2910,6 +2952,8 @@
                 slug,
                 date: new Date(date).toISOString(),
                 endDate: endDate ? new Date(endDate).toISOString() : null,
+                startTime: startTime || null,  // Store as HH:MM string
+                endTime: endTime || null,      // Store as HH:MM string
                 location: eventLocation,
                 description,
                 imageUrl,
@@ -2968,7 +3012,9 @@
             document.getElementById('sceneName').value = '';
             document.getElementById('sceneSlug').value = '';
             document.getElementById('sceneDate').value = '';
+            document.getElementById('sceneStartTime').value = '19:00';
             document.getElementById('sceneEndDate').value = '';
+            document.getElementById('sceneEndTime').value = '23:00';
             document.getElementById('sceneLocation').value = '';
             document.getElementById('sceneDescription').value = '';
             document.getElementById('sceneImage').value = '';
@@ -4434,14 +4480,32 @@
                 document.getElementById('editEventScene').checked = event.showInScene || false;
                 document.getElementById('editEventStatus').value = event.status || 'live';
 
-                // Format dates for datetime-local input
+                // Format dates for separate date + time inputs
                 if (event.date) {
                     const d = new Date(event.date);
-                    document.getElementById('editEventDate').value = d.toISOString().slice(0, 16);
+                    // Date portion (YYYY-MM-DD)
+                    document.getElementById('editEventDate').value = d.toISOString().slice(0, 10);
+                    // Time: use startTime string if present, otherwise extract from Date
+                    if (event.startTime) {
+                        document.getElementById('editEventStartTime').value = event.startTime;
+                    } else {
+                        // Fallback: extract time from Date (for old events)
+                        const hours = d.getUTCHours().toString().padStart(2, '0');
+                        const mins = d.getUTCMinutes().toString().padStart(2, '0');
+                        document.getElementById('editEventStartTime').value = `${hours}:${mins}`;
+                    }
                 }
                 if (event.endDate) {
                     const d = new Date(event.endDate);
-                    document.getElementById('editEventEndDate').value = d.toISOString().slice(0, 16);
+                    document.getElementById('editEventEndDate').value = d.toISOString().slice(0, 10);
+                    // Time: use endTime string if present, otherwise extract from Date
+                    if (event.endTime) {
+                        document.getElementById('editEventEndTime').value = event.endTime;
+                    } else {
+                        const hours = d.getUTCHours().toString().padStart(2, '0');
+                        const mins = d.getUTCMinutes().toString().padStart(2, '0');
+                        document.getElementById('editEventEndTime').value = `${hours}:${mins}`;
+                    }
                 }
 
                 // Populate tickets
@@ -4482,18 +4546,27 @@
             const description = document.getElementById('editEventDescription').value || '';
             const imageUrl = document.getElementById('editEventImage').value;
             const dateInput = document.getElementById('editEventDate').value;
+            const timeInput = document.getElementById('editEventStartTime').value;
             const isSpotlight = document.getElementById('editEventSpotlight').checked;
             const isScene = document.getElementById('editEventScene').checked;
             const status = document.getElementById('editEventStatus').value;
 
-            // Format date
+            // Format date and time
             let dateStr = 'Fri, Jul 4 · 2:00 PM';
             if (dateInput) {
-                const date = new Date(dateInput);
+                const date = new Date(dateInput + 'T12:00:00'); // Use noon to avoid date shift
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
                 const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                dateStr = `${dayName}, ${monthDay} · ${time}`;
+                // Format time directly from input (no conversion)
+                let timeStr = '7:00 PM';
+                if (timeInput) {
+                    const [hours, mins] = timeInput.split(':');
+                    const h = parseInt(hours);
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    const h12 = h % 12 || 12;
+                    timeStr = `${h12}:${mins} ${ampm}`;
+                }
+                dateStr = `${dayName}, ${monthDay} · ${timeStr}`;
             }
 
             // Get lowest ticket price and total available
@@ -4622,13 +4695,25 @@
                 }
             });
 
+            // Get date and time values
+            const dateVal = document.getElementById('editEventDate').value;
+            const startTime = document.getElementById('editEventStartTime').value;
+            const endDateVal = document.getElementById('editEventEndDate').value;
+            const endTime = document.getElementById('editEventEndTime').value;
+
+            // Build full date strings
+            const fullDate = dateVal && startTime ? `${dateVal}T${startTime}:00` : dateVal;
+            const fullEndDate = endDateVal && endTime ? `${endDateVal}T${endTime}:00` : endDateVal;
+
             const updates = {
                 name: document.getElementById('editEventName').value,
                 location: document.getElementById('editEventLocation').value,
                 imageUrl: document.getElementById('editEventImage').value,
                 description: document.getElementById('editEventDescription').value,
-                date: document.getElementById('editEventDate').value,
-                endDate: document.getElementById('editEventEndDate').value || null,
+                date: fullDate ? new Date(fullDate).toISOString() : null,
+                endDate: fullEndDate ? new Date(fullEndDate).toISOString() : null,
+                startTime: startTime || null,  // Store as HH:MM string
+                endTime: endTime || null,      // Store as HH:MM string
                 isLightningEvent: document.getElementById('editEventSpotlight').checked,
                 showInScene: document.getElementById('editEventScene').checked,
                 status: document.getElementById('editEventStatus').value,
