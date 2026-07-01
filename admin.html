@@ -1624,6 +1624,11 @@
                                 </label>
                             </div>
                         </div>
+                        <!-- Custom Message -->
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Message (optional)</label>
+                            <textarea id="compMessage" placeholder="Add a personal message to recipients..." rows="3" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical; font-family: inherit;"></textarea>
+                        </div>
                         <!-- Member Access Toggle -->
                         <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
                             <label style="display: flex; align-items: flex-start; cursor: pointer;">
@@ -1690,6 +1695,11 @@
                                 <span style="color: var(--gray); font-size: 0.85rem;">Send confirmation emails</span>
                             </label>
                         </div>
+                        <!-- Custom Message -->
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Message (optional)</label>
+                            <textarea id="bulkMessage" placeholder="Add a personal message to all recipients..." rows="3" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical; font-family: inherit;"></textarea>
+                        </div>
                         <!-- Member Access Toggle -->
                         <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
                             <label style="display: flex; align-items: flex-start; cursor: pointer;">
@@ -1735,6 +1745,11 @@
                                 <span style="color: var(--gray); font-size: 0.85rem;">Send confirmation email</span>
                             </label>
                         </div>
+                        <!-- Custom Message -->
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Message (optional)</label>
+                            <textarea id="promoMessage" placeholder="Add a personal message to recipients..." rows="3" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical; font-family: inherit;"></textarea>
+                        </div>
                         <!-- Member Access Toggle -->
                         <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
                             <label style="display: flex; align-items: flex-start; cursor: pointer;">
@@ -1774,6 +1789,11 @@
                                 <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Promo Code (optional)</label>
                                 <input type="text" id="linkPromoCode" placeholder="VIP2026" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
+                        </div>
+                        <!-- Custom Message -->
+                        <div style="margin-bottom: 1rem;">
+                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Message (optional)</label>
+                            <textarea id="linkMessage" placeholder="Add a personal message to recipients..." rows="3" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical; font-family: inherit;"></textarea>
                         </div>
                         <!-- Member Access Toggle -->
                         <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
@@ -5373,6 +5393,7 @@
             const quantity = parseInt(document.getElementById('compQuantity').value) || 1;
             const sendEmail = document.getElementById('compSendEmail').checked;
             const requireMemberAccess = document.getElementById('compRequireMemberAccess').checked;
+            const customMessage = document.getElementById('compMessage').value.trim();
 
             if (!eventSlug || !guestName || !guestEmail) {
                 showGenError('Please fill in all required fields.');
@@ -5386,7 +5407,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, sendEmail, requireMemberAccess })
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, sendEmail, requireMemberAccess, customMessage })
                 });
 
                 const data = await response.json();
@@ -5405,6 +5426,7 @@
                     document.getElementById('compGuestEmail').value = '';
                     document.getElementById('compQuantity').value = '1';
                     document.getElementById('compRequireMemberAccess').checked = false;
+                    document.getElementById('compMessage').value = '';
                 } else {
                     showGenError(data.error || 'Failed to generate ticket');
                 }
@@ -5537,6 +5559,7 @@
             const eventSlug = document.getElementById('genEventSelect').value;
             const sendEmails = document.getElementById('bulkSendEmails').checked;
             const requireMemberAccess = document.getElementById('bulkRequireMemberAccess').checked;
+            const customMessage = document.getElementById('bulkMessage').value.trim();
 
             let recipients = [];
 
@@ -5582,7 +5605,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, recipients, sendEmails, requireMemberAccess })
+                    body: JSON.stringify({ eventSlug, recipients, sendEmails, requireMemberAccess, customMessage })
                 });
 
                 const data = await response.json();
@@ -5605,6 +5628,7 @@
                     // Clear form
                     document.getElementById('bulkRecipients').value = '';
                     document.getElementById('bulkRequireMemberAccess').checked = false;
+                    document.getElementById('bulkMessage').value = '';
                     selectedUsers.clear();
                     updateSelectedCount();
                     if (bulkSource === 'database') {
@@ -5627,6 +5651,7 @@
             const promoCode = document.getElementById('promoCode').value.trim();
             const sendEmail = document.getElementById('promoSendEmail').checked;
             const requireMemberAccess = document.getElementById('promoRequireMemberAccess').checked;
+            const customMessage = document.getElementById('promoMessage').value.trim();
 
             if (!eventSlug || !guestName || !guestEmail) {
                 showGenError('Please fill in all required fields.');
@@ -5640,7 +5665,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, sendEmail, requireMemberAccess })
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, sendEmail, requireMemberAccess, customMessage })
                 });
 
                 const data = await response.json();
@@ -5663,6 +5688,7 @@
                     document.getElementById('promoQuantity').value = '1';
                     document.getElementById('promoCode').value = '';
                     document.getElementById('promoRequireMemberAccess').checked = false;
+                    document.getElementById('promoMessage').value = '';
                 } else {
                     showGenError(data.error || 'Failed to generate ticket');
                 }
@@ -5679,6 +5705,7 @@
             const quantity = parseInt(document.getElementById('linkQuantity').value) || 1;
             const promoCode = document.getElementById('linkPromoCode').value.trim();
             const requireMemberAccess = document.getElementById('linkRequireMemberAccess').checked;
+            const customMessage = document.getElementById('linkMessage').value.trim();
 
             if (!eventSlug || !guestName || !guestEmail) {
                 showGenError('Please fill in all required fields.');
@@ -5697,7 +5724,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, requireMemberAccess })
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, requireMemberAccess, customMessage })
                 });
 
                 const data = await response.json();
@@ -5720,6 +5747,7 @@
                     document.getElementById('linkQuantity').value = '1';
                     document.getElementById('linkPromoCode').value = '';
                     document.getElementById('linkRequireMemberAccess').checked = false;
+                    document.getElementById('linkMessage').value = '';
                 } else {
                     showGenError(data.error || 'Failed to generate payment link');
                 }
