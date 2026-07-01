@@ -167,10 +167,10 @@
         /* Dashboard Header */
         .dashboard-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            text-align: center;
             margin-bottom: 2rem;
-            flex-wrap: wrap;
             gap: 1rem;
         }
 
@@ -184,6 +184,7 @@
         .user-info {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 1rem;
         }
 
@@ -632,18 +633,8 @@
                 padding: 5rem 1rem 1rem;
             }
 
-            .dashboard-header {
-                flex-direction: column;
-                text-align: center;
-                align-items: center;
-            }
-
             .dashboard-header h1 {
                 font-size: 1.5rem;
-            }
-
-            .user-info {
-                justify-content: center;
             }
 
             .tabs {
