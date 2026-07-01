@@ -8850,7 +8850,9 @@
 
         function renderEventButton(event, cardType, autoSoldOut, price) {
             const buttonType = event.buttonType || 'auto';
-            const eventJson = JSON.stringify(event).replace(/'/g, "\\'");
+            // Escape for HTML attribute: use HTML entity for single quotes
+            // Backslash escaping (\') doesn't work in HTML attributes
+            const eventJson = JSON.stringify(event).replace(/'/g, "&#39;");
 
             // Button style presets based on card type
             const isLightning = cardType === 'lightning';
