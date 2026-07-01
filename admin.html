@@ -1670,14 +1670,25 @@
                                 <input type="text" id="bulkUserSearch" placeholder="Search by name or email..." oninput="searchUsersDebounced()" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                             <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.1); border-radius: 0.25rem;">
-                                    <input type="checkbox" id="filterMembers" checked onchange="filterUsers()" style="margin-right: 0.25rem;">
-                                    <span style="font-size: 0.75rem;">Members</span>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(57,255,20,0.2); border-radius: 0.25rem; border: 1px solid rgba(57,255,20,0.3);">
+                                    <input type="checkbox" id="filterMembers" checked onchange="filterBulkUsers()" style="margin-right: 0.25rem;">
+                                    <span style="font-size: 0.75rem; color: var(--neon-green);">Members</span>
                                 </label>
-                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.1); border-radius: 0.25rem;">
-                                    <input type="checkbox" id="filterGuests" checked onchange="filterUsers()" style="margin-right: 0.25rem;">
-                                    <span style="font-size: 0.75rem;">Guests</span>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(0,212,255,0.2); border-radius: 0.25rem; border: 1px solid rgba(0,212,255,0.3);">
+                                    <input type="checkbox" id="filterDJs" onchange="filterBulkUsers()" style="margin-right: 0.25rem;">
+                                    <span style="font-size: 0.75rem; color: var(--electric-blue);">DJs</span>
                                 </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(157,78,221,0.2); border-radius: 0.25rem; border: 1px solid rgba(157,78,221,0.3);">
+                                    <input type="checkbox" id="filterPartners" onchange="filterBulkUsers()" style="margin-right: 0.25rem;">
+                                    <span style="font-size: 0.75rem; color: var(--electric-purple);">Partners</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(136,136,136,0.2); border-radius: 0.25rem; border: 1px solid rgba(136,136,136,0.3);">
+                                    <input type="checkbox" id="filterGuests" onchange="filterBulkUsers()" style="margin-right: 0.25rem;">
+                                    <span style="font-size: 0.75rem; color: var(--gray);">No Account</span>
+                                </label>
+                            </div>
+                            <div style="font-size: 0.7rem; color: var(--gray); margin-bottom: 0.75rem; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 0.25rem;">
+                                Members = member-only accounts (excludes venue/host/admin portals)
                             </div>
                             <div style="background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; max-height: 250px; overflow-y: auto;">
                                 <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-dark); background: rgba(255,255,255,0.05);">
@@ -5474,7 +5485,7 @@
 
                 if (data.success && data.users) {
                     allUsers = data.users;
-                    filterUsers();
+                    filterBulkUsers();
                 }
             } catch (err) {
                 console.error('Failed to load users:', err);
@@ -5483,13 +5494,31 @@
 
         function searchUsersDebounced() {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(filterUsers, 300);
+            searchTimeout = setTimeout(filterBulkUsers, 300);
         }
 
-        function filterUsers() {
+        // Role-based filtering matching User Management tabs
+        // Members = users with 'member' role, EXCLUDING gated portal roles (venue/host/admin)
+        // DJs/Partners = users with those specific roles
+        // No Account = guest pass purchasers (isGuest)
+        function filterBulkUsers() {
             const searchTerm = (document.getElementById('bulkUserSearch')?.value || '').toLowerCase();
-            const showMembers = document.getElementById('filterMembers')?.checked ?? true;
-            const showGuests = document.getElementById('filterGuests')?.checked ?? true;
+            const showMembers = document.getElementById('filterMembers')?.checked ?? false;
+            const showDJs = document.getElementById('filterDJs')?.checked ?? false;
+            const showPartners = document.getElementById('filterPartners')?.checked ?? false;
+            const showGuests = document.getElementById('filterGuests')?.checked ?? false;
+
+            // Helper to check if user has a specific role
+            const hasRole = (user, role) => {
+                const roles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
+                return roles && roles.includes(role);
+            };
+
+            // Helper to check if user has any gated portal role (venue/host/admin)
+            const hasGatedRole = (user) => {
+                const roles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
+                return roles && (roles.includes('venue') || roles.includes('host') || roles.includes('admin'));
+            };
 
             filteredUsers = allUsers.filter(user => {
                 // Search filter
@@ -5497,11 +5526,29 @@
                     (user.name && user.name.toLowerCase().includes(searchTerm)) ||
                     (user.email && user.email.toLowerCase().includes(searchTerm));
 
-                // Type filter
-                const isGuest = user.isGuest;
-                const matchesType = (showGuests && isGuest) || (showMembers && !isGuest);
+                if (!matchesSearch) return false;
 
-                return matchesSearch && matchesType;
+                // Role-based type filter (same logic as User Management tabs)
+                // If no filters checked, show nothing (require explicit selection)
+                if (!showMembers && !showDJs && !showPartners && !showGuests) return false;
+
+                // Guest filter: isGuest flag
+                if (showGuests && user.isGuest) return true;
+
+                // Skip guests for role checks
+                if (user.isGuest) return false;
+
+                // Members: has 'member' role AND does NOT have gated portal roles
+                // This ensures venue owners, hosts, and admins don't get guest pass emails
+                if (showMembers && hasRole(user, 'member') && !hasGatedRole(user)) return true;
+
+                // DJs: has 'dj' role (may also be member, that's fine)
+                if (showDJs && hasRole(user, 'dj')) return true;
+
+                // Partners: has 'partner' role
+                if (showPartners && hasRole(user, 'partner')) return true;
+
+                return false;
             });
 
             renderUsersList();
@@ -5518,16 +5565,38 @@
                 return;
             }
 
-            container.innerHTML = filteredUsers.map(user => `
+            container.innerHTML = filteredUsers.map(user => {
+                // Build role badge(s)
+                let badgeHtml = '';
+                if (user.isGuest) {
+                    badgeHtml = '<span style="font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 0.25rem; background: rgba(136,136,136,0.2); color: var(--gray);">No Account</span>';
+                } else {
+                    const roles = user.roles && user.roles.length > 0 ? user.roles : [user.role || 'member'];
+                    const badges = roles.filter(r => r).map(r => {
+                        const colors = {
+                            member: { bg: 'rgba(57,255,20,0.2)', fg: 'var(--neon-green)' },
+                            dj: { bg: 'rgba(0,212,255,0.2)', fg: 'var(--electric-blue)' },
+                            partner: { bg: 'rgba(157,78,221,0.2)', fg: 'var(--electric-purple)' },
+                            venue: { bg: 'rgba(255,221,0,0.2)', fg: 'var(--lightning-yellow)' },
+                            host: { bg: 'rgba(255,140,0,0.2)', fg: '#ff8c00' },
+                            admin: { bg: 'rgba(255,0,68,0.2)', fg: 'var(--danger-red)' }
+                        };
+                        const c = colors[r] || { bg: 'rgba(255,255,255,0.1)', fg: 'var(--white)' };
+                        return `<span style="font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 0.25rem; background: ${c.bg}; color: ${c.fg}; margin-left: 0.25rem;">${r.toUpperCase()}</span>`;
+                    });
+                    badgeHtml = badges.join('');
+                }
+                return `
                 <div style="display: flex; align-items: center; padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <input type="checkbox" id="user_${user._id || user.email}" ${selectedUsers.has(user.email) ? 'checked' : ''} onchange="toggleUserSelection('${user.email}', '${(user.name || '').replace(/'/g, "&#39;")}', this.checked)" style="margin-right: 0.75rem;">
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user.name || 'No Name'}</div>
                         <div style="font-size: 0.75rem; color: var(--gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user.email}</div>
                     </div>
-                    <span style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 0.25rem; background: ${user.isGuest ? 'rgba(136,136,136,0.2)' : 'rgba(57,255,20,0.2)'}; color: ${user.isGuest ? 'var(--gray)' : 'var(--neon-green)'};">${user.isGuest ? 'Guest' : 'Member'}</span>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: flex-end;">${badgeHtml}</div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             updateSelectedCount();
         }
