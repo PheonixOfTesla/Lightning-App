@@ -81,6 +81,9 @@ const LoginCenter = (function() {
                     <p style="text-align: center; margin-top: 1rem; color: var(--gray); font-size: 0.85rem;">
                         Already have an account? <a href="#" onclick="LoginCenter.showQuickLogin(); return false;" style="color: #ffdd00;">Login</a>
                     </p>
+                    <p style="text-align: center; margin-top: 0.5rem; color: var(--gray); font-size: 0.85rem;">
+                        <a href="#" onclick="LoginCenter.showForgotPassword(); return false;" style="color: #ffdd00;">Forgot password?</a>
+                    </p>
                 </div>
 
                 <!-- Quick Login - Step 1: Email -->
