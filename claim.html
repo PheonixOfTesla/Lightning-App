@@ -309,6 +309,25 @@
         let claimToken = null;
         let passData = null;
 
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize LoginCenter
+            if (typeof LoginCenter !== 'undefined') {
+                LoginCenter.init({
+                    apiBase: API_BASE,
+                    onSuccess: async function(userData) {
+                        // After successful login/signup, automatically claim the pass
+                        if (claimToken) {
+                            await claimPassAfterAuth(userData.token);
+                        }
+                    }
+                });
+            }
+
+            // Load pass details
+            loadPassDetails();
+        });
+
         // Get token from URL
         function getToken() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -381,16 +400,40 @@
         // Open login modal
         function openLogin() {
             if (typeof LoginCenter !== 'undefined') {
-                // Set callback to refresh page after login
-                LoginCenter.open({
-                    onSuccess: function() {
-                        // After successful login, refresh to show claim button
-                        window.location.reload();
-                    }
-                });
+                LoginCenter.open();
             } else {
                 // Fallback: redirect to homepage with return URL
                 window.location.href = '/?returnTo=' + encodeURIComponent(window.location.href);
+            }
+        }
+
+        // Claim pass after successful authentication
+        async function claimPassAfterAuth(authToken) {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/passes/claim/${claimToken}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Claim failed:', data.error);
+                    // Show error but still redirect to members page
+                    alert(data.error || 'Failed to claim pass. Please try again from My Passes.');
+                    window.location.href = '/members?tab=passes';
+                    return;
+                }
+
+                // Success - redirect to My Passes
+                window.location.href = '/members?tab=passes';
+            } catch (err) {
+                console.error('Claim error:', err);
+                alert('Connection error. Please try again.');
+                window.location.href = '/members?tab=passes';
             }
         }
 
@@ -432,8 +475,6 @@
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', loadPassDetails);
     </script>
 </body>
 </html>
