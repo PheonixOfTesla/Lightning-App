@@ -52,6 +52,22 @@
         .not-found{text-align:center;padding:60px 20px}
         .not-found h2{font-size:24px;margin-bottom:10px}
         .not-found p{color:var(--gray)}
+        /* Light theme for selector and empty state */
+        .selector-view{background:#fff;min-height:100vh;margin:-20px;padding:20px 20px 100px}
+        .selector-view .logo{color:#1a1a2e;background:none;-webkit-text-fill-color:#1a1a2e}
+        .selector-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#ffd700;margin-bottom:20px}
+        .dj-card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:16px;padding:20px;margin-bottom:16px}
+        .dj-card-name{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+        .dj-card-venue{font-size:14px;color:#6b7280;margin-bottom:8px}
+        .dj-card-fee{font-size:13px;color:#6b7280;margin-bottom:16px}
+        .dj-card-btn{display:block;width:100%;padding:14px;background:#ffd700;border:none;border-radius:10px;color:#1a1a2e;font-size:15px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none}
+        .dj-card-btn:hover{background:#e6c200}
+        .empty-state{text-align:center;padding:80px 20px}
+        .empty-state-icon{font-size:64px;margin-bottom:20px;opacity:0.5}
+        .empty-state h2{font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:12px}
+        .empty-state p{color:#6b7280;font-size:15px;margin-bottom:24px;line-height:1.5}
+        .empty-state-btn{display:inline-block;padding:14px 28px;background:#f7f8fa;border:1px solid #e5e7eb;border-radius:10px;color:#1a1a2e;font-size:14px;font-weight:600;text-decoration:none}
+        .empty-state-btn:hover{background:#e5e7eb}
     </style>
 </head>
 <body>
@@ -74,28 +90,91 @@
         const BOLTS={next_5:{label:'Next 5',price:300},next_up:{label:'Next Up',price:1000},play_now:{label:'Play Now',price:2500}};
 
         async function init(){
-            if(!djId||djId==='dj'){showNotFound();return}
+            // If no DJ ID (path is /dj or /dj/), show selector or empty state
+            if(!djId||djId==='dj'){
+                await showSelectorOrEmpty();
+                return;
+            }
+            // Otherwise, load specific DJ's request form
             try{
                 // Fetch Stripe key from config
                 const configRes=await fetch(`${API}/config`);
                 const configData=await configRes.json();
                 STRIPE_KEY=configData.stripePublishableKey;
-                if(!STRIPE_KEY){console.error('Stripe key not configured');showNotFound();return}
+                if(!STRIPE_KEY){console.error('Stripe key not configured');showEmptyState();return}
 
                 const r=await fetch(`${API}/dj/${djId}/public`);
-                if(!r.ok){showNotFound();return}
+                if(!r.ok){showEmptyState();return}
                 const d=await r.json();
-                if(!d.success){showNotFound();return}
+                if(!d.success){showEmptyState();return}
                 document.getElementById('djName').textContent=d.dj.name;
                 document.getElementById('djBio').textContent=d.dj.bio||'Request your favorite songs!';
                 baseFee=d.dj.baseFee||500;
                 showForm();
-            }catch(e){showNotFound()}
+            }catch(e){showEmptyState()}
         }
 
-        function showNotFound(){
-            document.getElementById('djName').textContent='DJ Not Found';
-            document.getElementById('content').innerHTML='<div class="not-found"><h2>Session Not Found</h2><p>This DJ session may have ended.</p></div>';
+        async function showSelectorOrEmpty(){
+            try{
+                const r=await fetch(`${API}/dj/active`);
+                const d=await r.json();
+                if(d.success && d.activeDJs && d.activeDJs.length > 0){
+                    showSelector(d.activeDJs);
+                }else{
+                    showEmptyState();
+                }
+            }catch(e){
+                console.error('Failed to fetch active DJs:', e);
+                showEmptyState();
+            }
+        }
+
+        function showSelector(djs){
+            document.body.innerHTML=`
+                <div class="selector-view">
+                    <div class="container">
+                        <div class="header">
+                            <div class="logo">Lightning Pass</div>
+                        </div>
+                        <div class="selector-title">LIVE NOW</div>
+                        <div id="djList"></div>
+                    </div>
+                </div>`;
+            const list=document.getElementById('djList');
+            djs.forEach(dj=>{
+                const feeDisplay=(dj.baseFee/100).toFixed(0);
+                const venueText=dj.venue?`@ ${dj.venue.name}`:'';
+                list.innerHTML+=`
+                    <div class="dj-card">
+                        <div class="dj-card-name">${escapeHtml(dj.name)}</div>
+                        ${venueText?`<div class="dj-card-venue">${escapeHtml(venueText)}</div>`:''}
+                        <div class="dj-card-fee">Base request: $${feeDisplay}</div>
+                        <a href="/dj/${dj._id}" class="dj-card-btn">Request a Song</a>
+                    </div>`;
+            });
+        }
+
+        function showEmptyState(){
+            document.body.innerHTML=`
+                <div class="selector-view">
+                    <div class="container">
+                        <div class="header">
+                            <div class="logo">Lightning Pass</div>
+                        </div>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎵</div>
+                            <h2>No live DJ right now</h2>
+                            <p>Song requests open during live events.<br>Check back when the party starts!</p>
+                            <a href="/members" class="empty-state-btn">Back to Dashboard</a>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function escapeHtml(str){
+            const div=document.createElement('div');
+            div.textContent=str;
+            return div.innerHTML;
         }
 
         function showForm(){
