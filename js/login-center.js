@@ -21,6 +21,11 @@ const LoginCenter = (function() {
     let loginUserEmail = '';
     let loginUserRoles = [];
 
+    // Password reset flow state
+    let resetIdentifier = '';
+    let resetMethod = '';  // 'email' or 'phone'
+    let resetCode = '';
+
     // Modal HTML template
     const modalHTML = `
     <div class="pass-modal-overlay" id="loginCenterModal">
@@ -80,14 +85,17 @@ const LoginCenter = (function() {
 
                 <!-- Quick Login - Step 1: Email -->
                 <div id="lcQuickLoginSection" style="display: none;">
-                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your email</p>
+                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your email</p>
                     <form class="pass-modal-form" onsubmit="LoginCenter.lookupUserRoles(event); return false;">
                         <input type="email" id="lcLoginEmailInput" placeholder="Email" required>
                         <button type="submit" id="lcLookupBtn">CONTINUE</button>
                     </form>
                     <div id="lcLoginLookupError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
-                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
-                        <a href="#" onclick="LoginCenter.showUserTypes(); return false;" style="color: #ffdd00;">Back to signup</a>
+                    <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 1rem;">
+                        <a href="#" onclick="LoginCenter.showForgotPassword(); return false;" style="color: #ffdd00;">Forgot password?</a>
+                    </p>
+                    <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 0.5rem;">
+                        <a href="#" onclick="LoginCenter.showUserTypes(); return false;" style="color: #888;">Back to signup</a>
                     </p>
                 </div>
 
@@ -109,18 +117,45 @@ const LoginCenter = (function() {
                     </p>
                 </div>
 
-                <!-- Forgot Password Section -->
+                <!-- Forgot Password Section - Step 1: Enter Email or Phone -->
                 <div id="lcForgotPasswordSection" style="display: none;">
-                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your phone number to reset your password</p>
+                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Enter your email or phone number</p>
                     <form class="pass-modal-form" onsubmit="LoginCenter.submitForgotPassword(event); return false;">
-                        <input type="tel" id="lcForgotPhone" placeholder="Phone number" required>
+                        <input type="text" id="lcForgotIdentifier" placeholder="Email or phone number" required>
                         <button type="submit" id="lcForgotBtn">SEND CODE</button>
                     </form>
                     <div id="lcForgotError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
                     <div id="lcForgotSuccess" style="display: none; color: #39ff14; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
-                    <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
+                    <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 1rem;">
                         <a href="#" onclick="LoginCenter.showQuickLogin(); return false;" style="color: #ffdd00;">Back to login</a>
                     </p>
+                </div>
+
+                <!-- Forgot Password Section - Step 2: Enter Verification Code -->
+                <div id="lcVerifyCodeSection" style="display: none;">
+                    <p id="lcVerifyCodeMessage" style="color: #888; font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">We sent a 6-digit code to <span id="lcMaskedIdentifier" style="color: #ffdd00;"></span></p>
+                    <form class="pass-modal-form" onsubmit="LoginCenter.submitVerifyCode(event); return false;">
+                        <input type="text" id="lcVerifyCode" placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" required style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
+                        <button type="submit" id="lcVerifyCodeBtn">VERIFY CODE</button>
+                    </form>
+                    <div id="lcVerifyCodeError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                    <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 1rem;">
+                        <a href="#" onclick="LoginCenter.resendCode(); return false;" style="color: #ffdd00;">Resend code</a>
+                    </p>
+                    <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 0.5rem;">
+                        <a href="#" onclick="LoginCenter.showForgotPassword(); return false;" style="color: #888;">Use different email/phone</a>
+                    </p>
+                </div>
+
+                <!-- Forgot Password Section - Step 3: Set New Password -->
+                <div id="lcNewPasswordSection" style="display: none;">
+                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 1rem; text-align: center;">Create your new password</p>
+                    <form class="pass-modal-form" onsubmit="LoginCenter.submitNewPassword(event); return false;">
+                        <input type="password" id="lcNewPassword" placeholder="New password (min 8 characters)" minlength="8" required>
+                        <input type="password" id="lcConfirmNewPassword" placeholder="Confirm new password" minlength="8" required>
+                        <button type="submit" id="lcNewPasswordBtn">RESET PASSWORD</button>
+                    </form>
+                    <div id="lcNewPasswordError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
                 </div>
 
                 <!-- Create Account Form -->
@@ -344,12 +379,17 @@ const LoginCenter = (function() {
         document.getElementById('lcQuickLoginSection').style.display = 'none';
         document.getElementById('lcLoginPasswordSection').style.display = 'none';
         document.getElementById('lcForgotPasswordSection').style.display = 'none';
+        document.getElementById('lcVerifyCodeSection').style.display = 'none';
+        document.getElementById('lcNewPasswordSection').style.display = 'none';
         document.getElementById('lcCreateAccountForm').style.display = 'none';
         document.querySelector('#loginCenterModal .pass-modal-form-container').style.display = 'block';
         document.querySelector('#loginCenterModal .pass-modal-success').classList.remove('active');
         selectedRoles = ['member'];
         loginUserEmail = '';
         loginUserRoles = [];
+        resetIdentifier = '';
+        resetMethod = '';
+        resetCode = '';
 
         // Reset role checkboxes
         document.querySelectorAll('#lcUserTypeSelect .user-type-btn').forEach(btn => {
@@ -551,16 +591,23 @@ const LoginCenter = (function() {
     }
 
     function showForgotPassword() {
+        document.getElementById('lcSubtitle').style.display = 'none';
+        document.getElementById('lcQuickLoginSection').style.display = 'none';
         document.getElementById('lcLoginPasswordSection').style.display = 'none';
         document.getElementById('lcForgotPasswordSection').style.display = 'block';
-        document.getElementById('lcForgotPhone').value = '';
+        document.getElementById('lcVerifyCodeSection').style.display = 'none';
+        document.getElementById('lcNewPasswordSection').style.display = 'none';
+        document.getElementById('lcForgotIdentifier').value = '';
         document.getElementById('lcForgotError').style.display = 'none';
         document.getElementById('lcForgotSuccess').style.display = 'none';
+        resetIdentifier = '';
+        resetMethod = '';
+        resetCode = '';
     }
 
     async function submitForgotPassword(event) {
         event.preventDefault();
-        const phone = document.getElementById('lcForgotPhone').value;
+        const identifier = document.getElementById('lcForgotIdentifier').value.trim();
         const btn = document.getElementById('lcForgotBtn');
         const errorDiv = document.getElementById('lcForgotError');
         const successDiv = document.getElementById('lcForgotSuccess');
@@ -574,13 +621,22 @@ const LoginCenter = (function() {
             const response = await fetch(`${config.apiBase}/api/v1/auth/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
+                body: JSON.stringify({ identifier })
             });
             const data = await response.json();
 
             if (data.success) {
-                successDiv.textContent = 'If an account exists with this phone, a code has been sent.';
-                successDiv.style.display = 'block';
+                // Store for next steps
+                resetIdentifier = identifier;
+                resetMethod = data.method || (identifier.includes('@') ? 'email' : 'phone');
+
+                // Show verify code screen
+                document.getElementById('lcForgotPasswordSection').style.display = 'none';
+                document.getElementById('lcVerifyCodeSection').style.display = 'block';
+                document.getElementById('lcMaskedIdentifier').textContent = data.maskedIdentifier || identifier;
+                document.getElementById('lcVerifyCode').value = '';
+                document.getElementById('lcVerifyCode').focus();
+                document.getElementById('lcVerifyCodeError').style.display = 'none';
             } else {
                 errorDiv.textContent = data.error || 'Failed to send code';
                 errorDiv.style.display = 'block';
@@ -593,6 +649,162 @@ const LoginCenter = (function() {
 
         btn.textContent = 'SEND CODE';
         btn.disabled = false;
+    }
+
+    async function submitVerifyCode(event) {
+        event.preventDefault();
+        const code = document.getElementById('lcVerifyCode').value.trim();
+        const btn = document.getElementById('lcVerifyCodeBtn');
+        const errorDiv = document.getElementById('lcVerifyCodeError');
+
+        btn.textContent = 'VERIFYING...';
+        btn.disabled = true;
+        errorDiv.style.display = 'none';
+
+        // Store code for final submission
+        resetCode = code;
+
+        // For email reset, we verify at password submission
+        // For phone reset via Twilio Verify, we also verify at submission
+        // So we just show the new password screen here
+
+        document.getElementById('lcVerifyCodeSection').style.display = 'none';
+        document.getElementById('lcNewPasswordSection').style.display = 'block';
+        document.getElementById('lcNewPassword').value = '';
+        document.getElementById('lcConfirmNewPassword').value = '';
+        document.getElementById('lcNewPassword').focus();
+        document.getElementById('lcNewPasswordError').style.display = 'none';
+
+        btn.textContent = 'VERIFY CODE';
+        btn.disabled = false;
+    }
+
+    async function submitNewPassword(event) {
+        event.preventDefault();
+        const newPassword = document.getElementById('lcNewPassword').value;
+        const confirmPassword = document.getElementById('lcConfirmNewPassword').value;
+        const btn = document.getElementById('lcNewPasswordBtn');
+        const errorDiv = document.getElementById('lcNewPasswordError');
+
+        errorDiv.style.display = 'none';
+
+        // Validate passwords match
+        if (newPassword !== confirmPassword) {
+            errorDiv.textContent = 'Passwords do not match';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            errorDiv.textContent = 'Password must be at least 8 characters';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        btn.textContent = 'RESETTING...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${config.apiBase}/api/v1/auth/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    identifier: resetIdentifier,
+                    code: resetCode,
+                    newPassword: newPassword
+                })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // Auto-login with returned token
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userEmail', data.user?.email || resetIdentifier);
+                    if (data.user?.roles) {
+                        localStorage.setItem('userRoles', JSON.stringify(data.user.roles));
+                    }
+                }
+
+                // Show success and close
+                const successEl = document.getElementById('lcSuccess');
+                successEl.innerHTML = `
+                    <div class="pass-modal-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="#39ff14"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <h2 style="color: #39ff14;">Password Reset!</h2>
+                    <p>You've been logged in automatically.</p>
+                    <button onclick="LoginCenter.onSuccessClick()" style="margin-top: 1rem; padding: 1rem 2rem; background: #ffdd00; color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">CONTINUE</button>
+                `;
+                document.querySelector('#loginCenterModal .pass-modal-form-container').style.display = 'none';
+                successEl.classList.add('active');
+
+                // Call success callback
+                if (config.onSuccess && data.token) {
+                    try {
+                        config.onSuccess({
+                            token: data.token,
+                            email: data.user?.email || resetIdentifier,
+                            roles: data.user?.roles || ['member'],
+                            userId: data.user?.id
+                        });
+                    } catch (e) {
+                        console.error('LoginCenter onSuccess error:', e);
+                    }
+                }
+            } else {
+                errorDiv.textContent = data.error || 'Failed to reset password';
+                errorDiv.style.display = 'block';
+
+                // If code was invalid, go back to verify screen
+                if (data.error?.includes('code') || data.error?.includes('expired')) {
+                    setTimeout(() => {
+                        document.getElementById('lcNewPasswordSection').style.display = 'none';
+                        document.getElementById('lcVerifyCodeSection').style.display = 'block';
+                        document.getElementById('lcVerifyCode').value = '';
+                        document.getElementById('lcVerifyCodeError').textContent = data.error;
+                        document.getElementById('lcVerifyCodeError').style.display = 'block';
+                    }, 1500);
+                }
+            }
+        } catch (error) {
+            console.error('Reset password error:', error);
+            errorDiv.textContent = 'Connection error. Please try again.';
+            errorDiv.style.display = 'block';
+        }
+
+        btn.textContent = 'RESET PASSWORD';
+        btn.disabled = false;
+    }
+
+    async function resendCode() {
+        const errorDiv = document.getElementById('lcVerifyCodeError');
+        errorDiv.style.display = 'none';
+
+        try {
+            const response = await fetch(`${config.apiBase}/api/v1/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier: resetIdentifier })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                errorDiv.textContent = 'New code sent!';
+                errorDiv.style.color = '#39ff14';
+                errorDiv.style.display = 'block';
+                setTimeout(() => {
+                    errorDiv.style.color = '#ff4444';
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            } else {
+                errorDiv.textContent = data.error || 'Failed to resend code';
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            errorDiv.textContent = 'Connection error. Please try again.';
+            errorDiv.style.display = 'block';
+        }
     }
 
     async function submitCreateAccount(event) {
@@ -730,6 +942,9 @@ const LoginCenter = (function() {
         submitLogin,
         showForgotPassword,
         submitForgotPassword,
+        submitVerifyCode,
+        submitNewPassword,
+        resendCode,
         submitCreateAccount,
         onSuccessClick
     };

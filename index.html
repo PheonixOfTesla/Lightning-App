@@ -8957,10 +8957,10 @@
                             <h2 style="color: var(--lightning-yellow);">Claim Your Lightning Pass</h2>
                             <button class="modal-close" onclick="closeClaimPassModal()">&times;</button>
                         </div>
-                        <div id="claimEventInfo" style="margin-bottom: 1rem;"></div>
+                        <div id="claimPassEventInfo" style="margin-bottom: 1rem;"></div>
 
                         <!-- Logged-in view: simple confirm -->
-                        <div id="claimLoggedInView" style="display: none;">
+                        <div id="claimPassLoggedInView" style="display: none;">
                             <p style="color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">Click below to claim your free pass. It will appear in your My Passes immediately.</p>
                             <button type="button" onclick="submitClaimLoggedIn()" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: #1a1a1a; font-weight: 700; font-size: 1rem; border: none; border-radius: 2rem; cursor: pointer;">
                                 CLAIM MY PASS
@@ -8968,23 +8968,23 @@
                         </div>
 
                         <!-- Guest view: registration form -->
-                        <div id="claimGuestView" style="display: none;">
+                        <div id="claimPassGuestView" style="display: none;">
                             <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem; margin-bottom: 1rem;">Create an account to claim your pass and access member perks.</p>
-                            <form id="claimForm" onsubmit="submitClaimGuest(event)">
+                            <form id="claimPassForm" onsubmit="submitClaimGuest(event)">
                                 <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                                    <input type="text" id="claimFirstName" class="form-input" placeholder="First Name" required style="flex: 1;">
-                                    <input type="text" id="claimLastName" class="form-input" placeholder="Last Name" required style="flex: 1;">
+                                    <input type="text" id="claimPassFirstName" class="form-input" placeholder="First Name" required style="flex: 1;">
+                                    <input type="text" id="claimPassLastName" class="form-input" placeholder="Last Name" required style="flex: 1;">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0.75rem;">
-                                    <input type="email" id="claimEmail" class="form-input" placeholder="Email" required>
+                                    <input type="email" id="claimPassEmail" class="form-input" placeholder="Email" required>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0.75rem;">
-                                    <input type="tel" id="claimPhone" class="form-input" placeholder="Phone (optional)">
+                                    <input type="tel" id="claimPassPhone" class="form-input" placeholder="Phone (optional)">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 1rem;">
-                                    <input type="password" id="claimPassword" class="form-input" placeholder="Password (8+ characters)" required minlength="8">
+                                    <input type="password" id="claimPassPassword" class="form-input" placeholder="Password (8+ characters)" required minlength="8">
                                 </div>
-                                <button type="submit" id="claimSubmitBtn" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: #1a1a1a; font-weight: 700; font-size: 1rem; border: none; border-radius: 2rem; cursor: pointer;">
+                                <button type="submit" id="claimPassSubmitBtn" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: #1a1a1a; font-weight: 700; font-size: 1rem; border: none; border-radius: 2rem; cursor: pointer;">
                                     CREATE ACCOUNT & CLAIM PASS
                                 </button>
                             </form>
@@ -8995,10 +8995,10 @@
                         </div>
 
                         <!-- Error display -->
-                        <div id="claimError" style="display: none; color: #ff4466; background: rgba(255,68,102,0.1); padding: 0.75rem; border-radius: 0.5rem; margin-top: 1rem; font-size: 0.875rem;"></div>
+                        <div id="claimPassError" style="display: none; color: #ff4466; background: rgba(255,68,102,0.1); padding: 0.75rem; border-radius: 0.5rem; margin-top: 1rem; font-size: 0.875rem;"></div>
 
                         <!-- Success display -->
-                        <div id="claimSuccess" style="display: none; text-align: center; padding: 1.5rem 0;">
+                        <div id="claimPassSuccess" style="display: none; text-align: center; padding: 1.5rem 0;">
                             <div style="font-size: 3rem; margin-bottom: 1rem;">&#9889;</div>
                             <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">Pass Claimed!</h3>
                             <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">Your pass has been added to your account.</p>
@@ -9012,7 +9012,7 @@
             }
 
             // Set event info
-            const eventInfo = document.getElementById('claimEventInfo');
+            const eventInfo = document.getElementById('claimPassEventInfo');
             eventInfo.innerHTML = `
                 <div style="background: rgba(255,221,0,0.05); border: 1px solid rgba(255,221,0,0.2); border-radius: 0.5rem; padding: 0.75rem;">
                     <div style="font-weight: 600; color: white; font-size: 1.1rem;">${event.name}</div>
@@ -9021,13 +9021,13 @@
             `;
 
             // Reset state
-            document.getElementById('claimError').style.display = 'none';
-            document.getElementById('claimSuccess').style.display = 'none';
+            document.getElementById('claimPassError').style.display = 'none';
+            document.getElementById('claimPassSuccess').style.display = 'none';
 
             // Show appropriate view based on login state
             const isLoggedIn = !!localStorage.getItem('token');
-            document.getElementById('claimLoggedInView').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('claimGuestView').style.display = isLoggedIn ? 'none' : 'block';
+            document.getElementById('claimPassLoggedInView').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('claimPassGuestView').style.display = isLoggedIn ? 'none' : 'block';
 
             // Show modal
             modal.style.display = 'flex';
@@ -9043,7 +9043,7 @@
         async function submitClaimLoggedIn() {
             if (!currentClaimEvent) return;
 
-            const btn = document.querySelector('#claimLoggedInView button');
+            const btn = document.querySelector('#claimPassLoggedInView button');
             const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'Claiming...';
@@ -9055,16 +9055,16 @@
 
                 if (response.success) {
                     // Show success state
-                    document.getElementById('claimLoggedInView').style.display = 'none';
-                    document.getElementById('claimEventInfo').style.display = 'none';
-                    document.getElementById('claimSuccess').style.display = 'block';
+                    document.getElementById('claimPassLoggedInView').style.display = 'none';
+                    document.getElementById('claimPassEventInfo').style.display = 'none';
+                    document.getElementById('claimPassSuccess').style.display = 'block';
                 } else if (response.alreadyClaimed) {
-                    showClaimError('You have already claimed this pass.');
+                    showClaimPassError('You have already claimed this pass.');
                 } else {
-                    showClaimError(response.error || 'Failed to claim pass');
+                    showClaimPassError(response.error || 'Failed to claim pass');
                 }
             } catch (err) {
-                showClaimError(err.message || 'Failed to claim pass');
+                showClaimPassError(err.message || 'Failed to claim pass');
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
@@ -9076,17 +9076,18 @@
             e.preventDefault();
             if (!currentClaimEvent) return;
 
-            const btn = document.getElementById('claimSubmitBtn');
+            const btn = document.getElementById('claimPassSubmitBtn');
             const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'Creating account...';
 
+            const email = document.getElementById('claimPassEmail').value.trim();
             const data = {
-                firstName: document.getElementById('claimFirstName').value.trim(),
-                lastName: document.getElementById('claimLastName').value.trim(),
-                email: document.getElementById('claimEmail').value.trim(),
-                phone: document.getElementById('claimPhone').value.trim() || null,
-                password: document.getElementById('claimPassword').value
+                firstName: document.getElementById('claimPassFirstName').value.trim(),
+                lastName: document.getElementById('claimPassLastName').value.trim(),
+                email: email,
+                phone: document.getElementById('claimPassPhone').value.trim() || null,
+                password: document.getElementById('claimPassPassword').value
             };
 
             try {
@@ -9099,12 +9100,12 @@
                 const result = await response.json();
 
                 if (result.needsLogin) {
-                    showClaimError('An account with this email already exists. Please log in.');
+                    showClaimPassError(`"${email}" already has an account. Click Log in below to sign in.`);
                     return;
                 }
 
                 if (result.alreadyClaimed) {
-                    showClaimError('This email has already claimed this pass.');
+                    showClaimPassError('This email has already claimed this pass.');
                     return;
                 }
 
@@ -9121,14 +9122,14 @@
                     }
 
                     // Show success state
-                    document.getElementById('claimGuestView').style.display = 'none';
-                    document.getElementById('claimEventInfo').style.display = 'none';
-                    document.getElementById('claimSuccess').style.display = 'block';
+                    document.getElementById('claimPassGuestView').style.display = 'none';
+                    document.getElementById('claimPassEventInfo').style.display = 'none';
+                    document.getElementById('claimPassSuccess').style.display = 'block';
                 } else {
-                    showClaimError(result.error || 'Failed to create account');
+                    showClaimPassError(result.error || 'Failed to create account');
                 }
             } catch (err) {
-                showClaimError('Network error. Please try again.');
+                showClaimPassError('Network error. Please try again.');
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
@@ -9163,8 +9164,8 @@
             }
         }
 
-        function showClaimError(msg) {
-            const el = document.getElementById('claimError');
+        function showClaimPassError(msg) {
+            const el = document.getElementById('claimPassError');
             el.textContent = msg;
             el.style.display = 'block';
         }
