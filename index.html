@@ -8874,7 +8874,12 @@
                     ? 'background: #9333ea; border: none; color: #fff; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;'
                     : isLiveWire
                         ? 'background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%); border: none; color: #fff; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;'
-                        : 'background: #9333ea; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;'
+                        : 'background: #9333ea; border: none; color: #fff; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;',
+                claimPass: isLightning
+                    ? 'background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 700; padding: 0.75rem 1.5rem; font-size: 0.8rem; border-radius: 2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;'
+                    : isLiveWire
+                        ? 'background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); border: none; color: #fff; font-weight: 600; padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;'
+                        : 'background: var(--lightning-yellow); border: none; color: #1a1a1a; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.75rem; border-radius: 2rem; cursor: pointer;'
             };
 
             // If explicit buttonType is set (not 'auto' and not 'tickets'), use it directly
@@ -8891,6 +8896,8 @@
                         } else {
                             return `<button onclick='openMembersOnlyModal(${eventJson})' style="${styles.membersOnly}">Join to Unlock</button>`;
                         }
+                    case 'claimPass':
+                        return `<button onclick='openClaimPassModal(${eventJson})' style="${styles.claimPass}">Claim Your Lightning Pass</button>`;
                 }
             }
 
@@ -8928,6 +8935,236 @@
                     console.error('Failed to parse pending event:', e);
                 }
             }
+        }
+
+        // ==================== CLAIM PASS MODAL ====================
+        let currentClaimEvent = null;
+
+        function openClaimPassModal(event) {
+            currentClaimEvent = event;
+
+            // Create modal if not exists
+            let modal = document.getElementById('claimPassModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'claimPassModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 420px;">
+                        <div class="modal-header">
+                            <h2 style="color: var(--lightning-yellow);">Claim Your Lightning Pass</h2>
+                            <button class="modal-close" onclick="closeClaimPassModal()">&times;</button>
+                        </div>
+                        <div id="claimEventInfo" style="margin-bottom: 1rem;"></div>
+
+                        <!-- Logged-in view: simple confirm -->
+                        <div id="claimLoggedInView" style="display: none;">
+                            <p style="color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">Click below to claim your free pass. It will appear in your My Passes immediately.</p>
+                            <button type="button" onclick="submitClaimLoggedIn()" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: #1a1a1a; font-weight: 700; font-size: 1rem; border: none; border-radius: 2rem; cursor: pointer;">
+                                CLAIM MY PASS
+                            </button>
+                        </div>
+
+                        <!-- Guest view: registration form -->
+                        <div id="claimGuestView" style="display: none;">
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem; margin-bottom: 1rem;">Create an account to claim your pass and access member perks.</p>
+                            <form id="claimForm" onsubmit="submitClaimGuest(event)">
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <input type="text" id="claimFirstName" class="form-input" placeholder="First Name" required style="flex: 1;">
+                                    <input type="text" id="claimLastName" class="form-input" placeholder="Last Name" required style="flex: 1;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0.75rem;">
+                                    <input type="email" id="claimEmail" class="form-input" placeholder="Email" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0.75rem;">
+                                    <input type="tel" id="claimPhone" class="form-input" placeholder="Phone (optional)">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <input type="password" id="claimPassword" class="form-input" placeholder="Password (8+ characters)" required minlength="8">
+                                </div>
+                                <button type="submit" id="claimSubmitBtn" style="width: 100%; padding: 1rem; background: var(--lightning-yellow); color: #1a1a1a; font-weight: 700; font-size: 1rem; border: none; border-radius: 2rem; cursor: pointer;">
+                                    CREATE ACCOUNT & CLAIM PASS
+                                </button>
+                            </form>
+                            <div style="text-align: center; margin-top: 1rem;">
+                                <span style="color: rgba(255,255,255,0.5);">Already have an account?</span>
+                                <a href="#" onclick="showLoginForClaim(); return false;" style="color: var(--lightning-yellow); margin-left: 0.25rem;">Log in</a>
+                            </div>
+                        </div>
+
+                        <!-- Error display -->
+                        <div id="claimError" style="display: none; color: #ff4466; background: rgba(255,68,102,0.1); padding: 0.75rem; border-radius: 0.5rem; margin-top: 1rem; font-size: 0.875rem;"></div>
+
+                        <!-- Success display -->
+                        <div id="claimSuccess" style="display: none; text-align: center; padding: 1.5rem 0;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">&#9889;</div>
+                            <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">Pass Claimed!</h3>
+                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">Your pass has been added to your account.</p>
+                            <button onclick="window.location.href='/members?tab=passes'" style="padding: 0.75rem 2rem; background: var(--lightning-yellow); color: #1a1a1a; font-weight: 600; border: none; border-radius: 2rem; cursor: pointer;">
+                                View My Passes
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // Set event info
+            const eventInfo = document.getElementById('claimEventInfo');
+            eventInfo.innerHTML = `
+                <div style="background: rgba(255,221,0,0.05); border: 1px solid rgba(255,221,0,0.2); border-radius: 0.5rem; padding: 0.75rem;">
+                    <div style="font-weight: 600; color: white; font-size: 1.1rem;">${event.name}</div>
+                    ${event.date ? `<div style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 0.25rem;">${new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>` : ''}
+                </div>
+            `;
+
+            // Reset state
+            document.getElementById('claimError').style.display = 'none';
+            document.getElementById('claimSuccess').style.display = 'none';
+
+            // Show appropriate view based on login state
+            const isLoggedIn = !!localStorage.getItem('token');
+            document.getElementById('claimLoggedInView').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('claimGuestView').style.display = isLoggedIn ? 'none' : 'block';
+
+            // Show modal
+            modal.style.display = 'flex';
+        }
+
+        function closeClaimPassModal() {
+            const modal = document.getElementById('claimPassModal');
+            if (modal) modal.style.display = 'none';
+            currentClaimEvent = null;
+        }
+
+        // PATH A: Logged-in user claims pass
+        async function submitClaimLoggedIn() {
+            if (!currentClaimEvent) return;
+
+            const btn = document.querySelector('#claimLoggedInView button');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Claiming...';
+
+            try {
+                const response = await apiCall(`/api/v1/lightning/events/${currentClaimEvent.slug}/claim`, {
+                    method: 'POST'
+                });
+
+                if (response.success) {
+                    // Show success state
+                    document.getElementById('claimLoggedInView').style.display = 'none';
+                    document.getElementById('claimEventInfo').style.display = 'none';
+                    document.getElementById('claimSuccess').style.display = 'block';
+                } else if (response.alreadyClaimed) {
+                    showClaimError('You have already claimed this pass.');
+                } else {
+                    showClaimError(response.error || 'Failed to claim pass');
+                }
+            } catch (err) {
+                showClaimError(err.message || 'Failed to claim pass');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // PATH B: Guest claims pass (creates account)
+        async function submitClaimGuest(e) {
+            e.preventDefault();
+            if (!currentClaimEvent) return;
+
+            const btn = document.getElementById('claimSubmitBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            const data = {
+                firstName: document.getElementById('claimFirstName').value.trim(),
+                lastName: document.getElementById('claimLastName').value.trim(),
+                email: document.getElementById('claimEmail').value.trim(),
+                phone: document.getElementById('claimPhone').value.trim() || null,
+                password: document.getElementById('claimPassword').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/events/${currentClaimEvent.slug}/claim`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.needsLogin) {
+                    showClaimError('An account with this email already exists. Please log in.');
+                    return;
+                }
+
+                if (result.alreadyClaimed) {
+                    showClaimError('This email has already claimed this pass.');
+                    return;
+                }
+
+                if (result.success) {
+                    // Store token for auto-login
+                    if (result.token) {
+                        localStorage.setItem('token', result.token);
+                        if (result.user) {
+                            localStorage.setItem('userRoles', JSON.stringify(result.user.roles || ['member']));
+                            localStorage.setItem('userEmail', result.user.email);
+                        }
+                        // Update nav
+                        if (window.updateNav) updateNav();
+                    }
+
+                    // Show success state
+                    document.getElementById('claimGuestView').style.display = 'none';
+                    document.getElementById('claimEventInfo').style.display = 'none';
+                    document.getElementById('claimSuccess').style.display = 'block';
+                } else {
+                    showClaimError(result.error || 'Failed to create account');
+                }
+            } catch (err) {
+                showClaimError('Network error. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Show login for existing account
+        function showLoginForClaim() {
+            // Store event for after login
+            sessionStorage.setItem('pendingClaimEvent', JSON.stringify(currentClaimEvent));
+            closeClaimPassModal();
+
+            // Open login modal
+            if (window.LoginCenter) {
+                LoginCenter.open();
+            } else if (typeof showPassModal === 'function') {
+                showPassModal();
+            }
+        }
+
+        // Check for pending claim after login
+        function checkPendingClaimEvent() {
+            const pending = sessionStorage.getItem('pendingClaimEvent');
+            if (pending && localStorage.getItem('token')) {
+                sessionStorage.removeItem('pendingClaimEvent');
+                try {
+                    const event = JSON.parse(pending);
+                    setTimeout(() => openClaimPassModal(event), 300);
+                } catch (e) {
+                    console.error('Failed to parse pending claim event:', e);
+                }
+            }
+        }
+
+        function showClaimError(msg) {
+            const el = document.getElementById('claimError');
+            el.textContent = msg;
+            el.style.display = 'block';
         }
 
         // Event Ticket Purchase
@@ -12267,7 +12504,50 @@
     <!-- Login Center Modal (shared component) -->
     <script src="/js/login-center.js"></script>
     <script>
-        LoginCenter.init({ apiBase: API_BASE });
+        LoginCenter.init({
+            apiBase: API_BASE,
+            onSuccess: function(data) {
+                // Check for pending claim event first
+                const pendingClaim = sessionStorage.getItem('pendingClaimEvent');
+                if (pendingClaim) {
+                    sessionStorage.removeItem('pendingClaimEvent');
+                    try {
+                        const event = JSON.parse(pendingClaim);
+                        setTimeout(() => openClaimPassModal(event), 300);
+                        return; // Don't redirect
+                    } catch (e) {
+                        console.error('Failed to parse pending claim event:', e);
+                    }
+                }
+
+                // Check for pending members-only event
+                const pendingMembersOnly = sessionStorage.getItem('pendingMembersOnlyEvent');
+                if (pendingMembersOnly) {
+                    sessionStorage.removeItem('pendingMembersOnlyEvent');
+                    try {
+                        const event = JSON.parse(pendingMembersOnly);
+                        setTimeout(() => openEventTicketModal(event), 300);
+                        return; // Don't redirect
+                    } catch (e) {
+                        console.error('Failed to parse pending event:', e);
+                    }
+                }
+
+                // Default: redirect based on role
+                const roles = data.roles || ['member'];
+                const rolePriority = ['admin', 'venue', 'host', 'partner', 'dj', 'member'];
+                const primaryRole = rolePriority.find(r => roles.includes(r)) || 'member';
+                const roleRedirects = {
+                    admin: '/admin',
+                    venue: '/venue',
+                    host: '/host',
+                    partner: '/partners',
+                    dj: '/dj',
+                    member: '/members'
+                };
+                window.location.href = roleRedirects[primaryRole];
+            }
+        });
     </script>
     <script src="/nav.js"></script>
 </body>
