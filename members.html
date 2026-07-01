@@ -635,10 +635,15 @@
             .dashboard-header {
                 flex-direction: column;
                 text-align: center;
+                align-items: center;
             }
 
             .dashboard-header h1 {
                 font-size: 1.5rem;
+            }
+
+            .user-info {
+                justify-content: center;
             }
 
             .tabs {
@@ -735,7 +740,7 @@
             <div class="dashboard-header">
                 <div>
                     <h1>Member Dashboard</h1>
-                    <p style="color: var(--gray);">Welcome back!</p>
+                    <p id="greetingText" style="color: var(--gray);">Welcome back!</p>
                 </div>
                 <div class="user-info">
                     <div class="user-avatar" id="userAvatar">M</div>
@@ -1023,10 +1028,26 @@
                 // Build role-based navigation
                 buildRoleNav();
 
-                // Set user info
-                const userEmail = email || 'Member';
-                document.getElementById('userEmail').textContent = userEmail;
-                document.getElementById('userAvatar').textContent = userEmail.charAt(0).toUpperCase();
+                // Set user info - get name from localStorage user object
+                let userName = null;
+                try {
+                    const userStr = localStorage.getItem('user');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        userName = user.name;
+                    }
+                } catch (e) {}
+
+                // Greeting: use first name or fallback to generic
+                const firstName = userName && userName.trim() ? userName.split(' ')[0] : null;
+                const greetingText = firstName ? `Welcome back, ${firstName}!` : 'Welcome back!';
+                document.getElementById('greetingText').textContent = greetingText;
+
+                // Profile block: show full name (or "Member" fallback), email below
+                const displayName = userName && userName.trim() ? userName : 'Member';
+                document.getElementById('userName').textContent = displayName;
+                document.getElementById('userEmail').textContent = email || '';
+                document.getElementById('userAvatar').textContent = (firstName || email || 'M').charAt(0).toUpperCase();
 
                 // Calculate stats from user's passes (event tickets + experience bookings)
                 const totalPasses = passes.length;

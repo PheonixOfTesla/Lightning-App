@@ -70,6 +70,8 @@
             gap: 0.5rem;
             text-decoration: none;
             color: var(--white);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .logo img {
@@ -93,6 +95,10 @@
             display: flex;
             gap: 1.5rem;
             align-items: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            flex-shrink: 1;
+            min-width: 0;
         }
 
         .nav-link {
