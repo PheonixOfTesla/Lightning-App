@@ -1624,22 +1624,83 @@
                                 </label>
                             </div>
                         </div>
+                        <!-- Member Access Toggle -->
+                        <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                                <input type="checkbox" id="compRequireMemberAccess" style="margin-right: 0.5rem; margin-top: 0.2rem;">
+                                <div>
+                                    <span style="color: var(--electric-purple); font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
+                                    <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Recipients must create an account to access their pass</p>
+                                </div>
+                            </label>
+                        </div>
                         <button onclick="generateCompTicket()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Comp Ticket</button>
                     </div>
 
                     <!-- Bulk Mode Form -->
                     <div id="bulkForm" style="display: none;">
-                        <div style="margin-bottom: 1rem;">
-                            <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Recipients (one per line: name, email, quantity)</label>
-                            <textarea id="bulkRecipients" placeholder="John Doe, john@email.com, 2&#10;Jane Smith, jane@email.com, 1" rows="6" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical;"></textarea>
+                        <!-- Recipient Source Toggle -->
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <button type="button" id="bulkSourceManual" onclick="setBulkSource('manual')" style="flex: 1; padding: 0.5rem; border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; background: var(--lightning-yellow); color: #000; cursor: pointer; font-weight: 600; font-size: 0.85rem;">Enter Manually</button>
+                            <button type="button" id="bulkSourceDatabase" onclick="setBulkSource('database')" style="flex: 1; padding: 0.5rem; border: 1px solid var(--border-dark); border-radius: 0.5rem; background: transparent; color: var(--white); cursor: pointer; font-size: 0.85rem;">Select from Database</button>
                         </div>
-                        <div style="margin-bottom: 1rem; display: flex; align-items: center;">
+
+                        <!-- Manual Entry (default) -->
+                        <div id="bulkManualSection">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Recipients (one per line: name, email, quantity)</label>
+                                <textarea id="bulkRecipients" placeholder="John Doe, john@email.com, 2&#10;Jane Smith, jane@email.com, 1" rows="6" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical;"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Database Selection -->
+                        <div id="bulkDatabaseSection" style="display: none;">
+                            <div style="margin-bottom: 1rem;">
+                                <input type="text" id="bulkUserSearch" placeholder="Search by name or email..." oninput="searchUsersDebounced()" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.1); border-radius: 0.25rem;">
+                                    <input type="checkbox" id="filterMembers" checked onchange="filterUsers()" style="margin-right: 0.25rem;">
+                                    <span style="font-size: 0.75rem;">Members</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.1); border-radius: 0.25rem;">
+                                    <input type="checkbox" id="filterGuests" checked onchange="filterUsers()" style="margin-right: 0.25rem;">
+                                    <span style="font-size: 0.75rem;">Guests</span>
+                                </label>
+                            </div>
+                            <div style="background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; max-height: 250px; overflow-y: auto;">
+                                <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-dark); background: rgba(255,255,255,0.05);">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="selectAllUsers" onchange="toggleSelectAll()" style="margin-right: 0.5rem;">
+                                        <span style="font-size: 0.85rem; font-weight: 600;" id="selectAllLabel">Select All (0 users)</span>
+                                    </label>
+                                </div>
+                                <div id="usersList" style="padding: 0.5rem;">
+                                    <div style="text-align: center; padding: 1rem; color: var(--gray);">Loading users...</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--electric-blue);">
+                                Selected: <span id="selectedCount">0</span> recipients
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem; margin-top: 1rem; display: flex; align-items: center;">
                             <label style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="checkbox" id="bulkSendEmails" checked style="margin-right: 0.5rem;">
                                 <span style="color: var(--gray); font-size: 0.85rem;">Send confirmation emails</span>
                             </label>
                         </div>
-                        <button onclick="generateBulkTickets()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Bulk Tickets</button>
+                        <!-- Member Access Toggle -->
+                        <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                                <input type="checkbox" id="bulkRequireMemberAccess" style="margin-right: 0.5rem; margin-top: 0.2rem;">
+                                <div>
+                                    <span style="color: var(--electric-purple); font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
+                                    <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Recipients must create an account to access their pass</p>
+                                </div>
+                            </label>
+                        </div>
+                        <button onclick="generateBulkTickets()" id="bulkSubmitBtn" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Bulk Tickets</button>
                     </div>
 
                     <!-- Promo Mode Form -->
@@ -1674,6 +1735,16 @@
                                 <span style="color: var(--gray); font-size: 0.85rem;">Send confirmation email</span>
                             </label>
                         </div>
+                        <!-- Member Access Toggle -->
+                        <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                                <input type="checkbox" id="promoRequireMemberAccess" style="margin-right: 0.5rem; margin-top: 0.2rem;">
+                                <div>
+                                    <span style="color: var(--electric-purple); font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
+                                    <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Recipients must create an account to access their pass</p>
+                                </div>
+                            </label>
+                        </div>
                         <button onclick="generatePromoTicket()" style="width: 100%; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Promo Ticket</button>
                     </div>
 
@@ -1703,6 +1774,16 @@
                                 <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Promo Code (optional)</label>
                                 <input type="text" id="linkPromoCode" placeholder="VIP2026" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
+                        </div>
+                        <!-- Member Access Toggle -->
+                        <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                                <input type="checkbox" id="linkRequireMemberAccess" style="margin-right: 0.5rem; margin-top: 0.2rem;">
+                                <div>
+                                    <span style="color: var(--electric-purple); font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
+                                    <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">After payment, recipient must create an account to access their pass</p>
+                                </div>
+                            </label>
                         </div>
                         <button onclick="generatePaymentLink()" style="width: 100%; padding: 0.75rem; background: var(--electric-blue); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Payment Link</button>
                     </div>
@@ -5291,6 +5372,7 @@
             const guestEmail = document.getElementById('compGuestEmail').value.trim();
             const quantity = parseInt(document.getElementById('compQuantity').value) || 1;
             const sendEmail = document.getElementById('compSendEmail').checked;
+            const requireMemberAccess = document.getElementById('compRequireMemberAccess').checked;
 
             if (!eventSlug || !guestName || !guestEmail) {
                 showGenError('Please fill in all required fields.');
@@ -5304,7 +5386,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, sendEmail })
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, sendEmail, requireMemberAccess })
                 });
 
                 const data = await response.json();
@@ -5314,6 +5396,7 @@
                         <p><strong>Pass ID:</strong> ${data.pass.passId}</p>
                         <p><strong>Guest:</strong> ${data.pass.guestName}</p>
                         <p><strong>Tickets:</strong> ${data.pass.quantity}</p>
+                        ${data.pass.requireMemberAccess ? '<p style="color: var(--electric-purple);"><strong>Member Access:</strong> Required</p>' : ''}
                         <p><strong>URL:</strong> <a href="${data.pass.ticketUrl}" target="_blank" style="color: var(--electric-blue);">${data.pass.ticketUrl}</a></p>
                         <p><strong>Email:</strong> ${data.emailSent ? 'Sent' : 'Not sent'}</p>
                     `);
@@ -5321,6 +5404,7 @@
                     document.getElementById('compGuestName').value = '';
                     document.getElementById('compGuestEmail').value = '';
                     document.getElementById('compQuantity').value = '1';
+                    document.getElementById('compRequireMemberAccess').checked = false;
                 } else {
                     showGenError(data.error || 'Failed to generate ticket');
                 }
@@ -5329,26 +5413,167 @@
             }
         }
 
-        async function generateBulkTickets() {
-            const eventSlug = document.getElementById('genEventSelect').value;
-            const recipientsText = document.getElementById('bulkRecipients').value.trim();
-            const sendEmails = document.getElementById('bulkSendEmails').checked;
+        // Bulk mode state
+        let bulkSource = 'manual';
+        let allUsers = [];
+        let filteredUsers = [];
+        let selectedUsers = new Set();
+        let searchTimeout = null;
 
-            if (!eventSlug || !recipientsText) {
-                showGenError('Please select an event and enter recipients.');
+        function setBulkSource(source) {
+            bulkSource = source;
+            document.getElementById('bulkSourceManual').style.background = source === 'manual' ? 'var(--lightning-yellow)' : 'transparent';
+            document.getElementById('bulkSourceManual').style.color = source === 'manual' ? '#000' : 'var(--white)';
+            document.getElementById('bulkSourceManual').style.borderColor = source === 'manual' ? 'var(--lightning-yellow)' : 'var(--border-dark)';
+            document.getElementById('bulkSourceDatabase').style.background = source === 'database' ? 'var(--lightning-yellow)' : 'transparent';
+            document.getElementById('bulkSourceDatabase').style.color = source === 'database' ? '#000' : 'var(--white)';
+            document.getElementById('bulkSourceDatabase').style.borderColor = source === 'database' ? 'var(--lightning-yellow)' : 'var(--border-dark)';
+
+            document.getElementById('bulkManualSection').style.display = source === 'manual' ? 'block' : 'none';
+            document.getElementById('bulkDatabaseSection').style.display = source === 'database' ? 'block' : 'none';
+
+            if (source === 'database' && allUsers.length === 0) {
+                loadUsersForSelector();
+            }
+        }
+
+        async function loadUsersForSelector() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/admin/users/list`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await response.json();
+
+                if (data.success && data.users) {
+                    allUsers = data.users;
+                    filterUsers();
+                }
+            } catch (err) {
+                console.error('Failed to load users:', err);
+            }
+        }
+
+        function searchUsersDebounced() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(filterUsers, 300);
+        }
+
+        function filterUsers() {
+            const searchTerm = (document.getElementById('bulkUserSearch')?.value || '').toLowerCase();
+            const showMembers = document.getElementById('filterMembers')?.checked ?? true;
+            const showGuests = document.getElementById('filterGuests')?.checked ?? true;
+
+            filteredUsers = allUsers.filter(user => {
+                // Search filter
+                const matchesSearch = !searchTerm ||
+                    (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm));
+
+                // Type filter
+                const isGuest = user.isGuest;
+                const matchesType = (showGuests && isGuest) || (showMembers && !isGuest);
+
+                return matchesSearch && matchesType;
+            });
+
+            renderUsersList();
+        }
+
+        function renderUsersList() {
+            const container = document.getElementById('usersList');
+            const selectAllLabel = document.getElementById('selectAllLabel');
+
+            selectAllLabel.textContent = `Select All (${filteredUsers.length} users)`;
+
+            if (filteredUsers.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--gray);">No users found</div>';
                 return;
             }
 
-            // Parse recipients
-            const lines = recipientsText.split('\n').filter(l => l.trim());
-            const recipients = lines.map(line => {
-                const parts = line.split(',').map(p => p.trim());
-                return {
-                    name: parts[0] || '',
-                    email: parts[1] || '',
-                    quantity: parseInt(parts[2]) || 1
-                };
-            });
+            container.innerHTML = filteredUsers.map(user => `
+                <div style="display: flex; align-items: center; padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <input type="checkbox" id="user_${user._id || user.email}" ${selectedUsers.has(user.email) ? 'checked' : ''} onchange="toggleUserSelection('${user.email}', '${(user.name || '').replace(/'/g, "&#39;")}', this.checked)" style="margin-right: 0.75rem;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user.name || 'No Name'}</div>
+                        <div style="font-size: 0.75rem; color: var(--gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user.email}</div>
+                    </div>
+                    <span style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 0.25rem; background: ${user.isGuest ? 'rgba(136,136,136,0.2)' : 'rgba(57,255,20,0.2)'}; color: ${user.isGuest ? 'var(--gray)' : 'var(--neon-green)'};">${user.isGuest ? 'Guest' : 'Member'}</span>
+                </div>
+            `).join('');
+
+            updateSelectedCount();
+        }
+
+        function toggleUserSelection(email, name, checked) {
+            if (checked) {
+                selectedUsers.add(email);
+            } else {
+                selectedUsers.delete(email);
+            }
+            updateSelectedCount();
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAllUsers').checked;
+            if (selectAll) {
+                filteredUsers.forEach(u => selectedUsers.add(u.email));
+            } else {
+                filteredUsers.forEach(u => selectedUsers.delete(u.email));
+            }
+            renderUsersList();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedUsers.size;
+            const btn = document.getElementById('bulkSubmitBtn');
+            if (bulkSource === 'database') {
+                btn.textContent = `Generate ${selectedUsers.size} Tickets`;
+            } else {
+                btn.textContent = 'Generate Bulk Tickets';
+            }
+        }
+
+        async function generateBulkTickets() {
+            const eventSlug = document.getElementById('genEventSelect').value;
+            const sendEmails = document.getElementById('bulkSendEmails').checked;
+            const requireMemberAccess = document.getElementById('bulkRequireMemberAccess').checked;
+
+            let recipients = [];
+
+            if (bulkSource === 'manual') {
+                const recipientsText = document.getElementById('bulkRecipients').value.trim();
+                if (!eventSlug || !recipientsText) {
+                    showGenError('Please select an event and enter recipients.');
+                    return;
+                }
+
+                // Parse recipients from textarea
+                const lines = recipientsText.split('\n').filter(l => l.trim());
+                recipients = lines.map(line => {
+                    const parts = line.split(',').map(p => p.trim());
+                    return {
+                        name: parts[0] || '',
+                        email: parts[1] || '',
+                        quantity: parseInt(parts[2]) || 1
+                    };
+                });
+            } else {
+                // Database selection
+                if (!eventSlug || selectedUsers.size === 0) {
+                    showGenError('Please select an event and at least one recipient.');
+                    return;
+                }
+
+                // Build recipients from selected users
+                recipients = Array.from(selectedUsers).map(email => {
+                    const user = allUsers.find(u => u.email === email);
+                    return {
+                        name: user?.name || email.split('@')[0],
+                        email: email,
+                        quantity: 1
+                    };
+                });
+            }
 
             try {
                 const response = await fetch(`${API_BASE}/api/v1/admin/tickets/bulk`, {
@@ -5357,13 +5582,16 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, recipients, sendEmails })
+                    body: JSON.stringify({ eventSlug, recipients, sendEmails, requireMemberAccess })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
                     let html = `<p><strong>Created:</strong> ${data.created} tickets</p>`;
+                    if (data.requireMemberAccess) {
+                        html += '<p style="color: var(--electric-purple);"><strong>Member Access:</strong> Required</p>';
+                    }
                     if (data.failed > 0) {
                         html += `<p style="color: var(--danger-red);"><strong>Failed:</strong> ${data.failed}</p>`;
                     }
@@ -5373,7 +5601,15 @@
                     });
                     html += '</div>';
                     showGenResults(html);
+
+                    // Clear form
                     document.getElementById('bulkRecipients').value = '';
+                    document.getElementById('bulkRequireMemberAccess').checked = false;
+                    selectedUsers.clear();
+                    updateSelectedCount();
+                    if (bulkSource === 'database') {
+                        renderUsersList();
+                    }
                 } else {
                     showGenError(data.error || 'Failed to generate tickets');
                 }
@@ -5390,6 +5626,7 @@
             const quantity = parseInt(document.getElementById('promoQuantity').value) || 1;
             const promoCode = document.getElementById('promoCode').value.trim();
             const sendEmail = document.getElementById('promoSendEmail').checked;
+            const requireMemberAccess = document.getElementById('promoRequireMemberAccess').checked;
 
             if (!eventSlug || !guestName || !guestEmail) {
                 showGenError('Please fill in all required fields.');
@@ -5403,7 +5640,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, sendEmail })
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, sendEmail, requireMemberAccess })
                 });
 
                 const data = await response.json();
@@ -5415,6 +5652,7 @@
                         <p><strong>Tickets:</strong> ${data.pass.quantity}</p>
                         <p><strong>Price:</strong> $${data.pass.customPrice} x ${data.pass.quantity} = $${data.pass.totalAmount}</p>
                         ${data.pass.promoCode ? `<p><strong>Promo:</strong> ${data.pass.promoCode}</p>` : ''}
+                        ${data.pass.requireMemberAccess ? '<p style="color: var(--electric-purple);"><strong>Member Access:</strong> Required</p>' : ''}
                         <p><strong>URL:</strong> <a href="${data.pass.ticketUrl}" target="_blank" style="color: var(--electric-blue);">${data.pass.ticketUrl}</a></p>
                         <p><strong>Email:</strong> ${data.emailSent ? 'Sent' : 'Not sent'}</p>
                     `);
@@ -5424,6 +5662,7 @@
                     document.getElementById('promoPrice').value = '0';
                     document.getElementById('promoQuantity').value = '1';
                     document.getElementById('promoCode').value = '';
+                    document.getElementById('promoRequireMemberAccess').checked = false;
                 } else {
                     showGenError(data.error || 'Failed to generate ticket');
                 }
@@ -5439,6 +5678,7 @@
             const customPrice = parseFloat(document.getElementById('linkPrice').value) || 0;
             const quantity = parseInt(document.getElementById('linkQuantity').value) || 1;
             const promoCode = document.getElementById('linkPromoCode').value.trim();
+            const requireMemberAccess = document.getElementById('linkRequireMemberAccess').checked;
 
             if (!eventSlug || !guestName || !guestEmail) {
                 showGenError('Please fill in all required fields.');
@@ -5457,7 +5697,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${adminToken}`
                     },
-                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode })
+                    body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, requireMemberAccess })
                 });
 
                 const data = await response.json();
@@ -5467,6 +5707,7 @@
                         <p style="color: var(--electric-blue);"><strong>Payment Link Created</strong></p>
                         <p><strong>Link ID:</strong> ${data.linkId}</p>
                         <p><strong>Total:</strong> $${data.totalAmount.toFixed(2)}</p>
+                        ${requireMemberAccess ? '<p style="color: var(--electric-purple);"><strong>Member Access:</strong> Required after payment</p>' : ''}
                         <p><strong>Expires:</strong> ${new Date(data.expiresAt).toLocaleDateString()}</p>
                         <p style="margin-top: 1rem;"><strong>Pay URL:</strong></p>
                         <input type="text" value="${data.payUrl}" readonly onclick="this.select()" style="width: 100%; padding: 0.5rem; background: var(--pure-black); border: 1px solid var(--electric-blue); border-radius: 0.25rem; color: var(--electric-blue); margin-top: 0.25rem;">
@@ -5478,6 +5719,7 @@
                     document.getElementById('linkPrice').value = '10';
                     document.getElementById('linkQuantity').value = '1';
                     document.getElementById('linkPromoCode').value = '';
+                    document.getElementById('linkRequireMemberAccess').checked = false;
                 } else {
                     showGenError(data.error || 'Failed to generate payment link');
                 }

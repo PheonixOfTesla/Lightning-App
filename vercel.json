@@ -28,6 +28,7 @@
     { "source": "/experiences", "destination": "/experiences.html" },
     { "source": "/lightning-perks", "destination": "/lightning-perks.html" },
     { "source": "/checkin", "destination": "/checkin.html" },
+    { "source": "/claim", "destination": "/claim.html" },
     { "source": "/receipt/:claimId", "destination": "/receipt.html" },
     { "source": "/pay/(.*)", "destination": "/pay.html" },
     { "source": "/sarasota-events", "destination": "/sarasota-events.html" },

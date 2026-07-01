@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Your Pass | Lightning Pass</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --danger-red: #ff0044;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .claim-container {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            margin-top: 1rem;
+            color: var(--lightning-yellow);
+        }
+
+        .claim-card {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .claim-card h2 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .claim-card .event-name {
+            color: var(--lightning-yellow);
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pass-details {
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .pass-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .pass-detail:last-child {
+            border-bottom: none;
+        }
+
+        .pass-detail-label {
+            color: var(--gray);
+        }
+
+        .pass-detail-value {
+            font-weight: 600;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--lightning-yellow), #ff8c00);
+            color: var(--pure-black);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255,221,0,0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .status-message.error {
+            background: rgba(255,0,68,0.1);
+            border: 1px solid var(--danger-red);
+            color: var(--danger-red);
+            display: block;
+        }
+
+        .status-message.success {
+            background: rgba(57,255,20,0.1);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            display: block;
+        }
+
+        .login-prompt {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255,221,0,0.1);
+            border: 1px solid rgba(255,221,0,0.3);
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+
+        .login-prompt p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-dark);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            margin-top: 1rem;
+            color: var(--gray);
+        }
+
+        .hidden { display: none !important; }
+
+        /* Login Center Modal Styles (minimal - it brings its own) */
+        .pass-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            display: none;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        .pass-modal-overlay.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="claim-container">
+        <div class="logo">
+            <img src="/logo.png" alt="Lightning Pass" onerror="this.style.display='none'">
+            <h1>Lightning Pass</h1>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="claim-card">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading your pass...</p>
+            </div>
+        </div>
+
+        <!-- Pass Details (shown after loading) -->
+        <div id="passDetails" class="claim-card hidden">
+            <h2>Claim Your Pass</h2>
+            <p class="event-name" id="eventName"></p>
+
+            <div class="pass-details">
+                <div class="pass-detail">
+                    <span class="pass-detail-label">Guest</span>
+                    <span class="pass-detail-value" id="guestName"></span>
+                </div>
+                <div class="pass-detail">
+                    <span class="pass-detail-label">Tickets</span>
+                    <span class="pass-detail-value" id="quantity"></span>
+                </div>
+                <div class="pass-detail">
+                    <span class="pass-detail-label">Valid Until</span>
+                    <span class="pass-detail-value" id="validUntil"></span>
+                </div>
+            </div>
+
+            <!-- Logged In: Show Claim Button -->
+            <div id="claimSection" class="hidden">
+                <button class="btn btn-primary" id="claimBtn" onclick="claimPass()">
+                    Claim Your Pass
+                </button>
+            </div>
+
+            <!-- Not Logged In: Show Login Prompt -->
+            <div id="loginSection" class="hidden">
+                <div class="login-prompt">
+                    <p>Sign in or create an account to claim your pass</p>
+                    <button class="btn btn-primary" onclick="openLogin()">
+                        Sign In to Claim
+                    </button>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="claim-card hidden">
+            <h2 style="color: var(--danger-red);">Oops!</h2>
+            <p id="errorMessage" style="margin: 1rem 0; color: var(--gray);"></p>
+            <a href="/" class="btn btn-primary">Go to Homepage</a>
+        </div>
+
+        <!-- Success State -->
+        <div id="successState" class="claim-card hidden">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">&#10003;</div>
+            <h2 style="color: var(--neon-green);">Pass Claimed!</h2>
+            <p style="margin: 1rem 0; color: var(--gray);">Your pass has been added to your account.</p>
+            <a href="/members?tab=passes" class="btn btn-primary">View My Passes</a>
+        </div>
+    </div>
+
+    <!-- Login Center Modal Container -->
+    <div id="passModal" class="pass-modal-overlay"></div>
+
+    <!-- Login Center Script -->
+    <script src="/js/login-center.js"></script>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://lightning-backend-production.up.railway.app';
+
+        let claimToken = null;
+        let passData = null;
+
+        // Get token from URL
+        function getToken() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('token');
+        }
+
+        // Check if user is logged in
+        function isLoggedIn() {
+            return !!localStorage.getItem('token');
+        }
+
+        // Load pass details
+        async function loadPassDetails() {
+            claimToken = getToken();
+
+            if (!claimToken) {
+                showError('No claim token provided. Please use the link from your email.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/passes/claim/${claimToken}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (data.alreadyClaimed) {
+                        showError('This pass has already been claimed. Check your account for your pass.');
+                    } else {
+                        showError(data.error || 'Failed to load pass details');
+                    }
+                    return;
+                }
+
+                passData = data.pass;
+                displayPassDetails();
+            } catch (err) {
+                showError('Failed to connect to server. Please try again.');
+                console.error('Load error:', err);
+            }
+        }
+
+        // Display pass details
+        function displayPassDetails() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('passDetails').classList.remove('hidden');
+
+            document.getElementById('eventName').textContent = passData.eventName || passData.venueName;
+            document.getElementById('guestName').textContent = passData.guestName;
+            document.getElementById('quantity').textContent = passData.quantity;
+            document.getElementById('validUntil').textContent = new Date(passData.validUntil).toLocaleDateString();
+
+            // Show appropriate section based on login state
+            if (isLoggedIn()) {
+                document.getElementById('claimSection').classList.remove('hidden');
+                document.getElementById('loginSection').classList.add('hidden');
+            } else {
+                document.getElementById('claimSection').classList.add('hidden');
+                document.getElementById('loginSection').classList.remove('hidden');
+            }
+        }
+
+        // Show error state
+        function showError(message) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('passDetails').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        // Open login modal
+        function openLogin() {
+            if (typeof LoginCenter !== 'undefined') {
+                // Set callback to refresh page after login
+                LoginCenter.open({
+                    onSuccess: function() {
+                        // After successful login, refresh to show claim button
+                        window.location.reload();
+                    }
+                });
+            } else {
+                // Fallback: redirect to homepage with return URL
+                window.location.href = '/?returnTo=' + encodeURIComponent(window.location.href);
+            }
+        }
+
+        // Claim the pass
+        async function claimPass() {
+            const btn = document.getElementById('claimBtn');
+            const statusMsg = document.getElementById('statusMessage');
+
+            btn.disabled = true;
+            btn.textContent = 'Claiming...';
+            statusMsg.className = 'status-message';
+            statusMsg.style.display = 'none';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/api/v1/lightning/passes/claim/${claimToken}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to claim pass');
+                }
+
+                // Success!
+                document.getElementById('passDetails').classList.add('hidden');
+                document.getElementById('successState').classList.remove('hidden');
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'Claim Your Pass';
+                statusMsg.textContent = err.message;
+                statusMsg.className = 'status-message error';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadPassDetails);
+    </script>
+</body>
+</html>
