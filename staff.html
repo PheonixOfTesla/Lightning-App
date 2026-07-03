@@ -337,6 +337,86 @@
       color: var(--lightning-yellow);
     }
 
+    /* Rich result card layout */
+    .result-ticket-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .result-pass-name {
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    .result-qty {
+      color: var(--lightning-yellow);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .result-ticket-divider {
+      color: var(--gray);
+    }
+
+    .result-ticket-type {
+      font-weight: 700;
+    }
+
+    .result-ticket-type.paid {
+      color: var(--neon-green);
+    }
+
+    .result-ticket-type.comp {
+      color: var(--electric-purple);
+    }
+
+    .result-ticket-type.team {
+      color: var(--lightning-yellow);
+    }
+
+    .result-event-name {
+      font-size: 1.1rem;
+      color: var(--electric-blue);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .reentry-warning {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: rgba(255, 140, 0, 0.15);
+      border: 1px solid #ff8c00;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      margin-bottom: 0.75rem;
+      color: #ff8c00;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .reentry-warning.hidden {
+      display: none;
+    }
+
+    .reentry-icon {
+      width: 20px;
+      height: 20px;
+      background: #ff8c00;
+      color: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
     /* ID Check Section */
     .id-check-section {
       background: var(--card-black);
@@ -640,25 +720,26 @@
           <div class="result-card" id="resultCard">
             <div class="result-status" id="resultStatus">VERIFIED</div>
             <div class="result-guest-name" id="resultGuestName">Guest Name</div>
-            <div class="result-pass-id" id="resultPassId">LP-1234567890-ABC</div>
-            <div class="result-info-grid">
-              <div class="result-info-item">
-                <span class="result-info-label">Type</span>
-                <span class="result-info-value" id="resultType">Paid</span>
-              </div>
-              <div class="result-info-item">
-                <span class="result-info-label">Quantity</span>
-                <span class="result-info-value" id="resultQuantity">1 guest</span>
-              </div>
-              <div class="result-info-item">
-                <span class="result-info-label">Event</span>
-                <span class="result-info-value" id="resultEvent">Stars & Stripes</span>
-              </div>
-              <div class="result-info-item">
-                <span class="result-info-label">Date</span>
-                <span class="result-info-value" id="resultDate">Jul 4</span>
-              </div>
+
+            <!-- Ticket details row: {Type} × {Qty} · {Paid/Comp} -->
+            <div class="result-ticket-row" id="resultTicketRow">
+              <span class="result-pass-name" id="resultPassName">General Admission</span>
+              <span class="result-qty" id="resultQty">× 7</span>
+              <span class="result-ticket-divider">·</span>
+              <span class="result-ticket-type" id="resultTicketType">Paid</span>
             </div>
+
+            <!-- Event name -->
+            <div class="result-event-name" id="resultEventName">Stars, Stripes & Sunsets</div>
+
+            <!-- Re-entry warning (hidden by default) -->
+            <div class="reentry-warning hidden" id="reentryWarning">
+              <span class="reentry-icon">!</span>
+              <span class="reentry-text" id="reentryText">Entered 2x tonight · last 11:40 PM</span>
+            </div>
+
+            <!-- Pass ID (small) -->
+            <div class="result-pass-id" id="resultPassId">LP-1234567890-ABC</div>
           </div>
         </div>
 
@@ -942,17 +1023,10 @@
         eventDate: embeddedData.eventDate
       };
 
-      // Show embedded data immediately (optimistic)
-      showResult('verified', embeddedData.guestName, {
-        ...embeddedData,
-        passId: passId
-      });
+      // Show "verifying..." status briefly
+      setScanStatus('processing', 'Verifying with server...');
 
-      // Show age buttons and action buttons
-      document.getElementById('ageButtons').classList.remove('hidden');
-      document.getElementById('actionButtons').classList.remove('hidden');
-
-      // Background: verify with backend (for used/refunded checks)
+      // Always verify with backend (for entry count, used/refunded checks)
       try {
         const res = await fetch(`${API_BASE}/api/v1/staff/validate`, {
           method: 'POST',
@@ -961,28 +1035,27 @@
         });
         const data = await res.json();
 
-        // If backend says invalid, update display
-        if (!data.valid) {
-          currentPass.eventId = data.eventId;
-          let resultType = data.reason === 'already_used' ? 'already-used' : 'invalid';
-          showResult(resultType, embeddedData.guestName || 'Guest', {
-            ...embeddedData,
-            ...data
-          });
-          document.getElementById('ageButtons').classList.add('hidden');
-          document.getElementById('actionButtons').classList.add('hidden');
+        // Update currentPass with backend data
+        currentPass.eventId = data.eventId;
+        currentPass.eventSlug = data.eventSlug;
+        currentPass.passName = data.passName;
 
-          setTimeout(async () => {
-            await resetScanState();
-            await switchScannerMode('qr');
-          }, 3000);
+        if (!data.valid) {
+          // Invalid - show error
+          let resultType = data.reason === 'already_used' ? 'already-used' : 'invalid';
+          showResult(resultType, data.guestName || embeddedData.guestName || 'Guest', data);
         } else {
-          // Update with any additional backend data
-          currentPass.eventId = data.eventId;
-          currentPass.eventSlug = data.eventSlug;
+          // Valid - show with full backend data (includes entryCount, lastEntry)
+          showResult('verified', data.guestName, data);
+          document.getElementById('ageButtons').classList.remove('hidden');
+          document.getElementById('actionButtons').classList.remove('hidden');
         }
       } catch (err) {
-        console.log('Backend validation failed (using embedded data):', err.message);
+        console.log('Backend validation failed, using embedded data:', err.message);
+        // Fallback to embedded data if backend fails
+        showResult('verified', embeddedData.guestName, embeddedData);
+        document.getElementById('ageButtons').classList.remove('hidden');
+        document.getElementById('actionButtons').classList.remove('hidden');
       }
     }
 
@@ -1053,54 +1126,72 @@
         statusEl.textContent = 'INVALID';
       }
 
-      // Set guest name
+      // Set guest name (large)
       document.getElementById('resultGuestName').textContent = guestName || 'Unknown Guest';
 
-      // Set pass ID
-      const passId = currentPass?.passId || data?.passId || '';
-      document.getElementById('resultPassId').textContent = passId;
+      // Set pass name (General Admission, VIP, etc.)
+      const passName = data?.passName || 'General Admission';
+      document.getElementById('resultPassName').textContent = passName;
 
-      // Determine ticket type display from backend ticketType field
-      let displayType = 'Ticket';
-      let typeClass = '';
+      // Set quantity (crucial for multi-person passes like GA × 7 or Cabana × 6)
+      const qty = data?.quantity || currentPass?.quantity || 1;
+      const qtyEl = document.getElementById('resultQty');
+      qtyEl.textContent = `× ${qty}`;
+      // Hide quantity display if just 1
+      qtyEl.style.display = qty > 1 ? 'inline' : 'none';
+
+      // Determine ticket type display (Paid/Comp/Team)
+      let displayType = 'Paid';
+      let typeClass = 'paid';
       const backendType = data?.ticketType?.toLowerCase() || '';
 
       if (backendType === 'team' || data?.isTeam) {
-        displayType = 'TEAM';
+        displayType = 'Team';
         typeClass = 'team';
       } else if (backendType === 'comp' || data?.isComp) {
-        displayType = 'COMP';
+        displayType = 'Comp';
         typeClass = 'comp';
       } else if (backendType === 'paid' || data?.amount > 0) {
-        displayType = 'PAID';
+        displayType = 'Paid';
         typeClass = 'paid';
-      } else if (data?.passName) {
-        displayType = data.passName.toUpperCase();
       }
 
-      const typeEl = document.getElementById('resultType');
-      typeEl.textContent = displayType;
-      typeEl.className = 'result-info-value ' + typeClass;
+      const ticketTypeEl = document.getElementById('resultTicketType');
+      ticketTypeEl.textContent = displayType;
+      ticketTypeEl.className = 'result-ticket-type ' + typeClass;
 
-      // Set quantity
-      const qty = data?.quantity || currentPass?.quantity || 1;
-      document.getElementById('resultQuantity').textContent = qty === 1 ? '1 guest' : `${qty} guests`;
-
-      // Set event name (now comes from backend data)
+      // Set event name
       const eventName = data?.eventName || 'Event';
-      const shortEventName = eventName.length > 20 ? eventName.substring(0, 18) + '...' : eventName;
-      document.getElementById('resultEvent').textContent = shortEventName;
+      document.getElementById('resultEventName').textContent = eventName;
 
-      // Set date
-      const eventDate = data?.eventDate;
-      if (eventDate) {
-        const dateObj = new Date(eventDate);
-        document.getElementById('resultDate').textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      // Handle re-entry warning
+      const reentryWarning = document.getElementById('reentryWarning');
+      const entryCount = data?.entryCount || 0;
+      const lastEntry = data?.lastEntry;
+
+      if (entryCount > 0 && type === 'verified') {
+        // Format last entry time
+        let lastTimeStr = '';
+        if (lastEntry) {
+          const lastDate = new Date(lastEntry);
+          lastTimeStr = lastDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+
+        reentryWarning.classList.remove('hidden');
+        if (entryCount === 1) {
+          document.getElementById('reentryText').textContent = `Entered once · ${lastTimeStr}`;
+        } else {
+          document.getElementById('reentryText').textContent = `Entered ${entryCount}x tonight · last ${lastTimeStr}`;
+        }
       } else {
-        document.getElementById('resultDate').textContent = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        reentryWarning.classList.add('hidden');
       }
 
-      // Hide action buttons for invalid passes
+      // Set pass ID (small, at bottom)
+      const passId = currentPass?.passId || data?.passId || '';
+      document.getElementById('resultPassId').textContent = passId;
+
+      // Hide action buttons for truly invalid passes (refunded, expired)
       if (type !== 'verified') {
         document.getElementById('ageButtons').classList.add('hidden');
         document.getElementById('actionButtons').classList.add('hidden');
@@ -1344,7 +1435,7 @@
     // Track admitted count locally
     let localAdmittedCount = 0;
 
-    // Admit guest using new staff/admit endpoint
+    // Admit guest - allows unlimited re-entries, logs each scan
     async function admitGuest() {
       if (!currentPass) return;
 
@@ -1353,7 +1444,7 @@
       btnAdmit.textContent = 'Processing...';
 
       try {
-        // Use new passcode-authenticated admit endpoint
+        // Use passcode-authenticated admit endpoint (allows re-entry)
         const response = await fetch(`${API_BASE}/api/v1/staff/admit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1369,42 +1460,75 @@
 
         if (!response.ok) {
           console.error('Admit API error:', data.error);
-          // Still track locally even if API fails
+          showAdmitError(data.error || 'Admit failed');
+          return;
         }
 
         // Update local count
         localAdmittedCount += (currentPass.quantity || 1);
         document.getElementById('entryCount').textContent = `${localAdmittedCount} Admitted`;
 
-        // Show success
-        showResult('verified', currentPass.guestName || 'Guest admitted', {
-          guestName: currentPass.guestName,
-          quantity: currentPass.quantity,
-          ticketType: currentPass.ticketType
-        });
-
-        // Reset after delay and restart scanner
-        setTimeout(async () => {
-          await resetScanState();
-          await switchScannerMode('qr');
-        }, 1500);
+        // Show ADMITTED confirmation
+        showAdmitSuccess(data.entryCount || 1);
 
       } catch (err) {
         console.error('Admit error:', err);
-        // Still show success (local tracking)
+        // Network error - still show local success
         localAdmittedCount += (currentPass.quantity || 1);
         document.getElementById('entryCount').textContent = `${localAdmittedCount} Admitted`;
-        showResult('verified', currentPass.guestName || 'Guest admitted', {
-          guestName: currentPass.guestName,
-          quantity: currentPass.quantity,
-          ticketType: currentPass.ticketType
-        });
-
-        setTimeout(async () => {
-          await resetScanState();
-          await switchScannerMode('qr');
-        }, 1500);
+        showAdmitSuccess(null);
       }
+    }
+
+    function showAdmitSuccess(entryCount) {
+      const resultCard = document.getElementById('resultCard');
+      resultCard.className = 'result-card show verified';
+
+      // Change status to ADMITTED
+      const statusEl = document.getElementById('resultStatus');
+      statusEl.textContent = 'ADMITTED';
+
+      // Hide action buttons
+      document.getElementById('ageButtons').classList.add('hidden');
+      document.getElementById('actionButtons').classList.add('hidden');
+
+      // Update re-entry info if this was a re-entry
+      if (entryCount && entryCount > 1) {
+        const reentryWarning = document.getElementById('reentryWarning');
+        reentryWarning.classList.remove('hidden');
+        document.getElementById('reentryText').textContent = `Entry #${entryCount} recorded`;
+      }
+
+      // Reset after delay and restart scanner
+      setTimeout(async () => {
+        await resetScanState();
+        await switchScannerMode('qr');
+      }, 1500);
+    }
+
+    function showAdmitError(errorMsg) {
+      const resultCard = document.getElementById('resultCard');
+      resultCard.className = 'result-card show invalid';
+
+      const statusEl = document.getElementById('resultStatus');
+      statusEl.textContent = 'ERROR';
+
+      document.getElementById('resultEventName').textContent = errorMsg;
+
+      // Hide action buttons
+      document.getElementById('ageButtons').classList.add('hidden');
+      document.getElementById('actionButtons').classList.add('hidden');
+
+      // Reset admit button
+      const btnAdmit = document.getElementById('btnAdmit');
+      btnAdmit.disabled = false;
+      btnAdmit.textContent = 'ADMIT';
+
+      // Reset after delay
+      setTimeout(async () => {
+        await resetScanState();
+        await switchScannerMode('qr');
+      }, 3000);
     }
 
     async function denyEntry() {
