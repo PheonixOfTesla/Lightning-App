@@ -1518,9 +1518,10 @@
           ageResult.classList.add(data.over21 ? 'over21' : 'under21');
 
           // Build display name
-          const displayName = [data.firstName, data.lastName].filter(Boolean).join(' ') || 'Guest';
+          console.log('[ID-VISION] Name fields:', { firstName: data.firstName, lastName: data.lastName, dob: data.dob, age: data.age });
+          const displayName = [data.firstName, data.lastName].filter(Boolean).join(' ');
 
-          document.getElementById('ageResultTitle').textContent = displayName;
+          document.getElementById('ageResultTitle').textContent = displayName || 'ID Verified';
           document.getElementById('ageResultDob').innerHTML = `
             DOB: ${data.dob || 'N/A'}<br>
             Age ${data.age || '?'}
