@@ -278,70 +278,6 @@
       margin-bottom: 1rem;
     }
 
-    .id-check-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-    }
-
-    .id-check-title {
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .toggle-switch {
-      position: relative;
-      width: 48px;
-      height: 28px;
-    }
-
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--border-dark);
-      border-radius: 28px;
-      transition: 0.3s;
-    }
-
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 22px;
-      width: 22px;
-      left: 3px;
-      bottom: 3px;
-      background: var(--white);
-      border-radius: 50%;
-      transition: 0.3s;
-    }
-
-    .toggle-switch input:checked + .toggle-slider {
-      background: var(--lightning-yellow);
-    }
-
-    .toggle-switch input:checked + .toggle-slider:before {
-      transform: translateX(20px);
-    }
-
-    .id-check-content {
-      display: none;
-    }
-
-    .id-check-content.active {
-      display: block;
-    }
-
     .age-result {
       padding: 1rem;
       border-radius: 12px;
@@ -597,15 +533,32 @@
         <div class="scanner-section">
           <div class="scanner-tabs">
             <button class="scanner-tab active" data-mode="qr" onclick="switchScannerMode('qr')">QR Code</button>
-            <button class="scanner-tab" data-mode="manual" onclick="switchScannerMode('manual')">Manual Entry</button>
+            <button class="scanner-tab" data-mode="id" onclick="switchScannerMode('id')">ID Scan</button>
+            <button class="scanner-tab" data-mode="manual" onclick="switchScannerMode('manual')">Manual</button>
           </div>
 
-          <div class="scanner-viewport" id="scannerViewport">
+          <!-- QR Scanner Viewport -->
+          <div class="scanner-viewport" id="qrViewport">
             <div id="qr-reader"></div>
-            <div class="scanner-overlay" id="scannerOverlay">
+            <div class="scanner-overlay" id="qrOverlay">
               <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="10" y="10" width="80" height="80" rx="8" stroke-dasharray="10 5"/>
               </svg>
+            </div>
+          </div>
+
+          <!-- ID Scanner Viewport -->
+          <div class="scanner-viewport hidden" id="idViewport">
+            <div id="id-reader"></div>
+            <div class="scanner-overlay" id="idOverlay">
+              <svg viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
+              </svg>
+            </div>
+            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center;">
+              <span style="background: rgba(0,0,0,0.7); color: #fff; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem;">
+                Scan barcode on back of ID
+              </span>
             </div>
           </div>
 
@@ -627,40 +580,20 @@
           </div>
         </div>
 
-        <!-- ID Check Section -->
-        <div class="id-check-section" id="idCheckSection" style="display: none;">
-          <div class="id-check-header">
-            <span class="id-check-title">ID / Age Check</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="idCheckToggle" onchange="toggleIdCheck()">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="id-check-content" id="idCheckContent">
-            <!-- ID Scanner Viewport -->
-            <div id="idScannerContainer" style="margin-bottom: 0.75rem;">
-              <div id="id-reader" style="width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 12px; overflow: hidden;"></div>
-              <p id="idScanStatus" style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 0.5rem;">
-                Scanning for ID barcode...
-              </p>
-            </div>
+        <!-- Age Result (shown after ID scan or manual selection) -->
+        <div class="age-result hidden" id="ageResult" style="margin-bottom: 1rem;">
+          <div class="age-result-title" id="ageResultTitle"></div>
+          <div class="age-result-dob" id="ageResultDob"></div>
+        </div>
 
-            <!-- Age Result (shown after successful scan) -->
-            <div class="age-result hidden" id="ageResult">
-              <div class="age-result-title" id="ageResultTitle"></div>
-              <div class="age-result-dob" id="ageResultDob"></div>
-            </div>
-
-            <!-- Manual Fallback (shown after scan timeout or on demand) -->
-            <div id="manualFallback" style="display: none;">
-              <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-bottom: 0.75rem;">
-                Could not read ID. Verify manually:
-              </p>
-              <div class="manual-buttons">
-                <button class="manual-btn over21" onclick="setAgeManual(true)">21+</button>
-                <button class="manual-btn under21" onclick="setAgeManual(false)">Under 21</button>
-              </div>
-            </div>
+        <!-- Manual Age Buttons (always visible after pass verified) -->
+        <div class="id-check-section hidden" id="ageButtons">
+          <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.75rem; text-align: center;">
+            Age verification (or use ID Scan tab)
+          </p>
+          <div class="manual-buttons">
+            <button class="manual-btn over21" onclick="setAgeManual(true)">21+</button>
+            <button class="manual-btn under21" onclick="setAgeManual(false)">Under 21</button>
           </div>
         </div>
 
@@ -838,29 +771,37 @@
     }
 
     // Scanner mode
-    function switchScannerMode(mode) {
+    async function switchScannerMode(mode) {
       scannerMode = mode;
 
       document.querySelectorAll('.scanner-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.mode === mode);
       });
 
-      const viewport = document.getElementById('scannerViewport');
+      const qrViewport = document.getElementById('qrViewport');
+      const idViewport = document.getElementById('idViewport');
       const manualEntry = document.getElementById('manualEntry');
-      const overlay = document.getElementById('scannerOverlay');
 
+      // Stop all scanners first
+      await stopQRScanner();
+      await stopIdScanner();
+
+      // Show/hide viewports and start appropriate scanner
       if (mode === 'qr') {
-        viewport.style.display = 'block';
+        qrViewport.classList.remove('hidden');
+        idViewport.classList.add('hidden');
         manualEntry.classList.add('hidden');
-        overlay.style.display = 'flex';
-        startQRScanner();
+        await startQRScanner();
+      } else if (mode === 'id') {
+        qrViewport.classList.add('hidden');
+        idViewport.classList.remove('hidden');
+        manualEntry.classList.add('hidden');
+        await startIdScanner();
       } else {
-        viewport.style.display = 'none';
+        qrViewport.classList.add('hidden');
+        idViewport.classList.add('hidden');
         manualEntry.classList.remove('hidden');
-        stopQRScanner();
       }
-
-      resetScanState();
     }
 
     // QR Scanner
@@ -880,10 +821,10 @@
           onQRCodeSuccess,
           () => {} // Ignore errors
         );
-        document.getElementById('scannerOverlay').style.display = 'none';
+        document.getElementById('qrOverlay').style.display = 'none';
       } catch (err) {
         console.error('QR Scanner error:', err);
-        document.getElementById('scannerOverlay').innerHTML = `
+        document.getElementById('qrOverlay').innerHTML = `
           <div style="text-align: center; color: var(--gray); padding: 2rem;">
             <p>Camera access required</p>
             <p style="font-size: 0.85rem; margin-top: 0.5rem;">Please allow camera permissions</p>
@@ -937,7 +878,7 @@
           // No auth - show pass ID and allow manual admit
           currentPass = { passId, guestName: 'Guest', quantity: 1 };
           showResult('verified', 'PASS SCANNED', passId, { passType: 'Ticket' });
-          document.getElementById('idCheckSection').style.display = 'block';
+          document.getElementById('ageButtons').classList.remove('hidden');
           document.getElementById('actionButtons').classList.remove('hidden');
           return;
         }
@@ -966,15 +907,15 @@
         // Valid pass
         showResult('verified', 'VERIFIED', data.guestName || 'Valid Pass', data);
 
-        // Show ID check and action buttons
-        document.getElementById('idCheckSection').style.display = 'block';
+        // Show age buttons and action buttons
+        document.getElementById('ageButtons').classList.remove('hidden');
         document.getElementById('actionButtons').classList.remove('hidden');
 
       } catch (err) {
         // API error - show pass ID and allow manual decision
         currentPass = { passId, guestName: 'Guest', quantity: 1 };
         showResult('verified', 'PASS SCANNED', passId, { passType: 'Check manually' });
-        document.getElementById('idCheckSection').style.display = 'block';
+        document.getElementById('ageButtons').classList.remove('hidden');
         document.getElementById('actionButtons').classList.remove('hidden');
       }
     }
@@ -1023,48 +964,18 @@
 
       // Hide action buttons for invalid passes
       if (type !== 'verified') {
-        document.getElementById('idCheckSection').style.display = 'none';
+        document.getElementById('ageButtons').classList.add('hidden');
         document.getElementById('actionButtons').classList.add('hidden');
 
         // Resume scanner after delay
         setTimeout(async () => {
           await resetScanState();
-          if (scannerMode === 'qr') await startQRScanner();
+          await switchScannerMode('qr');
         }, 3000);
       }
     }
 
-    // ID Check - Camera handoff and PDF417 scanning
-    async function toggleIdCheck() {
-      const content = document.getElementById('idCheckContent');
-      const toggle = document.getElementById('idCheckToggle');
-      content.classList.toggle('active', toggle.checked);
-
-      if (toggle.checked) {
-        // ID Check ON: Stop QR scanner, start ID scanner
-        await stopQRScanner();
-        resetIdScanUI();
-        await startIdScanner();
-      } else {
-        // ID Check OFF: Stop ID scanner, resume QR scanner
-        await stopIdScanner();
-        ageCheckPerformed = false;
-        ageOver21 = null;
-        document.getElementById('ageResult').classList.add('hidden');
-        // Resume QR scanner if in QR mode
-        if (scannerMode === 'qr') {
-          await startQRScanner();
-        }
-      }
-    }
-
-    function resetIdScanUI() {
-      document.getElementById('ageResult').classList.add('hidden');
-      document.getElementById('manualFallback').style.display = 'none';
-      document.getElementById('idScannerContainer').style.display = 'block';
-      document.getElementById('idScanStatus').textContent = 'Scanning for ID barcode...';
-    }
-
+    // ID Scanner for PDF417 barcodes (driver's license)
     async function startIdScanner() {
       if (idScanner) return;
 
@@ -1113,9 +1024,15 @@
     }
 
     function showIdManualFallback() {
-      document.getElementById('idScannerContainer').style.display = 'none';
-      document.getElementById('manualFallback').style.display = 'block';
+      // ID scan failed/timed out - show message in overlay and stop scanner
       stopIdScanner();
+      const overlay = document.getElementById('idOverlay');
+      overlay.innerHTML = `
+        <div style="text-align: center; color: var(--gray); padding: 2rem;">
+          <p style="color: #ff8c00; font-weight: 600;">Couldn't read ID</p>
+          <p style="font-size: 0.85rem; margin-top: 0.5rem;">Use age buttons below or try again</p>
+        </div>
+      `;
     }
 
     async function onIdScanSuccess(decodedText) {
@@ -1139,13 +1056,15 @@
           ageCheckPerformed = true;
           ageOver21 = isOver21;
 
-          // Show result
-          document.getElementById('idScannerContainer').style.display = 'none';
+          // Show age result
           const ageResult = document.getElementById('ageResult');
           ageResult.classList.remove('hidden', 'over21', 'under21');
           ageResult.classList.add(isOver21 ? 'over21' : 'under21');
           document.getElementById('ageResultTitle').textContent = isOver21 ? '21+ VERIFIED' : 'UNDER 21';
           document.getElementById('ageResultDob').textContent = `DOB: ${formatDate(ageInfo.dob)} (Age ${age})`;
+
+          // Switch back to QR mode after successful ID scan
+          setTimeout(() => switchScannerMode('qr'), 1500);
 
         } else {
           // Could not parse DOB - show manual fallback
@@ -1223,15 +1142,11 @@
       // Stop ID scanner if running
       stopIdScanner();
 
+      // Show age result
       const ageResult = document.getElementById('ageResult');
-      const ageTitle = document.getElementById('ageResultTitle');
-
-      document.getElementById('idScannerContainer').style.display = 'none';
-      document.getElementById('manualFallback').style.display = 'none';
-
       ageResult.classList.remove('hidden', 'over21', 'under21');
       ageResult.classList.add(over21 ? 'over21' : 'under21');
-      ageTitle.textContent = over21 ? '21+ VERIFIED' : 'UNDER 21';
+      document.getElementById('ageResultTitle').textContent = over21 ? '21+ VERIFIED' : 'UNDER 21';
       document.getElementById('ageResultDob').textContent = 'Manual verification';
     }
 
@@ -1288,10 +1203,10 @@
         // Show success
         showResult('verified', 'ADMITTED', currentPass.guestName || 'Guest admitted');
 
-        // Reset after delay
+        // Reset after delay and restart scanner
         setTimeout(async () => {
           await resetScanState();
-          if (scannerMode === 'qr') await startQRScanner();
+          await switchScannerMode('qr');
         }, 1500);
 
       } catch (err) {
@@ -1303,7 +1218,7 @@
 
         setTimeout(async () => {
           await resetScanState();
-          if (scannerMode === 'qr') await startQRScanner();
+          await switchScannerMode('qr');
         }, 1500);
       }
     }
@@ -1338,7 +1253,7 @@
 
       setTimeout(async () => {
         await resetScanState();
-        if (scannerMode === 'qr') await startQRScanner();
+        await switchScannerMode('qr');
       }, 1500);
     }
 
@@ -1347,21 +1262,25 @@
       ageCheckPerformed = false;
       ageOver21 = null;
 
-      // Stop ID scanner if running
+      // Stop all scanners
+      await stopQRScanner();
       await stopIdScanner();
 
+      // Hide result and action UI
       document.getElementById('resultBanner').style.display = 'none';
-      document.getElementById('idCheckSection').style.display = 'none';
+      document.getElementById('ageButtons').classList.add('hidden');
       document.getElementById('actionButtons').classList.add('hidden');
-      document.getElementById('idCheckToggle').checked = false;
-      document.getElementById('idCheckContent').classList.remove('active');
       document.getElementById('ageResult').classList.add('hidden');
       document.getElementById('manualPassId').value = '';
 
-      // Reset ID scanner UI
-      document.getElementById('idScannerContainer').style.display = 'block';
-      document.getElementById('manualFallback').style.display = 'none';
+      // Reset ID overlay to default state
+      document.getElementById('idOverlay').innerHTML = `
+        <svg viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
+        </svg>
+      `;
 
+      // Reset admit button
       const btnAdmit = document.getElementById('btnAdmit');
       btnAdmit.disabled = false;
       btnAdmit.textContent = 'ADMIT';
