@@ -1497,10 +1497,10 @@
         const data = await response.json();
         console.log(`[ID-VISION ${frameId}] Response body:`, JSON.stringify(data));
 
-        // Server returns { valid, over21, confidence }
+        // Server returns { valid, over21, confidence, firstName, lastName, dob, age }
         if (data.valid && data.confidence === 'high') {
-          // Show "AUTHORIZED" status briefly
-          updateIdStatus('authorized', data.over21);
+          // Show "AUTHORIZED" status briefly with full details
+          updateIdStatus('authorized', data.over21, data);
 
           // Stop scanner - we have a confident result
           if (idScanTimeout) {
@@ -1512,12 +1512,19 @@
           ageCheckPerformed = true;
           ageOver21 = data.over21;
 
-          // Show age result in the result card
+          // Show age result in the result card with name/dob/age
           const ageResult = document.getElementById('ageResult');
           ageResult.classList.remove('hidden', 'over21', 'under21');
           ageResult.classList.add(data.over21 ? 'over21' : 'under21');
-          document.getElementById('ageResultTitle').textContent = data.over21 ? '21+ VERIFIED' : 'UNDER 21';
-          document.getElementById('ageResultDob').textContent = 'ID Verified';
+
+          // Build display name
+          const displayName = [data.firstName, data.lastName].filter(Boolean).join(' ') || 'Guest';
+
+          document.getElementById('ageResultTitle').textContent = displayName;
+          document.getElementById('ageResultDob').innerHTML = `
+            DOB: ${data.dob || 'N/A'}<br>
+            Age ${data.age || '?'}
+          `;
 
           // Switch back to QR mode
           setTimeout(() => switchScannerMode('qr'), 1500);
@@ -1541,7 +1548,7 @@
     }
 
     // Update ID scan status overlay
-    function updateIdStatus(status, over21 = null) {
+    function updateIdStatus(status, over21 = null, data = null) {
       const overlay = document.getElementById('idOverlay');
 
       if (status === 'detecting') {
@@ -1562,12 +1569,23 @@
         `;
       } else if (status === 'authorized') {
         const color = over21 ? 'var(--neon-green)' : 'var(--danger-red)';
-        const text = over21 ? '21+ VERIFIED' : 'UNDER 21';
+        const stamp = over21 ? 'ID VERIFIED' : 'UNDER 21';
         const icon = over21 ? '✓' : '✗';
+
+        // Build display name from data
+        const displayName = data && (data.firstName || data.lastName)
+          ? [data.firstName, data.lastName].filter(Boolean).join(' ')
+          : '';
+
         overlay.innerHTML = `
-          <div style="text-align: center; padding: 1rem;">
-            <div style="font-size: 2.5rem; color: ${color}; margin-bottom: 0.5rem;">${icon}</div>
-            <p style="color: ${color}; font-weight: 700; font-size: 1.3rem;">${text}</p>
+          <div style="text-align: center; padding: 1rem; background: rgba(0,0,0,0.9); border-radius: 12px; margin: 1rem;">
+            ${displayName ? `<p style="color: #fff; font-weight: 700; font-size: 1.4rem; margin-bottom: 0.5rem;">${displayName}</p>` : ''}
+            ${data && data.dob ? `<p style="color: var(--gray); font-size: 1rem; margin-bottom: 0.25rem;">DOB: ${data.dob}</p>` : ''}
+            ${data && data.age ? `<p style="color: var(--gray); font-size: 1rem; margin-bottom: 0.75rem;">Age ${data.age}</p>` : ''}
+            <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem 1rem; background: ${over21 ? 'rgba(57, 255, 20, 0.2)' : 'rgba(255, 0, 68, 0.2)'}; border: 2px solid ${color}; border-radius: 8px;">
+              <span style="font-size: 1.5rem; color: ${color};">${icon}</span>
+              <span style="color: ${color}; font-weight: 700; font-size: 1.2rem;">${stamp}</span>
+            </div>
           </div>
         `;
       }
