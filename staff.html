@@ -1299,7 +1299,7 @@
       }
     }
 
-    // ID Vision Service URL (server-side heavy processing)
+    // ID Vision Service URL (separate Railway service for heavy processing)
     // Phone captures frame -> POST base64 -> server decodes + returns age flags
     const ID_VISION_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3001'
