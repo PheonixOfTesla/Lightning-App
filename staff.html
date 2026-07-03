@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Door Staff - Lightning Pass</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- QR Scanner (html5-qrcode) -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- ID Scanner (ZXing - pinned versions) -->
+  <script src="https://cdn.jsdelivr.net/npm/@aspect-ratio/core@0.1.0/dist/index.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@aspect-ratio/core@0.1.0/dist/index.min.js" defer></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pure-black: #0d1b2a;
+      --card-black: #1b2838;
+      --border-dark: #2d3748;
+      --lightning-yellow: #ffd700;
+      --electric-blue: #00d4ff;
+      --electric-purple: #9d4edd;
+      --neon-green: #39ff14;
+      --danger-red: #ff0044;
+      --white: #ffffff;
+      --gray: #888;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--pure-black);
+      color: var(--white);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      background: var(--pure-black);
+      border-bottom: 1px solid var(--border-dark);
+      padding: 0.75rem 1rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .logo img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .entry-count {
+      background: rgba(57, 255, 20, 0.15);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      padding: 0.4rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: 1px solid var(--border-dark);
+      color: var(--gray);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* Main Content */
+    main {
+      padding-top: 60px;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* Event Selector */
+    .event-selector {
+      margin-bottom: 1rem;
+    }
+
+    .event-selector select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      background: var(--card-black);
+      border: 1px solid var(--border-dark);
+      border-radius: 12px;
+      color: var(--white);
+      font-size: 1rem;
+      font-family: inherit;
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 18px;
+    }
+
+    .event-selector select:focus {
+      outline: none;
+      border-color: var(--lightning-yellow);
+    }
+
+    /* Scanner Section */
+    .scanner-section {
+      background: var(--card-black);
+      border: 1px solid var(--border-dark);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .scanner-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    .scanner-tab {
+      flex: 1;
+      padding: 0.875rem;
+      background: transparent;
+      border: none;
+      color: var(--gray);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .scanner-tab.active {
+      color: var(--lightning-yellow);
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    .scanner-viewport {
+      aspect-ratio: 1;
+      background: #000;
+      position: relative;
+    }
+
+    #qr-reader {
+      width: 100%;
+      height: 100%;
+    }
+
+    #qr-reader video {
+      object-fit: cover !important;
+    }
+
+    #id-reader-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scanner-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .scanner-overlay svg {
+      width: 60%;
+      height: 60%;
+      opacity: 0.5;
+    }
+
+    /* Result Banner */
+    .result-banner {
+      padding: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    .result-banner.verified {
+      background: linear-gradient(135deg, rgba(57, 255, 20, 0.2), rgba(57, 255, 20, 0.05));
+      border-top: 3px solid var(--neon-green);
+    }
+
+    .result-banner.invalid {
+      background: linear-gradient(135deg, rgba(255, 0, 68, 0.2), rgba(255, 0, 68, 0.05));
+      border-top: 3px solid var(--danger-red);
+    }
+
+    .result-banner.already-used {
+      background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.05));
+      border-top: 3px solid #ff8c00;
+    }
+
+    .result-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-subtitle {
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+
+    .result-details {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-dark);
+      text-align: left;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      font-size: 0.9rem;
+    }
+
+    .result-row span:first-child {
+      color: var(--gray);
+    }
+
+    /* ID Check Section */
+    .id-check-section {
+      background: var(--card-black);
+      border: 1px solid var(--border-dark);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .id-check-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .id-check-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--border-dark);
+      border-radius: 28px;
+      transition: 0.3s;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--white);
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--lightning-yellow);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    .id-check-content {
+      display: none;
+    }
+
+    .id-check-content.active {
+      display: block;
+    }
+
+    .age-result {
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .age-result.over21 {
+      background: rgba(57, 255, 20, 0.15);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+    }
+
+    .age-result.under21 {
+      background: rgba(255, 0, 68, 0.15);
+      border: 1px solid var(--danger-red);
+      color: var(--danger-red);
+    }
+
+    .age-result-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .age-result-dob {
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+      opacity: 0.8;
+    }
+
+    .manual-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .manual-btn {
+      flex: 1;
+      padding: 0.875rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .manual-btn.over21 {
+      background: var(--neon-green);
+      color: #000;
+    }
+
+    .manual-btn.under21 {
+      background: var(--border-dark);
+      color: var(--white);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-admit {
+      background: var(--lightning-yellow);
+      color: #000;
+    }
+
+    .btn-admit:disabled {
+      background: var(--border-dark);
+      color: var(--gray);
+      cursor: not-allowed;
+    }
+
+    .btn-deny {
+      background: var(--danger-red);
+      color: var(--white);
+    }
+
+    /* Loading & Error States */
+    .loading-state, .error-state, .login-required {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-dark);
+      border-top-color: var(--lightning-yellow);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .login-required h2 {
+      color: var(--lightning-yellow);
+      margin-bottom: 0.5rem;
+    }
+
+    .login-required p {
+      color: var(--gray);
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-login {
+      background: var(--lightning-yellow);
+      color: #000;
+      padding: 0.875rem 2rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 390px) {
+      .container { padding: 0.75rem; }
+      .scanner-tab { font-size: 0.85rem; padding: 0.75rem; }
+      .result-title { font-size: 1.25rem; }
+      .btn-action { padding: 0.875rem; font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading State -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <p style="margin-top: 1rem; color: var(--gray);">Loading...</p>
+  </div>
+
+  <!-- Login Required -->
+  <div class="login-required hidden" id="loginRequired">
+    <h2>Staff Access Required</h2>
+    <p>You must be logged in with staff access to use this page.</p>
+    <a href="/" class="btn-login">Go to Login</a>
+  </div>
+
+  <!-- Main App -->
+  <div class="hidden" id="mainApp">
+    <header>
+      <a href="/" class="logo">
+        <img src="/logo.png" alt="Lightning Pass">
+        <span>Staff</span>
+      </a>
+      <div class="header-right">
+        <div class="entry-count" id="entryCount">0 Admitted</div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <!-- Event Selector -->
+        <div class="event-selector">
+          <select id="eventSelect" onchange="onEventChange()">
+            <option value="">Select Event</option>
+          </select>
+        </div>
+
+        <!-- Scanner Section -->
+        <div class="scanner-section">
+          <div class="scanner-tabs">
+            <button class="scanner-tab active" data-mode="qr" onclick="switchScannerMode('qr')">QR Code</button>
+            <button class="scanner-tab" data-mode="manual" onclick="switchScannerMode('manual')">Manual Entry</button>
+          </div>
+
+          <div class="scanner-viewport" id="scannerViewport">
+            <div id="qr-reader"></div>
+            <div class="scanner-overlay" id="scannerOverlay">
+              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="10" y="10" width="80" height="80" rx="8" stroke-dasharray="10 5"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Manual Entry -->
+          <div class="hidden" id="manualEntry" style="padding: 1rem;">
+            <input type="text" id="manualPassId" placeholder="Enter Pass ID (e.g., LP-1234567890-ABC)"
+                   style="width: 100%; padding: 0.875rem; background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 10px; color: #fff; font-size: 1rem; margin-bottom: 0.75rem;">
+            <button onclick="validateManualPass()" style="width: 100%; padding: 0.875rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+              Validate Pass
+            </button>
+          </div>
+
+          <!-- Result Banner -->
+          <div class="result-banner" id="resultBanner">
+            <div class="result-icon" id="resultIcon"></div>
+            <div class="result-title" id="resultTitle"></div>
+            <div class="result-subtitle" id="resultSubtitle"></div>
+            <div class="result-details" id="resultDetails"></div>
+          </div>
+        </div>
+
+        <!-- ID Check Section -->
+        <div class="id-check-section" id="idCheckSection" style="display: none;">
+          <div class="id-check-header">
+            <span class="id-check-title">ID / Age Check</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="idCheckToggle" onchange="toggleIdCheck()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="id-check-content" id="idCheckContent">
+            <div class="age-result hidden" id="ageResult">
+              <div class="age-result-title" id="ageResultTitle"></div>
+              <div class="age-result-dob" id="ageResultDob"></div>
+            </div>
+            <div class="manual-buttons">
+              <button class="manual-btn over21" onclick="setAgeManual(true)">21+</button>
+              <button class="manual-btn under21" onclick="setAgeManual(false)">Under 21</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons (shown after valid pass) -->
+        <div class="action-buttons hidden" id="actionButtons">
+          <button class="btn-action btn-admit" id="btnAdmit" onclick="admitGuest()">ADMIT</button>
+          <button class="btn-action btn-deny" onclick="denyEntry()">DENY</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://lightning-backend-production.up.railway.app';
+
+    // State
+    let currentEvent = null;
+    let currentPass = null;
+    let ageCheckPerformed = false;
+    let ageOver21 = null;
+    let qrScanner = null;
+    let scannerMode = 'qr';
+
+    // Auth helpers
+    function getToken() {
+      return localStorage.getItem('token');
+    }
+
+    function getUserRolesFromToken() {
+      let userRoles = [];
+      try {
+        userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+      } catch (e) {
+        userRoles = [];
+      }
+      if (userRoles.length > 0) return userRoles;
+
+      const token = getToken();
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.roles) {
+            userRoles = payload.roles;
+          } else if (payload.role) {
+            userRoles = [payload.role];
+          }
+          localStorage.setItem('userRoles', JSON.stringify(userRoles));
+        } catch (e) {}
+      }
+      return userRoles;
+    }
+
+    function logout() {
+      ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'partnerUser', 'dealUser'].forEach(k => localStorage.removeItem(k));
+      window.location.href = '/';
+    }
+
+    async function apiCall(endpoint, options = {}) {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...options.headers
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Request failed');
+      }
+      return res.json();
+    }
+
+    // Check auth on load
+    async function checkAuth() {
+      const token = getToken();
+      const roles = getUserRolesFromToken();
+
+      if (!token || (!roles.includes('staff') && !roles.includes('admin'))) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('loginRequired').classList.remove('hidden');
+        return false;
+      }
+
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      return true;
+    }
+
+    // Load events
+    async function loadEvents() {
+      try {
+        const data = await apiCall('/api/v1/staff/events');
+        const select = document.getElementById('eventSelect');
+        select.innerHTML = '<option value="">Select Event</option>';
+
+        (data.events || []).forEach(event => {
+          const opt = document.createElement('option');
+          opt.value = event._id;
+          opt.dataset.slug = event.slug;
+          const date = new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          opt.textContent = `${event.name} - ${date}`;
+          select.appendChild(opt);
+        });
+
+        // Auto-select if only one event
+        if (data.events && data.events.length === 1) {
+          select.value = data.events[0]._id;
+          onEventChange();
+        }
+      } catch (err) {
+        console.error('Failed to load events:', err);
+      }
+    }
+
+    // Event change handler
+    function onEventChange() {
+      const select = document.getElementById('eventSelect');
+      const eventId = select.value;
+
+      if (!eventId) {
+        currentEvent = null;
+        document.getElementById('entryCount').textContent = '0 Admitted';
+        return;
+      }
+
+      const option = select.options[select.selectedIndex];
+      currentEvent = {
+        id: eventId,
+        slug: option.dataset.slug,
+        name: option.textContent
+      };
+
+      // Load entry count
+      loadEntryCount();
+
+      // Reset scanner state
+      resetScanState();
+    }
+
+    async function loadEntryCount() {
+      if (!currentEvent) return;
+      try {
+        const data = await apiCall(`/api/v1/staff/entry/count/${currentEvent.id}`);
+        document.getElementById('entryCount').textContent = `${data.admitted} Admitted`;
+      } catch (err) {
+        console.error('Failed to load entry count:', err);
+      }
+    }
+
+    // Scanner mode
+    function switchScannerMode(mode) {
+      scannerMode = mode;
+
+      document.querySelectorAll('.scanner-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+      });
+
+      const viewport = document.getElementById('scannerViewport');
+      const manualEntry = document.getElementById('manualEntry');
+      const overlay = document.getElementById('scannerOverlay');
+
+      if (mode === 'qr') {
+        viewport.style.display = 'block';
+        manualEntry.classList.add('hidden');
+        overlay.style.display = 'flex';
+        startQRScanner();
+      } else {
+        viewport.style.display = 'none';
+        manualEntry.classList.remove('hidden');
+        stopQRScanner();
+      }
+
+      resetScanState();
+    }
+
+    // QR Scanner
+    async function startQRScanner() {
+      if (qrScanner) return;
+
+      try {
+        qrScanner = new Html5Qrcode('qr-reader');
+        await qrScanner.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1,
+            disableFlip: false
+          },
+          onQRCodeSuccess,
+          () => {} // Ignore errors
+        );
+        document.getElementById('scannerOverlay').style.display = 'none';
+      } catch (err) {
+        console.error('QR Scanner error:', err);
+        document.getElementById('scannerOverlay').innerHTML = `
+          <div style="text-align: center; color: var(--gray); padding: 2rem;">
+            <p>Camera access required</p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Please allow camera permissions</p>
+          </div>
+        `;
+      }
+    }
+
+    function stopQRScanner() {
+      if (qrScanner) {
+        qrScanner.stop().catch(() => {});
+        qrScanner = null;
+      }
+    }
+
+    async function onQRCodeSuccess(decodedText) {
+      // Pause scanner
+      if (qrScanner) {
+        await qrScanner.pause();
+      }
+
+      // Extract pass ID from QR code
+      let passId = decodedText;
+
+      // Handle URL format
+      if (decodedText.includes('/')) {
+        const parts = decodedText.split('/');
+        passId = parts[parts.length - 1];
+      }
+
+      await validatePass(passId);
+    }
+
+    async function validateManualPass() {
+      const input = document.getElementById('manualPassId');
+      const passId = input.value.trim();
+      if (!passId) return;
+      await validatePass(passId);
+    }
+
+    async function validatePass(passId) {
+      if (!currentEvent) {
+        showResult('invalid', 'No Event Selected', 'Please select an event first');
+        return;
+      }
+
+      try {
+        const data = await apiCall(`/api/v1/lightning/passes/${passId}/validate`);
+        currentPass = data;
+        currentPass.passId = passId;
+
+        // Check if pass is valid
+        if (!data.valid) {
+          const reason = data.reason || 'Invalid pass';
+          let resultType = 'invalid';
+          let title = 'INVALID';
+
+          if (reason.includes('already') || reason.includes('used')) {
+            resultType = 'already-used';
+            title = 'ALREADY USED';
+          } else if (reason.includes('expired')) {
+            title = 'EXPIRED';
+          }
+
+          showResult(resultType, title, reason, data);
+          return;
+        }
+
+        // Valid pass
+        showResult('verified', 'VERIFIED', data.guestName || 'Valid Pass', data);
+
+        // Show ID check and action buttons
+        document.getElementById('idCheckSection').style.display = 'block';
+        document.getElementById('actionButtons').classList.remove('hidden');
+
+      } catch (err) {
+        showResult('invalid', 'ERROR', err.message);
+      }
+    }
+
+    function showResult(type, title, subtitle, data = null) {
+      const banner = document.getElementById('resultBanner');
+      const icon = document.getElementById('resultIcon');
+      const titleEl = document.getElementById('resultTitle');
+      const subtitleEl = document.getElementById('resultSubtitle');
+      const detailsEl = document.getElementById('resultDetails');
+
+      banner.className = 'result-banner ' + type;
+      banner.style.display = 'block';
+
+      if (type === 'verified') {
+        icon.textContent = '';
+        titleEl.style.color = 'var(--neon-green)';
+      } else if (type === 'already-used') {
+        icon.textContent = '';
+        titleEl.style.color = '#ff8c00';
+      } else {
+        icon.textContent = '';
+        titleEl.style.color = 'var(--danger-red)';
+      }
+
+      titleEl.textContent = title;
+      subtitleEl.textContent = subtitle;
+
+      // Build details
+      if (data) {
+        let detailsHtml = '';
+        if (data.passType) {
+          detailsHtml += `<div class="result-row"><span>Type</span><span>${data.passType}</span></div>`;
+        }
+        if (data.quantity && data.quantity > 1) {
+          detailsHtml += `<div class="result-row"><span>Guests</span><span>${data.quantity}</span></div>`;
+        }
+        if (data.eventName) {
+          detailsHtml += `<div class="result-row"><span>Event</span><span>${data.eventName}</span></div>`;
+        }
+        detailsEl.innerHTML = detailsHtml;
+        detailsEl.style.display = detailsHtml ? 'block' : 'none';
+      } else {
+        detailsEl.style.display = 'none';
+      }
+
+      // Hide action buttons for invalid passes
+      if (type !== 'verified') {
+        document.getElementById('idCheckSection').style.display = 'none';
+        document.getElementById('actionButtons').classList.add('hidden');
+
+        // Resume scanner after delay
+        setTimeout(() => {
+          if (qrScanner) qrScanner.resume();
+          resetScanState();
+        }, 3000);
+      }
+    }
+
+    // ID Check
+    function toggleIdCheck() {
+      const content = document.getElementById('idCheckContent');
+      const toggle = document.getElementById('idCheckToggle');
+      content.classList.toggle('active', toggle.checked);
+
+      if (!toggle.checked) {
+        ageCheckPerformed = false;
+        ageOver21 = null;
+        document.getElementById('ageResult').classList.add('hidden');
+      }
+    }
+
+    function setAgeManual(over21) {
+      ageCheckPerformed = true;
+      ageOver21 = over21;
+
+      const ageResult = document.getElementById('ageResult');
+      const ageTitle = document.getElementById('ageResultTitle');
+
+      ageResult.classList.remove('hidden', 'over21', 'under21');
+      ageResult.classList.add(over21 ? 'over21' : 'under21');
+      ageTitle.textContent = over21 ? '21+ VERIFIED' : 'UNDER 21';
+      document.getElementById('ageResultDob').textContent = 'Manual verification';
+    }
+
+    // Admit/Deny
+    async function admitGuest() {
+      if (!currentPass || !currentEvent) return;
+
+      const btnAdmit = document.getElementById('btnAdmit');
+      btnAdmit.disabled = true;
+      btnAdmit.textContent = 'Processing...';
+
+      try {
+        // Mark pass as used
+        await apiCall(`/api/v1/lightning/passes/${currentPass.passId}/use`, {
+          method: 'POST',
+          body: JSON.stringify({
+            eventId: currentEvent.id
+          })
+        });
+
+        // Create entry log
+        await apiCall('/api/v1/staff/entry', {
+          method: 'POST',
+          body: JSON.stringify({
+            passId: currentPass.passId,
+            eventId: currentEvent.id,
+            eventSlug: currentEvent.slug,
+            result: 'admitted',
+            ageCheckPerformed,
+            ageOver21: ageCheckPerformed ? ageOver21 : undefined,
+            guestName: currentPass.guestName,
+            passType: currentPass.passType,
+            quantity: currentPass.quantity || 1
+          })
+        });
+
+        // Update count
+        loadEntryCount();
+
+        // Show success briefly
+        showResult('verified', 'ADMITTED', currentPass.guestName || 'Guest admitted');
+
+        // Reset after delay
+        setTimeout(() => {
+          resetScanState();
+          if (qrScanner) qrScanner.resume();
+        }, 2000);
+
+      } catch (err) {
+        console.error('Admit error:', err);
+        showResult('invalid', 'ERROR', err.message);
+        btnAdmit.disabled = false;
+        btnAdmit.textContent = 'ADMIT';
+      }
+    }
+
+    async function denyEntry() {
+      if (!currentPass || !currentEvent) return;
+
+      try {
+        // Create entry log with deny result
+        await apiCall('/api/v1/staff/entry', {
+          method: 'POST',
+          body: JSON.stringify({
+            passId: currentPass.passId,
+            eventId: currentEvent.id,
+            eventSlug: currentEvent.slug,
+            result: 'invalid',
+            ageCheckPerformed,
+            ageOver21: ageCheckPerformed ? ageOver21 : undefined,
+            guestName: currentPass.guestName,
+            passType: currentPass.passType,
+            quantity: currentPass.quantity || 1
+          })
+        });
+
+        showResult('invalid', 'DENIED', 'Entry denied');
+
+        setTimeout(() => {
+          resetScanState();
+          if (qrScanner) qrScanner.resume();
+        }, 2000);
+
+      } catch (err) {
+        console.error('Deny error:', err);
+      }
+    }
+
+    function resetScanState() {
+      currentPass = null;
+      ageCheckPerformed = false;
+      ageOver21 = null;
+
+      document.getElementById('resultBanner').style.display = 'none';
+      document.getElementById('idCheckSection').style.display = 'none';
+      document.getElementById('actionButtons').classList.add('hidden');
+      document.getElementById('idCheckToggle').checked = false;
+      document.getElementById('idCheckContent').classList.remove('active');
+      document.getElementById('ageResult').classList.add('hidden');
+      document.getElementById('manualPassId').value = '';
+
+      const btnAdmit = document.getElementById('btnAdmit');
+      btnAdmit.disabled = false;
+      btnAdmit.textContent = 'ADMIT';
+    }
+
+    // Init
+    async function init() {
+      const authed = await checkAuth();
+      if (!authed) return;
+
+      await loadEvents();
+      switchScannerMode('qr');
+    }
+
+    init();
+  </script>
+</body>
+</html>
