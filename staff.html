@@ -1436,17 +1436,31 @@
       // Show "SCANNING" status
       updateIdStatus('scanning');
 
-      try {
-        console.log('[ID-VISION] Sending frame to server...');
+      // Verbose logging for debugging
+      const frameId = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const jpegSize = Math.round(base64Image.length * 0.75 / 1024); // Approximate decoded size in KB
 
+      // Extract dimensions from canvas
+      const canvas = idScanner?.canvas;
+      const dims = canvas ? `${canvas.width}x${canvas.height}` : 'unknown';
+
+      console.log(`[ID-VISION ${frameId}] Frame captured, jpeg size: ~${jpegSize}KB, dims: ${dims}`);
+      console.log(`[ID-VISION ${frameId}] POST -> ${ID_VISION_URL}/id-vision/scan`);
+
+      const startTime = performance.now();
+
+      try {
         const response = await fetch(`${ID_VISION_URL}/id-vision/scan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: base64Image })
         });
 
+        const elapsed = Math.round(performance.now() - startTime);
+        console.log(`[ID-VISION ${frameId}] Response status: ${response.status} (${elapsed}ms)`);
+
         const data = await response.json();
-        console.log('[ID-VISION] Server response:', data);
+        console.log(`[ID-VISION ${frameId}] Response body:`, JSON.stringify(data));
 
         // Server returns { valid, over21, confidence }
         if (data.valid && data.confidence === 'high') {
@@ -1476,10 +1490,15 @@
         }
 
         // Not valid or low confidence - show "DETECTING" and continue
+        console.log(`[ID-VISION ${frameId}] Not valid or low confidence, continuing...`);
         updateIdStatus('detecting');
 
       } catch (err) {
-        console.log('[ID-VISION] Server error:', err.message);
+        const elapsed = Math.round(performance.now() - startTime);
+        console.error(`[ID-VISION ${frameId}] FETCH ERROR after ${elapsed}ms:`, err.name, err.message);
+        if (err.name === 'TypeError') {
+          console.error(`[ID-VISION ${frameId}] Likely CORS or network error`);
+        }
         updateIdStatus('detecting');
       } finally {
         idServerPending = false;
