@@ -116,33 +116,6 @@
       padding: 1rem;
     }
 
-    /* Event Selector */
-    .event-selector {
-      margin-bottom: 1rem;
-    }
-
-    .event-selector select {
-      width: 100%;
-      padding: 0.875rem 1rem;
-      background: var(--card-black);
-      border: 1px solid var(--border-dark);
-      border-radius: 12px;
-      color: var(--white);
-      font-size: 1rem;
-      font-family: inherit;
-      appearance: none;
-      cursor: pointer;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 18px;
-    }
-
-    .event-selector select:focus {
-      outline: none;
-      border-color: var(--lightning-yellow);
-    }
-
     /* Scanner Section */
     .scanner-section {
       background: var(--card-black);
@@ -617,13 +590,6 @@
 
     <main>
       <div class="container">
-        <!-- Event Selector -->
-        <div class="event-selector">
-          <select id="eventSelect" onchange="onEventChange()">
-            <option value="">Select Event</option>
-          </select>
-        </div>
-
         <!-- Scanner Section -->
         <div class="scanner-section">
           <div class="scanner-tabs">
@@ -732,7 +698,6 @@
     const STAFF_CODE = '0704';
 
     // State
-    let currentEvent = null;
     let currentPass = null;
     let ageCheckPerformed = false;
     let ageOver21 = null;
@@ -779,7 +744,6 @@
         document.getElementById('passcodeOverlay').style.display = 'none';
         document.getElementById('mainApp').classList.remove('hidden');
         sessionStorage.setItem('staffAuthed', 'true');
-        loadEvents();
         switchScannerMode('qr');
       } else {
         // Wrong code
@@ -816,74 +780,6 @@
         throw new Error(err.error || 'Request failed');
       }
       return res.json();
-    }
-
-    // Load events (use public endpoint)
-    async function loadEvents() {
-      try {
-        const res = await fetch(`${API_BASE}/api/v1/lightning/public-events`);
-        const data = await res.json();
-        const select = document.getElementById('eventSelect');
-        select.innerHTML = '<option value="">Select Event</option>';
-
-        // Filter to recent/upcoming events only
-        const now = new Date();
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-        const activeEvents = (data.events || []).filter(e => {
-          const eventDate = new Date(e.date);
-          return eventDate >= weekAgo || e.status === 'live' || e.status === 'approved';
-        });
-
-        activeEvents.forEach(event => {
-          const opt = document.createElement('option');
-          opt.value = event._id;
-          opt.dataset.slug = event.slug;
-          const date = new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          opt.textContent = `${event.name} - ${date}`;
-          select.appendChild(opt);
-        });
-
-        // Auto-select if only one event
-        if (activeEvents.length === 1) {
-          select.value = activeEvents[0]._id;
-          onEventChange();
-        }
-      } catch (err) {
-        console.error('Failed to load events:', err);
-      }
-    }
-
-    // Event change handler
-    function onEventChange() {
-      const select = document.getElementById('eventSelect');
-      const eventId = select.value;
-
-      if (!eventId) {
-        currentEvent = null;
-        document.getElementById('entryCount').textContent = '0 Admitted';
-        return;
-      }
-
-      const option = select.options[select.selectedIndex];
-      currentEvent = {
-        id: eventId,
-        slug: option.dataset.slug,
-        name: option.textContent
-      };
-
-      // Load entry count
-      loadEntryCount();
-
-      // Reset scanner state
-      resetScanState();
-    }
-
-    async function loadEntryCount() {
-      if (!currentEvent) return;
-      // Entry count will be tracked locally for now
-      // (Backend requires JWT auth - would need public endpoint)
-      document.getElementById('entryCount').textContent = `-- Admitted`;
     }
 
     // Scanner mode
@@ -1000,61 +896,55 @@
     }
 
     async function validatePass(passId) {
-      if (!currentEvent) {
-        showResult('invalid', 'No Event Selected', 'Please select an event first');
-        return;
-      }
-
-      // Try to validate via API (requires JWT auth)
+      // Use the staff validate endpoint (passcode auth, no JWT needed)
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          // No auth - show pass ID and allow manual admit
-          currentPass = { passId, guestName: 'Guest', quantity: 1 };
-          showResult('verified', 'PASS SCANNED', passId, { passType: 'Ticket' });
-          document.getElementById('ageButtons').classList.remove('hidden');
-          document.getElementById('actionButtons').classList.remove('hidden');
-          return;
-        }
+        const res = await fetch(`${API_BASE}/api/v1/staff/validate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passId, code: STAFF_CODE })
+        });
 
-        const data = await apiCall(`/api/v1/lightning/passes/${passId}/validate`);
-        currentPass = data;
-        currentPass.passId = passId;
+        const data = await res.json();
+
+        // Store pass data for admit/deny
+        currentPass = {
+          passId: data.passId || passId,
+          guestName: data.guestName,
+          quantity: data.quantity || 1,
+          eventId: data.eventId,
+          eventSlug: data.eventSlug,
+          ticketType: data.ticketType,
+          isTeam: data.isTeam,
+          isComp: data.isComp
+        };
 
         // Check if pass is valid
         if (!data.valid) {
-          const reason = data.reason || 'Invalid pass';
           let resultType = 'invalid';
-          let title = 'INVALID';
 
-          if (reason.includes('already') || reason.includes('used')) {
+          if (data.reason === 'already_used') {
             resultType = 'already-used';
-            title = 'ALREADY USED';
-          } else if (reason.includes('expired')) {
-            title = 'EXPIRED';
           }
 
-          showResult(resultType, title, reason, data);
+          showResult(resultType, data.guestName || 'Guest', data);
           return;
         }
 
-        // Valid pass
-        showResult('verified', 'VERIFIED', data.guestName || 'Valid Pass', data);
+        // Valid pass - show all details
+        showResult('verified', data.guestName, data);
 
         // Show age buttons and action buttons
         document.getElementById('ageButtons').classList.remove('hidden');
         document.getElementById('actionButtons').classList.remove('hidden');
 
       } catch (err) {
-        // API error - show pass ID and allow manual decision
-        currentPass = { passId, guestName: 'Guest', quantity: 1 };
-        showResult('verified', 'PASS SCANNED', passId, { passType: 'Check manually' });
-        document.getElementById('ageButtons').classList.remove('hidden');
-        document.getElementById('actionButtons').classList.remove('hidden');
+        console.error('Validate error:', err);
+        // Network error - show error state
+        showResult('invalid', 'Connection Error', { error: 'Could not validate pass' });
       }
     }
 
-    function showResult(type, title, guestName, data = null) {
+    function showResult(type, guestName, data = null) {
       const qrViewport = document.getElementById('qrViewport');
       const resultCard = document.getElementById('resultCard');
 
@@ -1079,43 +969,44 @@
       const passId = currentPass?.passId || data?.passId || '';
       document.getElementById('resultPassId').textContent = passId;
 
-      // Determine ticket type display
-      let ticketType = 'Ticket';
+      // Determine ticket type display from backend ticketType field
+      let displayType = 'Ticket';
       let typeClass = '';
-      if (data?.isTeam || data?.passType?.toLowerCase().includes('team')) {
-        ticketType = 'TEAM';
+      const backendType = data?.ticketType?.toLowerCase() || '';
+
+      if (backendType === 'team' || data?.isTeam) {
+        displayType = 'TEAM';
         typeClass = 'team';
-      } else if (data?.isComp || data?.passType?.toLowerCase().includes('comp') || data?.amount === 0) {
-        ticketType = 'COMP';
+      } else if (backendType === 'comp' || data?.isComp) {
+        displayType = 'COMP';
         typeClass = 'comp';
-      } else if (data?.amount > 0 || data?.passType?.toLowerCase().includes('paid') || data?.passType?.toLowerCase().includes('general')) {
-        ticketType = 'PAID';
+      } else if (backendType === 'paid' || data?.amount > 0) {
+        displayType = 'PAID';
         typeClass = 'paid';
-      } else if (data?.passType) {
-        ticketType = data.passType;
+      } else if (data?.passName) {
+        displayType = data.passName.toUpperCase();
       }
 
       const typeEl = document.getElementById('resultType');
-      typeEl.textContent = ticketType;
+      typeEl.textContent = displayType;
       typeEl.className = 'result-info-value ' + typeClass;
 
       // Set quantity
       const qty = data?.quantity || currentPass?.quantity || 1;
       document.getElementById('resultQuantity').textContent = qty === 1 ? '1 guest' : `${qty} guests`;
 
-      // Set event name
-      const eventName = data?.eventName || currentEvent?.name || 'Event';
-      // Shorten if too long
+      // Set event name (now comes from backend data)
+      const eventName = data?.eventName || 'Event';
       const shortEventName = eventName.length > 20 ? eventName.substring(0, 18) + '...' : eventName;
       document.getElementById('resultEvent').textContent = shortEventName;
 
       // Set date
-      const eventDate = data?.eventDate || currentEvent?.date;
+      const eventDate = data?.eventDate;
       if (eventDate) {
         const dateObj = new Date(eventDate);
         document.getElementById('resultDate').textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       } else {
-        document.getElementById('resultDate').textContent = 'Jul 4';
+        document.getElementById('resultDate').textContent = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       }
 
       // Hide action buttons for invalid passes
@@ -1362,47 +1253,32 @@
     // Track admitted count locally
     let localAdmittedCount = 0;
 
-    // Admit/Deny
+    // Admit guest using new staff/admit endpoint
     async function admitGuest() {
-      if (!currentPass || !currentEvent) return;
+      if (!currentPass) return;
 
       const btnAdmit = document.getElementById('btnAdmit');
       btnAdmit.disabled = true;
       btnAdmit.textContent = 'Processing...';
 
-      const token = localStorage.getItem('token');
-
       try {
-        if (token) {
-          // Try to mark pass as used via API
-          try {
-            await apiCall(`/api/v1/lightning/passes/${currentPass.passId}/use`, {
-              method: 'POST',
-              body: JSON.stringify({ eventId: currentEvent.id })
-            });
-          } catch (e) {
-            console.log('Pass use API failed (continuing):', e.message);
-          }
+        // Use new passcode-authenticated admit endpoint
+        const response = await fetch(`${API_BASE}/api/v1/staff/admit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            passId: currentPass.passId,
+            code: STAFF_CODE,
+            ageCheckPerformed,
+            ageOver21: ageCheckPerformed ? ageOver21 : undefined
+          })
+        });
 
-          // Try to create entry log
-          try {
-            await apiCall('/api/v1/staff/entry', {
-              method: 'POST',
-              body: JSON.stringify({
-                passId: currentPass.passId,
-                eventId: currentEvent.id,
-                eventSlug: currentEvent.slug,
-                result: 'admitted',
-                ageCheckPerformed,
-                ageOver21: ageCheckPerformed ? ageOver21 : undefined,
-                guestName: currentPass.guestName,
-                passType: currentPass.passType,
-                quantity: currentPass.quantity || 1
-              })
-            });
-          } catch (e) {
-            console.log('Entry log API failed (continuing):', e.message);
-          }
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Admit API error:', data.error);
+          // Still track locally even if API fails
         }
 
         // Update local count
@@ -1410,7 +1286,11 @@
         document.getElementById('entryCount').textContent = `${localAdmittedCount} Admitted`;
 
         // Show success
-        showResult('verified', 'ADMITTED', currentPass.guestName || 'Guest admitted');
+        showResult('verified', currentPass.guestName || 'Guest admitted', {
+          guestName: currentPass.guestName,
+          quantity: currentPass.quantity,
+          ticketType: currentPass.ticketType
+        });
 
         // Reset after delay and restart scanner
         setTimeout(async () => {
@@ -1423,7 +1303,11 @@
         // Still show success (local tracking)
         localAdmittedCount += (currentPass.quantity || 1);
         document.getElementById('entryCount').textContent = `${localAdmittedCount} Admitted`;
-        showResult('verified', 'ADMITTED', currentPass.guestName || 'Guest admitted');
+        showResult('verified', currentPass.guestName || 'Guest admitted', {
+          guestName: currentPass.guestName,
+          quantity: currentPass.quantity,
+          ticketType: currentPass.ticketType
+        });
 
         setTimeout(async () => {
           await resetScanState();
@@ -1433,32 +1317,36 @@
     }
 
     async function denyEntry() {
-      if (!currentPass || !currentEvent) return;
+      if (!currentPass) return;
 
+      // Show denial UI immediately
+      showResult('invalid', 'Entry denied', {
+        guestName: currentPass.guestName,
+        ticketType: currentPass.ticketType
+      });
+
+      // Optional: Log the denial via JWT-authenticated endpoint if available
       const token = localStorage.getItem('token');
-
-      if (token) {
+      if (token && currentPass.eventId) {
         try {
           await apiCall('/api/v1/staff/entry', {
             method: 'POST',
             body: JSON.stringify({
               passId: currentPass.passId,
-              eventId: currentEvent.id,
-              eventSlug: currentEvent.slug,
+              eventId: currentPass.eventId,
+              eventSlug: currentPass.eventSlug,
               result: 'invalid',
               ageCheckPerformed,
               ageOver21: ageCheckPerformed ? ageOver21 : undefined,
               guestName: currentPass.guestName,
-              passType: currentPass.passType,
+              passType: currentPass.ticketType,
               quantity: currentPass.quantity || 1
             })
           });
         } catch (e) {
-          console.log('Deny log API failed:', e.message);
+          console.log('Deny log API failed (non-critical):', e.message);
         }
       }
-
-      showResult('invalid', 'DENIED', 'Entry denied');
 
       setTimeout(async () => {
         await resetScanState();
