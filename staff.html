@@ -19,9 +19,7 @@
   <!-- QR Scanner (html5-qrcode) -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-  <!-- ID Scanner (ZXing - pinned versions) -->
-  <script src="https://cdn.jsdelivr.net/npm/@aspect-ratio/core@0.1.0/dist/index.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@aspect-ratio/core@0.1.0/dist/index.min.js" defer></script>
+  <!-- ID Scanner: We'll use html5-qrcode in PDF417 mode (it supports multiple formats) -->
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -639,13 +637,29 @@
             </label>
           </div>
           <div class="id-check-content" id="idCheckContent">
+            <!-- ID Scanner Viewport -->
+            <div id="idScannerContainer" style="margin-bottom: 0.75rem;">
+              <div id="id-reader" style="width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 12px; overflow: hidden;"></div>
+              <p id="idScanStatus" style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 0.5rem;">
+                Scanning for ID barcode...
+              </p>
+            </div>
+
+            <!-- Age Result (shown after successful scan) -->
             <div class="age-result hidden" id="ageResult">
               <div class="age-result-title" id="ageResultTitle"></div>
               <div class="age-result-dob" id="ageResultDob"></div>
             </div>
-            <div class="manual-buttons">
-              <button class="manual-btn over21" onclick="setAgeManual(true)">21+</button>
-              <button class="manual-btn under21" onclick="setAgeManual(false)">Under 21</button>
+
+            <!-- Manual Fallback (shown after scan timeout or on demand) -->
+            <div id="manualFallback" style="display: none;">
+              <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-bottom: 0.75rem;">
+                Could not read ID. Verify manually:
+              </p>
+              <div class="manual-buttons">
+                <button class="manual-btn over21" onclick="setAgeManual(true)">21+</button>
+                <button class="manual-btn under21" onclick="setAgeManual(false)">Under 21</button>
+              </div>
             </div>
           </div>
         </div>
@@ -674,6 +688,8 @@
     let ageCheckPerformed = false;
     let ageOver21 = null;
     let qrScanner = null;
+    let idScanner = null;
+    let idScanTimeout = null;
     let scannerMode = 'qr';
     let staffToken = null;
 
@@ -1011,32 +1027,207 @@
         document.getElementById('actionButtons').classList.add('hidden');
 
         // Resume scanner after delay
-        setTimeout(() => {
-          if (qrScanner) qrScanner.resume();
-          resetScanState();
+        setTimeout(async () => {
+          await resetScanState();
+          if (scannerMode === 'qr') await startQRScanner();
         }, 3000);
       }
     }
 
-    // ID Check
-    function toggleIdCheck() {
+    // ID Check - Camera handoff and PDF417 scanning
+    async function toggleIdCheck() {
       const content = document.getElementById('idCheckContent');
       const toggle = document.getElementById('idCheckToggle');
       content.classList.toggle('active', toggle.checked);
 
-      if (!toggle.checked) {
+      if (toggle.checked) {
+        // ID Check ON: Stop QR scanner, start ID scanner
+        await stopQRScanner();
+        resetIdScanUI();
+        await startIdScanner();
+      } else {
+        // ID Check OFF: Stop ID scanner, resume QR scanner
+        await stopIdScanner();
         ageCheckPerformed = false;
         ageOver21 = null;
         document.getElementById('ageResult').classList.add('hidden');
+        // Resume QR scanner if in QR mode
+        if (scannerMode === 'qr') {
+          await startQRScanner();
+        }
       }
+    }
+
+    function resetIdScanUI() {
+      document.getElementById('ageResult').classList.add('hidden');
+      document.getElementById('manualFallback').style.display = 'none';
+      document.getElementById('idScannerContainer').style.display = 'block';
+      document.getElementById('idScanStatus').textContent = 'Scanning for ID barcode...';
+    }
+
+    async function startIdScanner() {
+      if (idScanner) return;
+
+      try {
+        idScanner = new Html5Qrcode('id-reader');
+
+        // Start scanning with PDF417 format hint
+        await idScanner.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 280, height: 100 }, // Wider box for barcode
+            aspectRatio: 1.333, // 4:3 for ID cards
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.PDF_417,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.DATA_MATRIX
+            ]
+          },
+          onIdScanSuccess,
+          () => {} // Ignore scan errors
+        );
+
+        // Set timeout for manual fallback (8 seconds)
+        idScanTimeout = setTimeout(() => {
+          showIdManualFallback();
+        }, 8000);
+
+      } catch (err) {
+        console.error('ID Scanner error:', err);
+        showIdManualFallback();
+      }
+    }
+
+    async function stopIdScanner() {
+      if (idScanTimeout) {
+        clearTimeout(idScanTimeout);
+        idScanTimeout = null;
+      }
+      if (idScanner) {
+        try {
+          await idScanner.stop();
+        } catch (e) {}
+        idScanner = null;
+      }
+    }
+
+    function showIdManualFallback() {
+      document.getElementById('idScannerContainer').style.display = 'none';
+      document.getElementById('manualFallback').style.display = 'block';
+      stopIdScanner();
+    }
+
+    async function onIdScanSuccess(decodedText) {
+      console.log('ID barcode scanned:', decodedText.substring(0, 50) + '...');
+
+      // Stop scanner and clear timeout
+      if (idScanTimeout) {
+        clearTimeout(idScanTimeout);
+        idScanTimeout = null;
+      }
+      await stopIdScanner();
+
+      // Parse AAMVA data from PDF417 barcode
+      try {
+        const ageInfo = parseAAMVA(decodedText);
+
+        if (ageInfo.dob) {
+          const age = calculateAge(ageInfo.dob);
+          const isOver21 = age >= 21;
+
+          ageCheckPerformed = true;
+          ageOver21 = isOver21;
+
+          // Show result
+          document.getElementById('idScannerContainer').style.display = 'none';
+          const ageResult = document.getElementById('ageResult');
+          ageResult.classList.remove('hidden', 'over21', 'under21');
+          ageResult.classList.add(isOver21 ? 'over21' : 'under21');
+          document.getElementById('ageResultTitle').textContent = isOver21 ? '21+ VERIFIED' : 'UNDER 21';
+          document.getElementById('ageResultDob').textContent = `DOB: ${formatDate(ageInfo.dob)} (Age ${age})`;
+
+        } else {
+          // Could not parse DOB - show manual fallback
+          showIdManualFallback();
+        }
+      } catch (e) {
+        console.error('AAMVA parse error:', e);
+        showIdManualFallback();
+      }
+    }
+
+    // Simple AAMVA PDF417 parser (driver's license barcode format)
+    function parseAAMVA(data) {
+      const result = { dob: null, firstName: null, lastName: null };
+
+      // AAMVA format uses DAQ for license#, DCS for last name, DAC/DCT for first, DBB for DOB
+      // DOB format: MMDDYYYY or YYYYMMDD depending on version
+
+      // Look for DBB (Date of Birth) field
+      const dobMatch = data.match(/DBB(\d{8})/);
+      if (dobMatch) {
+        const dobStr = dobMatch[1];
+        // Try MMDDYYYY format first (most common)
+        let month = parseInt(dobStr.substring(0, 2));
+        let day = parseInt(dobStr.substring(2, 4));
+        let year = parseInt(dobStr.substring(4, 8));
+
+        // Sanity check - if month > 12, it's probably YYYYMMDD
+        if (month > 12) {
+          year = parseInt(dobStr.substring(0, 4));
+          month = parseInt(dobStr.substring(4, 6));
+          day = parseInt(dobStr.substring(6, 8));
+        }
+
+        if (year > 1900 && year < 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+          result.dob = new Date(year, month - 1, day);
+        }
+      }
+
+      // Also try DL (Date of Birth in some formats)
+      if (!result.dob) {
+        const dlMatch = data.match(/DL(\d{8})/);
+        if (dlMatch) {
+          const dobStr = dlMatch[1];
+          const month = parseInt(dobStr.substring(0, 2));
+          const day = parseInt(dobStr.substring(2, 4));
+          const year = parseInt(dobStr.substring(4, 8));
+          if (year > 1900 && year < 2100 && month >= 1 && month <= 12) {
+            result.dob = new Date(year, month - 1, day);
+          }
+        }
+      }
+
+      return result;
+    }
+
+    function calculateAge(dob) {
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
     function setAgeManual(over21) {
       ageCheckPerformed = true;
       ageOver21 = over21;
 
+      // Stop ID scanner if running
+      stopIdScanner();
+
       const ageResult = document.getElementById('ageResult');
       const ageTitle = document.getElementById('ageResultTitle');
+
+      document.getElementById('idScannerContainer').style.display = 'none';
+      document.getElementById('manualFallback').style.display = 'none';
 
       ageResult.classList.remove('hidden', 'over21', 'under21');
       ageResult.classList.add(over21 ? 'over21' : 'under21');
@@ -1098,9 +1289,9 @@
         showResult('verified', 'ADMITTED', currentPass.guestName || 'Guest admitted');
 
         // Reset after delay
-        setTimeout(() => {
-          resetScanState();
-          if (qrScanner) qrScanner.resume();
+        setTimeout(async () => {
+          await resetScanState();
+          if (scannerMode === 'qr') await startQRScanner();
         }, 1500);
 
       } catch (err) {
@@ -1110,9 +1301,9 @@
         document.getElementById('entryCount').textContent = `${localAdmittedCount} Admitted`;
         showResult('verified', 'ADMITTED', currentPass.guestName || 'Guest admitted');
 
-        setTimeout(() => {
-          resetScanState();
-          if (qrScanner) qrScanner.resume();
+        setTimeout(async () => {
+          await resetScanState();
+          if (scannerMode === 'qr') await startQRScanner();
         }, 1500);
       }
     }
@@ -1145,16 +1336,19 @@
 
       showResult('invalid', 'DENIED', 'Entry denied');
 
-      setTimeout(() => {
-        resetScanState();
-        if (qrScanner) qrScanner.resume();
+      setTimeout(async () => {
+        await resetScanState();
+        if (scannerMode === 'qr') await startQRScanner();
       }, 1500);
     }
 
-    function resetScanState() {
+    async function resetScanState() {
       currentPass = null;
       ageCheckPerformed = false;
       ageOver21 = null;
+
+      // Stop ID scanner if running
+      await stopIdScanner();
 
       document.getElementById('resultBanner').style.display = 'none';
       document.getElementById('idCheckSection').style.display = 'none';
@@ -1163,6 +1357,10 @@
       document.getElementById('idCheckContent').classList.remove('active');
       document.getElementById('ageResult').classList.add('hidden');
       document.getElementById('manualPassId').value = '';
+
+      // Reset ID scanner UI
+      document.getElementById('idScannerContainer').style.display = 'block';
+      document.getElementById('manualFallback').style.display = 'none';
 
       const btnAdmit = document.getElementById('btnAdmit');
       btnAdmit.disabled = false;
