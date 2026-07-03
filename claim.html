@@ -309,8 +309,51 @@
         let claimToken = null;
         let passData = null;
 
+        // Detect if we're in a sandboxed iframe (email preview, SafeLinks, etc.)
+        function isInSandboxedIframe() {
+            try {
+                // If we can't access top or parent, we might be sandboxed
+                if (window.self !== window.top) {
+                    return true;
+                }
+            } catch (e) {
+                // Cross-origin iframe - likely sandboxed
+                return true;
+            }
+            return false;
+        }
+
+        // Show escape hatch for sandboxed environments
+        function showSandboxEscape() {
+            const container = document.querySelector('.claim-container');
+            container.innerHTML = `
+                <div class="logo">
+                    <img src="/logo.png" alt="Lightning Pass" onerror="this.style.display='none'">
+                    <h1>Lightning Pass</h1>
+                </div>
+                <div class="claim-card">
+                    <h2>Open in Browser</h2>
+                    <p style="margin: 1rem 0; color: var(--gray);">
+                        This page needs to open in your browser to work properly.
+                    </p>
+                    <a href="${window.location.href}" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: 1rem;">
+                        Open Claim Page
+                    </a>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--gray);">
+                        Or copy this link and paste in your browser:<br>
+                        <code style="display: block; margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.1); border-radius: 4px; word-break: break-all; font-size: 0.75rem;">${window.location.href}</code>
+                    </p>
+                </div>
+            `;
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for sandboxed iframe first
+            if (isInSandboxedIframe()) {
+                showSandboxEscape();
+                return;
+            }
             // Initialize LoginCenter
             if (typeof LoginCenter !== 'undefined') {
                 LoginCenter.init({
