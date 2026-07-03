@@ -213,60 +213,155 @@
       opacity: 0.5;
     }
 
-    /* Result Banner */
-    .result-banner {
+    /* Scan Status Indicator */
+    .scan-status {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 0.5rem 1.25rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .scan-status.ready {
+      color: var(--lightning-yellow);
+      border: 1px solid var(--lightning-yellow);
+    }
+
+    .scan-status.processing {
+      color: var(--electric-blue);
+      border: 1px solid var(--electric-blue);
+    }
+
+    .scan-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    .scan-status.ready .dot {
+      background: var(--lightning-yellow);
+    }
+
+    .scan-status.processing .dot {
+      background: var(--electric-blue);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Result Card (replaces camera view) */
+    .result-card {
+      display: none;
       padding: 1.5rem;
       text-align: center;
-      display: none;
+      min-height: 280px;
     }
 
-    .result-banner.verified {
-      background: linear-gradient(135deg, rgba(57, 255, 20, 0.2), rgba(57, 255, 20, 0.05));
-      border-top: 3px solid var(--neon-green);
+    .result-card.show {
+      display: block;
     }
 
-    .result-banner.invalid {
-      background: linear-gradient(135deg, rgba(255, 0, 68, 0.2), rgba(255, 0, 68, 0.05));
-      border-top: 3px solid var(--danger-red);
+    .result-card.verified {
+      background: linear-gradient(135deg, rgba(57, 255, 20, 0.15), rgba(57, 255, 20, 0.02));
     }
 
-    .result-banner.already-used {
-      background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.05));
-      border-top: 3px solid #ff8c00;
+    .result-card.invalid {
+      background: linear-gradient(135deg, rgba(255, 0, 68, 0.15), rgba(255, 0, 68, 0.02));
     }
 
-    .result-icon {
-      font-size: 2.5rem;
+    .result-card.already-used {
+      background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(255, 140, 0, 0.02));
+    }
+
+    .result-status {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 1rem;
+    }
+
+    .result-card.verified .result-status {
+      background: var(--neon-green);
+      color: #000;
+    }
+
+    .result-card.invalid .result-status {
+      background: var(--danger-red);
+      color: #fff;
+    }
+
+    .result-card.already-used .result-status {
+      background: #ff8c00;
+      color: #000;
+    }
+
+    .result-guest-name {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--white);
       margin-bottom: 0.5rem;
     }
 
-    .result-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-    }
-
-    .result-subtitle {
+    .result-pass-id {
+      font-size: 0.8rem;
       color: var(--gray);
-      font-size: 0.9rem;
+      font-family: monospace;
+      margin-bottom: 1.25rem;
     }
 
-    .result-details {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border-dark);
+    .result-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
       text-align: left;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      border-radius: 12px;
     }
 
-    .result-row {
+    .result-info-item {
       display: flex;
-      justify-content: space-between;
-      padding: 0.4rem 0;
-      font-size: 0.9rem;
+      flex-direction: column;
+      gap: 0.2rem;
     }
 
-    .result-row span:first-child {
+    .result-info-label {
+      font-size: 0.7rem;
       color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .result-info-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .result-info-value.paid {
+      color: var(--neon-green);
+    }
+
+    .result-info-value.comp {
+      color: var(--electric-purple);
+    }
+
+    .result-info-value.team {
+      color: var(--lightning-yellow);
     }
 
     /* ID Check Section */
@@ -545,6 +640,10 @@
                 <rect x="10" y="10" width="80" height="80" rx="8" stroke-dasharray="10 5"/>
               </svg>
             </div>
+            <div class="scan-status ready" id="scanStatus">
+              <span class="dot"></span>
+              <span id="scanStatusText">Ready to scan</span>
+            </div>
           </div>
 
           <!-- ID Scanner Viewport -->
@@ -571,12 +670,29 @@
             </button>
           </div>
 
-          <!-- Result Banner -->
-          <div class="result-banner" id="resultBanner">
-            <div class="result-icon" id="resultIcon"></div>
-            <div class="result-title" id="resultTitle"></div>
-            <div class="result-subtitle" id="resultSubtitle"></div>
-            <div class="result-details" id="resultDetails"></div>
+          <!-- Result Card (replaces camera when pass scanned) -->
+          <div class="result-card" id="resultCard">
+            <div class="result-status" id="resultStatus">VERIFIED</div>
+            <div class="result-guest-name" id="resultGuestName">Guest Name</div>
+            <div class="result-pass-id" id="resultPassId">LP-1234567890-ABC</div>
+            <div class="result-info-grid">
+              <div class="result-info-item">
+                <span class="result-info-label">Type</span>
+                <span class="result-info-value" id="resultType">Paid</span>
+              </div>
+              <div class="result-info-item">
+                <span class="result-info-label">Quantity</span>
+                <span class="result-info-value" id="resultQuantity">1 guest</span>
+              </div>
+              <div class="result-info-item">
+                <span class="result-info-label">Event</span>
+                <span class="result-info-value" id="resultEvent">Stars & Stripes</span>
+              </div>
+              <div class="result-info-item">
+                <span class="result-info-label">Date</span>
+                <span class="result-info-value" id="resultDate">Jul 4</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -781,10 +897,17 @@
       const qrViewport = document.getElementById('qrViewport');
       const idViewport = document.getElementById('idViewport');
       const manualEntry = document.getElementById('manualEntry');
+      const resultCard = document.getElementById('resultCard');
 
       // Stop all scanners first
       await stopQRScanner();
       await stopIdScanner();
+
+      // Hide result card when switching modes
+      resultCard.classList.remove('show', 'verified', 'invalid', 'already-used');
+
+      // Reset scan status
+      setScanStatus('ready', 'Ready to scan');
 
       // Show/hide viewports and start appropriate scanner
       if (mode === 'qr') {
@@ -802,6 +925,14 @@
         idViewport.classList.add('hidden');
         manualEntry.classList.remove('hidden');
       }
+    }
+
+    // Update scan status indicator
+    function setScanStatus(type, text) {
+      const status = document.getElementById('scanStatus');
+      const statusText = document.getElementById('scanStatusText');
+      status.className = 'scan-status ' + type;
+      statusText.textContent = text;
     }
 
     // QR Scanner
@@ -841,6 +972,9 @@
     }
 
     async function onQRCodeSuccess(decodedText) {
+      // Show processing status immediately
+      setScanStatus('processing', 'QR Found - Verifying...');
+
       // Pause scanner
       if (qrScanner) {
         await qrScanner.pause();
@@ -920,46 +1054,68 @@
       }
     }
 
-    function showResult(type, title, subtitle, data = null) {
-      const banner = document.getElementById('resultBanner');
-      const icon = document.getElementById('resultIcon');
-      const titleEl = document.getElementById('resultTitle');
-      const subtitleEl = document.getElementById('resultSubtitle');
-      const detailsEl = document.getElementById('resultDetails');
+    function showResult(type, title, guestName, data = null) {
+      const qrViewport = document.getElementById('qrViewport');
+      const resultCard = document.getElementById('resultCard');
 
-      banner.className = 'result-banner ' + type;
-      banner.style.display = 'block';
+      // Hide camera viewport, show result card
+      qrViewport.classList.add('hidden');
+      resultCard.className = 'result-card show ' + type;
 
+      // Set status badge
+      const statusEl = document.getElementById('resultStatus');
       if (type === 'verified') {
-        icon.textContent = '';
-        titleEl.style.color = 'var(--neon-green)';
+        statusEl.textContent = 'VERIFIED';
       } else if (type === 'already-used') {
-        icon.textContent = '';
-        titleEl.style.color = '#ff8c00';
+        statusEl.textContent = 'ALREADY USED';
       } else {
-        icon.textContent = '';
-        titleEl.style.color = 'var(--danger-red)';
+        statusEl.textContent = 'INVALID';
       }
 
-      titleEl.textContent = title;
-      subtitleEl.textContent = subtitle;
+      // Set guest name
+      document.getElementById('resultGuestName').textContent = guestName || 'Unknown Guest';
 
-      // Build details
-      if (data) {
-        let detailsHtml = '';
-        if (data.passType) {
-          detailsHtml += `<div class="result-row"><span>Type</span><span>${data.passType}</span></div>`;
-        }
-        if (data.quantity && data.quantity > 1) {
-          detailsHtml += `<div class="result-row"><span>Guests</span><span>${data.quantity}</span></div>`;
-        }
-        if (data.eventName) {
-          detailsHtml += `<div class="result-row"><span>Event</span><span>${data.eventName}</span></div>`;
-        }
-        detailsEl.innerHTML = detailsHtml;
-        detailsEl.style.display = detailsHtml ? 'block' : 'none';
+      // Set pass ID
+      const passId = currentPass?.passId || data?.passId || '';
+      document.getElementById('resultPassId').textContent = passId;
+
+      // Determine ticket type display
+      let ticketType = 'Ticket';
+      let typeClass = '';
+      if (data?.isTeam || data?.passType?.toLowerCase().includes('team')) {
+        ticketType = 'TEAM';
+        typeClass = 'team';
+      } else if (data?.isComp || data?.passType?.toLowerCase().includes('comp') || data?.amount === 0) {
+        ticketType = 'COMP';
+        typeClass = 'comp';
+      } else if (data?.amount > 0 || data?.passType?.toLowerCase().includes('paid') || data?.passType?.toLowerCase().includes('general')) {
+        ticketType = 'PAID';
+        typeClass = 'paid';
+      } else if (data?.passType) {
+        ticketType = data.passType;
+      }
+
+      const typeEl = document.getElementById('resultType');
+      typeEl.textContent = ticketType;
+      typeEl.className = 'result-info-value ' + typeClass;
+
+      // Set quantity
+      const qty = data?.quantity || currentPass?.quantity || 1;
+      document.getElementById('resultQuantity').textContent = qty === 1 ? '1 guest' : `${qty} guests`;
+
+      // Set event name
+      const eventName = data?.eventName || currentEvent?.name || 'Event';
+      // Shorten if too long
+      const shortEventName = eventName.length > 20 ? eventName.substring(0, 18) + '...' : eventName;
+      document.getElementById('resultEvent').textContent = shortEventName;
+
+      // Set date
+      const eventDate = data?.eventDate || currentEvent?.date;
+      if (eventDate) {
+        const dateObj = new Date(eventDate);
+        document.getElementById('resultDate').textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       } else {
-        detailsEl.style.display = 'none';
+        document.getElementById('resultDate').textContent = 'Jul 4';
       }
 
       // Hide action buttons for invalid passes
@@ -1319,8 +1475,14 @@
       await stopQRScanner();
       await stopIdScanner();
 
-      // Hide result and action UI
-      document.getElementById('resultBanner').style.display = 'none';
+      // Hide result card, show QR viewport
+      document.getElementById('resultCard').classList.remove('show', 'verified', 'invalid', 'already-used');
+      document.getElementById('qrViewport').classList.remove('hidden');
+
+      // Reset scan status
+      setScanStatus('ready', 'Ready to scan');
+
+      // Hide action UI
       document.getElementById('ageButtons').classList.add('hidden');
       document.getElementById('actionButtons').classList.add('hidden');
       document.getElementById('ageResult').classList.add('hidden');
