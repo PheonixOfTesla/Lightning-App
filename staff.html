@@ -1299,14 +1299,25 @@
       }
     }
 
-    // ID Scanner for PDF417 barcodes (driver's license) using zxing-wasm
+    // ID Vision Service URL (server-side heavy processing)
+    // Phone captures frame -> POST base64 -> server decodes + returns age flags
+    const ID_VISION_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3001'
+      : 'https://id-vision-service-production.up.railway.app';
+
+    // ID Scanner for PDF417 barcodes (driver's license)
+    // Hybrid mode: tries server-side vision service first, falls back to local zxing-wasm
     let idStream = null;
     let idAnimationId = null;
+    let idFrameCount = 0;  // Track frames sent to server
+    let idServerPending = false;  // Prevent concurrent server calls
 
     async function startIdScanner() {
       if (idStream) return;
 
       const idReaderEl = document.getElementById('id-reader');
+      idFrameCount = 0;
+      idServerPending = false;
 
       try {
         // Get camera stream (back camera, high res for barcode detail)
@@ -1347,10 +1358,10 @@
         // Start frame capture loop
         scanIdFrame();
 
-        // Set timeout for manual fallback (10 seconds - PDF417 needs more time)
+        // Set timeout for manual fallback (15 seconds - server processing needs time)
         idScanTimeout = setTimeout(() => {
           showIdManualFallback();
-        }, 10000);
+        }, 15000);
 
       } catch (err) {
         console.error('ID Scanner error:', err);
@@ -1367,13 +1378,23 @@
       if (video.videoWidth && video.videoHeight) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-
         ctx.drawImage(video, 0, 0);
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // Send frame to server every 10 frames (reduce network load)
+        // Server handles heavy processing: super-resolution + barcode decode + AAMVA parse
+        idFrameCount++;
 
+        if (idFrameCount % 10 === 0 && !idServerPending) {
+          // Capture as JPEG for smaller payload
+          const base64Image = canvas.toDataURL('image/jpeg', 0.85);
+
+          // POST to vision service (non-blocking)
+          sendFrameToVisionService(base64Image);
+        }
+
+        // Also try local zxing-wasm decode (fallback / parallel)
         try {
-          // Use zxing-wasm for PDF417 with tryHarder (critical for degraded IDs)
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const results = await ZXingWASM.readBarcodesFromImageData(imageData, {
             formats: ['PDF417', 'DataMatrix', 'Code128'],
             tryHarder: true,
@@ -1381,16 +1402,106 @@
           });
 
           if (results && results.length > 0 && results[0].text) {
-            console.log('zxing-wasm PDF417 decoded:', results[0].text.substring(0, 50) + '...');
-            await onIdScanSuccess(results[0].text);
+            console.log('[ID] Local zxing-wasm decoded:', results[0].text.substring(0, 50) + '...');
+            await onIdScanSuccessLocal(results[0].text);
             return;
           }
         } catch (e) {
-          // Decode failed - continue scanning
+          // Local decode failed - continue (server may succeed)
         }
       }
 
       idAnimationId = requestAnimationFrame(scanIdFrame);
+    }
+
+    // Send frame to vision service for server-side processing
+    async function sendFrameToVisionService(base64Image) {
+      if (idServerPending) return;
+      idServerPending = true;
+
+      try {
+        console.log('[ID-VISION] Sending frame to server...');
+
+        const response = await fetch(`${ID_VISION_URL}/id-vision/scan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Image })
+        });
+
+        const data = await response.json();
+        console.log('[ID-VISION] Server response:', data);
+
+        // Server returns { valid, over21, confidence }
+        if (data.valid && data.confidence === 'high') {
+          // Stop scanner - we have a confident result from server
+          if (idScanTimeout) {
+            clearTimeout(idScanTimeout);
+            idScanTimeout = null;
+          }
+          await stopIdScanner();
+
+          ageCheckPerformed = true;
+          ageOver21 = data.over21;
+
+          // Show age result
+          const ageResult = document.getElementById('ageResult');
+          ageResult.classList.remove('hidden', 'over21', 'under21');
+          ageResult.classList.add(data.over21 ? 'over21' : 'under21');
+          document.getElementById('ageResultTitle').textContent = data.over21 ? '21+ VERIFIED' : 'UNDER 21';
+          document.getElementById('ageResultDob').textContent = 'Server-verified (high confidence)';
+
+          // Switch back to QR mode
+          setTimeout(() => switchScannerMode('qr'), 1500);
+          return;
+        }
+
+        // Not valid or low confidence - continue scanning
+        // Server returns valid:false for garbage/unreadable images (FAIL-SAFE)
+
+      } catch (err) {
+        console.log('[ID-VISION] Server error (falling back to local):', err.message);
+        // Server unreachable - continue with local scanning
+      } finally {
+        idServerPending = false;
+      }
+    }
+
+    // Local zxing-wasm decode success (fallback path)
+    async function onIdScanSuccessLocal(decodedText) {
+      console.log('[ID] Local barcode decoded:', decodedText.substring(0, 50) + '...');
+
+      // Stop scanner and clear timeout
+      if (idScanTimeout) {
+        clearTimeout(idScanTimeout);
+        idScanTimeout = null;
+      }
+      await stopIdScanner();
+
+      // Parse AAMVA locally (FAIL-SAFE: returns null if ANY ambiguity)
+      try {
+        const ageInfo = parseAAMVA(decodedText);
+
+        if (ageInfo.dob && ageInfo.confidence === 'high') {
+          const age = calculateAge(ageInfo.dob);
+          const isOver21 = age >= 21;
+
+          ageCheckPerformed = true;
+          ageOver21 = isOver21;
+
+          const ageResult = document.getElementById('ageResult');
+          ageResult.classList.remove('hidden', 'over21', 'under21');
+          ageResult.classList.add(isOver21 ? 'over21' : 'under21');
+          document.getElementById('ageResultTitle').textContent = isOver21 ? '21+ VERIFIED' : 'UNDER 21';
+          document.getElementById('ageResultDob').textContent = `DOB: ${formatDate(ageInfo.dob)} (Age ${age})`;
+
+          setTimeout(() => switchScannerMode('qr'), 1500);
+        } else {
+          showIdManualFallback();
+        }
+      } catch (e) {
+        console.error('AAMVA parse error:', e);
+        showIdManualFallback();
+      }
     }
 
     async function stopIdScanner() {
@@ -1430,48 +1541,9 @@
       `;
     }
 
+    // Legacy function - now redirects to onIdScanSuccessLocal
     async function onIdScanSuccess(decodedText) {
-      console.log('ID barcode scanned:', decodedText.substring(0, 50) + '...');
-
-      // Stop scanner and clear timeout
-      if (idScanTimeout) {
-        clearTimeout(idScanTimeout);
-        idScanTimeout = null;
-      }
-      await stopIdScanner();
-
-      // Parse AAMVA data from PDF417 barcode (FAIL-SAFE: returns null if ANY ambiguity)
-      try {
-        const ageInfo = parseAAMVA(decodedText);
-
-        // Only show age result if we have HIGH CONFIDENCE in the parse
-        if (ageInfo.dob && ageInfo.confidence === 'high') {
-          const age = calculateAge(ageInfo.dob);
-          const isOver21 = age >= 21;
-
-          ageCheckPerformed = true;
-          ageOver21 = isOver21;
-
-          // Show age result with DOB for staff to visually verify
-          const ageResult = document.getElementById('ageResult');
-          ageResult.classList.remove('hidden', 'over21', 'under21');
-          ageResult.classList.add(isOver21 ? 'over21' : 'under21');
-          document.getElementById('ageResultTitle').textContent = isOver21 ? '21+ VERIFIED' : 'UNDER 21';
-          document.getElementById('ageResultDob').textContent = `DOB: ${formatDate(ageInfo.dob)} (Age ${age})`;
-
-          // Switch back to QR mode after successful ID scan
-          setTimeout(() => switchScannerMode('qr'), 1500);
-
-        } else {
-          // FAIL SAFE: Could not parse with confidence - require manual verification
-          // This is intentional: a wrong "21+ VERIFIED" is worse than asking staff to check
-          showIdManualFallback();
-        }
-      } catch (e) {
-        console.error('AAMVA parse error:', e);
-        // FAIL SAFE: Any error = manual verification required
-        showIdManualFallback();
-      }
+      await onIdScanSuccessLocal(decodedText);
     }
 
     // FAIL-SAFE AAMVA PDF417 parser
