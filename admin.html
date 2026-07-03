@@ -853,6 +853,8 @@
             align-items: center;
         }
     </style>
+    <!-- Chart.js for Analytics Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <nav>
@@ -993,6 +995,7 @@
                 <button class="tab" onclick="switchTab('deals')">Deals</button>
                 <button class="tab" onclick="switchTab('refunds')">Refunds</button>
                 <button class="tab" onclick="switchTab('experiences')">Experiences</button>
+                <button class="tab" onclick="switchTab('analytics')">Site Analytics</button>
                 <button class="tab" onclick="switchTab('generate')" style="background: var(--lightning-yellow); color: #000;">Generate</button>
             </div>
 
@@ -1575,6 +1578,90 @@
                             <tbody id="experiencesTableBody">
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Site Analytics Tab -->
+            <div id="analyticsTab" class="tab-content">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 9l-5 5-4-4-3 3"/>
+                        </svg>
+                        Site Analytics
+                    </h3>
+
+                    <!-- Stats Cards Row -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">Today</div>
+                            <div id="statsTodayVisitors" style="color: var(--lightning-yellow); font-size: 1.5rem; font-weight: 700;">-</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">7 Days</div>
+                            <div id="statsWeekVisitors" style="color: var(--electric-blue); font-size: 1.5rem; font-weight: 700;">-</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">30 Days</div>
+                            <div id="statsMonthVisitors" style="color: var(--electric-purple); font-size: 1.5rem; font-weight: 700;">-</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">Page Views</div>
+                            <div id="statsMonthPageviews" style="color: var(--neon-green); font-size: 1.5rem; font-weight: 700;">-</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">30 days</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <!-- Visitor Trend Chart -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px;">
+                            <h4 style="margin: 0 0 1rem 0; color: #fff; font-size: 0.9rem;">Visitor Trend (30 Days)</h4>
+                            <canvas id="visitorTrendChart" height="200"></canvas>
+                        </div>
+                        <!-- Device Breakdown -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px;">
+                            <h4 style="margin: 0 0 1rem 0; color: #fff; font-size: 0.9rem;">Devices</h4>
+                            <canvas id="deviceChart" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Funnels Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <!-- Purchase Funnel -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px;">
+                            <h4 style="margin: 0 0 1rem 0; color: #fff; font-size: 0.9rem;">Purchase Funnel</h4>
+                            <div id="purchaseFunnel" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                        </div>
+                        <!-- Claim Funnel -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px;">
+                            <h4 style="margin: 0 0 1rem 0; color: #fff; font-size: 0.9rem;">Claim Funnel</h4>
+                            <div id="claimFunnel" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tables Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+                        <!-- Top Pages -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px;">
+                            <h4 style="margin: 0 0 1rem 0; color: #fff; font-size: 0.9rem;">Top Pages</h4>
+                            <div id="topPagesTable" style="font-size: 0.85rem; max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                        <!-- Top Referrers -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px;">
+                            <h4 style="margin: 0 0 1rem 0; color: #fff; font-size: 0.9rem;">Top Referrers</h4>
+                            <div id="topReferrersTable" style="font-size: 0.85rem; max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                        <!-- UTM Sources -->
+                        <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px;">
+                            <h4 style="margin: 0 0 1rem 0; color: #fff; font-size: 0.9rem;">UTM Sources</h4>
+                            <div id="utmSourcesTable" style="font-size: 0.85rem; max-height: 300px; overflow-y: auto;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4172,6 +4259,8 @@
                 loadDiagnosticHistory();
             } else if (tabName === 'generate') {
                 loadGeneratorEvents();
+            } else if (tabName === 'analytics') {
+                loadAnalytics();
             }
         }
 

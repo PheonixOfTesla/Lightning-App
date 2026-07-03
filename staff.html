@@ -696,14 +696,32 @@
           <!-- ID Scanner Viewport -->
           <div class="scanner-viewport hidden" id="idViewport">
             <div id="id-reader"></div>
-            <div class="scanner-overlay" id="idOverlay">
-              <svg viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="1">
-                <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
-              </svg>
+            <!-- Framing guide: landscape rectangle for horizontal license -->
+            <div id="idFrameGuide" style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 85%;
+              aspect-ratio: 1.586;
+              border: 3px solid var(--lightning-yellow);
+              border-radius: 12px;
+              box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+              pointer-events: none;
+              z-index: 10;
+            ">
+              <!-- Corner accents -->
+              <div style="position: absolute; top: -3px; left: -3px; width: 20px; height: 20px; border-top: 4px solid var(--lightning-yellow); border-left: 4px solid var(--lightning-yellow); border-radius: 8px 0 0 0;"></div>
+              <div style="position: absolute; top: -3px; right: -3px; width: 20px; height: 20px; border-top: 4px solid var(--lightning-yellow); border-right: 4px solid var(--lightning-yellow); border-radius: 0 8px 0 0;"></div>
+              <div style="position: absolute; bottom: -3px; left: -3px; width: 20px; height: 20px; border-bottom: 4px solid var(--lightning-yellow); border-left: 4px solid var(--lightning-yellow); border-radius: 0 0 0 8px;"></div>
+              <div style="position: absolute; bottom: -3px; right: -3px; width: 20px; height: 20px; border-bottom: 4px solid var(--lightning-yellow); border-right: 4px solid var(--lightning-yellow); border-radius: 0 0 8px 0;"></div>
             </div>
-            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center;">
-              <span style="background: rgba(0,0,0,0.7); color: #fff; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem;">
-                Scan barcode on back of ID
+            <div class="scanner-overlay" id="idOverlay" style="z-index: 15;">
+              <!-- Status messages appear here -->
+            </div>
+            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center; z-index: 15;">
+              <span style="background: rgba(0,0,0,0.85); color: #fff; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem;">
+                Fill frame with BACK of ID (barcode)
               </span>
             </div>
           </div>
@@ -1406,6 +1424,7 @@
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
       if (video.videoWidth && video.videoHeight) {
+        // Draw full frame first
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0);
@@ -1414,8 +1433,24 @@
         idFrameCount++;
 
         if (idFrameCount % 15 === 0 && !idServerPending) {
-          // Capture as high-quality JPEG (PDF417 needs detail)
-          const base64Image = canvas.toDataURL('image/jpeg', 0.92);
+          // CROP to the framing box region (85% width, 1.586 aspect ratio centered)
+          // This gives more pixels-per-bar for the barcode
+          const frameWidth = Math.round(video.videoWidth * 0.85);
+          const frameHeight = Math.round(frameWidth / 1.586); // License aspect ratio
+          const frameX = Math.round((video.videoWidth - frameWidth) / 2);
+          const frameY = Math.round((video.videoHeight - frameHeight) / 2);
+
+          // Create crop canvas
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = frameWidth;
+          cropCanvas.height = frameHeight;
+          const cropCtx = cropCanvas.getContext('2d');
+          cropCtx.drawImage(canvas, frameX, frameY, frameWidth, frameHeight, 0, 0, frameWidth, frameHeight);
+
+          // Capture cropped region as high-quality JPEG
+          const base64Image = cropCanvas.toDataURL('image/jpeg', 0.95);
+
+          console.log(`[ID-CROP] Cropped ${frameWidth}x${frameHeight} from ${video.videoWidth}x${video.videoHeight}`);
 
           // POST to vision service
           sendFrameToVisionService(base64Image);
