@@ -1024,13 +1024,15 @@
     }
 
     function showIdManualFallback() {
-      // ID scan failed/timed out - show message in overlay and stop scanner
+      // FAIL SAFE: ID scan failed/timed out/ambiguous - require manual verification
+      // NEVER show a guessed age - only confident reads or manual verification
       stopIdScanner();
       const overlay = document.getElementById('idOverlay');
       overlay.innerHTML = `
-        <div style="text-align: center; color: var(--gray); padding: 2rem;">
-          <p style="color: #ff8c00; font-weight: 600;">Couldn't read ID</p>
-          <p style="font-size: 0.85rem; margin-top: 0.5rem;">Use age buttons below or try again</p>
+        <div style="text-align: center; padding: 2rem;">
+          <p style="color: #ff8c00; font-weight: 700; font-size: 1.1rem;">COULDN'T READ</p>
+          <p style="color: #ff8c00; font-size: 0.95rem; margin-top: 0.25rem;">Verify Manually</p>
+          <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.75rem;">Check ID visually, then use<br>21+ or Under 21 buttons below</p>
         </div>
       `;
     }
@@ -1045,18 +1047,19 @@
       }
       await stopIdScanner();
 
-      // Parse AAMVA data from PDF417 barcode
+      // Parse AAMVA data from PDF417 barcode (FAIL-SAFE: returns null if ANY ambiguity)
       try {
         const ageInfo = parseAAMVA(decodedText);
 
-        if (ageInfo.dob) {
+        // Only show age result if we have HIGH CONFIDENCE in the parse
+        if (ageInfo.dob && ageInfo.confidence === 'high') {
           const age = calculateAge(ageInfo.dob);
           const isOver21 = age >= 21;
 
           ageCheckPerformed = true;
           ageOver21 = isOver21;
 
-          // Show age result
+          // Show age result with DOB for staff to visually verify
           const ageResult = document.getElementById('ageResult');
           ageResult.classList.remove('hidden', 'over21', 'under21');
           ageResult.classList.add(isOver21 ? 'over21' : 'under21');
@@ -1067,57 +1070,107 @@
           setTimeout(() => switchScannerMode('qr'), 1500);
 
         } else {
-          // Could not parse DOB - show manual fallback
+          // FAIL SAFE: Could not parse with confidence - require manual verification
+          // This is intentional: a wrong "21+ VERIFIED" is worse than asking staff to check
           showIdManualFallback();
         }
       } catch (e) {
         console.error('AAMVA parse error:', e);
+        // FAIL SAFE: Any error = manual verification required
         showIdManualFallback();
       }
     }
 
-    // Simple AAMVA PDF417 parser (driver's license barcode format)
+    // FAIL-SAFE AAMVA PDF417 parser
+    // Principle: If ANY ambiguity, return null. A wrong "21+ VERIFIED" is worse than "verify manually".
+    // Only returns DOB if we have HIGH confidence the parse is correct.
     function parseAAMVA(data) {
-      const result = { dob: null, firstName: null, lastName: null };
+      const result = { dob: null, confidence: 'none' };
 
-      // AAMVA format uses DAQ for license#, DCS for last name, DAC/DCT for first, DBB for DOB
-      // DOB format: MMDDYYYY or YYYYMMDD depending on version
+      // 1. Validate this looks like AAMVA data (has expected structure)
+      // AAMVA barcodes start with @ or contain ANSI header, and have field markers like DCS, DAC, DBB
+      const hasAAMVAStructure = (
+        (data.includes('@') || data.includes('ANSI ') || data.includes('AAMVA')) &&
+        (data.includes('DCS') || data.includes('DAC') || data.includes('DBB'))
+      );
 
-      // Look for DBB (Date of Birth) field
+      if (!hasAAMVAStructure) {
+        console.log('AAMVA: Data does not match expected structure - failing safe');
+        return result;
+      }
+
+      // 2. Extract DBB (Date of Birth) field - this is the standard AAMVA field
       const dobMatch = data.match(/DBB(\d{8})/);
-      if (dobMatch) {
-        const dobStr = dobMatch[1];
-        // Try MMDDYYYY format first (most common)
-        let month = parseInt(dobStr.substring(0, 2));
-        let day = parseInt(dobStr.substring(2, 4));
-        let year = parseInt(dobStr.substring(4, 8));
-
-        // Sanity check - if month > 12, it's probably YYYYMMDD
-        if (month > 12) {
-          year = parseInt(dobStr.substring(0, 4));
-          month = parseInt(dobStr.substring(4, 6));
-          day = parseInt(dobStr.substring(6, 8));
-        }
-
-        if (year > 1900 && year < 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-          result.dob = new Date(year, month - 1, day);
-        }
+      if (!dobMatch) {
+        console.log('AAMVA: No DBB field found - failing safe');
+        return result;
       }
 
-      // Also try DL (Date of Birth in some formats)
-      if (!result.dob) {
-        const dlMatch = data.match(/DL(\d{8})/);
-        if (dlMatch) {
-          const dobStr = dlMatch[1];
-          const month = parseInt(dobStr.substring(0, 2));
-          const day = parseInt(dobStr.substring(2, 4));
-          const year = parseInt(dobStr.substring(4, 8));
-          if (year > 1900 && year < 2100 && month >= 1 && month <= 12) {
-            result.dob = new Date(year, month - 1, day);
-          }
-        }
+      const dobStr = dobMatch[1];
+
+      // 3. Determine date format with NO GUESSING
+      // MMDDYYYY: first 2 digits 01-12 (month), next 2 digits 01-31 (day), last 4 digits year
+      // YYYYMMDD: first 4 digits year (19xx or 20xx), next 2 digits 01-12, last 2 digits 01-31
+
+      const first2 = parseInt(dobStr.substring(0, 2));
+      const first4 = parseInt(dobStr.substring(0, 4));
+      const mid2 = parseInt(dobStr.substring(2, 4));
+      const mid2Alt = parseInt(dobStr.substring(4, 6));
+      const last4 = parseInt(dobStr.substring(4, 8));
+      const last2 = parseInt(dobStr.substring(6, 8));
+
+      let year, month, day, format;
+
+      // Check if it's unambiguously YYYYMMDD (year starts with 19 or 20)
+      if (first4 >= 1930 && first4 <= 2010 && mid2Alt >= 1 && mid2Alt <= 12 && last2 >= 1 && last2 <= 31) {
+        format = 'YYYYMMDD';
+        year = first4;
+        month = mid2Alt;
+        day = last2;
+      }
+      // Check if it's unambiguously MMDDYYYY (first 2 is valid month, last 4 is valid year)
+      else if (first2 >= 1 && first2 <= 12 && mid2 >= 1 && mid2 <= 31 && last4 >= 1930 && last4 <= 2010) {
+        format = 'MMDDYYYY';
+        month = first2;
+        day = mid2;
+        year = last4;
+      }
+      // AMBIGUOUS - both interpretations could be valid, FAIL SAFE
+      else {
+        console.log('AAMVA: Ambiguous date format - failing safe. Raw:', dobStr);
+        return result;
       }
 
+      // 4. Validate the parsed date is realistic for a bar patron
+      // - Year: 1930-2010 (age 16-96 in 2026)
+      // - Month: 1-12
+      // - Day: 1-31 (we already checked this)
+      // - Also validate the day is valid for the month (no Feb 30)
+      const daysInMonth = new Date(year, month, 0).getDate();
+      if (day > daysInMonth) {
+        console.log(`AAMVA: Invalid day ${day} for month ${month} - failing safe`);
+        return result;
+      }
+
+      // 5. Create the date and verify it's not in the future
+      const dob = new Date(year, month - 1, day);
+      const today = new Date();
+      if (dob > today) {
+        console.log('AAMVA: DOB is in the future - failing safe');
+        return result;
+      }
+
+      // 6. Calculate age and sanity check (must be at least 16 to have a license)
+      const age = calculateAge(dob);
+      if (age < 16 || age > 100) {
+        console.log(`AAMVA: Unrealistic age ${age} - failing safe`);
+        return result;
+      }
+
+      // SUCCESS - we have high confidence in this parse
+      console.log(`AAMVA: Parsed ${format} format -> ${month}/${day}/${year} (Age ${age})`);
+      result.dob = dob;
+      result.confidence = 'high';
       return result;
     }
 
