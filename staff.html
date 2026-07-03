@@ -1311,6 +1311,9 @@
     let idAnimationId = null;
     let idFrameCount = 0;  // Track frames sent to server
     let idServerPending = false;  // Prevent concurrent server calls
+    let idProgressInterval = null;  // Progress indicator timer
+    let idScanStartTime = null;  // Track scan duration
+    const ID_SCAN_TIMEOUT_MS = 25000;  // 25 seconds before manual fallback
 
     async function startIdScanner() {
       if (idStream) return;
@@ -1358,14 +1361,63 @@
         // Start frame capture loop
         scanIdFrame();
 
-        // Set timeout for manual fallback (15 seconds - server processing needs time)
+        // Start progress indicator
+        idScanStartTime = Date.now();
+        updateIdScanProgress();
+        idProgressInterval = setInterval(updateIdScanProgress, 1000);
+
+        // Set timeout for manual fallback (25 seconds - give it time)
         idScanTimeout = setTimeout(() => {
           showIdManualFallback();
-        }, 15000);
+        }, ID_SCAN_TIMEOUT_MS);
 
       } catch (err) {
         console.error('ID Scanner error:', err);
         showIdManualFallback();
+      }
+    }
+
+    // Update the ID scan progress indicator
+    function updateIdScanProgress() {
+      if (!idScanStartTime) return;
+
+      const elapsed = Math.floor((Date.now() - idScanStartTime) / 1000);
+      const remaining = Math.max(0, Math.floor(ID_SCAN_TIMEOUT_MS / 1000) - elapsed);
+      const overlay = document.getElementById('idOverlay');
+
+      if (elapsed < 8) {
+        // First 8 seconds: "Scanning..."
+        overlay.innerHTML = `
+          <div style="text-align: center; padding: 1rem;">
+            <svg viewBox="0 0 100 30" fill="none" stroke="var(--electric-blue)" stroke-width="1.5" style="width: 80%; max-width: 200px;">
+              <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
+            </svg>
+            <p style="color: var(--electric-blue); font-weight: 600; font-size: 1rem; margin-top: 0.5rem;">Scanning barcode...</p>
+            <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Hold steady · ${remaining}s</p>
+          </div>
+        `;
+      } else if (elapsed < 18) {
+        // 8-18 seconds: "Still trying..."
+        overlay.innerHTML = `
+          <div style="text-align: center; padding: 1rem;">
+            <svg viewBox="0 0 100 30" fill="none" stroke="#ff8c00" stroke-width="1.5" style="width: 80%; max-width: 200px;">
+              <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
+            </svg>
+            <p style="color: #ff8c00; font-weight: 600; font-size: 1rem; margin-top: 0.5rem;">Still scanning...</p>
+            <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Try adjusting angle · ${remaining}s</p>
+          </div>
+        `;
+      } else {
+        // 18+ seconds: "Almost done..."
+        overlay.innerHTML = `
+          <div style="text-align: center; padding: 1rem;">
+            <svg viewBox="0 0 100 30" fill="none" stroke="#ff8c00" stroke-width="1.5" style="width: 80%; max-width: 200px;">
+              <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
+            </svg>
+            <p style="color: #ff8c00; font-weight: 600; font-size: 1rem; margin-top: 0.5rem;">Trying harder...</p>
+            <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Move closer if possible · ${remaining}s</p>
+          </div>
+        `;
       }
     }
 
@@ -1510,6 +1562,13 @@
         idScanTimeout = null;
       }
 
+      if (idProgressInterval) {
+        clearInterval(idProgressInterval);
+        idProgressInterval = null;
+      }
+
+      idScanStartTime = null;
+
       if (idAnimationId) {
         cancelAnimationFrame(idAnimationId);
         idAnimationId = null;
@@ -1534,9 +1593,11 @@
       const overlay = document.getElementById('idOverlay');
       overlay.innerHTML = `
         <div style="text-align: center; padding: 2rem;">
-          <p style="color: #ff8c00; font-weight: 700; font-size: 1.1rem;">COULDN'T READ</p>
-          <p style="color: #ff8c00; font-size: 0.95rem; margin-top: 0.25rem;">Verify Manually</p>
-          <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.75rem;">Check ID visually, then use<br>21+ or Under 21 buttons below</p>
+          <p style="color: #ff8c00; font-weight: 700; font-size: 1.3rem;">CHECK ID VISUALLY</p>
+          <p style="color: var(--gray); font-size: 0.9rem; margin-top: 0.5rem;">Barcode couldn't be read</p>
+          <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,140,0,0.1); border-radius: 8px; border: 1px solid rgba(255,140,0,0.3);">
+            <p style="color: #fff; font-size: 0.85rem;">Look at the birthdate on the ID<br>then tap <strong>21+</strong> or <strong>Under 21</strong> below</p>
+          </div>
         </div>
       `;
     }
