@@ -876,17 +876,39 @@
         await qrScanner.pause();
       }
 
-      // Extract pass ID from QR code
+      console.log('QR scanned:', decodedText);
+
+      // Check if QR contains embedded JSON data (new format)
+      if (decodedText.startsWith('{')) {
+        try {
+          const qrData = JSON.parse(decodedText);
+          // New format: {i: passId, n: name, e: event, d: date, t: type, q: qty}
+          const passId = qrData.i;
+          const embeddedData = {
+            passId: passId,
+            guestName: qrData.n,
+            eventName: qrData.e,
+            eventDate: qrData.d,
+            ticketType: qrData.t,
+            quantity: qrData.q || 1
+          };
+          console.log('Embedded QR data:', embeddedData);
+          await validatePassWithData(passId, embeddedData);
+          return;
+        } catch (e) {
+          console.log('QR parse failed, treating as passId');
+        }
+      }
+
+      // Legacy format: extract passId from URL or raw string
       let passId = decodedText;
 
       // Handle URL format - look for LP-xxx pattern
       if (decodedText.includes('/')) {
-        // Try to find LP-xxxx pattern in the URL
         const lpMatch = decodedText.match(/LP-[\w-]+/i);
         if (lpMatch) {
           passId = lpMatch[0];
         } else {
-          // Fallback: take the segment before /view if present
           const parts = decodedText.split('/');
           const viewIndex = parts.indexOf('view');
           if (viewIndex > 0) {
@@ -906,6 +928,62 @@
       const passId = input.value.trim();
       if (!passId) return;
       await validatePass(passId);
+    }
+
+    // Validate with embedded QR data (shows instant display, still checks backend)
+    async function validatePassWithData(passId, embeddedData) {
+      // Store embedded data immediately for display
+      currentPass = {
+        passId: passId,
+        guestName: embeddedData.guestName,
+        quantity: embeddedData.quantity || 1,
+        ticketType: embeddedData.ticketType,
+        eventName: embeddedData.eventName,
+        eventDate: embeddedData.eventDate
+      };
+
+      // Show embedded data immediately (optimistic)
+      showResult('verified', embeddedData.guestName, {
+        ...embeddedData,
+        passId: passId
+      });
+
+      // Show age buttons and action buttons
+      document.getElementById('ageButtons').classList.remove('hidden');
+      document.getElementById('actionButtons').classList.remove('hidden');
+
+      // Background: verify with backend (for used/refunded checks)
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/staff/validate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passId, code: STAFF_CODE })
+        });
+        const data = await res.json();
+
+        // If backend says invalid, update display
+        if (!data.valid) {
+          currentPass.eventId = data.eventId;
+          let resultType = data.reason === 'already_used' ? 'already-used' : 'invalid';
+          showResult(resultType, embeddedData.guestName || 'Guest', {
+            ...embeddedData,
+            ...data
+          });
+          document.getElementById('ageButtons').classList.add('hidden');
+          document.getElementById('actionButtons').classList.add('hidden');
+
+          setTimeout(async () => {
+            await resetScanState();
+            await switchScannerMode('qr');
+          }, 3000);
+        } else {
+          // Update with any additional backend data
+          currentPass.eventId = data.eventId;
+          currentPass.eventSlug = data.eventSlug;
+        }
+      } catch (err) {
+        console.log('Backend validation failed (using embedded data):', err.message);
+      }
     }
 
     async function validatePass(passId) {
