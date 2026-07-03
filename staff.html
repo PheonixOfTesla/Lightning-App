@@ -879,12 +879,25 @@
       // Extract pass ID from QR code
       let passId = decodedText;
 
-      // Handle URL format
+      // Handle URL format - look for LP-xxx pattern
       if (decodedText.includes('/')) {
-        const parts = decodedText.split('/');
-        passId = parts[parts.length - 1];
+        // Try to find LP-xxxx pattern in the URL
+        const lpMatch = decodedText.match(/LP-[\w-]+/i);
+        if (lpMatch) {
+          passId = lpMatch[0];
+        } else {
+          // Fallback: take the segment before /view if present
+          const parts = decodedText.split('/');
+          const viewIndex = parts.indexOf('view');
+          if (viewIndex > 0) {
+            passId = parts[viewIndex - 1];
+          } else {
+            passId = parts[parts.length - 1];
+          }
+        }
       }
 
+      console.log('Extracted passId:', passId);
       await validatePass(passId);
     }
 
