@@ -104,9 +104,9 @@
     <p class="subtitle">Stars, Stripes & Sunsets - July 4th, 2026</p>
 
     <div class="summary">
-      <div class="stat"><div class="stat-value" id="statPasses">--</div><div class="stat-label">Total Passes</div></div>
-      <div class="stat"><div class="stat-value" id="statTickets">--</div><div class="stat-label">Total Tickets</div></div>
-      <div class="stat"><div class="stat-value" id="statAvailable" style="color: #2196F3;">--</div><div class="stat-label">Available</div></div>
+      <div class="stat"><div class="stat-value" id="statGuests">--</div><div class="stat-label">Guest Headcount</div></div>
+      <div class="stat"><div class="stat-value" id="statTeam" style="color: #4CAF50;">--</div><div class="stat-label">Team</div></div>
+      <div class="stat"><div class="stat-value" id="statCapacity" style="color: #2196F3;">--</div><div class="stat-label">Sold / Capacity</div></div>
       <div class="stat"><div class="stat-value" id="statProfit" style="color: #4CAF50;">--</div><div class="stat-label">Net Volume</div></div>
     </div>
 
@@ -129,6 +129,11 @@
     <div class="section">
       <h2>Comp Passes <span class="badge badge-comp" id="badgeComp">--</span></h2>
       <div class="table-wrap" id="tableComp"><div class="loading">Loading...</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Claim Passes <span class="badge" id="badgeClaim" style="background: #9c27b0;">--</span></h2>
+      <div class="table-wrap" id="tableClaim"><div class="loading">Loading...</div></div>
     </div>
 
     <div class="section">
@@ -195,10 +200,11 @@
     function renderData(data) {
       const { stats, guests } = data;
 
-      // Stats
-      document.getElementById('statPasses').textContent = stats.totalPasses;
-      document.getElementById('statTickets').textContent = stats.totalTickets;
-      document.getElementById('statAvailable').textContent = stats.available;
+      // Stats - PEOPLE counts (not rows)
+      document.getElementById('statGuests').textContent = stats.totalPeople;  // comp + claim + paid (excludes team)
+      document.getElementById('statTeam').textContent = stats.teamPeople;
+      const capDisplay = stats.capacityPeople === 'Unlimited' ? 'Unlimited' : stats.capacityPeople;
+      document.getElementById('statCapacity').textContent = stats.soldPeople + ' / ' + capDisplay;
       document.getElementById('statProfit').textContent = '$' + stats.netVolume.toFixed(2);
 
       // Revenue breakdown (Stripe formula: Net = Gross - Fees - Refunds)
@@ -207,22 +213,26 @@
       document.getElementById('revRefunds').textContent = '-$' + stats.refunds.toFixed(2);
       document.getElementById('revNet').textContent = '$' + stats.netVolume.toFixed(2);
 
-      // Badges
-      document.getElementById('badgeTeam').textContent = stats.teamTickets + ' tickets';
-      document.getElementById('badgeComp').textContent = stats.compTickets + ' tickets';
-      document.getElementById('badgePaid').textContent = stats.paidTickets + ' tickets';
+      // Badges - show PEOPLE count
+      document.getElementById('badgeTeam').textContent = stats.teamPeople + ' people';
+      document.getElementById('badgeComp').textContent = stats.compPeople + ' people';
+      document.getElementById('badgeClaim').textContent = stats.claimPeople + ' people';
+      document.getElementById('badgePaid').textContent = stats.paidPeople + ' people';
 
       // Tables
       document.getElementById('tableTeam').innerHTML = makeTable(guests.team);
       document.getElementById('tableComp').innerHTML = makeTable(guests.comp);
+      document.getElementById('tableClaim').innerHTML = makeTable(guests.claim);
       document.getElementById('tablePaid').innerHTML = makeTable(guests.paid);
     }
 
     function makeTable(rows) {
       if (!rows || !rows.length) return '<div class="empty">No entries</div>';
-      let html = '<table><thead><tr><th>#</th><th>First Name</th><th>Last Name</th><th>ID Type</th><th>Qty</th></tr></thead><tbody>';
+      let html = '<table><thead><tr><th>#</th><th>Name</th><th>Type</th><th>People</th></tr></thead><tbody>';
       rows.forEach((r, i) => {
-        html += `<tr><td>${i+1}</td><td>${r.firstName}</td><td>${r.lastName}</td><td>${r.idType}</td><td>${r.quantity}</td></tr>`;
+        const name = r.firstName + (r.lastName ? ' ' + r.lastName : '');
+        const partyFlag = r.isParty ? ' <span style="color:#ffdd00;">[party]</span>' : '';
+        html += `<tr><td>${i+1}</td><td>${name}${partyFlag}</td><td>${r.idType}</td><td>${r.people}</td></tr>`;
       });
       return html + '</tbody></table>';
     }
