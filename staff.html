@@ -1592,14 +1592,29 @@
       stopIdScanner();
       const overlay = document.getElementById('idOverlay');
       overlay.innerHTML = `
-        <div style="text-align: center; padding: 2rem;">
+        <div style="text-align: center; padding: 1.5rem;">
           <p style="color: #ff8c00; font-weight: 700; font-size: 1.3rem;">CHECK ID VISUALLY</p>
           <p style="color: var(--gray); font-size: 0.9rem; margin-top: 0.5rem;">Barcode couldn't be read</p>
           <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,140,0,0.1); border-radius: 8px; border: 1px solid rgba(255,140,0,0.3);">
             <p style="color: #fff; font-size: 0.85rem;">Look at the birthdate on the ID<br>then tap <strong>21+</strong> or <strong>Under 21</strong> below</p>
           </div>
+          <button onclick="retryIdScan()" style="margin-top: 1rem; padding: 0.6rem 1.5rem; background: var(--electric-blue); color: #000; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer;">
+            Try Again
+          </button>
         </div>
       `;
+    }
+
+    function retryIdScan() {
+      // Reset the overlay to default state
+      const overlay = document.getElementById('idOverlay');
+      overlay.innerHTML = `
+        <svg viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
+        </svg>
+      `;
+      // Restart the scanner
+      startIdScanner();
     }
 
     // Legacy function - now redirects to onIdScanSuccessLocal
