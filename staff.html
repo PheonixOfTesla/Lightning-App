@@ -1377,47 +1377,25 @@
       }
     }
 
-    // Update the ID scan progress indicator
+    // Update the ID scan progress indicator (countdown in corner)
     function updateIdScanProgress() {
       if (!idScanStartTime) return;
 
       const elapsed = Math.floor((Date.now() - idScanStartTime) / 1000);
       const remaining = Math.max(0, Math.floor(ID_SCAN_TIMEOUT_MS / 1000) - elapsed);
-      const overlay = document.getElementById('idOverlay');
 
-      if (elapsed < 8) {
-        // First 8 seconds: "Scanning..."
-        overlay.innerHTML = `
-          <div style="text-align: center; padding: 1rem;">
-            <svg viewBox="0 0 100 30" fill="none" stroke="var(--electric-blue)" stroke-width="1.5" style="width: 80%; max-width: 200px;">
-              <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
-            </svg>
-            <p style="color: var(--electric-blue); font-weight: 600; font-size: 1rem; margin-top: 0.5rem;">Scanning barcode...</p>
-            <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Hold steady · ${remaining}s</p>
-          </div>
-        `;
-      } else if (elapsed < 18) {
-        // 8-18 seconds: "Still trying..."
-        overlay.innerHTML = `
-          <div style="text-align: center; padding: 1rem;">
-            <svg viewBox="0 0 100 30" fill="none" stroke="#ff8c00" stroke-width="1.5" style="width: 80%; max-width: 200px;">
-              <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
-            </svg>
-            <p style="color: #ff8c00; font-weight: 600; font-size: 1rem; margin-top: 0.5rem;">Still scanning...</p>
-            <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Try adjusting angle · ${remaining}s</p>
-          </div>
-        `;
-      } else {
-        // 18+ seconds: "Almost done..."
-        overlay.innerHTML = `
-          <div style="text-align: center; padding: 1rem;">
-            <svg viewBox="0 0 100 30" fill="none" stroke="#ff8c00" stroke-width="1.5" style="width: 80%; max-width: 200px;">
-              <rect x="5" y="5" width="90" height="20" rx="2" stroke-dasharray="5 3"/>
-            </svg>
-            <p style="color: #ff8c00; font-weight: 600; font-size: 1rem; margin-top: 0.5rem;">Trying harder...</p>
-            <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Move closer if possible · ${remaining}s</p>
-          </div>
-        `;
+      // Show initial detecting state
+      if (elapsed < 2 && !idServerPending) {
+        updateIdStatus('detecting');
+      }
+
+      // Update countdown in status (only if not showing authorized)
+      const overlay = document.getElementById('idOverlay');
+      const existingText = overlay.querySelector('p:last-child');
+      if (existingText && !overlay.innerHTML.includes('VERIFIED') && !overlay.innerHTML.includes('UNDER 21')) {
+        if (remaining <= 10 && remaining > 0) {
+          existingText.textContent = `${remaining}s remaining`;
+        }
       }
     }
 
@@ -1432,44 +1410,31 @@
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0);
 
-        // Send frame to server every 10 frames (reduce network load)
-        // Server handles heavy processing: super-resolution + barcode decode + AAMVA parse
+        // Send frame to server every 15 frames (~2 per second at 30fps)
         idFrameCount++;
 
-        if (idFrameCount % 10 === 0 && !idServerPending) {
-          // Capture as JPEG for smaller payload
-          const base64Image = canvas.toDataURL('image/jpeg', 0.85);
+        if (idFrameCount % 15 === 0 && !idServerPending) {
+          // Capture as high-quality JPEG (PDF417 needs detail)
+          const base64Image = canvas.toDataURL('image/jpeg', 0.92);
 
-          // POST to vision service (non-blocking)
+          // POST to vision service
           sendFrameToVisionService(base64Image);
-        }
-
-        // Also try local zxing-wasm decode (fallback / parallel)
-        try {
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const results = await ZXingWASM.readBarcodesFromImageData(imageData, {
-            formats: ['PDF417', 'DataMatrix', 'Code128'],
-            tryHarder: true,
-            maxNumberOfSymbols: 1
-          });
-
-          if (results && results.length > 0 && results[0].text) {
-            console.log('[ID] Local zxing-wasm decoded:', results[0].text.substring(0, 50) + '...');
-            await onIdScanSuccessLocal(results[0].text);
-            return;
-          }
-        } catch (e) {
-          // Local decode failed - continue (server may succeed)
         }
       }
 
-      idAnimationId = requestAnimationFrame(scanIdFrame);
+      // Continue scanning
+      if (idScanner && idStream) {
+        idAnimationId = requestAnimationFrame(scanIdFrame);
+      }
     }
 
     // Send frame to vision service for server-side processing
     async function sendFrameToVisionService(base64Image) {
       if (idServerPending) return;
       idServerPending = true;
+
+      // Show "SCANNING" status
+      updateIdStatus('scanning');
 
       try {
         console.log('[ID-VISION] Sending frame to server...');
@@ -1485,7 +1450,10 @@
 
         // Server returns { valid, over21, confidence }
         if (data.valid && data.confidence === 'high') {
-          // Stop scanner - we have a confident result from server
+          // Show "AUTHORIZED" status briefly
+          updateIdStatus('authorized', data.over21);
+
+          // Stop scanner - we have a confident result
           if (idScanTimeout) {
             clearTimeout(idScanTimeout);
             idScanTimeout = null;
@@ -1495,45 +1463,79 @@
           ageCheckPerformed = true;
           ageOver21 = data.over21;
 
-          // Show age result
+          // Show age result in the result card
           const ageResult = document.getElementById('ageResult');
           ageResult.classList.remove('hidden', 'over21', 'under21');
           ageResult.classList.add(data.over21 ? 'over21' : 'under21');
           document.getElementById('ageResultTitle').textContent = data.over21 ? '21+ VERIFIED' : 'UNDER 21';
-          document.getElementById('ageResultDob').textContent = 'Server-verified (high confidence)';
+          document.getElementById('ageResultDob').textContent = 'ID Verified';
 
           // Switch back to QR mode
           setTimeout(() => switchScannerMode('qr'), 1500);
           return;
         }
 
-        // Not valid or low confidence - continue scanning
-        // Server returns valid:false for garbage/unreadable images (FAIL-SAFE)
+        // Not valid or low confidence - show "DETECTING" and continue
+        updateIdStatus('detecting');
 
       } catch (err) {
-        console.log('[ID-VISION] Server error (falling back to local):', err.message);
-        // Server unreachable - continue with local scanning
+        console.log('[ID-VISION] Server error:', err.message);
+        updateIdStatus('detecting');
       } finally {
         idServerPending = false;
       }
     }
 
-    // Local zxing-wasm decode success (fallback path)
+    // Update ID scan status overlay
+    function updateIdStatus(status, over21 = null) {
+      const overlay = document.getElementById('idOverlay');
+
+      if (status === 'detecting') {
+        overlay.innerHTML = `
+          <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+            <p style="color: var(--electric-blue); font-weight: 600; font-size: 1.1rem;">DETECTING</p>
+            <p style="color: var(--gray); font-size: 0.8rem;">Point at barcode on back of ID</p>
+          </div>
+        `;
+      } else if (status === 'scanning') {
+        overlay.innerHTML = `
+          <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+            <p style="color: var(--lightning-yellow); font-weight: 600; font-size: 1.1rem;">SCANNING...</p>
+            <p style="color: var(--gray); font-size: 0.8rem;">Hold steady</p>
+          </div>
+        `;
+      } else if (status === 'authorized') {
+        const color = over21 ? 'var(--neon-green)' : 'var(--danger-red)';
+        const text = over21 ? '21+ VERIFIED' : 'UNDER 21';
+        const icon = over21 ? '✓' : '✗';
+        overlay.innerHTML = `
+          <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; color: ${color}; margin-bottom: 0.5rem;">${icon}</div>
+            <p style="color: ${color}; font-weight: 700; font-size: 1.3rem;">${text}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Local zxing-wasm decode - only stop if we get a CONFIDENT result
     async function onIdScanSuccessLocal(decodedText) {
       console.log('[ID] Local barcode decoded:', decodedText.substring(0, 50) + '...');
 
-      // Stop scanner and clear timeout
-      if (idScanTimeout) {
-        clearTimeout(idScanTimeout);
-        idScanTimeout = null;
-      }
-      await stopIdScanner();
-
-      // Parse AAMVA locally (FAIL-SAFE: returns null if ANY ambiguity)
+      // Try to parse AAMVA locally (FAIL-SAFE: returns null if ANY ambiguity)
       try {
         const ageInfo = parseAAMVA(decodedText);
 
+        // ONLY stop scanner if we have HIGH CONFIDENCE
         if (ageInfo.dob && ageInfo.confidence === 'high') {
+          // SUCCESS - stop scanner and show result
+          if (idScanTimeout) {
+            clearTimeout(idScanTimeout);
+            idScanTimeout = null;
+          }
+          await stopIdScanner();
+
           const age = calculateAge(ageInfo.dob);
           const isOver21 = age >= 21;
 
@@ -1548,11 +1550,14 @@
 
           setTimeout(() => switchScannerMode('qr'), 1500);
         } else {
-          showIdManualFallback();
+          // NOT confident - keep scanning, don't give up yet
+          console.log('[ID] AAMVA parse not confident, continuing to scan...');
+          // Scanner keeps running, timeout will eventually trigger fallback
         }
       } catch (e) {
-        console.error('AAMVA parse error:', e);
-        showIdManualFallback();
+        // Parse error - keep scanning, don't give up yet
+        console.error('[ID] AAMVA parse error, continuing to scan:', e.message);
+        // Scanner keeps running, timeout will eventually trigger fallback
       }
     }
 
