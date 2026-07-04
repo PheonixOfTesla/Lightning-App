@@ -1989,6 +1989,76 @@
                     </div>
                 </div>
 
+                <!-- Email Blast Tool -->
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>Email Blast Tool</h3>
+                        <span style="font-size: 0.85rem; color: var(--gray);">Select events + people, compose, send</span>
+                    </div>
+
+                    <!-- Two-Panel Layout -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <!-- EVENTS PANEL -->
+                        <div style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1rem;">
+                            <div style="font-weight: 600; margin-bottom: 0.75rem; color: var(--lightning-yellow);">Events</div>
+                            <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.5rem;">Select events to include all their pass holders</div>
+                            <div id="blastEventList" style="max-height: 200px; overflow-y: auto;">
+                                <div style="color: var(--gray); font-size: 0.85rem;">Loading events...</div>
+                            </div>
+                        </div>
+
+                        <!-- PEOPLE PANEL -->
+                        <div style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1rem;">
+                            <div style="font-weight: 600; margin-bottom: 0.75rem; color: var(--electric-blue);">People</div>
+                            <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.5rem;">Search and add individuals</div>
+                            <input type="text" id="blastPeopleSearch" placeholder="Search by name or email..." style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-dark); border-radius: 0.25rem; color: var(--white); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            <div id="blastPeopleResults" style="max-height: 150px; overflow-y: auto;">
+                                <div style="color: var(--gray); font-size: 0.85rem;">Type to search...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RECIPIENT COUNT -->
+                    <div style="background: rgba(57, 255, 20, 0.1); border-radius: 0.5rem; padding: 1rem; text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--neon-green);" id="blastRecipientCount">0</div>
+                        <div style="font-size: 0.85rem; color: var(--gray);">Recipients (deduped by email)</div>
+                        <div id="blastRecipientSummary" style="font-size: 0.75rem; color: var(--gray); margin-top: 0.25rem;"></div>
+                    </div>
+
+                    <!-- COMPOSE -->
+                    <div style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.85rem; color: var(--gray); display: block; margin-bottom: 0.25rem;">Subject</label>
+                        <input type="text" id="blastSubject" placeholder="Email subject line..." style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-size: 1rem; margin-bottom: 0.75rem;">
+
+                        <label style="font-size: 0.85rem; color: var(--gray); display: block; margin-bottom: 0.25rem;">Body</label>
+                        <textarea id="blastBody" rows="6" placeholder="Email body content..." style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-size: 1rem; resize: vertical;"></textarea>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 0.75rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="blastTemplate" value="branded" checked style="accent-color: var(--lightning-yellow);">
+                                <span style="font-size: 0.85rem; color: var(--white);">Lightning Branded</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="blastTemplate" value="plain" style="accent-color: var(--lightning-yellow);">
+                                <span style="font-size: 0.85rem; color: var(--white);">Plain Text</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="previewBlastEmail()" class="action-btn view" style="flex: 1;">Preview</button>
+                        <button onclick="testSendBlastEmail()" class="action-btn" style="flex: 1; background: var(--electric-purple);">Test Send to Me</button>
+                        <button onclick="confirmSendBlastEmail()" class="action-btn add" style="flex: 1;">Send to All</button>
+                    </div>
+
+                    <!-- Recent Sends -->
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
+                        <div style="font-size: 0.85rem; font-weight: 600; color: var(--gray); margin-bottom: 0.5rem;">Recent Sends</div>
+                        <div id="blastRecentSends" style="font-size: 0.8rem; color: var(--gray);">Loading...</div>
+                    </div>
+                </div>
+
                 <!-- Stripe Payment Monitoring -->
                 <div class="card" style="margin-bottom: 1rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -5428,6 +5498,393 @@
                 historyDiv.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger-red);">Failed to load history</div>';
             } finally {
                 loading.style.display = 'none';
+            }
+        }
+
+        // ============================
+        // Email Blast Tool Functions
+        // ============================
+
+        // State: Map<email, {name, source}> for deduplication
+        const blastRecipientMap = new Map();
+        const blastSelectedEvents = new Map();  // eventId -> {name, recipients[]}
+        let blastEventsData = [];
+
+        async function loadBlastEvents() {
+            try {
+                const response = await apiCall('/admin/email/events');
+                blastEventsData = response.events || [];
+
+                const container = document.getElementById('blastEventList');
+                if (blastEventsData.length === 0) {
+                    container.innerHTML = '<div style="color: var(--gray); font-size: 0.85rem;">No events found</div>';
+                    return;
+                }
+
+                container.innerHTML = blastEventsData.map(event => `
+                    <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem; margin-bottom: 0.25rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                        <input type="checkbox" data-event-id="${event._id}" data-event-name="${event.name}" onchange="toggleBlastEvent(this)" style="accent-color: var(--lightning-yellow);">
+                        <span style="flex: 1; font-size: 0.85rem; color: var(--white);">${event.name}</span>
+                        <span style="font-size: 0.75rem; color: var(--electric-blue);">${event.recipientCount}</span>
+                    </label>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load blast events:', error);
+                document.getElementById('blastEventList').innerHTML = '<div style="color: var(--danger-red); font-size: 0.85rem;">Failed to load</div>';
+            }
+        }
+
+        async function toggleBlastEvent(checkbox) {
+            const eventId = checkbox.dataset.eventId;
+            const eventName = checkbox.dataset.eventName;
+
+            if (checkbox.checked) {
+                // Fetch recipients for this event
+                try {
+                    const response = await apiCall(`/admin/email/event-recipients/${eventId}`);
+                    const recipients = response.recipients || [];
+
+                    blastSelectedEvents.set(eventId, { name: eventName, recipients });
+
+                    // Add to recipient map (deduped)
+                    recipients.forEach(r => {
+                        const email = r.email.toLowerCase().trim();
+                        if (!blastRecipientMap.has(email)) {
+                            blastRecipientMap.set(email, { name: r.name, source: 'event', eventId });
+                        }
+                    });
+                } catch (error) {
+                    console.error('Failed to load event recipients:', error);
+                    checkbox.checked = false;
+                    return;
+                }
+            } else {
+                // Remove this event's recipients (if not also from another source)
+                const eventData = blastSelectedEvents.get(eventId);
+                if (eventData) {
+                    eventData.recipients.forEach(r => {
+                        const email = r.email.toLowerCase().trim();
+                        const current = blastRecipientMap.get(email);
+                        if (current && current.source === 'event' && current.eventId === eventId) {
+                            // Check if this email is in another selected event
+                            let inOtherEvent = false;
+                            for (const [otherId, otherData] of blastSelectedEvents) {
+                                if (otherId !== eventId && otherData.recipients.some(or => or.email.toLowerCase().trim() === email)) {
+                                    inOtherEvent = true;
+                                    break;
+                                }
+                            }
+                            if (!inOtherEvent) {
+                                blastRecipientMap.delete(email);
+                            }
+                        }
+                    });
+                }
+                blastSelectedEvents.delete(eventId);
+            }
+
+            updateBlastRecipientCount();
+        }
+
+        // Debounce for people search
+        let blastSearchTimeout;
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('blastPeopleSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(blastSearchTimeout);
+                    blastSearchTimeout = setTimeout(() => searchBlastPeople(e.target.value), 300);
+                });
+            }
+            // Load events on page load
+            loadBlastEvents();
+            loadBlastRecentSends();
+        });
+
+        async function searchBlastPeople(query) {
+            const container = document.getElementById('blastPeopleResults');
+            if (!query || query.length < 2) {
+                container.innerHTML = '<div style="color: var(--gray); font-size: 0.85rem;">Type to search...</div>';
+                return;
+            }
+
+            try {
+                const response = await apiCall(`/admin/email/search-people?q=${encodeURIComponent(query)}`);
+                const people = response.people || [];
+
+                if (people.length === 0) {
+                    container.innerHTML = '<div style="color: var(--gray); font-size: 0.85rem;">No results found</div>';
+                    return;
+                }
+
+                container.innerHTML = people.map(person => {
+                    const email = person.email.toLowerCase().trim();
+                    const isSelected = blastRecipientMap.has(email);
+                    return `
+                        <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem; margin-bottom: 0.25rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                            <input type="checkbox" data-email="${person.email}" data-name="${person.name || ''}" onchange="toggleBlastPerson(this)" ${isSelected ? 'checked' : ''} style="accent-color: var(--electric-blue);">
+                            <span style="flex: 1; font-size: 0.85rem; color: var(--white);">${person.name || 'No name'}</span>
+                            <span style="font-size: 0.75rem; color: var(--gray);">${person.email}</span>
+                        </label>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to search people:', error);
+                container.innerHTML = '<div style="color: var(--danger-red); font-size: 0.85rem;">Search failed</div>';
+            }
+        }
+
+        function toggleBlastPerson(checkbox) {
+            const email = checkbox.dataset.email.toLowerCase().trim();
+            const name = checkbox.dataset.name || '';
+
+            if (checkbox.checked) {
+                // Add to map if not already there
+                if (!blastRecipientMap.has(email)) {
+                    blastRecipientMap.set(email, { name, source: 'manual' });
+                }
+            } else {
+                // Only remove if it was manually added (not from an event)
+                const current = blastRecipientMap.get(email);
+                if (current && current.source === 'manual') {
+                    blastRecipientMap.delete(email);
+                }
+            }
+
+            updateBlastRecipientCount();
+        }
+
+        function updateBlastRecipientCount() {
+            const count = blastRecipientMap.size;
+            document.getElementById('blastRecipientCount').textContent = count;
+
+            // Summary
+            const eventCount = blastSelectedEvents.size;
+            const manualCount = Array.from(blastRecipientMap.values()).filter(r => r.source === 'manual').length;
+            let summary = [];
+            if (eventCount > 0) summary.push(`${eventCount} event${eventCount > 1 ? 's' : ''}`);
+            if (manualCount > 0) summary.push(`${manualCount} manual`);
+            document.getElementById('blastRecipientSummary').textContent = summary.length > 0 ? `From: ${summary.join(' + ')}` : '';
+        }
+
+        function previewBlastEmail() {
+            const subject = document.getElementById('blastSubject').value.trim();
+            const body = document.getElementById('blastBody').value.trim();
+            const template = document.querySelector('input[name="blastTemplate"]:checked')?.value || 'branded';
+
+            if (!subject || !body) {
+                alert('Please enter a subject and body');
+                return;
+            }
+
+            // Create preview modal
+            const modal = document.createElement('div');
+            modal.id = 'blastPreviewModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 10000; padding: 1rem;';
+
+            let previewHtml;
+            if (template === 'plain') {
+                previewHtml = `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; color: #333; background: #fff; max-width: 600px;">
+                        <strong>Subject:</strong> ${subject}<hr>
+                        ${body.replace(/\n/g, '<br>')}
+                        <hr style="margin-top: 40px;">
+                        <p style="font-size: 12px; color: #999;">Lightning Pass | Sarasota, FL</p>
+                    </div>
+                `;
+            } else {
+                previewHtml = `
+                    <div style="background: #1a1a2e; padding: 20px; max-width: 600px;">
+                        <div style="text-align: center; padding: 30px 0;">
+                            <img src="/images/logo.png" alt="Lightning Pass" style="height: 60px;">
+                        </div>
+                        <div style="background: #252542; border-radius: 12px; padding: 30px; color: #fff;">
+                            <p style="margin: 0 0 20px; font-size: 16px; color: #aaa;">Hey [Name],</p>
+                            <div style="font-size: 16px; line-height: 1.6;">
+                                ${body.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                        <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666;">
+                            <p>Lightning Pass | Sarasota, FL</p>
+                            <p><a href="#" style="color: #ffd700;">thelightningpass.com</a></p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            modal.innerHTML = `
+                <div style="background: var(--card-black); border-radius: 1rem; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto;">
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0;">Email Preview</h3>
+                        <button onclick="document.getElementById('blastPreviewModal').remove()" style="background: none; border: none; color: var(--white); font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="padding: 1rem;">
+                        <div style="background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <strong>Subject:</strong> ${subject}
+                        </div>
+                        <div style="border: 1px solid var(--border-dark); border-radius: 0.5rem; overflow: hidden;">
+                            ${previewHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        async function testSendBlastEmail() {
+            const subject = document.getElementById('blastSubject').value.trim();
+            const body = document.getElementById('blastBody').value.trim();
+            const template = document.querySelector('input[name="blastTemplate"]:checked')?.value || 'branded';
+
+            if (!subject || !body) {
+                alert('Please enter a subject and body');
+                return;
+            }
+
+            // Get admin's email from token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Not logged in');
+                return;
+            }
+
+            let adminEmail;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                adminEmail = payload.email;
+            } catch (e) {
+                alert('Could not determine your email');
+                return;
+            }
+
+            if (!confirm(`Send test email to ${adminEmail}?`)) return;
+
+            try {
+                const response = await apiCall('/admin/email/send', 'POST', {
+                    subject,
+                    body,
+                    template,
+                    isTestSend: true,
+                    testEmail: adminEmail,
+                    sourceEvents: [],
+                    manualAdditions: 0
+                });
+
+                if (response.success) {
+                    alert(`Test email sent to ${adminEmail}!`);
+                    loadBlastRecentSends();
+                } else {
+                    alert('Failed to send test email: ' + (response.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Test send error:', error);
+                alert('Failed to send test email');
+            }
+        }
+
+        async function confirmSendBlastEmail() {
+            const subject = document.getElementById('blastSubject').value.trim();
+            const body = document.getElementById('blastBody').value.trim();
+            const template = document.querySelector('input[name="blastTemplate"]:checked')?.value || 'branded';
+
+            if (!subject || !body) {
+                alert('Please enter a subject and body');
+                return;
+            }
+
+            if (blastRecipientMap.size === 0) {
+                alert('No recipients selected');
+                return;
+            }
+
+            // Build recipients array
+            const recipients = Array.from(blastRecipientMap.entries()).map(([email, data]) => ({
+                email,
+                name: data.name
+            }));
+
+            // Build source events for logging
+            const sourceEvents = Array.from(blastSelectedEvents.entries()).map(([eventId, data]) => ({
+                eventId,
+                eventName: data.name,
+                recipientCount: data.recipients.length
+            }));
+
+            const manualAdditions = Array.from(blastRecipientMap.values()).filter(r => r.source === 'manual').length;
+
+            // Confirm gate
+            const confirmMsg = `CONFIRM: Send email to ${recipients.length} recipients?\n\nSubject: ${subject}\n\nThis action cannot be undone.`;
+            if (!confirm(confirmMsg)) return;
+
+            // Double confirm for large sends
+            if (recipients.length > 50) {
+                if (!confirm(`You are about to send to ${recipients.length} people. Are you absolutely sure?`)) return;
+            }
+
+            try {
+                const response = await apiCall('/admin/email/send', 'POST', {
+                    recipients,
+                    subject,
+                    body,
+                    template,
+                    sourceEvents,
+                    manualAdditions,
+                    isTestSend: false
+                });
+
+                if (response.success) {
+                    alert(`Email blast sent!\n\nSent: ${response.sentCount}\nFailed: ${response.failedCount}\nOpted out: ${response.optedOutCount || 0}`);
+
+                    // Clear form
+                    document.getElementById('blastSubject').value = '';
+                    document.getElementById('blastBody').value = '';
+                    blastRecipientMap.clear();
+                    blastSelectedEvents.clear();
+
+                    // Uncheck all events
+                    document.querySelectorAll('#blastEventList input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+                    updateBlastRecipientCount();
+                    loadBlastRecentSends();
+                } else {
+                    alert('Failed to send: ' + (response.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Send error:', error);
+                alert('Failed to send email blast');
+            }
+        }
+
+        async function loadBlastRecentSends() {
+            try {
+                const response = await apiCall('/admin/email/logs?limit=5');
+                const logs = response.logs || [];
+
+                const container = document.getElementById('blastRecentSends');
+                if (logs.length === 0) {
+                    container.innerHTML = '<div>No recent sends</div>';
+                    return;
+                }
+
+                container.innerHTML = logs.map(log => {
+                    const date = new Date(log.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const badge = log.isTestSend ? '<span style="color: var(--electric-purple);">[TEST]</span> ' : '';
+                    return `
+                        <div style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-dark);">
+                            ${badge}<strong>${log.subject}</strong><br>
+                            <span style="color: var(--neon-green);">${log.sentCount} sent</span>
+                            ${log.failedCount > 0 ? `<span style="color: var(--danger-red);"> / ${log.failedCount} failed</span>` : ''}
+                            <span style="float: right;">${date}</span>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load recent sends:', error);
+                document.getElementById('blastRecentSends').innerHTML = '<div style="color: var(--danger-red);">Failed to load</div>';
             }
         }
 
