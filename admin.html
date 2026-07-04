@@ -5511,6 +5511,26 @@
         // Email Blast Tool Functions
         // ============================
 
+        // Helper for authenticated API calls (matches admin.html pattern)
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const url = `${API_BASE}/api/v1${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (body && method !== 'GET') {
+                options.body = JSON.stringify(body);
+            }
+            const res = await fetch(url, options);
+            if (!res.ok) {
+                throw new Error(`API error: ${res.status}`);
+            }
+            return res.json();
+        }
+
         // State: Map<email, {name, source}> for deduplication
         const blastRecipientMap = new Map();
         const blastSelectedEvents = new Map();  // eventId -> {name, recipients[]}
