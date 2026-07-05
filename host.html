@@ -498,6 +498,46 @@
                 <p>Manage your events and check-in guests</p>
             </div>
 
+            <!-- Stripe Connect Section -->
+            <div class="section" id="stripeSection">
+                <div class="section-header">
+                    <h2 class="section-title">Payouts</h2>
+                </div>
+                <div id="stripeNotConnected" style="display: none;">
+                    <p style="color: var(--gray); margin-bottom: 1rem;">Connect your bank account to receive payouts from ticket sales.</p>
+                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1.5rem;">You can connect as an individual (personal account) or as a business - you'll choose during setup.</p>
+                    <button class="btn btn-primary" onclick="connectStripe()" id="connectStripeBtn">
+                        Connect with Stripe
+                    </button>
+                </div>
+                <div id="stripeConnected" style="display: none;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <span style="color: var(--neon-green); font-size: 1.5rem;">&#10003;</span>
+                        <span style="color: var(--neon-green); font-weight: 600;">Stripe Connected</span>
+                    </div>
+                    <div class="stats-grid" style="margin-bottom: 0;">
+                        <div class="stat-card" style="padding: 1rem;">
+                            <div class="stat-label">Lifetime Earnings</div>
+                            <div class="stat-value green" id="lifetimeEarnings" style="font-size: 1.5rem;">$0</div>
+                        </div>
+                        <div class="stat-card" style="padding: 1rem;">
+                            <div class="stat-label">Pending Payout</div>
+                            <div class="stat-value" id="pendingPayout" style="font-size: 1.5rem;">$0</div>
+                        </div>
+                        <div class="stat-card" style="padding: 1rem;">
+                            <div class="stat-label">Total Paid Out</div>
+                            <div class="stat-value blue" id="totalPaidOut" style="font-size: 1.5rem;">$0</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="stripePending" style="display: none;">
+                    <p style="color: var(--lightning-yellow); margin-bottom: 1rem;">Stripe onboarding incomplete. Please complete your account setup.</p>
+                    <button class="btn btn-primary" onclick="continueStripeOnboarding()" id="continueStripeBtn">
+                        Continue Setup
+                    </button>
+                </div>
+            </div>
+
             <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
@@ -672,6 +712,16 @@
             const name = currentUser.email.split('@')[0];
             document.getElementById('hostName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
 
+            // Check for connect=success in URL (returning from Stripe)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('connect') === 'success') {
+                // Clear URL params
+                window.history.replaceState({}, '', '/host');
+            }
+
+            // Load Stripe status and host profile
+            await loadStripeStatus();
+
             // Load events assigned to this host
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/events`);
@@ -686,6 +736,128 @@
             } catch (error) {
                 console.error('Load events error:', error);
                 document.getElementById('eventsList').innerHTML = '<div class="empty-state">Failed to load events</div>';
+            }
+        }
+
+        // ===== STRIPE CONNECT FUNCTIONS =====
+        async function loadStripeStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/connect/status`, {
+                    headers: { 'Authorization': `Bearer ${currentUser.token}` }
+                });
+                const data = await res.json();
+
+                if (!data.success) return;
+
+                const notConnected = document.getElementById('stripeNotConnected');
+                const connected = document.getElementById('stripeConnected');
+                const pending = document.getElementById('stripePending');
+
+                if (!data.connected) {
+                    // Not connected yet
+                    notConnected.style.display = 'block';
+                    connected.style.display = 'none';
+                    pending.style.display = 'none';
+                } else if (data.onboarded) {
+                    // Fully connected and onboarded
+                    notConnected.style.display = 'none';
+                    connected.style.display = 'block';
+                    pending.style.display = 'none';
+
+                    // Load earnings from profile
+                    loadHostEarnings();
+                } else {
+                    // Account created but onboarding incomplete
+                    notConnected.style.display = 'none';
+                    connected.style.display = 'none';
+                    pending.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Load Stripe status error:', error);
+            }
+        }
+
+        async function loadHostEarnings() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/profile`, {
+                    headers: { 'Authorization': `Bearer ${currentUser.token}` }
+                });
+                const data = await res.json();
+
+                if (data.success && data.profile) {
+                    document.getElementById('lifetimeEarnings').textContent = `$${(data.profile.lifetimeEarnings || 0).toFixed(2)}`;
+                    document.getElementById('pendingPayout').textContent = `$${(data.profile.pendingPayout || 0).toFixed(2)}`;
+                    document.getElementById('totalPaidOut').textContent = `$${(data.profile.totalPaidOut || 0).toFixed(2)}`;
+
+                    // Update host name if display name is set
+                    if (data.profile.hostDisplayName) {
+                        document.getElementById('hostName').textContent = data.profile.hostDisplayName;
+                    }
+                }
+            } catch (error) {
+                console.error('Load host earnings error:', error);
+            }
+        }
+
+        async function connectStripe() {
+            const btn = document.getElementById('connectStripeBtn');
+            btn.textContent = 'Connecting...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/connect/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await res.json();
+
+                if (data.success && data.onboardingUrl) {
+                    // Redirect to Stripe onboarding
+                    window.location.href = data.onboardingUrl;
+                } else {
+                    alert(data.error || 'Failed to create Stripe account');
+                    btn.textContent = 'Connect with Stripe';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Connect Stripe error:', error);
+                alert('Failed to connect Stripe. Please try again.');
+                btn.textContent = 'Connect with Stripe';
+                btn.disabled = false;
+            }
+        }
+
+        async function continueStripeOnboarding() {
+            const btn = document.getElementById('continueStripeBtn');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+
+            try {
+                // Get a refresh onboarding link
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/connect/refresh`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await res.json();
+
+                if (data.success && data.onboardingUrl) {
+                    window.location.href = data.onboardingUrl;
+                } else {
+                    alert(data.error || 'Failed to continue setup');
+                    btn.textContent = 'Continue Setup';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Continue onboarding error:', error);
+                alert('Failed to continue setup. Please try again.');
+                btn.textContent = 'Continue Setup';
+                btn.disabled = false;
             }
         }
 
