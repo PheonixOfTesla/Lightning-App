@@ -853,8 +853,8 @@
             align-items: center;
         }
     </style>
-    <!-- Chart.js for Analytics Dashboard -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Chart.js for Analytics Dashboard (deferred to prevent body access before body exists) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 </head>
 <body>
     <nav>
@@ -6629,6 +6629,177 @@
             document.getElementById('genResults').style.display = 'none';
             document.getElementById('genErrorContent').textContent = message;
             document.getElementById('genError').style.display = 'block';
+        }
+
+        // ============================
+        // Site Analytics Functions
+        // ============================
+
+        let visitorTrendChart = null;
+        let deviceChart = null;
+
+        async function loadAnalytics() {
+            try {
+                // Fetch all analytics data in parallel
+                const [statsRes, trendRes, devicesRes, pagesRes, referrersRes, utmRes, funnelRes] = await Promise.all([
+                    apiCall('/analytics/dashboard/stats'),
+                    apiCall('/analytics/dashboard/trend?days=30'),
+                    apiCall('/analytics/dashboard/devices'),
+                    apiCall('/analytics/dashboard/pages?limit=10'),
+                    apiCall('/analytics/dashboard/referrers?limit=10'),
+                    apiCall('/analytics/dashboard/utm?limit=10'),
+                    apiCall('/analytics/dashboard/funnel')
+                ]);
+
+                // Update stat cards
+                document.getElementById('statsTodayVisitors').textContent = statsRes.today?.visitors || 0;
+                document.getElementById('statsWeekVisitors').textContent = statsRes.week?.visitors || 0;
+                document.getElementById('statsMonthVisitors').textContent = statsRes.month?.visitors || 0;
+                document.getElementById('statsMonthPageviews').textContent = statsRes.month?.pageviews || 0;
+
+                // Render visitor trend chart
+                renderVisitorTrendChart(trendRes.trend || []);
+
+                // Render device breakdown chart
+                renderDeviceChart(devicesRes.devices || {});
+
+                // Render funnels
+                renderPurchaseFunnel(funnelRes.purchaseFunnel || {});
+                renderClaimFunnel(funnelRes.claimFunnel || {});
+
+                // Render tables
+                renderTopPagesTable(pagesRes.pages || []);
+                renderTopReferrersTable(referrersRes.referrers || []);
+                renderUtmSourcesTable(utmRes.utm || []);
+
+            } catch (error) {
+                console.error('Analytics load error:', error);
+            }
+        }
+
+        function renderVisitorTrendChart(trend) {
+            const ctx = document.getElementById('visitorTrendChart').getContext('2d');
+
+            if (visitorTrendChart) visitorTrendChart.destroy();
+
+            visitorTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trend.map(d => d.date.slice(5)), // MM-DD format
+                    datasets: [{
+                        label: 'Visitors',
+                        data: trend.map(d => d.visitors),
+                        borderColor: '#ffd700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#888' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#888' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderDeviceChart(devices) {
+            const ctx = document.getElementById('deviceChart').getContext('2d');
+
+            if (deviceChart) deviceChart.destroy();
+
+            deviceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Desktop', 'Mobile', 'Tablet'],
+                    datasets: [{
+                        data: [devices.desktop || 0, devices.mobile || 0, devices.tablet || 0],
+                        backgroundColor: ['#ffd700', '#00d4ff', '#9d4edd']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#fff' } }
+                    }
+                }
+            });
+        }
+
+        function renderPurchaseFunnel(funnel) {
+            const container = document.getElementById('purchaseFunnel');
+            const steps = [
+                { label: 'Visitors', value: funnel.visitors || 0, color: '#888' },
+                { label: 'Event Viewed', value: funnel.eventViewed || 0, color: '#00d4ff' },
+                { label: 'Checkout Started', value: funnel.checkoutStarted || 0, color: '#9d4edd' },
+                { label: 'Purchased', value: funnel.checkoutCompleted || 0, color: '#39ff14' }
+            ];
+            container.innerHTML = steps.map(s => `
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 4px; border-left: 3px solid ${s.color};">
+                    <span style="color: #aaa;">${s.label}</span>
+                    <span style="color: ${s.color}; font-weight: 600;">${s.value}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderClaimFunnel(funnel) {
+            const container = document.getElementById('claimFunnel');
+            const steps = [
+                { label: 'Visitors', value: funnel.visitors || 0, color: '#888' },
+                { label: 'Claim Started', value: funnel.claimStarted || 0, color: '#9d4edd' },
+                { label: 'Claim Completed', value: funnel.claimCompleted || 0, color: '#39ff14' }
+            ];
+            container.innerHTML = steps.map(s => `
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 4px; border-left: 3px solid ${s.color};">
+                    <span style="color: #aaa;">${s.label}</span>
+                    <span style="color: ${s.color}; font-weight: 600;">${s.value}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderTopPagesTable(pages) {
+            const container = document.getElementById('topPagesTable');
+            if (!pages.length) {
+                container.innerHTML = '<div style="color: #666;">No data yet</div>';
+                return;
+            }
+            container.innerHTML = pages.map(p => `
+                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;" title="${p.path}">${p.path}</span>
+                    <span style="color: var(--lightning-yellow);">${p.views}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderTopReferrersTable(referrers) {
+            const container = document.getElementById('topReferrersTable');
+            if (!referrers.length) {
+                container.innerHTML = '<div style="color: #666;">No referrers yet</div>';
+                return;
+            }
+            container.innerHTML = referrers.map(r => `
+                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;" title="${r.domain}">${r.domain}</span>
+                    <span style="color: var(--electric-blue);">${r.visits}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderUtmSourcesTable(utm) {
+            const container = document.getElementById('utmSourcesTable');
+            if (!utm.length) {
+                container.innerHTML = '<div style="color: #666;">No UTM data yet</div>';
+                return;
+            }
+            container.innerHTML = utm.map(u => `
+                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px;" title="${u.source}/${u.campaign}">${u.source}</span>
+                    <span style="color: var(--electric-purple);">${u.visits} (${u.conversionRate}%)</span>
+                </div>
+            `).join('');
         }
 
         // Initialize

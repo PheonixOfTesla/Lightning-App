@@ -413,6 +413,11 @@ const LoginCenter = (function() {
         const rolesText = selectedRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' + ');
         document.getElementById('lcCreateTypeLabel').textContent = rolesText;
 
+        // Track signup started
+        if (window.LPTracker) {
+            LPTracker.event('signup_started', { roles: selectedRoles });
+        }
+
         // Show venue notice if needed
         const venueNotice = document.getElementById('lcVenueNotice');
         if (selectedRoles.includes('venue') || selectedRoles.includes('admin') || selectedRoles.includes('host')) {
@@ -555,6 +560,11 @@ const LoginCenter = (function() {
             localStorage.setItem('userEmail', loginUserEmail);
             localStorage.setItem('userRole', successRole);
             localStorage.setItem('userRoles', JSON.stringify(loginUserRoles));
+
+            // Track login completed
+            if (window.LPTracker) {
+                LPTracker.event('login_completed', {});
+            }
 
             // Call success callback if provided
             if (config.onSuccess) {
@@ -898,6 +908,11 @@ const LoginCenter = (function() {
                 // Store data for callback
                 loginUserEmail = email;
                 loginUserRoles = selectedRoles;
+
+                // Track signup completed
+                if (window.LPTracker) {
+                    LPTracker.event('signup_completed', { method: 'email' });
+                }
 
                 // Call onSuccess immediately (discount applied NOW, not on CONTINUE click)
                 if (config.onSuccess) {
