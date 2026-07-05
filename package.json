@@ -22,7 +22,8 @@
     "@capacitor/android": "^7.4.4",
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
-    "@capacitor/ios": "^7.4.4"
+    "@capacitor/ios": "^7.4.4",
+    "@vercel/analytics": "^2.0.1"
   },
   "devDependencies": {
     "puppeteer": "^25.0.4",

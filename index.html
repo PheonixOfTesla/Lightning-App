@@ -4148,9 +4148,46 @@
 
     <script>
         // ===== CONFIGURATION =====
-        const API_BASE = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000' 
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
             : 'https://lightning-backend-production.up.railway.app';
+
+        // ===== FUNNEL TRACKING (fire-and-forget) =====
+        function trackFunnelEvent(step, data = {}) {
+            // Get session ID from LPAnalytics or generate one
+            const sessionId = window.LPAnalytics?.getSessionId?.() ||
+                localStorage.getItem('lp_session_id') ||
+                ('s_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+            localStorage.setItem('lp_session_id', sessionId);
+
+            // Get user email if logged in
+            const token = localStorage.getItem('token');
+            let email = null;
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    email = payload.email;
+                } catch (e) {}
+            }
+
+            // Fire to our DB (non-blocking, never fails the user journey)
+            fetch(`${API_BASE}/api/v1/funnel/track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    step,
+                    sessionId,
+                    email,
+                    ...data
+                }),
+                keepalive: true  // Survives page unload
+            }).catch(() => {});  // Swallow errors
+
+            // Mirror to PostHog if available
+            if (window.posthog) {
+                posthog.capture(step, { ...data, sessionId });
+            }
+        }
 
         // ===== STATE MANAGEMENT =====
         const state = {
@@ -9181,6 +9218,12 @@
                 LPAnalytics.viewedEvent(event._id, event.name, event.slug);
             }
 
+            // Track checkout started (CRITICAL for abandoned checkout tracking)
+            trackFunnelEvent('checkout_started', {
+                eventId: event._id,
+                eventSlug: event.slug
+            });
+
             let modal = document.getElementById('eventTicketModal');
             if (!modal) {
                 modal = document.createElement('div');
@@ -9224,7 +9267,15 @@
                                         <span>I agree to receive SMS or emails about my ticket purchase and event updates from Lightning Pass. Msg & data rates may apply. Reply STOP to unsubscribe.</span>
                                     </label>
                                 </div>
+                                <div class="form-group" style="margin-top: 0.75rem;">
+                                    <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.75rem; color: rgba(255,255,255,0.6); line-height: 1.4;">
+                                        <input type="checkbox" id="eventTermsAccepted" name="termsAccepted" required style="accent-color: var(--lightning-yellow); margin-top: 2px; flex-shrink: 0;">
+                                        <span>I agree to the <a href="/terms" target="_blank" style="color: var(--lightning-yellow); text-decoration: underline;">Terms of Service</a> and understand that all ticket sales are final. Refund requests must be made 24+ hours before the event and are subject to organizer approval.</span>
+                                    </label>
+                                </div>
                             </div>
+
+                            <div id="eventRefundPolicy" style="display: none; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.6);"></div>
 
                             <div style="background: rgba(255, 221, 0, 0.1); border: 1px solid var(--lightning-yellow); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
                                 <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; color: var(--lightning-yellow);">
@@ -9291,6 +9342,17 @@
 
             document.getElementById('eventTicketTiers').innerHTML = tiersHtml;
             updateEventTicketTotal();
+
+            // Show refund policy if event has one
+            const refundPolicyEl = document.getElementById('eventRefundPolicy');
+            if (refundPolicyEl) {
+                if (event.refundPolicy) {
+                    refundPolicyEl.innerHTML = '<strong style="color: rgba(255,255,255,0.8);">Refund Policy:</strong> ' + event.refundPolicy;
+                    refundPolicyEl.style.display = 'block';
+                } else {
+                    refundPolicyEl.style.display = 'none';
+                }
+            }
 
             modal.classList.add('active');
         }
@@ -9554,6 +9616,7 @@
                 const lastName = nameParts.slice(1).join(' ') || firstName;
 
                 const ticketCount = getEventQuantity();
+                const termsAcceptedAt = new Date().toISOString();
 
                 if (ticket.price === 0) {
                     // Free ticket - just register
@@ -9569,7 +9632,10 @@
                                 email: email,
                                 phone: phone
                             },
-                            paymentIntentId: 'free_' + Date.now()
+                            paymentIntentId: 'free_' + Date.now(),
+                            termsAccepted: true,
+                            termsAcceptedAt: termsAcceptedAt,
+                            termsVersion: '2026-07'
                         })
                     });
 
@@ -9616,7 +9682,10 @@
                                 email: email,
                                 phone: phone
                             },
-                            paymentIntentId: paymentIntent.id
+                            paymentIntentId: paymentIntent.id,
+                            termsAccepted: true,
+                            termsAcceptedAt: termsAcceptedAt,
+                            termsVersion: '2026-07'
                         })
                     });
 

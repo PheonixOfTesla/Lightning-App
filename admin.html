@@ -996,6 +996,7 @@
                 <button class="tab" onclick="switchTab('refunds')">Refunds</button>
                 <button class="tab" onclick="switchTab('experiences')">Experiences</button>
                 <button class="tab" onclick="switchTab('analytics')">Site Analytics</button>
+                <button class="tab" onclick="switchTab('funnel')">Funnel</button>
                 <button class="tab" onclick="switchTab('email')">Email</button>
                 <button class="tab" onclick="switchTab('generate')" style="background: var(--lightning-yellow); color: #000;">Generate</button>
             </div>
@@ -2103,6 +2104,50 @@
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
                         <div style="font-size: 0.85rem; font-weight: 600; color: var(--gray); margin-bottom: 0.5rem;">Recent Sends</div>
                         <div id="blastRecentSends" style="font-size: 0.8rem; color: var(--gray);">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Funnel Tab -->
+            <div id="funnelTab" class="tab-content">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                        <h3>Conversion Funnel</h3>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <select id="funnelEventFilter" onchange="loadFunnel()" style="padding: 0.5rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-size: 0.85rem;">
+                                <option value="">All Events</option>
+                            </select>
+                            <input type="date" id="funnelStartDate" onchange="loadFunnel()" style="padding: 0.5rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-size: 0.85rem;">
+                            <input type="date" id="funnelEndDate" onchange="loadFunnel()" style="padding: 0.5rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); font-size: 0.85rem;">
+                        </div>
+                    </div>
+
+                    <!-- Biggest Leak Highlight -->
+                    <div id="funnelBiggestLeak" style="background: rgba(255,0,68,0.1); border-left: 3px solid var(--danger-red); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0.5rem; display: none;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: var(--danger-red); font-weight: 700;">BIGGEST LEAK:</span>
+                            <span id="funnelLeakFrom" style="color: var(--white);"></span>
+                            <span style="color: var(--gray);">to</span>
+                            <span id="funnelLeakTo" style="color: var(--white);"></span>
+                            <span id="funnelLeakRate" style="color: var(--danger-red); font-weight: 700; margin-left: 0.5rem;"></span>
+                        </div>
+                        <div id="funnelLeakCount" style="font-size: 0.85rem; color: var(--gray); margin-top: 0.25rem;"></div>
+                    </div>
+
+                    <!-- Funnel Visualization -->
+                    <div id="funnelViz" style="display: flex; flex-direction: column; gap: 0;">
+                        <div style="color: var(--gray); text-align: center; padding: 2rem;">Loading funnel data...</div>
+                    </div>
+
+                    <!-- Abandoned Checkouts Section -->
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-dark);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h4 style="margin: 0;">Abandoned Checkouts</h4>
+                            <button onclick="loadAbandonedCheckouts()" class="action-btn view" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">Refresh</button>
+                        </div>
+                        <div id="abandonedCheckouts" style="max-height: 300px; overflow-y: auto;">
+                            <div style="color: var(--gray); font-size: 0.85rem;">Click refresh to load abandoned checkouts</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4337,6 +4382,9 @@
             } else if (tabName === 'email') {
                 loadBlastEvents();
                 loadBlastRecentSends();
+            } else if (tabName === 'funnel') {
+                loadFunnelEvents();
+                loadFunnel();
             }
         }
 
@@ -5911,6 +5959,174 @@
             } catch (error) {
                 console.error('Failed to load recent sends:', error);
                 document.getElementById('blastRecentSends').innerHTML = '<div style="color: var(--danger-red);">Failed to load</div>';
+            }
+        }
+
+        // ============================
+        // Conversion Funnel Functions
+        // ============================
+
+        let funnelEventsData = [];
+
+        async function loadFunnelEvents() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/funnel/events`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+                funnelEventsData = data.events || [];
+
+                const select = document.getElementById('funnelEventFilter');
+                select.innerHTML = '<option value="">All Events</option>' +
+                    funnelEventsData.map(e => `<option value="${e._id}">${e.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load funnel events:', error);
+            }
+        }
+
+        async function loadFunnel() {
+            const eventId = document.getElementById('funnelEventFilter').value;
+            const startDate = document.getElementById('funnelStartDate').value;
+            const endDate = document.getElementById('funnelEndDate').value;
+
+            const params = new URLSearchParams();
+            if (eventId) params.set('eventId', eventId);
+            if (startDate) params.set('startDate', startDate);
+            if (endDate) params.set('endDate', endDate);
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/funnel/dashboard?${params}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+
+                renderFunnel(data.funnel || []);
+                renderBiggestLeak(data.biggestLeak);
+            } catch (error) {
+                console.error('Failed to load funnel:', error);
+                document.getElementById('funnelViz').innerHTML =
+                    '<div style="color: var(--danger-red); text-align: center; padding: 2rem;">Failed to load funnel data</div>';
+            }
+        }
+
+        function renderFunnel(funnel) {
+            const container = document.getElementById('funnelViz');
+            if (!funnel.length) {
+                container.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 2rem;">No funnel data yet</div>';
+                return;
+            }
+
+            // Find max count for bar scaling
+            const maxCount = Math.max(...funnel.map(f => f.count), 1);
+
+            container.innerHTML = funnel.map((step, i) => {
+                const barWidth = (step.count / maxCount * 100).toFixed(1);
+                const isFirst = i === 0;
+                const color = getStepColor(step.step);
+
+                let html = '';
+
+                // Step bar
+                html += `
+                    <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; border-left: 3px solid ${color};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; color: var(--white);">${step.label}</span>
+                            <span style="font-size: 1.25rem; font-weight: 700; color: ${color};">${step.count.toLocaleString()}</span>
+                        </div>
+                        <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; width: ${barWidth}%; background: ${color}; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                `;
+
+                // Arrow between steps (not after last)
+                if (i < funnel.length - 1) {
+                    const nextStep = funnel[i + 1];
+                    const convRate = parseFloat(nextStep.conversionRate);
+                    const dropRate = parseFloat(nextStep.dropoffRate);
+                    const arrowColor = convRate >= 50 ? 'var(--neon-green)' : convRate >= 25 ? 'var(--lightning-yellow)' : 'var(--danger-red)';
+
+                    html += `
+                        <div style="display: flex; justify-content: center; align-items: center; padding: 0.5rem 0; color: var(--gray);">
+                            <span style="font-size: 1.25rem;">↓</span>
+                            <span style="margin-left: 0.5rem; font-size: 0.85rem;">
+                                <span style="color: ${arrowColor}; font-weight: 600;">${convRate}%</span> converted
+                                <span style="color: var(--gray); margin-left: 0.5rem;">(${dropRate}% dropped)</span>
+                            </span>
+                        </div>
+                    `;
+                }
+
+                return html;
+            }).join('');
+        }
+
+        function getStepColor(step) {
+            const colors = {
+                'website_visit': '#888',
+                'checkout_started': 'var(--electric-blue)',
+                'payment_completed': 'var(--neon-green)',
+                'account_registered': 'var(--electric-purple)',
+                'claim_completed': 'var(--lightning-yellow)',
+                'event_attended': '#39ff14'
+            };
+            return colors[step] || 'var(--white)';
+        }
+
+        function renderBiggestLeak(leak) {
+            const container = document.getElementById('funnelBiggestLeak');
+            if (!leak || parseFloat(leak.dropoffRate) === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            document.getElementById('funnelLeakFrom').textContent = leak.from;
+            document.getElementById('funnelLeakTo').textContent = leak.to;
+            document.getElementById('funnelLeakRate').textContent = `${leak.dropoffRate}% drop-off`;
+            document.getElementById('funnelLeakCount').textContent =
+                `${leak.dropoffCount.toLocaleString()} people dropped at this step`;
+        }
+
+        async function loadAbandonedCheckouts() {
+            const eventId = document.getElementById('funnelEventFilter').value;
+            const container = document.getElementById('abandonedCheckouts');
+            container.innerHTML = '<div style="color: var(--gray); font-size: 0.85rem;">Loading...</div>';
+
+            try {
+                const params = eventId ? `?eventId=${eventId}&limit=25` : '?limit=25';
+                const res = await fetch(`${API_BASE}/api/v1/funnel/abandoned${params}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+                const abandoned = data.abandoned || [];
+
+                if (abandoned.length === 0) {
+                    container.innerHTML = '<div style="color: var(--gray); font-size: 0.85rem;">No abandoned checkouts found</div>';
+                    return;
+                }
+
+                container.innerHTML = abandoned.map(a => {
+                    const time = new Date(a.timestamp).toLocaleString('en-US', {
+                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+                    return `
+                        <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="color: var(--white); font-size: 0.9rem;">${a.email || 'Anonymous'}</div>
+                                <div style="color: var(--gray); font-size: 0.75rem;">${a.eventName} ${a.ticketType ? '- ' + a.ticketType : ''}</div>
+                            </div>
+                            <div style="color: var(--gray); font-size: 0.75rem;">${time}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML += `<div style="padding: 0.5rem; text-align: center; color: var(--gray); font-size: 0.75rem;">
+                    Showing ${abandoned.length} of ${data.total} abandoned checkouts
+                </div>`;
+            } catch (error) {
+                console.error('Failed to load abandoned checkouts:', error);
+                container.innerHTML = '<div style="color: var(--danger-red); font-size: 0.85rem;">Failed to load</div>';
             }
         }
 
