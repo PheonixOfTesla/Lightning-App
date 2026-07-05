@@ -855,6 +855,8 @@
     </style>
     <!-- Chart.js for Analytics Dashboard (deferred to prevent body access before body exists) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+    <!-- Socket.IO for Live Analytics Dashboard -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
     <nav>
@@ -1595,29 +1597,61 @@
                         Site Analytics
                     </h3>
 
-                    <!-- Stats Cards Row -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
-                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">Today</div>
-                            <div id="statsTodayVisitors" style="color: var(--lightning-yellow); font-size: 1.5rem; font-weight: 700;">-</div>
-                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
+                    <!-- Live Status + Stats Row -->
+                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 1rem; margin-bottom: 1.5rem; align-items: start;">
+                        <!-- Live Connection Status -->
+                        <div id="liveStatusBadge" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <span id="liveStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #888;"></span>
+                            <span id="liveStatusText" style="color: #888; font-size: 0.8rem;">Connecting...</span>
                         </div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
-                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">7 Days</div>
-                            <div id="statsWeekVisitors" style="color: var(--electric-blue); font-size: 1.5rem; font-weight: 700;">-</div>
-                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
-                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">30 Days</div>
-                            <div id="statsMonthVisitors" style="color: var(--electric-purple); font-size: 1.5rem; font-weight: 700;">-</div>
-                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
-                            <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">Page Views</div>
-                            <div id="statsMonthPageviews" style="color: var(--neon-green); font-size: 1.5rem; font-weight: 700;">-</div>
-                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">30 days</div>
+                        <!-- Stats Cards -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">Today</div>
+                                <div id="statsTodayVisitors" style="color: var(--lightning-yellow); font-size: 1.5rem; font-weight: 700;">-</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">7 Days</div>
+                                <div id="statsWeekVisitors" style="color: var(--electric-blue); font-size: 1.5rem; font-weight: 700;">-</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">30 Days</div>
+                                <div id="statsMonthVisitors" style="color: var(--electric-purple); font-size: 1.5rem; font-weight: 700;">-</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">visitors</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--gray); font-size: 0.75rem; text-transform: uppercase;">Page Views</div>
+                                <div id="statsMonthPageviews" style="color: var(--neon-green); font-size: 1.5rem; font-weight: 700;">-</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">30 days</div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Live Feed Row -->
+                    <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(255,215,0,0.2);">
+                        <h4 style="margin: 0 0 0.75rem 0; color: var(--lightning-yellow); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span id="livePulse" style="width: 8px; height: 8px; border-radius: 50%; background: var(--neon-green); animation: pulse 2s infinite;"></span>
+                            Live Activity Feed
+                        </h4>
+                        <div id="liveFeedContainer" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                            <div style="color: #666; font-size: 0.85rem; padding: 0.5rem;">Waiting for activity...</div>
+                        </div>
+                    </div>
+                    <style>
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.4; }
+                        }
+                        @keyframes slideIn {
+                            from { opacity: 0; transform: translateX(-20px); }
+                            to { opacity: 1; transform: translateX(0); }
+                        }
+                        .live-feed-item {
+                            animation: slideIn 0.3s ease-out;
+                        }
+                    </style>
 
                     <!-- Charts Row -->
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
@@ -4379,6 +4413,10 @@
                 loadGeneratorEvents();
             } else if (tabName === 'analytics') {
                 loadAnalytics();
+                // Initialize socket connection for live updates (only once)
+                if (!analyticsSocket) {
+                    initAnalyticsSocket();
+                }
             } else if (tabName === 'email') {
                 loadBlastEvents();
                 loadBlastRecentSends();
@@ -6637,6 +6675,166 @@
 
         let visitorTrendChart = null;
         let deviceChart = null;
+        let analyticsSocket = null;
+
+        // ============================
+        // Live Analytics Socket Connection
+        // ============================
+        function initAnalyticsSocket() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const socketUrl = API_BASE;
+
+            analyticsSocket = io(socketUrl, {
+                auth: { token },
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 10,
+                reconnectionDelay: 1000
+            });
+
+            analyticsSocket.on('connect', () => {
+                console.log('[Analytics] Socket connected');
+                updateLiveStatus('connected');
+                // Join admin room for analytics events
+                analyticsSocket.emit('join:admin');
+            });
+
+            analyticsSocket.on('disconnect', () => {
+                console.log('[Analytics] Socket disconnected');
+                updateLiveStatus('disconnected');
+            });
+
+            analyticsSocket.on('connect_error', (err) => {
+                console.log('[Analytics] Socket error:', err.message);
+                updateLiveStatus('error');
+            });
+
+            // Live analytics event listeners
+            analyticsSocket.on('analytics:visit', (data) => {
+                addLiveFeedItem('visit', data);
+                incrementTodayVisitors();
+            });
+
+            analyticsSocket.on('analytics:sale', (data) => {
+                addLiveFeedItem('sale', data);
+            });
+
+            analyticsSocket.on('analytics:signup', (data) => {
+                addLiveFeedItem('signup', data);
+            });
+
+            analyticsSocket.on('analytics:claim', (data) => {
+                addLiveFeedItem('claim', data);
+            });
+
+            analyticsSocket.on('analytics:entry', (data) => {
+                addLiveFeedItem('entry', data);
+            });
+
+            analyticsSocket.on('analytics:checkout_started', (data) => {
+                addLiveFeedItem('checkout_started', data);
+            });
+        }
+
+        function updateLiveStatus(status) {
+            const dot = document.getElementById('liveStatusDot');
+            const text = document.getElementById('liveStatusText');
+            const pulse = document.getElementById('livePulse');
+
+            if (status === 'connected') {
+                dot.style.background = 'var(--neon-green)';
+                text.style.color = 'var(--neon-green)';
+                text.textContent = 'Live';
+                pulse.style.display = 'inline-block';
+            } else if (status === 'disconnected') {
+                dot.style.background = '#888';
+                text.style.color = '#888';
+                text.textContent = 'Reconnecting...';
+                pulse.style.display = 'none';
+            } else {
+                dot.style.background = 'var(--danger-red)';
+                text.style.color = 'var(--danger-red)';
+                text.textContent = 'Connection Error';
+                pulse.style.display = 'none';
+            }
+        }
+
+        function addLiveFeedItem(type, data) {
+            const container = document.getElementById('liveFeedContainer');
+
+            // Remove "waiting" placeholder if present
+            if (container.querySelector('div[style*="color: #666"]')) {
+                container.innerHTML = '';
+            }
+
+            const timestamp = new Date(data.timestamp || Date.now()).toLocaleTimeString();
+
+            let icon, color, message;
+            switch (type) {
+                case 'visit':
+                    icon = 'eye';
+                    color = 'var(--electric-blue)';
+                    message = `Page view: ${data.path || '/'}` + (data.isNewSession ? ' (new visitor)' : '');
+                    break;
+                case 'sale':
+                    icon = 'dollar-sign';
+                    color = 'var(--neon-green)';
+                    message = `Sale: $${(data.amount || 0).toFixed(2)} - ${data.eventName || 'Event'}`;
+                    break;
+                case 'signup':
+                    icon = 'user-plus';
+                    color = 'var(--electric-purple)';
+                    message = `New signup: ${data.name || 'User'}`;
+                    break;
+                case 'claim':
+                    icon = 'gift';
+                    color = 'var(--lightning-yellow)';
+                    message = `Pass claimed: ${data.guestName || 'Guest'} - ${data.eventName || 'Event'}`;
+                    break;
+                case 'entry':
+                    icon = 'check-circle';
+                    color = 'var(--neon-green)';
+                    message = `Door entry: ${data.guestName || 'Guest'} (headcount: ${data.headcount || 0})`;
+                    break;
+                case 'checkout_started':
+                    icon = 'shopping-cart';
+                    color = '#f59e0b';
+                    message = `Checkout started: ${data.path || '/'}`;
+                    break;
+                default:
+                    icon = 'activity';
+                    color = '#888';
+                    message = type;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'live-feed-item';
+            item.style.cssText = `display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; border-left: 3px solid ${color};`;
+            item.innerHTML = `
+                <span style="color: #666; font-size: 0.75rem; white-space: nowrap;">${timestamp}</span>
+                <span style="color: ${color}; font-size: 0.85rem; flex: 1;">${message}</span>
+            `;
+
+            // Prepend new items at the top
+            container.insertBefore(item, container.firstChild);
+
+            // Keep only last 20 items
+            while (container.children.length > 20) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function incrementTodayVisitors() {
+            const el = document.getElementById('statsTodayVisitors');
+            const current = parseInt(el.textContent) || 0;
+            el.textContent = current + 1;
+            // Flash animation
+            el.style.transform = 'scale(1.2)';
+            el.style.transition = 'transform 0.2s';
+            setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+        }
 
         async function loadAnalytics() {
             try {

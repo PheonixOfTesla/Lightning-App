@@ -8982,6 +8982,11 @@
         function openClaimPassModal(event) {
             currentClaimEvent = event;
 
+            // Track claim started for analytics funnel
+            if (window.LPTracker) {
+                LPTracker.event('pass_claim_started', { eventSlug: event.slug, eventName: event.name });
+            }
+
             // Create modal if not exists
             let modal = document.getElementById('claimPassModal');
             if (!modal) {
@@ -9091,6 +9096,10 @@
                 });
 
                 if (response.success) {
+                    // Track claim completed for analytics funnel
+                    if (window.LPTracker) {
+                        LPTracker.event('pass_claim_completed', { eventSlug: currentClaimEvent.slug, eventName: currentClaimEvent.name });
+                    }
                     // Show success state
                     document.getElementById('claimPassLoggedInView').style.display = 'none';
                     document.getElementById('claimPassEventInfo').style.display = 'none';
@@ -9158,6 +9167,11 @@
                         if (window.updateNav) updateNav();
                     }
 
+                    // Track claim completed for analytics funnel
+                    if (window.LPTracker) {
+                        LPTracker.event('pass_claim_completed', { eventSlug: currentClaimEvent.slug, eventName: currentClaimEvent.name });
+                    }
+
                     // Show success state
                     document.getElementById('claimPassGuestView').style.display = 'none';
                     document.getElementById('claimPassEventInfo').style.display = 'none';
@@ -9213,9 +9227,9 @@
         function openEventTicketModal(event) {
             selectedEvent = event;
 
-            // Track event view
-            if (window.LPAnalytics) {
-                LPAnalytics.viewedEvent(event._id, event.name, event.slug);
+            // Track event view (analytics dashboard)
+            if (window.LPTracker) {
+                LPTracker.event('event_viewed', { eventSlug: event.slug, eventName: event.name });
             }
 
             // Track checkout started (CRITICAL for abandoned checkout tracking)
@@ -9223,6 +9237,10 @@
                 eventId: event._id,
                 eventSlug: event.slug
             });
+            // Also track to AnalyticsEvent for dashboard
+            if (window.LPTracker) {
+                LPTracker.event('checkout_started', { eventSlug: event.slug, eventName: event.name });
+            }
 
             let modal = document.getElementById('eventTicketModal');
             if (!modal) {
@@ -9571,6 +9589,14 @@
                     showToast('🎟️ Ticket purchased! Check your phone for SMS.', 'success');
 
                     // Track purchase completed
+                    if (window.LPTracker) {
+                        LPTracker.event('checkout_completed', {
+                            eventSlug: selectedEvent.slug,
+                            eventName: selectedEvent.name,
+                            amount: eventTicketTotal,
+                            quantity: eventTicketQuantity
+                        });
+                    }
                     if (window.LPAnalytics) {
                         LPAnalytics.purchaseCompleted(
                             confirmData?.passId || paymentIntent.id,
@@ -9693,6 +9719,14 @@
                     showToast(`🎟️ ${purchaseLabel} purchased! Check your phone for SMS.`, 'success');
 
                     // Track purchase completed
+                    if (window.LPTracker) {
+                        LPTracker.event('checkout_completed', {
+                            eventSlug: selectedEvent.slug,
+                            eventName: selectedEvent.name,
+                            amount: eventTicketTotal,
+                            quantity: ticketCount
+                        });
+                    }
                     if (window.LPAnalytics) {
                         LPAnalytics.purchaseCompleted(
                             confirmData?.passId || paymentIntent.id,
