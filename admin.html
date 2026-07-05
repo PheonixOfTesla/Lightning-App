@@ -6676,6 +6676,7 @@
         let visitorTrendChart = null;
         let deviceChart = null;
         let analyticsSocket = null;
+        let analyticsWasConnected = false; // Track if we've connected before (for reconnect detection)
 
         // ============================
         // Live Analytics Socket Connection
@@ -6699,6 +6700,13 @@
                 updateLiveStatus('connected');
                 // Join admin room for analytics events
                 analyticsSocket.emit('join:admin');
+
+                // RESYNC on reconnect: if we were connected before, reload true state
+                if (analyticsWasConnected) {
+                    console.log('[Analytics] Reconnected - resyncing to true state');
+                    loadAnalytics();
+                }
+                analyticsWasConnected = true;
             });
 
             analyticsSocket.on('disconnect', () => {
@@ -6711,14 +6719,18 @@
                 updateLiveStatus('error');
             });
 
-            // Live analytics event listeners
+            // Live analytics event listeners with consistent stat updates
             analyticsSocket.on('analytics:visit', (data) => {
                 addLiveFeedItem('visit', data);
-                incrementTodayVisitors();
+                if (data.isNewSession) {
+                    incrementStat('statsTodayVisitors');
+                }
+                incrementStat('statsMonthPageviews');
             });
 
             analyticsSocket.on('analytics:sale', (data) => {
                 addLiveFeedItem('sale', data);
+                incrementFunnelStep('purchaseFunnel', 'Purchased');
             });
 
             analyticsSocket.on('analytics:signup', (data) => {
@@ -6727,6 +6739,7 @@
 
             analyticsSocket.on('analytics:claim', (data) => {
                 addLiveFeedItem('claim', data);
+                incrementFunnelStep('claimFunnel', 'Claim Completed');
             });
 
             analyticsSocket.on('analytics:entry', (data) => {
@@ -6735,6 +6748,17 @@
 
             analyticsSocket.on('analytics:checkout_started', (data) => {
                 addLiveFeedItem('checkout_started', data);
+                incrementFunnelStep('purchaseFunnel', 'Checkout Started');
+            });
+
+            analyticsSocket.on('analytics:event_viewed', (data) => {
+                addLiveFeedItem('event_viewed', data);
+                incrementFunnelStep('purchaseFunnel', 'Event Viewed');
+            });
+
+            analyticsSocket.on('analytics:claim_started', (data) => {
+                addLiveFeedItem('claim_started', data);
+                incrementFunnelStep('claimFunnel', 'Claim Started');
             });
         }
 
@@ -6801,7 +6825,17 @@
                 case 'checkout_started':
                     icon = 'shopping-cart';
                     color = '#f59e0b';
-                    message = `Checkout started: ${data.path || '/'}`;
+                    message = `Checkout started: ${data.eventName || data.path || '/'}`;
+                    break;
+                case 'event_viewed':
+                    icon = 'eye';
+                    color = '#00d4ff';
+                    message = `Event viewed: ${data.eventName || 'Event'}`;
+                    break;
+                case 'claim_started':
+                    icon = 'gift';
+                    color = '#9d4edd';
+                    message = `Claim started: ${data.eventName || 'Event'}`;
                     break;
                 default:
                     icon = 'activity';
@@ -6826,14 +6860,33 @@
             }
         }
 
-        function incrementTodayVisitors() {
-            const el = document.getElementById('statsTodayVisitors');
+        function incrementStat(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
             const current = parseInt(el.textContent) || 0;
             el.textContent = current + 1;
             // Flash animation
             el.style.transform = 'scale(1.2)';
             el.style.transition = 'transform 0.2s';
             setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+        }
+
+        function incrementFunnelStep(funnelId, stepLabel) {
+            const container = document.getElementById(funnelId);
+            if (!container) return;
+            const steps = container.querySelectorAll('div');
+            steps.forEach(step => {
+                const labelSpan = step.querySelector('span:first-child');
+                const valueSpan = step.querySelector('span:last-child');
+                if (labelSpan && valueSpan && labelSpan.textContent === stepLabel) {
+                    const current = parseInt(valueSpan.textContent) || 0;
+                    valueSpan.textContent = current + 1;
+                    // Flash animation
+                    valueSpan.style.transform = 'scale(1.2)';
+                    valueSpan.style.transition = 'transform 0.2s';
+                    setTimeout(() => { valueSpan.style.transform = 'scale(1)'; }, 200);
+                }
+            });
         }
 
         async function loadAnalytics() {
