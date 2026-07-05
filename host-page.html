@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Host Events - Lightning Pass</title>
+
+    <!-- Dynamic OG tags set by JS -->
+    <meta property="og:title" content="Events - Lightning Pass">
+    <meta property="og:description" content="Get tickets to exclusive events">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffdd00;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header/Banner */
+        .host-banner {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--card-black) 0%, var(--pure-black) 100%);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .host-header {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            top: -60px;
+        }
+
+        .host-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--pure-black);
+            background: var(--card-black);
+            object-fit: cover;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .host-info {
+            margin-top: 1rem;
+        }
+
+        .host-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .host-bio {
+            color: var(--gray);
+            font-size: 1rem;
+            max-width: 600px;
+        }
+
+        /* Events Grid */
+        .events-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .events-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--lightning-yellow);
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: var(--card-black);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid var(--border-dark);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(255, 221, 0, 0.1);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: var(--border-dark);
+        }
+
+        .event-content {
+            padding: 1.25rem;
+        }
+
+        .event-date {
+            font-size: 0.85rem;
+            color: var(--electric-blue);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-location {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .event-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--lightning-yellow);
+        }
+
+        .btn-tickets {
+            display: block;
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--lightning-yellow);
+            color: #000;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn-tickets:hover {
+            background: #e6c700;
+        }
+
+        /* Loading/Error states */
+        .loading, .error, .no-events {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray);
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        /* Footer */
+        .powered-by {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .powered-by a {
+            color: var(--lightning-yellow);
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .host-banner {
+                height: 150px;
+            }
+            .host-header {
+                top: -40px;
+                padding: 0 1rem;
+            }
+            .host-logo {
+                width: 80px;
+                height: 80px;
+            }
+            .host-name {
+                font-size: 1.5rem;
+            }
+            .events-section {
+                padding: 0 1rem 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner -->
+    <div class="host-banner" id="hostBanner"></div>
+
+    <!-- Header with Logo -->
+    <div class="host-header">
+        <img class="host-logo" id="hostLogo" src="" alt="Host Logo">
+        <div class="host-info">
+            <h1 class="host-name" id="hostName">Loading...</h1>
+            <p class="host-bio" id="hostBio"></p>
+        </div>
+    </div>
+
+    <!-- Events -->
+    <section class="events-section">
+        <h2 class="events-title">Upcoming Events</h2>
+        <div class="events-grid" id="eventsGrid">
+            <div class="loading">Loading events...</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="powered-by">
+        Powered by <a href="https://thelightningpass.com">Lightning Pass</a>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://lightning-backend-production.up.railway.app';
+
+        // Extract hostSlug from URL path
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const hostSlug = pathParts[1]; // /h/:hostSlug
+        const eventSlug = pathParts[2]; // /h/:hostSlug/:eventSlug (optional)
+
+        async function loadHostPage() {
+            if (!hostSlug) {
+                showError('Invalid host URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/h/${hostSlug}`);
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    showError(data.error || 'Host not found');
+                    return;
+                }
+
+                renderHost(data.host);
+                renderEvents(data.events);
+
+                // Update page title
+                document.title = `${data.host.displayName || 'Events'} - Lightning Pass`;
+
+            } catch (err) {
+                console.error('Load error:', err);
+                showError('Failed to load page');
+            }
+        }
+
+        function renderHost(host) {
+            // Banner
+            const banner = document.getElementById('hostBanner');
+            if (host.banner) {
+                banner.style.backgroundImage = `url(${host.banner})`;
+            }
+
+            // Logo
+            const logo = document.getElementById('hostLogo');
+            if (host.logo) {
+                logo.src = host.logo;
+            } else {
+                logo.style.display = 'none';
+            }
+
+            // Info
+            document.getElementById('hostName').textContent = host.displayName || host.slug;
+            document.getElementById('hostBio').textContent = host.bio || '';
+        }
+
+        function renderEvents(events) {
+            const grid = document.getElementById('eventsGrid');
+
+            if (!events || events.length === 0) {
+                grid.innerHTML = '<div class="no-events">No upcoming events</div>';
+                return;
+            }
+
+            grid.innerHTML = events.map(event => {
+                const date = new Date(event.date);
+                const dateStr = date.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                const timeStr = event.startTime ? formatTime(event.startTime) : '';
+
+                // Get lowest ticket price
+                const lowestPrice = event.tickets && event.tickets.length > 0
+                    ? Math.min(...event.tickets.map(t => t.price))
+                    : 0;
+                const priceStr = lowestPrice > 0 ? `$${(lowestPrice / 100).toFixed(0)}` : 'FREE';
+
+                return `
+                    <div class="event-card">
+                        ${event.imageUrl ? `<img class="event-image" src="${event.imageUrl}" alt="${event.name}">` : '<div class="event-image"></div>'}
+                        <div class="event-content">
+                            <div class="event-date">${dateStr} ${timeStr ? '@ ' + timeStr : ''}</div>
+                            <h3 class="event-name">${event.name}</h3>
+                            <div class="event-location">${event.location || ''}</div>
+                            <div class="event-price">${priceStr}</div>
+                            <a class="btn-tickets" href="/#events" onclick="window.location.href='/?event=${event.slug}'">GET TICKETS</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const [hours, minutes] = timeStr.split(':');
+            const h = parseInt(hours);
+            const suffix = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${minutes} ${suffix}`;
+        }
+
+        function showError(message) {
+            document.getElementById('hostName').textContent = 'Not Found';
+            document.getElementById('eventsGrid').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Load on page ready
+        loadHostPage();
+    </script>
+    <script src="/js/lp-tracker.js" defer></script>
+</body>
+</html>
