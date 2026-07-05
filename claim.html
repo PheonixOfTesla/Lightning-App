@@ -349,16 +349,35 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Track claim:link_opened immediately (even before sandbox check)
+            // This tells us the email link was clicked
+            claimToken = getToken();
+            if (claimToken && window.LPTracker) {
+                LPTracker.event('claim:link_opened', { claimToken: claimToken.substring(0, 8) + '...' });
+            }
+
             // Check for sandboxed iframe first
             if (isInSandboxedIframe()) {
                 showSandboxEscape();
+                // Track sandbox escape shown
+                if (window.LPTracker) {
+                    LPTracker.event('claim:sandbox_blocked', { claimToken: claimToken?.substring(0, 8) + '...' });
+                }
                 return;
             }
+
             // Initialize LoginCenter
             if (typeof LoginCenter !== 'undefined') {
                 LoginCenter.init({
                     apiBase: API_BASE,
                     onSuccess: async function(userData) {
+                        // Track account created/logged in for claim flow
+                        if (claimToken && window.LPTracker) {
+                            LPTracker.event('claim:account_ready', {
+                                claimToken: claimToken.substring(0, 8) + '...',
+                                isNewAccount: userData.isNewAccount || false
+                            });
+                        }
                         // After successful login/signup, automatically claim the pass
                         if (claimToken) {
                             await claimPassAfterAuth(userData.token);
@@ -422,13 +441,29 @@
             document.getElementById('quantity').textContent = passData.quantity;
             document.getElementById('validUntil').textContent = new Date(passData.validUntil).toLocaleDateString();
 
+            // Track that the claim page rendered successfully (passed sandbox)
+            if (window.LPTracker) {
+                LPTracker.event('claim:page_rendered', {
+                    claimToken: claimToken?.substring(0, 8) + '...',
+                    eventName: passData.eventName || passData.venueName
+                });
+            }
+
             // Show appropriate section based on login state
             if (isLoggedIn()) {
                 document.getElementById('claimSection').classList.remove('hidden');
                 document.getElementById('loginSection').classList.add('hidden');
+                // Track: user already logged in, ready to claim
+                if (window.LPTracker) {
+                    LPTracker.event('claim:ready_to_claim', { alreadyLoggedIn: true });
+                }
             } else {
                 document.getElementById('claimSection').classList.add('hidden');
                 document.getElementById('loginSection').classList.remove('hidden');
+                // Track: signup/login prompt shown
+                if (window.LPTracker) {
+                    LPTracker.event('claim:signup_viewed', { claimToken: claimToken?.substring(0, 8) + '...' });
+                }
             }
         }
 

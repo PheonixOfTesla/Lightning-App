@@ -6998,14 +6998,18 @@
 
         function renderClaimFunnel(funnel) {
             const container = document.getElementById('claimFunnel');
+            // 6-step detailed claim funnel
             const steps = [
-                { label: 'Visitors', value: funnel.visitors || 0, color: '#888' },
-                { label: 'Claim Started', value: funnel.claimStarted || 0, color: '#9d4edd' },
-                { label: 'Claim Completed', value: funnel.claimCompleted || 0, color: '#39ff14' }
+                { label: 'Sent', value: funnel.sent || 0, color: '#888', hint: 'Claim emails sent' },
+                { label: 'Link Clicked', value: funnel.linkClicked || 0, color: '#00d4ff', hint: 'Opened claim link' },
+                { label: 'Page Rendered', value: funnel.pageRendered || 0, color: '#9d4edd', hint: 'Passed sandbox' },
+                { label: 'Signup Viewed', value: funnel.signupViewed || 0, color: '#f59e0b', hint: 'Saw login/signup' },
+                { label: 'Account Ready', value: funnel.accountReady || 0, color: '#00d4ff', hint: 'Logged in/signed up' },
+                { label: 'Claimed', value: funnel.claimed || 0, color: '#39ff14', hint: 'Pass claimed' }
             ];
             container.innerHTML = steps.map(s => `
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 4px; border-left: 3px solid ${s.color};">
-                    <span style="color: #aaa;">${s.label}</span>
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 4px; border-left: 3px solid ${s.color};" title="${s.hint}">
+                    <span style="color: #aaa; font-size: 0.85rem;">${s.label}</span>
                     <span style="color: ${s.color}; font-weight: 600;">${s.value}</span>
                 </div>
             `).join('');
