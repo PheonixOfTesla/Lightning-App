@@ -3015,6 +3015,7 @@
                             ${event.status === 'pending' ? `
                                 <button class="action-btn approve" onclick="approveEvent('${event._id}')">Approve</button>
                             ` : ''}
+                            <button class="action-btn" style="background: var(--danger-red); color: white;" onclick="deleteEvent('${event._id}', '${event.name.replace(/'/g, "\\'")}')">Delete</button>
                         </td>
                     </tr>
                 `}).join('');
@@ -3039,6 +3040,27 @@
                     loadEvents();
                 } else {
                     throw new Error('Failed to approve event');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function deleteEvent(eventId, eventName) {
+            if (!confirm(`Delete event "${eventName}"? This cannot be undone.`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (res.ok) {
+                    showToast('Event deleted!', 'success');
+                    loadEvents();
+                } else {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Failed to delete event');
                 }
             } catch (error) {
                 showToast(error.message, 'error');
