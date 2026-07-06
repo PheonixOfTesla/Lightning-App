@@ -761,13 +761,18 @@
 
                 const eventJson = JSON.stringify(event).replace(/'/g, '&#39;');
 
+                // Build location display with clickable address
+                const locationName = event.locationName || '';
+                const locationAddress = event.locationAddress || '';
+                const locationDisplay = buildLocationDisplay(locationName, locationAddress, event.eventTag);
+
                 return `
                     <div class="event-card">
                         ${event.imageUrl ? `<img class="event-image" src="${event.imageUrl}" alt="${event.name}">` : '<div class="event-image"></div>'}
                         <div class="event-content">
                             <div class="event-date">${dateStr} ${timeStr ? '@ ' + timeStr : ''}</div>
                             <h3 class="event-name">${event.name}</h3>
-                            <div class="event-location">${event.location || ''}</div>
+                            ${locationDisplay}
                             <div class="event-price">${priceStr}</div>
                             <button class="btn-tickets" onclick='openCheckout(${eventJson})'>GET TICKETS</button>
                         </div>
@@ -783,6 +788,33 @@
             const suffix = h >= 12 ? 'PM' : 'AM';
             const h12 = h % 12 || 12;
             return `${h12}:${minutes} ${suffix}`;
+        }
+
+        // Build location display with clickable address for Google/Apple Maps
+        function buildLocationDisplay(locationName, locationAddress, eventTag) {
+            const parts = [];
+
+            // Event tag (if present)
+            if (eventTag) {
+                parts.push(`<span style="background: var(--lightning-yellow); color: #000; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;">${eventTag}</span>`);
+            }
+
+            // Location name
+            if (locationName) {
+                parts.push(`<span>${locationName}</span>`);
+            }
+
+            // Clickable address - opens in Google Maps (works on iOS/Android/Desktop)
+            if (locationAddress) {
+                const encodedAddress = encodeURIComponent(locationAddress);
+                // Universal maps link - Google Maps on web, prompts native app on mobile
+                const mapsUrl = `https://maps.google.com/maps?q=${encodedAddress}`;
+                parts.push(`<a href="${mapsUrl}" target="_blank" rel="noopener" style="color: var(--electric-blue); text-decoration: underline; cursor: pointer;" onclick="event.stopPropagation();">${locationAddress}</a>`);
+            }
+
+            if (parts.length === 0) return '';
+
+            return `<div class="event-location" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${parts.join(' ')}</div>`;
         }
 
         function showError(message) {
