@@ -1084,12 +1084,10 @@
 
                 <div class="section">
                     <div class="form-group">
-                        <label class="form-label">Filter by Event</label>
-                        <select id="emailEventFilter" class="form-select" onchange="updateEmailRecipientCount()">
-                            <option value="all">All my events</option>
-                        </select>
+                        <label class="form-label">Email Address *</label>
+                        <input id="emailRecipient" type="email" class="form-input" placeholder="guest@email.com">
+                        <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">Enter the email address to send to</p>
                     </div>
-                    <div id="emailRecipientCount" style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">0 recipients</div>
                     <div class="form-group">
                         <label class="form-label">Subject *</label>
                         <input id="emailSubject" type="text" class="form-input" placeholder="Email subject">
@@ -2741,10 +2739,14 @@
         }
 
         async function sendHostEmail() {
-            const eventFilter = document.getElementById('emailEventFilter').value;
+            const emailTo = document.getElementById('emailRecipient').value.trim();
             const subject = document.getElementById('emailSubject').value.trim();
             const body = document.getElementById('emailBody').value.trim();
 
+            if (!emailTo || !emailTo.includes('@')) {
+                alert('Valid email address is required');
+                return;
+            }
             if (!subject) {
                 alert('Subject is required');
                 return;
@@ -2754,25 +2756,15 @@
                 return;
             }
 
-            // Get recipients with valid emails
-            const recipients = emailEventGuests
-                .filter(g => g.email && g.email.includes('@'))
-                .map(g => ({ email: g.email }));
-
-            if (recipients.length === 0) {
-                alert('No valid recipients found');
-                return;
-            }
-
             const data = await apiCall('/api/v1/host/email/send', 'POST', {
-                recipients,
+                recipients: [{ email: emailTo }],
                 subject,
-                body,
-                eventId: eventFilter !== 'all' ? eventFilter : null
+                body
             });
 
             if (data.success) {
-                alert(`Sent ${data.sentCount} email${data.sentCount !== 1 ? 's' : ''}!`);
+                alert(`Email sent to ${emailTo}!`);
+                document.getElementById('emailRecipient').value = '';
                 document.getElementById('emailSubject').value = '';
                 document.getElementById('emailBody').value = '';
                 document.getElementById('emailQuota').textContent =
