@@ -875,22 +875,44 @@
                 stripeConnectInstance = StripeConnect.init({
                     publishableKey: STRIPE_PK,
                     fetchClientSecret: async () => {
-                        const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${currentUser.token}`,
-                                'Content-Type': 'application/json'
+                        try {
+                            const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${currentUser.token}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            if (!res.ok) {
+                                const errText = await res.text();
+                                console.error('Account session request failed:', res.status, errText);
+                                throw new Error(`Request failed: ${res.status}`);
                             }
-                        });
-                        const data = await res.json();
-                        if (!data.success) {
-                            throw new Error(data.error || 'Failed to get account session');
+                            const data = await res.json();
+                            if (!data || !data.success) {
+                                throw new Error(data?.error || 'Failed to get account session');
+                            }
+                            return data.clientSecret;
+                        } catch (err) {
+                            console.error('fetchClientSecret error:', err);
+                            throw err;
                         }
-                        return data.clientSecret;
                     },
                     appearance: stripeAppearance,
                     onFetchClientSecretError: (err) => {
-                        console.error('Failed to fetch client secret:', err);
+                        console.error('Stripe fetchClientSecret error:', err);
+                        // Show fallback UI
+                        const container = document.getElementById(containerId);
+                        if (container) {
+                            container.innerHTML = `
+                                <div style="padding: 1.5rem; background: var(--card-black); border-radius: 8px; border: 1px solid var(--border-dark);">
+                                    <p style="color: var(--danger-red); margin-bottom: 1rem;">Unable to load Stripe onboarding component.</p>
+                                    <button class="btn btn-primary" onclick="fallbackStripeOnboarding()">
+                                        Continue Setup in Stripe
+                                    </button>
+                                </div>
+                            `;
+                        }
                     }
                 });
 
@@ -907,18 +929,68 @@
 
             } catch (error) {
                 console.error('Init Stripe onboarding error:', error);
+                // Show fallback
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+                        <div style="padding: 1.5rem; background: var(--card-black); border-radius: 8px; border: 1px solid var(--border-dark);">
+                            <p style="color: var(--gray); margin-bottom: 1rem;">Connect your bank account to receive payouts.</p>
+                            <button class="btn btn-primary" onclick="fallbackStripeOnboarding()">
+                                Connect with Stripe
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Fallback to redirect-based Stripe onboarding if embedded fails
+        async function fallbackStripeOnboarding() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/connect/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (data.success && data.onboardingUrl) {
+                    window.location.href = data.onboardingUrl;
+                } else if (data.error === 'Stripe account already connected') {
+                    // Account exists, try refresh link
+                    const refreshRes = await fetch(`${API_BASE}/api/v1/lightning/host/connect/refresh`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${currentUser.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const refreshData = await refreshRes.json();
+                    if (refreshData.success && refreshData.onboardingUrl) {
+                        window.location.href = refreshData.onboardingUrl;
+                    }
+                }
+            } catch (err) {
+                console.error('Fallback onboarding error:', err);
+                alert('Unable to connect Stripe. Please try again.');
             }
         }
 
         async function initStripeConnectedComponents() {
-            // Wait for StripeConnect to be available
+            // Wait for StripeConnect to be available (max 5 seconds)
             if (typeof StripeConnect === 'undefined') {
                 console.log('Waiting for Stripe Connect JS...');
-                await new Promise(resolve => {
+                let attempts = 0;
+                await new Promise((resolve, reject) => {
                     const check = setInterval(() => {
+                        attempts++;
                         if (typeof StripeConnect !== 'undefined') {
                             clearInterval(check);
                             resolve();
+                        } else if (attempts > 50) {
+                            clearInterval(check);
+                            reject(new Error('StripeConnect not loaded'));
                         }
                     }, 100);
                 });
@@ -933,10 +1005,16 @@
                         'Content-Type': 'application/json'
                     }
                 });
+
+                if (!res.ok) {
+                    console.error('Account session request failed:', res.status);
+                    return;
+                }
+
                 const data = await res.json();
 
-                if (!data.success) {
-                    console.error('Failed to get account session:', data.error);
+                if (!data || !data.success) {
+                    console.error('Failed to get account session:', data?.error);
                     return;
                 }
 
@@ -950,39 +1028,53 @@
                 stripeConnectInstance = StripeConnect.init({
                     publishableKey: STRIPE_PK,
                     fetchClientSecret: async () => {
-                        const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${currentUser.token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        const data = await res.json();
-                        return data.clientSecret;
+                        try {
+                            const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${currentUser.token}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+                            const data = await res.json();
+                            if (!data || !data.clientSecret) throw new Error('No client secret returned');
+                            return data.clientSecret;
+                        } catch (err) {
+                            console.error('fetchClientSecret error:', err);
+                            throw err;
+                        }
                     },
                     appearance: stripeAppearance
                 });
 
                 // Create and mount notification banner
                 const notificationContainer = document.getElementById('stripeNotificationBanner');
-                notificationContainer.innerHTML = '';
-                const notificationBanner = stripeConnectInstance.create('notification-banner');
-                notificationContainer.appendChild(notificationBanner);
+                if (notificationContainer) {
+                    notificationContainer.innerHTML = '';
+                    const notificationBanner = stripeConnectInstance.create('notification-banner');
+                    notificationContainer.appendChild(notificationBanner);
+                }
 
                 // Create and mount payouts component
                 const payoutsContainer = document.getElementById('stripePayoutsContainer');
-                payoutsContainer.innerHTML = '';
-                const payoutsComponent = stripeConnectInstance.create('payouts');
-                payoutsContainer.appendChild(payoutsComponent);
+                if (payoutsContainer) {
+                    payoutsContainer.innerHTML = '';
+                    const payoutsComponent = stripeConnectInstance.create('payouts');
+                    payoutsContainer.appendChild(payoutsComponent);
+                }
 
                 // Create and mount account management component
                 const managementContainer = document.getElementById('stripeAccountManagement');
-                managementContainer.innerHTML = '';
-                const managementComponent = stripeConnectInstance.create('account-management');
-                managementContainer.appendChild(managementComponent);
+                if (managementContainer) {
+                    managementContainer.innerHTML = '';
+                    const managementComponent = stripeConnectInstance.create('account-management');
+                    managementContainer.appendChild(managementComponent);
+                }
 
             } catch (error) {
                 console.error('Init Stripe connected components error:', error);
+                // Still show earnings stats even if embedded components fail
             }
         }
 
