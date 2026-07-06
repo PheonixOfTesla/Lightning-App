@@ -35,18 +35,43 @@ const CRAWLER_PATTERNS = [
 ];
 
 export const config = {
-  // Only run on @handle and event routes
-  matcher: [
-    '/@:path*',
-    '/h/:path*',
-    '/events/:path*',
-  ],
+  // Match all non-static routes
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
 
 export default async function middleware(request) {
   const userAgent = request.headers.get('user-agent') || '';
   const url = new URL(request.url);
   const pathname = url.pathname;
+
+  // Skip static assets
+  if (pathname.includes('.') || pathname.startsWith('/js/') || pathname.startsWith('/css/') || pathname.startsWith('/images/')) {
+    return;
+  }
+
+  // Determine if this is a route we handle OG for
+  let ogPath = null;
+
+  // @handle routes: /@babyl-media-group
+  if (pathname.startsWith('/@')) {
+    const handle = pathname.substring(2).split('/')[0];
+    if (handle) ogPath = `/api/v1/og/@${handle}`;
+  }
+  // /h/:hostSlug routes
+  else if (pathname.startsWith('/h/')) {
+    const hostSlug = pathname.substring(3).split('/')[0];
+    if (hostSlug) ogPath = `/api/v1/og/@${hostSlug}`;
+  }
+  // /events/:slug routes
+  else if (pathname.startsWith('/events/') && pathname !== '/events') {
+    const slug = pathname.substring(8).split('/')[0];
+    if (slug) ogPath = `/api/v1/og/events/${slug}`;
+  }
+
+  // If no OG path matched, let Vercel serve normally
+  if (!ogPath) {
+    return;
+  }
 
   // Check if this is a crawler
   const isCrawler = CRAWLER_PATTERNS.some(pattern =>
@@ -55,30 +80,6 @@ export default async function middleware(request) {
 
   // If not a crawler, let Vercel serve the static file
   if (!isCrawler) {
-    return;
-  }
-
-  // Determine which OG endpoint to call
-  let ogPath = null;
-
-  // @handle routes: /@babyl-media-group
-  if (pathname.startsWith('/@')) {
-    const handle = pathname.substring(2).split('/')[0]; // Remove /@ and get handle
-    ogPath = `/api/v1/og/@${handle}`;
-  }
-  // /h/:hostSlug routes
-  else if (pathname.startsWith('/h/')) {
-    const hostSlug = pathname.substring(3).split('/')[0]; // Remove /h/ and get slug
-    ogPath = `/api/v1/og/@${hostSlug}`;
-  }
-  // /events/:slug routes
-  else if (pathname.startsWith('/events/')) {
-    const slug = pathname.substring(8).split('/')[0]; // Remove /events/ and get slug
-    ogPath = `/api/v1/og/events/${slug}`;
-  }
-
-  // If no OG path matched, serve static
-  if (!ogPath) {
     return;
   }
 
@@ -97,11 +98,10 @@ export default async function middleware(request) {
       status: response.status,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=300', // Cache for 5 min
+        'Cache-Control': 'public, max-age=300',
       },
     });
   } catch (error) {
-    // On error, fall back to static file
     console.error('OG proxy error:', error);
     return;
   }
