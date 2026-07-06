@@ -19,6 +19,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+    <!-- Stripe -->
+    <script src="https://js.stripe.com/v3/"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -239,6 +242,135 @@
             text-decoration: none;
         }
 
+        /* Checkout Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .modal-content {
+            max-width: 420px;
+            margin: 2rem auto;
+            background: var(--card-black);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-dark);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .modal-header h2 {
+            font-size: 1.25rem;
+            color: var(--white);
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .tier-option {
+            background: rgba(255,255,255,0.03);
+            border: 2px solid var(--border-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tier-option:hover, .tier-option.selected {
+            border-color: var(--lightning-yellow);
+            background: rgba(255,215,0,0.05);
+        }
+        .tier-name {
+            font-weight: 600;
+            color: var(--white);
+        }
+        .tier-price {
+            color: var(--lightning-yellow);
+            font-weight: 600;
+        }
+        .tier-avail {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+        .qty-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .qty-btn {
+            width: 36px; height: 36px;
+            border: 2px solid var(--lightning-yellow);
+            background: transparent;
+            color: var(--lightning-yellow);
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .qty-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 6px;
+            color: var(--white);
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+        .btn-pay {
+            width: 100%;
+            padding: 1rem;
+            background: var(--lightning-yellow);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .btn-pay:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .checkout-total {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+            margin: 1rem 0;
+        }
+
         @media (max-width: 768px) {
             .host-banner {
                 height: 160px;
@@ -300,10 +432,48 @@
         Powered by <a href="https://thelightningpass.com">Lightning Pass</a>
     </div>
 
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="checkoutTitle">Get Tickets</h2>
+                <button class="modal-close" onclick="closeCheckout()">&times;</button>
+            </div>
+            <div id="checkoutTiers"></div>
+            <div class="qty-row">
+                <span style="color: var(--gray);">How many?</span>
+                <div class="qty-controls">
+                    <button type="button" class="qty-btn" onclick="adjustQty(-1)">−</button>
+                    <span id="qtyValue" class="qty-value">1</span>
+                    <button type="button" class="qty-btn" onclick="adjustQty(1)">+</button>
+                </div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-dark); border-radius: 8px; padding: 1rem;">
+                <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.75rem;">Your tickets will be sent via text</p>
+                <input type="text" id="guestName" class="form-input" placeholder="Your name" required>
+                <input type="tel" id="guestPhone" class="form-input" placeholder="Phone number" required>
+                <input type="email" id="guestEmail" class="form-input" placeholder="Email (for receipt)">
+            </div>
+            <div class="checkout-total">Total: $<span id="totalAmount">0</span></div>
+            <button id="payBtn" class="btn-pay" onclick="processPayment()">PAY NOW</button>
+            <div id="paymentElement" style="margin-top: 1rem;"></div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'
             : 'https://lightning-backend-production.up.railway.app';
+
+        const STRIPE_PK = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'pk_test_51TcHI8K7yd8VSKfWoM8GUdVwl6PW5lsf4NRDSuIBedFZvn7aOHxs7gx1mH8dLu00nAhiqQQelJZ1RFhFcaR0qH6C00H3FNwhBp'
+            : 'pk_live_51TcHI8K7yd8VSKfWfiACy9DhKpnUdTym0GqWWA3qkAd3sFPIlNM3RBR9YBKjBXPfFF8OssF2kXlb5UQRsHP4vrlX00qXxmW6D1';
+
+        let stripe = null;
+        let allEvents = [];
+        let selectedEvent = null;
+        let selectedTier = null;
+        let ticketQty = 1;
 
         // Extract hostSlug from query params (Vercel rewrite) or path (direct access)
         // Query params are primary source due to Vercel cleanUrls + path params issue
@@ -390,6 +560,7 @@
 
         function renderEvents(events) {
             const grid = document.getElementById('eventsGrid');
+            allEvents = events || [];
 
             if (!events || events.length === 0) {
                 grid.innerHTML = '<div class="no-events">No upcoming events</div>';
@@ -413,6 +584,8 @@
                     : 0;
                 const priceStr = lowestPrice > 0 ? `From $${(lowestPrice / 100).toFixed(0)}` : 'FREE';
 
+                const eventJson = JSON.stringify(event).replace(/'/g, '&#39;');
+
                 return `
                     <div class="event-card">
                         ${event.imageUrl ? `<img class="event-image" src="${event.imageUrl}" alt="${event.name}">` : '<div class="event-image"></div>'}
@@ -421,7 +594,7 @@
                             <h3 class="event-name">${event.name}</h3>
                             <div class="event-location">${event.location || ''}</div>
                             <div class="event-price">${priceStr}</div>
-                            <a class="btn-tickets" href="/?event=${event.slug}">GET TICKETS</a>
+                            <button class="btn-tickets" onclick='openCheckout(${eventJson})'>GET TICKETS</button>
                         </div>
                     </div>
                 `;
@@ -441,6 +614,147 @@
             document.getElementById('hostName').textContent = 'Not Found';
             document.getElementById('eventsGrid').innerHTML = `<div class="error">${message}</div>`;
         }
+
+        // ===== CHECKOUT FUNCTIONS =====
+        function openCheckout(event) {
+            selectedEvent = event;
+            selectedTier = null;
+            ticketQty = 1;
+
+            // Init Stripe if needed
+            if (!stripe) stripe = Stripe(STRIPE_PK);
+
+            document.getElementById('checkoutTitle').textContent = event.name;
+            document.getElementById('qtyValue').textContent = '1';
+
+            // Render ticket tiers
+            const tiersDiv = document.getElementById('checkoutTiers');
+            if (!event.tickets || event.tickets.length === 0) {
+                tiersDiv.innerHTML = '<p style="color: var(--gray); text-align: center;">No tickets available</p>';
+            } else {
+                tiersDiv.innerHTML = event.tickets.map((t, i) => {
+                    const avail = t.available === -1 ? 'Unlimited' : `${t.available - (t.sold || 0)} left`;
+                    const price = t.price > 0 ? `$${(t.price / 100).toFixed(0)}` : 'FREE';
+                    return `
+                        <div class="tier-option" onclick="selectTier(${i})" data-tier="${i}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="tier-name">${t.name}</span>
+                                <span class="tier-price">${price}</span>
+                            </div>
+                            <div class="tier-avail">${avail}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Auto-select first tier
+                setTimeout(() => selectTier(0), 10);
+            }
+
+            // Clear form
+            document.getElementById('guestName').value = '';
+            document.getElementById('guestPhone').value = '';
+            document.getElementById('guestEmail').value = '';
+
+            document.getElementById('checkoutModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkoutModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function selectTier(index) {
+            selectedTier = selectedEvent.tickets[index];
+            document.querySelectorAll('.tier-option').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+            updateTotal();
+        }
+
+        function adjustQty(delta) {
+            ticketQty = Math.max(1, Math.min(10, ticketQty + delta));
+            document.getElementById('qtyValue').textContent = ticketQty;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const price = selectedTier ? selectedTier.price : 0;
+            const total = (price * ticketQty) / 100;
+            document.getElementById('totalAmount').textContent = total.toFixed(0);
+        }
+
+        async function processPayment() {
+            if (!selectedTier) {
+                alert('Please select a ticket tier');
+                return;
+            }
+
+            const name = document.getElementById('guestName').value.trim();
+            const phone = document.getElementById('guestPhone').value.trim();
+            const email = document.getElementById('guestEmail').value.trim();
+
+            if (!name || !phone) {
+                alert('Name and phone are required');
+                return;
+            }
+
+            const btn = document.getElementById('payBtn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+                // Create payment intent
+                const response = await fetch(`${API_BASE}/api/v1/embed/create-intent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventId: selectedEvent._id,
+                        ticketId: selectedTier.ticketId,
+                        ticketCount: ticketQty,
+                        guest: { name, phone, email }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Payment failed');
+                }
+
+                if (data.isFree) {
+                    // Free ticket - pass created
+                    alert('Success! Your pass has been sent to your phone.');
+                    closeCheckout();
+                    return;
+                }
+
+                // Paid ticket - redirect to Stripe checkout
+                const { error } = await stripe.redirectToCheckout({
+                    sessionId: data.sessionId
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+            } catch (err) {
+                console.error('Payment error:', err);
+                alert(err.message || 'Payment failed. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'PAY NOW';
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeCheckout();
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('checkoutModal').addEventListener('click', (e) => {
+            if (e.target.id === 'checkoutModal') closeCheckout();
+        });
 
         // Load on page ready
         loadHostPage();
