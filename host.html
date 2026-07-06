@@ -957,102 +957,80 @@
             <div id="tabGenerate" class="tab-content">
                 <div class="section">
                     <div class="section-header">
-                        <h2 class="section-title">Generate Comp Passes</h2>
+                        <h2 class="section-title">Ticket Generator</h2>
                     </div>
-                    <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Create free passes for your events</p>
+                    <p style="color: var(--electric-blue); margin-bottom: 1.5rem; font-size: 0.9rem;">Creates a payment link. Guest pays via Stripe, then receives tickets.</p>
 
                     <div class="form-group">
-                        <label class="form-label">Select Event *</label>
+                        <label class="form-label">Event *</label>
                         <select id="generateEventSelect" class="form-select">
-                            <option value="">Loading events...</option>
+                            <option value="">Select an event...</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Guest Name *</label>
-                        <input id="generateName" type="text" class="form-input" placeholder="Enter guest name">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Guest Email</label>
-                        <input id="generateEmail" type="email" class="form-input" placeholder="Enter guest email">
-                    </div>
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Guest Name *</label>
+                            <input id="generateName" type="text" class="form-input" placeholder="John Doe">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Guest Email *</label>
+                            <input id="generateEmail" type="email" class="form-input" placeholder="guest@email.com">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Price per Ticket ($) *</label>
+                            <input id="generatePrice" type="number" class="form-input" value="10" min="1" step="1">
+                        </div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Quantity</label>
                             <input id="generateQty" type="number" class="form-input" value="1" min="1" max="10">
                         </div>
-                        <div class="form-group" style="margin: 0; display: flex; align-items: flex-end;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem 0;">
-                                <input type="checkbox" id="generateSendEmail" checked style="width: 18px; height: 18px; accent-color: var(--lightning-yellow);">
-                                <span style="font-size: 0.9rem;">Send email</span>
-                            </label>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Promo Code (optional)</label>
+                            <input id="generatePromo" type="text" class="form-input" placeholder="VIP2026">
                         </div>
                     </div>
+
                     <div class="form-group">
-                        <label class="form-label">Custom Message (optional)</label>
-                        <textarea id="generateMessage" class="form-textarea" rows="3" placeholder="Personal message to include in email..."></textarea>
+                        <label class="form-label">Message (optional)</label>
+                        <textarea id="generateMessage" class="form-textarea" rows="3" placeholder="Add a personal message to recipients..."></textarea>
                     </div>
+
                     <!-- Member Access Toggle -->
-                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
                         <label style="display: flex; align-items: flex-start; cursor: pointer;">
-                            <input type="checkbox" id="generateRequireMember" style="margin-right: 0.5rem; margin-top: 0.2rem; accent-color: var(--lightning-yellow);">
+                            <input type="checkbox" id="generateRequireMember" style="margin-right: 0.75rem; margin-top: 0.2rem; width: 18px; height: 18px; accent-color: var(--lightning-yellow);">
                             <div>
-                                <span style="color: #9d4edd; font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
-                                <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Recipients must create an account to access their pass</p>
+                                <span style="color: #ff6b6b; font-size: 0.9rem; font-weight: 600;">Require member sign-in to claim</span>
+                                <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">After payment, recipient must create an account to access their pass</p>
                             </div>
                         </label>
                     </div>
-                    <button class="btn btn-primary" onclick="generateCompPass()" style="width: 100%;">Generate Pass</button>
+
+                    <button class="btn btn-primary" onclick="generatePaymentLink()" style="width: 100%; background: linear-gradient(135deg, var(--electric-blue) 0%, var(--electric-purple) 100%); font-size: 1rem; padding: 1rem;">Generate Payment Link</button>
 
                     <!-- Results Display -->
-                    <div id="generateResults" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem;">
-                        <h4 style="color: var(--neon-green); margin-bottom: 0.5rem;">Pass Generated!</h4>
+                    <div id="generateResults" style="display: none; margin-top: 1.5rem; padding: 1.25rem; background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem;">
+                        <h4 style="color: var(--neon-green); margin-bottom: 0.75rem;">Payment Link Created!</h4>
                         <div id="generateResultsContent"></div>
                     </div>
 
                     <!-- Error Display -->
-                    <div id="generateError" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(255, 0, 68, 0.1); border: 1px solid var(--danger-red); border-radius: 0.5rem;">
+                    <div id="generateError" style="display: none; margin-top: 1.5rem; padding: 1.25rem; background: rgba(255, 0, 68, 0.1); border: 1px solid var(--danger-red); border-radius: 0.5rem;">
                         <h4 style="color: var(--danger-red); margin-bottom: 0.5rem;">Error</h4>
                         <div id="generateErrorContent"></div>
                     </div>
                 </div>
 
+                <!-- Recent Links Section -->
                 <div class="section">
                     <div class="section-header">
-                        <h2 class="section-title">Bulk Generate</h2>
+                        <h2 class="section-title">Recent Links</h2>
                     </div>
-                    <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Generate multiple passes at once (max 100)</p>
-
-                    <div class="form-group">
-                        <label class="form-label">Select Event *</label>
-                        <select id="bulkEventSelect" class="form-select">
-                            <option value="">Loading events...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Recipients (one per line: name, email)</label>
-                        <textarea id="bulkRecipients" class="form-textarea" rows="6" placeholder="John Doe, john@example.com&#10;Jane Smith, jane@example.com"></textarea>
-                    </div>
-                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; cursor: pointer;">
-                        <input type="checkbox" id="bulkSendEmails" checked style="width: 18px; height: 18px; accent-color: var(--lightning-yellow);">
-                        <span style="font-size: 0.9rem;">Send email to all recipients</span>
-                    </label>
-                    <!-- Member Access Toggle -->
-                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
-                        <label style="display: flex; align-items: flex-start; cursor: pointer;">
-                            <input type="checkbox" id="bulkRequireMember" style="margin-right: 0.5rem; margin-top: 0.2rem; accent-color: var(--lightning-yellow);">
-                            <div>
-                                <span style="color: #9d4edd; font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
-                                <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Recipients must create an account to access their pass</p>
-                            </div>
-                        </label>
-                    </div>
-                    <button class="btn btn-primary" onclick="generateBulkPasses()" style="width: 100%;">Generate All Passes</button>
-
-                    <!-- Bulk Results Display -->
-                    <div id="bulkResults" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem;">
-                        <h4 style="color: var(--neon-green); margin-bottom: 0.5rem;">Bulk Generation Complete</h4>
-                        <div id="bulkResultsContent"></div>
-                    </div>
+                    <div id="recentLinksList" style="color: var(--gray);">Loading...</div>
                 </div>
             </div>
 
@@ -2482,20 +2460,21 @@
                     const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     return `<option value="${e._id}">${e.name} (${dateStr})</option>`;
                 }).join('');
-                document.getElementById('generateEventSelect').innerHTML = options;
-                document.getElementById('bulkEventSelect').innerHTML = options;
+                document.getElementById('generateEventSelect').innerHTML = '<option value="">Select an event...</option>' + options;
             } else {
                 document.getElementById('generateEventSelect').innerHTML = '<option value="">No events - create one first</option>';
-                document.getElementById('bulkEventSelect').innerHTML = '<option value="">No events - create one first</option>';
             }
+            // Also load recent links
+            loadRecentLinks();
         }
 
-        async function generateCompPass() {
+        async function generatePaymentLink() {
             const eventId = document.getElementById('generateEventSelect').value;
             const guestName = document.getElementById('generateName').value.trim();
             const guestEmail = document.getElementById('generateEmail').value.trim();
+            const customPrice = parseInt(document.getElementById('generatePrice').value) || 0;
             const quantity = parseInt(document.getElementById('generateQty').value) || 1;
-            const sendEmail = document.getElementById('generateSendEmail').checked;
+            const promoCode = document.getElementById('generatePromo').value.trim();
             const customMessage = document.getElementById('generateMessage').value.trim();
             const requireMemberAccess = document.getElementById('generateRequireMember').checked;
 
@@ -2511,20 +2490,32 @@
                 showGenerateError('Guest name is required');
                 return;
             }
+            if (!guestEmail) {
+                showGenerateError('Guest email is required');
+                return;
+            }
+            if (customPrice <= 0) {
+                showGenerateError('Price must be greater than $0');
+                return;
+            }
 
-            const data = await apiCall('/api/v1/host/generate/comp', 'POST', {
-                eventId, guestName, guestEmail, quantity, sendEmail, customMessage, requireMemberAccess
+            const data = await apiCall('/api/v1/host/generate/link', 'POST', {
+                eventId, guestName, guestEmail, quantity, customPrice, promoCode, customMessage, requireMemberAccess
             });
 
             if (data.success) {
-                // Show success
+                const total = customPrice * quantity;
+                // Show success with copy button
                 document.getElementById('generateResultsContent').innerHTML = `
                     <div style="font-size: 0.9rem;">
-                        <p><strong>Pass ID:</strong> ${data.passId}</p>
                         <p><strong>Guest:</strong> ${guestName}</p>
-                        <p><strong>Quantity:</strong> ${quantity}</p>
-                        ${guestEmail ? `<p><strong>Email:</strong> ${guestEmail}</p>` : ''}
-                        ${sendEmail && guestEmail ? '<p style="color: var(--neon-green);">✓ Confirmation email sent</p>' : ''}
+                        <p><strong>Amount:</strong> $${total} (${quantity} x $${customPrice})</p>
+                        <p style="margin-top: 0.75rem;"><strong>Payment Link:</strong></p>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <input type="text" value="${data.payUrl}" readonly style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border-dark); border-radius: 4px; color: var(--white); font-size: 0.85rem;">
+                            <button onclick="navigator.clipboard.writeText('${data.payUrl}'); this.textContent='Copied!'" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Copy</button>
+                        </div>
+                        <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.75rem;">Link expires in 7 days. Share with guest to collect payment.</p>
                     </div>
                 `;
                 document.getElementById('generateResults').style.display = 'block';
@@ -2533,9 +2524,14 @@
                 document.getElementById('generateName').value = '';
                 document.getElementById('generateEmail').value = '';
                 document.getElementById('generateQty').value = '1';
+                document.getElementById('generatePromo').value = '';
                 document.getElementById('generateMessage').value = '';
+                document.getElementById('generateRequireMember').checked = false;
+
+                // Refresh recent links
+                loadRecentLinks();
             } else {
-                showGenerateError(data.error || 'Failed to generate pass');
+                showGenerateError(data.error || 'Failed to generate link');
             }
         }
 
@@ -2544,64 +2540,36 @@
             document.getElementById('generateError').style.display = 'block';
         }
 
-        async function generateBulkPasses() {
-            const eventId = document.getElementById('bulkEventSelect').value;
-            const recipientsText = document.getElementById('bulkRecipients').value.trim();
-            const sendEmails = document.getElementById('bulkSendEmails').checked;
-            const requireMemberAccess = document.getElementById('bulkRequireMember').checked;
+        async function loadRecentLinks() {
+            const container = document.getElementById('recentLinksList');
+            const data = await apiCall('/api/v1/host/generate/links');
 
-            // Hide previous results
-            document.getElementById('bulkResults').style.display = 'none';
-
-            if (!eventId) {
-                alert('Please select an event');
-                return;
-            }
-            if (!recipientsText) {
-                alert('Please enter at least one recipient');
+            if (!data.success || !data.links || data.links.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray);">No payment links created yet</p>';
                 return;
             }
 
-            // Parse recipients (name, email per line)
-            const lines = recipientsText.split('\n').filter(l => l.trim());
-            const recipients = [];
-            for (const line of lines) {
-                const parts = line.split(',').map(p => p.trim());
-                if (parts.length >= 2) {
-                    recipients.push({ name: parts[0], email: parts[1] });
-                } else if (parts.length === 1 && parts[0].includes('@')) {
-                    recipients.push({ name: 'Guest', email: parts[0] });
-                }
-            }
+            container.innerHTML = data.links.map(link => {
+                const total = link.customPrice * link.quantity;
+                const statusColor = link.status === 'paid' ? 'var(--neon-green)' :
+                                   link.status === 'expired' ? 'var(--gray)' :
+                                   link.status === 'cancelled' ? 'var(--danger-red)' : 'var(--lightning-yellow)';
+                const eventName = link.eventId?.name || 'Unknown Event';
+                const date = new Date(link.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-            if (recipients.length === 0) {
-                alert('No valid recipients found. Use format: Name, email@example.com');
-                return;
-            }
-
-            if (recipients.length > 100) {
-                alert('Maximum 100 recipients per bulk operation');
-                return;
-            }
-
-            const data = await apiCall('/api/v1/host/generate/bulk', 'POST', {
-                eventId, recipients, sendEmails, requireMemberAccess
-            });
-
-            if (data.success) {
-                // Show results
-                document.getElementById('bulkResultsContent').innerHTML = `
-                    <div style="font-size: 0.9rem;">
-                        <p style="color: var(--neon-green);">✓ Created: ${data.created} passes</p>
-                        ${data.failed > 0 ? `<p style="color: var(--danger-red);">✗ Failed: ${data.failed}</p>` : ''}
-                        ${sendEmails ? '<p style="color: var(--gray);">Confirmation emails sent</p>' : ''}
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border-dark);">
+                        <div>
+                            <div style="font-weight: 500;">${link.guestName}</div>
+                            <div style="font-size: 0.8rem; color: var(--gray);">${eventName} - $${total}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: ${statusColor}; font-size: 0.85rem; font-weight: 500; text-transform: uppercase;">${link.status}</span>
+                            <div style="font-size: 0.75rem; color: var(--gray);">${date}</div>
+                        </div>
                     </div>
                 `;
-                document.getElementById('bulkResults').style.display = 'block';
-                document.getElementById('bulkRecipients').value = '';
-            } else {
-                alert(data.error || 'Failed to generate passes');
-            }
+            }).join('');
         }
 
         // ===== GUESTS TAB =====
