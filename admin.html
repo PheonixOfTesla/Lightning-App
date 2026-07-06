@@ -2681,6 +2681,14 @@
         let adminToken = null;
         let currentRefundPassId = null;
 
+        // ===== TICKET ID GENERATION =====
+        // Generate unique ticketId for new ticket tiers
+        function generateTicketId() {
+            const timestamp = Date.now().toString(36);
+            const random = Math.random().toString(36).substring(2, 8);
+            return `tkt_${timestamp}_${random}`;
+        }
+
         // Graceful degradation for OLD tokens (pre-roles[])
         // If userRoles missing but token exists, decode JWT and cache roles
         function getUserRolesFromToken() {
@@ -3237,6 +3245,7 @@
                 eventType: 'club',
                 buttonType,
                 tickets: [{
+                    ticketId: generateTicketId(),  // Unique identifier
                     type: 'general',
                     name: 'General Admission',
                     price: Math.round(price * 100), // Convert to cents
@@ -3365,6 +3374,7 @@
                 eventType: 'club',
                 buttonType,
                 tickets: [{
+                    ticketId: generateTicketId(),  // Unique identifier
                     type: 'general',
                     name: 'General Admission',
                     price: Math.round(price * 100), // Convert to cents
@@ -5095,7 +5105,7 @@
                 const price = parseFloat(row.querySelector('.ticket-price').value) || 0;
                 const available = parseInt(row.querySelector('.ticket-available').value);
                 if (name) {
-                    // Determine ticket type from name
+                    // Determine ticket type from name (display label, may repeat)
                     let type = 'general';
                     const nameLower = name.toLowerCase();
                     if (nameLower.includes('vip')) type = 'vip';
@@ -5104,12 +5114,17 @@
                     else if (nameLower.includes('cabana')) type = 'cabana';
                     else if (nameLower.includes('group')) type = 'group';
 
+                    // Preserve existing ticketId or generate new one
+                    const existingTicket = currentEventData?.tickets?.find(t => t.name === name);
+                    const ticketId = existingTicket?.ticketId || generateTicketId();
+
                     tickets.push({
-                        type,
+                        ticketId,  // Unique identifier (lookup key)
+                        type,      // Display label (may repeat)
                         name,
                         price: Math.round(price * 100), // Convert to cents
                         available: isNaN(available) ? -1 : available,
-                        sold: currentEventData?.tickets?.find(t => t.name === name)?.sold || 0
+                        sold: existingTicket?.sold || 0
                     });
                 }
             });
@@ -7060,5 +7075,6 @@
         // Initialize
         checkAuth();
     </script>
+    <script src="/js/lp-tracker.js" defer></script>
 </body>
 </html>

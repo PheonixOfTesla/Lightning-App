@@ -9545,7 +9545,8 @@
                         method: 'POST',
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
-                            ticketType: ticket.type,
+                            ticketId: ticket.ticketId,    // Primary identifier
+                            ticketType: ticket.type,      // Legacy fallback
                             guest: {
                                 firstName: payerFirstName,
                                 lastName: payerLastName,
@@ -9575,7 +9576,8 @@
                         method: 'POST',
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
-                            ticketType: ticket.type,
+                            ticketId: ticket.ticketId,    // Primary identifier
+                            ticketType: ticket.type,      // Legacy fallback
                             guest: {
                                 firstName: payerFirstName,
                                 lastName: payerLastName,
@@ -9650,7 +9652,8 @@
                         method: 'POST',
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
-                            ticketType: ticket.type,
+                            ticketId: ticket.ticketId,    // Primary identifier
+                            ticketType: ticket.type,      // Legacy fallback
                             ticketCount: ticketCount,
                             guest: {
                                 firstName: firstName,
@@ -9674,7 +9677,8 @@
                         method: 'POST',
                         body: JSON.stringify({
                             eventSlug: selectedEvent.slug,
-                            ticketType: ticket.type,
+                            ticketId: ticket.ticketId,    // Primary identifier
+                            ticketType: ticket.type,      // Legacy fallback
                             ticketCount: ticketCount,
                             guest: {
                                 firstName: firstName,
@@ -9695,28 +9699,42 @@
                         throw new Error(error.message);
                     }
 
-                    // Confirm with backend
-                    await apiCall('/api/v1/embed/confirm', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            eventSlug: selectedEvent.slug,
-                            ticketType: ticket.type,
-                            ticketCount: ticketCount,
-                            guest: {
-                                firstName: firstName,
-                                lastName: lastName,
-                                email: email,
-                                phone: phone
-                            },
-                            paymentIntentId: paymentIntent.id,
-                            termsAccepted: true,
-                            termsAcceptedAt: termsAcceptedAt,
-                            termsVersion: '2026-07'
-                        })
-                    });
-
+                    // COMMITTED SUCCESS: Payment is captured. Show success immediately.
+                    // The webhook guarantees the pass will be created even if browser dies now.
                     const purchaseLabel = ticketCount > 1 ? `${ticketCount} tickets` : 'Ticket';
-                    showToast(`🎟️ ${purchaseLabel} purchased! Check your phone for SMS.`, 'success');
+                    btn.textContent = 'Payment received!';
+                    btn.style.background = 'var(--neon-green)';
+                    showToast(`Payment received! Your pass is on its way - check your email.`, 'success');
+
+                    // Close modal immediately so user sees success state
+                    closeModal('eventTicketModal');
+
+                    // Best-effort fast path: call /confirm to create pass immediately
+                    // If this fails, webhook will create the pass anyway (safety net)
+                    try {
+                        await apiCall('/api/v1/embed/confirm', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                eventSlug: selectedEvent.slug,
+                                ticketId: ticket.ticketId,    // Primary identifier
+                                ticketType: ticket.type,      // Legacy fallback
+                                ticketCount: ticketCount,
+                                guest: {
+                                    firstName: firstName,
+                                    lastName: lastName,
+                                    email: email,
+                                    phone: phone
+                                },
+                                paymentIntentId: paymentIntent.id,
+                                termsAccepted: true,
+                                termsAcceptedAt: termsAcceptedAt,
+                                termsVersion: '2026-07'
+                            })
+                        });
+                    } catch (confirmErr) {
+                        // Silent - webhook will handle it
+                        console.log('Confirm call failed (webhook will handle):', confirmErr.message);
+                    }
 
                     // Track purchase completed
                     if (window.LPTracker) {
@@ -9729,7 +9747,7 @@
                     }
                     if (window.LPAnalytics) {
                         LPAnalytics.purchaseCompleted(
-                            confirmData?.passId || paymentIntent.id,
+                            paymentIntent.id,
                             selectedEvent._id,
                             selectedEvent.name,
                             eventTicketTotal,
@@ -9737,13 +9755,12 @@
                             selectedEvent.ticketTypes?.[eventSelectedTicketIndex]?.name || 'General'
                         );
                     }
-
-                    closeModal('eventTicketModal');
                 }
             } catch (error) {
                 showToast('Failed: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
+                btn.style.background = '';
                 updateEventTicketTotal();
             }
         }
