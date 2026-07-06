@@ -397,7 +397,9 @@
             }
 
             grid.innerHTML = events.map(event => {
-                const date = new Date(event.date);
+                // Parse date as local (not UTC) to avoid off-by-one timezone shift
+                const dateParts = event.date ? event.date.split('T')[0].split('-') : null;
+                const date = dateParts ? new Date(dateParts[0], dateParts[1] - 1, dateParts[2]) : new Date();
                 const dateStr = date.toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',
@@ -409,7 +411,7 @@
                 const lowestPrice = event.tickets && event.tickets.length > 0
                     ? Math.min(...event.tickets.map(t => t.price))
                     : 0;
-                const priceStr = lowestPrice > 0 ? `$${(lowestPrice / 100).toFixed(0)}` : 'FREE';
+                const priceStr = lowestPrice > 0 ? `From $${(lowestPrice / 100).toFixed(0)}` : 'FREE';
 
                 return `
                     <div class="event-card">
