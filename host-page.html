@@ -249,10 +249,26 @@
             ? 'http://localhost:3000'
             : 'https://lightning-backend-production.up.railway.app';
 
-        // Extract hostSlug from URL path
-        const pathParts = window.location.pathname.split('/').filter(Boolean);
-        const hostSlug = pathParts[1]; // /h/:hostSlug
-        const eventSlug = pathParts[2]; // /h/:hostSlug/:eventSlug (optional)
+        // Extract hostSlug from query params (Vercel rewrite) or path (direct access)
+        // Query params are primary source due to Vercel cleanUrls + path params issue
+        const urlParams = new URLSearchParams(window.location.search);
+        let hostSlug = urlParams.get('h');
+        let eventSlug = urlParams.get('e');
+
+        // Fallback: parse from path if no query params (direct /h/slug or /@slug access)
+        if (!hostSlug) {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts[0] === 'h' && pathParts[1]) {
+                hostSlug = pathParts[1];
+                eventSlug = pathParts[2];
+            } else if (pathParts[0] === 'host-page') {
+                // Direct /host-page access without params - show error
+                hostSlug = null;
+            } else if (pathParts[0] && pathParts[0].startsWith('@')) {
+                hostSlug = pathParts[0].substring(1);
+                eventSlug = pathParts[1];
+            }
+        }
 
         async function loadHostPage() {
             if (!hostSlug) {
@@ -266,6 +282,21 @@
 
                 if (!response.ok || !data.success) {
                     showError(data.error || 'Host not found');
+                    return;
+                }
+
+                // Handle case-insensitive redirect
+                if (data.redirect && data.canonicalSlug) {
+                    // Redirect to canonical URL
+                    const currentPath = window.location.pathname;
+                    let newPath;
+                    if (currentPath.startsWith('/h/')) {
+                        newPath = `/h/${data.canonicalSlug}`;
+                    } else {
+                        newPath = `/@${data.canonicalSlug}`;
+                    }
+                    if (eventSlug) newPath += `/${eventSlug}`;
+                    window.location.replace(newPath);
                     return;
                 }
 
