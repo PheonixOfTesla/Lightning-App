@@ -844,7 +844,29 @@
                         <label class="form-label">Custom Message (optional)</label>
                         <textarea id="generateMessage" class="form-textarea" rows="3" placeholder="Personal message to include in email..."></textarea>
                     </div>
+                    <!-- Member Access Toggle -->
+                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
+                        <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                            <input type="checkbox" id="generateRequireMember" style="margin-right: 0.5rem; margin-top: 0.2rem; accent-color: var(--lightning-yellow);">
+                            <div>
+                                <span style="color: #9d4edd; font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
+                                <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Recipients must create an account to access their pass</p>
+                            </div>
+                        </label>
+                    </div>
                     <button class="btn btn-primary" onclick="generateCompPass()" style="width: 100%;">Generate Pass</button>
+
+                    <!-- Results Display -->
+                    <div id="generateResults" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem;">
+                        <h4 style="color: var(--neon-green); margin-bottom: 0.5rem;">Pass Generated!</h4>
+                        <div id="generateResultsContent"></div>
+                    </div>
+
+                    <!-- Error Display -->
+                    <div id="generateError" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(255, 0, 68, 0.1); border: 1px solid var(--danger-red); border-radius: 0.5rem;">
+                        <h4 style="color: var(--danger-red); margin-bottom: 0.5rem;">Error</h4>
+                        <div id="generateErrorContent"></div>
+                    </div>
                 </div>
 
                 <div class="section">
@@ -867,7 +889,23 @@
                         <input type="checkbox" id="bulkSendEmails" checked style="width: 18px; height: 18px; accent-color: var(--lightning-yellow);">
                         <span style="font-size: 0.9rem;">Send email to all recipients</span>
                     </label>
+                    <!-- Member Access Toggle -->
+                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 0.5rem;">
+                        <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                            <input type="checkbox" id="bulkRequireMember" style="margin-right: 0.5rem; margin-top: 0.2rem; accent-color: var(--lightning-yellow);">
+                            <div>
+                                <span style="color: #9d4edd; font-size: 0.85rem; font-weight: 600;">Require member sign-in to claim</span>
+                                <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Recipients must create an account to access their pass</p>
+                            </div>
+                        </label>
+                    </div>
                     <button class="btn btn-primary" onclick="generateBulkPasses()" style="width: 100%;">Generate All Passes</button>
+
+                    <!-- Bulk Results Display -->
+                    <div id="bulkResults" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); border-radius: 0.5rem;">
+                        <h4 style="color: var(--neon-green); margin-bottom: 0.5rem;">Bulk Generation Complete</h4>
+                        <div id="bulkResultsContent"></div>
+                    </div>
                 </div>
             </div>
 
@@ -878,6 +916,15 @@
                         <h2 class="section-title">My Guests</h2>
                     </div>
                     <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">People who have tickets to your events</p>
+
+                    <!-- Search Bar -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" id="guestsSearch" class="form-input" placeholder="Search by name or email..." style="flex: 1;" onkeyup="filterGuests()">
+                        <select id="guestsEventFilter" class="form-select" style="width: auto; min-width: 150px;" onchange="filterGuests()">
+                            <option value="all">All Events</option>
+                        </select>
+                    </div>
+
                     <div id="guestsStats" class="stats-grid" style="margin-bottom: 1rem;">
                         <div class="stat-card">
                             <div class="stat-value" id="guestsTotalCount">0</div>
@@ -1857,36 +1904,61 @@
             const quantity = parseInt(document.getElementById('generateQty').value) || 1;
             const sendEmail = document.getElementById('generateSendEmail').checked;
             const customMessage = document.getElementById('generateMessage').value.trim();
+            const requireMemberAccess = document.getElementById('generateRequireMember').checked;
+
+            // Hide previous results/errors
+            document.getElementById('generateResults').style.display = 'none';
+            document.getElementById('generateError').style.display = 'none';
 
             if (!eventId) {
-                alert('Please select an event');
+                showGenerateError('Please select an event');
                 return;
             }
             if (!guestName) {
-                alert('Guest name is required');
+                showGenerateError('Guest name is required');
                 return;
             }
 
             const data = await apiCall('/api/v1/host/generate/comp', 'POST', {
-                eventId, guestName, guestEmail, quantity, sendEmail, customMessage
+                eventId, guestName, guestEmail, quantity, sendEmail, customMessage, requireMemberAccess
             });
 
             if (data.success) {
-                alert(`Pass generated! ID: ${data.passId}`);
+                // Show success
+                document.getElementById('generateResultsContent').innerHTML = `
+                    <div style="font-size: 0.9rem;">
+                        <p><strong>Pass ID:</strong> ${data.passId}</p>
+                        <p><strong>Guest:</strong> ${guestName}</p>
+                        <p><strong>Quantity:</strong> ${quantity}</p>
+                        ${guestEmail ? `<p><strong>Email:</strong> ${guestEmail}</p>` : ''}
+                        ${sendEmail && guestEmail ? '<p style="color: var(--neon-green);">✓ Confirmation email sent</p>' : ''}
+                    </div>
+                `;
+                document.getElementById('generateResults').style.display = 'block';
+
                 // Clear form
                 document.getElementById('generateName').value = '';
                 document.getElementById('generateEmail').value = '';
                 document.getElementById('generateQty').value = '1';
                 document.getElementById('generateMessage').value = '';
             } else {
-                alert(data.error || 'Failed to generate pass');
+                showGenerateError(data.error || 'Failed to generate pass');
             }
+        }
+
+        function showGenerateError(message) {
+            document.getElementById('generateErrorContent').textContent = message;
+            document.getElementById('generateError').style.display = 'block';
         }
 
         async function generateBulkPasses() {
             const eventId = document.getElementById('bulkEventSelect').value;
             const recipientsText = document.getElementById('bulkRecipients').value.trim();
             const sendEmails = document.getElementById('bulkSendEmails').checked;
+            const requireMemberAccess = document.getElementById('bulkRequireMember').checked;
+
+            // Hide previous results
+            document.getElementById('bulkResults').style.display = 'none';
 
             if (!eventId) {
                 alert('Please select an event');
@@ -1920,11 +1992,19 @@
             }
 
             const data = await apiCall('/api/v1/host/generate/bulk', 'POST', {
-                eventId, recipients, sendEmails
+                eventId, recipients, sendEmails, requireMemberAccess
             });
 
             if (data.success) {
-                alert(`Created ${data.created} passes (${data.failed} failed)`);
+                // Show results
+                document.getElementById('bulkResultsContent').innerHTML = `
+                    <div style="font-size: 0.9rem;">
+                        <p style="color: var(--neon-green);">✓ Created: ${data.created} passes</p>
+                        ${data.failed > 0 ? `<p style="color: var(--danger-red);">✗ Failed: ${data.failed}</p>` : ''}
+                        ${sendEmails ? '<p style="color: var(--gray);">Confirmation emails sent</p>' : ''}
+                    </div>
+                `;
+                document.getElementById('bulkResults').style.display = 'block';
                 document.getElementById('bulkRecipients').value = '';
             } else {
                 alert(data.error || 'Failed to generate passes');
@@ -1933,8 +2013,18 @@
 
         // ===== GUESTS TAB =====
         let cachedGuests = [];
+        let allGuests = [];
 
         async function loadGuestsTab() {
+            // Load events for filter dropdown
+            const eventsData = await apiCall('/api/v1/host/events');
+            const eventFilter = document.getElementById('guestsEventFilter');
+            if (eventsData.success && eventsData.events && eventsData.events.length > 0) {
+                eventFilter.innerHTML = '<option value="all">All Events</option>' +
+                    eventsData.events.map(e => `<option value="${e._id}">${e.name}</option>`).join('');
+            }
+
+            // Load guests
             const data = await apiCall('/api/v1/host/guests');
             const container = document.getElementById('guestsList');
 
@@ -1944,23 +2034,35 @@
                 document.getElementById('guestsTotalSpent').textContent = '$0';
                 container.innerHTML = '<div class="empty-state">No guests yet. Sell some tickets!</div>';
                 cachedGuests = [];
+                allGuests = [];
                 return;
             }
 
+            allGuests = data.guests;
             cachedGuests = data.guests;
+            renderGuests(data.guests);
+        }
+
+        function renderGuests(guests) {
+            const container = document.getElementById('guestsList');
 
             // Calculate totals
-            const totalGuests = data.guests.length;
-            const totalTickets = data.guests.reduce((sum, g) => sum + (g.totalTickets || 0), 0);
-            const totalSpent = data.guests.reduce((sum, g) => sum + (g.totalSpent || 0), 0);
+            const totalGuests = guests.length;
+            const totalTickets = guests.reduce((sum, g) => sum + (g.totalTickets || 0), 0);
+            const totalSpent = guests.reduce((sum, g) => sum + (g.totalSpent || 0), 0);
 
             document.getElementById('guestsTotalCount').textContent = totalGuests;
             document.getElementById('guestsTotalTickets').textContent = totalTickets;
             document.getElementById('guestsTotalSpent').textContent = `$${totalSpent.toFixed(0)}`;
 
+            if (guests.length === 0) {
+                container.innerHTML = '<div class="empty-state">No guests match your search</div>';
+                return;
+            }
+
             // Render guest list
-            container.innerHTML = data.guests.map(guest => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-dark);">
+            container.innerHTML = guests.map(guest => `
+                <div class="guest-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-dark);">
                     <div>
                         <div style="font-weight: 500;">${guest.name || 'Guest'}</div>
                         <div style="font-size: 0.8rem; color: var(--gray);">${guest.email || 'No email'}</div>
@@ -1971,6 +2073,26 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        function filterGuests() {
+            const searchTerm = document.getElementById('guestsSearch').value.toLowerCase().trim();
+            const eventFilter = document.getElementById('guestsEventFilter').value;
+
+            let filtered = allGuests;
+
+            // Filter by search term
+            if (searchTerm) {
+                filtered = filtered.filter(g =>
+                    (g.name && g.name.toLowerCase().includes(searchTerm)) ||
+                    (g.email && g.email.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            // TODO: Filter by event when backend supports it
+            // For now, event filter is UI-only placeholder
+
+            renderGuests(filtered);
         }
 
         // ===== EMAIL TAB =====
