@@ -2450,7 +2450,6 @@
         async function loadGenerateTab() {
             // Show loading state
             document.getElementById('generateEventSelect').innerHTML = '<option value="">Loading events...</option>';
-            document.getElementById('bulkEventSelect').innerHTML = '<option value="">Loading events...</option>';
 
             const data = await apiCall('/api/v1/host/events');
             if (data.success && data.events && data.events.length > 0) {
