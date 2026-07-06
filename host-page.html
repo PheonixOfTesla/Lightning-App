@@ -26,7 +26,7 @@
             --pure-black: #0d1b2a;
             --card-black: #1b2838;
             --border-dark: #2d3748;
-            --lightning-yellow: #ffdd00;
+            --lightning-yellow: #ffd700;
             --electric-blue: #00d4ff;
             --electric-purple: #9d4edd;
             --neon-green: #39ff14;
@@ -42,115 +42,140 @@
             min-height: 100vh;
         }
 
-        /* Header/Banner */
+        /* Banner with gradient fade into page */
         .host-banner {
             width: 100%;
-            height: 200px;
+            height: 220px;
             background: linear-gradient(135deg, var(--card-black) 0%, var(--pure-black) 100%);
             background-size: cover;
             background-position: center;
             position: relative;
         }
 
-        .host-header {
+        /* Gradient overlay - fades banner into navy */
+        .host-banner::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent 0%, var(--pure-black) 100%);
+            pointer-events: none;
+        }
+
+        /* Content wrapper - shared left axis */
+        .host-content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 2rem;
+        }
+
+        /* Header overlaps banner, logo straddles seam */
+        .host-header {
             position: relative;
-            top: -60px;
+            margin-top: -70px;
+            padding-bottom: 0.75rem;
         }
 
         .host-logo {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 4px solid var(--pure-black);
             background: var(--card-black);
             object-fit: cover;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 1;
         }
 
         .host-info {
-            margin-top: 1rem;
+            margin-top: 0.75rem;
         }
 
         .host-name {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.01em;
         }
 
         .host-bio {
             color: var(--gray);
-            font-size: 1rem;
-            max-width: 600px;
+            font-size: 0.95rem;
+            max-width: 560px;
+            line-height: 1.5;
         }
 
-        /* Events Grid */
+        /* Events Section - tighter spacing */
         .events-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem 4rem;
+            margin-top: 1.5rem;
+            padding-bottom: 3rem;
         }
 
         .events-title {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             color: var(--lightning-yellow);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .events-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
         }
 
         .event-card {
             background: var(--card-black);
-            border-radius: 1rem;
+            border-radius: 0.75rem;
             overflow: hidden;
             border: 1px solid var(--border-dark);
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .event-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(255, 221, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(255, 215, 0, 0.08);
         }
 
         .event-image {
             width: 100%;
-            height: 180px;
+            height: 160px;
             object-fit: cover;
             background: var(--border-dark);
         }
 
         .event-content {
-            padding: 1.25rem;
+            padding: 1rem 1.25rem 1.25rem;
         }
 
         .event-date {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--electric-blue);
             font-weight: 500;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
         }
 
         .event-name {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
         }
 
         .event-location {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--gray);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .event-price {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--lightning-yellow);
         }
@@ -158,14 +183,15 @@
         .btn-tickets {
             display: block;
             width: 100%;
-            padding: 0.875rem;
+            padding: 0.75rem;
             background: var(--lightning-yellow);
             color: #000;
             text-align: center;
             text-decoration: none;
             font-weight: 700;
+            font-size: 0.9rem;
             border-radius: 0.5rem;
-            margin-top: 1rem;
+            margin-top: 0.875rem;
             transition: background 0.2s;
         }
 
@@ -173,14 +199,30 @@
             background: #e6c700;
         }
 
-        /* Loading/Error states */
-        .loading, .error, .no-events {
+        /* Empty state - styled card */
+        .no-events {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.75rem;
+            padding: 2.5rem 2rem;
             text-align: center;
-            padding: 4rem 2rem;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Loading/Error states */
+        .loading {
+            text-align: center;
+            padding: 3rem 2rem;
             color: var(--gray);
         }
 
         .error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
             color: #ff6b6b;
         }
 
@@ -189,7 +231,7 @@
             text-align: center;
             padding: 2rem;
             color: var(--gray);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .powered-by a {
@@ -199,45 +241,59 @@
 
         @media (max-width: 768px) {
             .host-banner {
-                height: 150px;
+                height: 160px;
+            }
+            .host-banner::after {
+                height: 60px;
+            }
+            .host-content {
+                padding: 0 1.25rem;
             }
             .host-header {
-                top: -40px;
-                padding: 0 1rem;
+                margin-top: -50px;
             }
             .host-logo {
                 width: 80px;
                 height: 80px;
             }
             .host-name {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
+            }
+            .host-bio {
+                font-size: 0.9rem;
             }
             .events-section {
-                padding: 0 1rem 3rem;
+                margin-top: 1.25rem;
+            }
+            .events-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Banner -->
+    <!-- Banner with gradient fade -->
     <div class="host-banner" id="hostBanner"></div>
 
-    <!-- Header with Logo -->
-    <div class="host-header">
-        <img class="host-logo" id="hostLogo" src="" alt="Host Logo">
-        <div class="host-info">
-            <h1 class="host-name" id="hostName">Loading...</h1>
-            <p class="host-bio" id="hostBio"></p>
+    <!-- Content wrapper - shared left axis -->
+    <div class="host-content">
+        <!-- Header with Logo (straddles banner seam) -->
+        <div class="host-header">
+            <img class="host-logo" id="hostLogo" src="" alt="Host Logo">
+            <div class="host-info">
+                <h1 class="host-name" id="hostName">Loading...</h1>
+                <p class="host-bio" id="hostBio"></p>
+            </div>
         </div>
-    </div>
 
-    <!-- Events -->
-    <section class="events-section">
-        <h2 class="events-title">Upcoming Events</h2>
-        <div class="events-grid" id="eventsGrid">
-            <div class="loading">Loading events...</div>
-        </div>
-    </section>
+        <!-- Events -->
+        <section class="events-section">
+            <h2 class="events-title">Upcoming Events</h2>
+            <div class="events-grid" id="eventsGrid">
+                <div class="loading">Loading events...</div>
+            </div>
+        </section>
+    </div>
 
     <!-- Footer -->
     <div class="powered-by">
