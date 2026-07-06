@@ -704,15 +704,20 @@
             btn.textContent = 'Processing...';
 
             try {
+                // Parse name into firstName/lastName
+                const nameParts = name.trim().split(' ');
+                const firstName = nameParts[0] || name;
+                const lastName = nameParts.slice(1).join(' ') || firstName;
+
                 // Create payment intent
                 const response = await fetch(`${API_BASE}/api/v1/embed/create-intent`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        eventId: selectedEvent._id,
+                        eventSlug: selectedEvent.slug,
                         ticketId: selectedTier.ticketId,
                         ticketCount: ticketQty,
-                        guest: { name, phone, email }
+                        guest: { firstName, lastName, email, phone }
                     })
                 });
 
