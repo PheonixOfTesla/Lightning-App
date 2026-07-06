@@ -840,8 +840,8 @@
 
             <!-- MONEY TAB -->
             <div id="tabMoney" class="tab-content">
-                <!-- Stripe Notification Banner -->
-                <div id="stripeNotificationBanner" class="stripe-container" style="margin-bottom: 1rem;"></div>
+                <!-- Stripe Notification Banner - hidden by default, only shown when onboarded -->
+                <div id="stripeNotificationBanner" class="stripe-container" style="display: none; margin-bottom: 1rem;"></div>
 
                 <!-- Connect Stripe CTA (shown when no Stripe account) -->
                 <div id="stripeConnectCTA" style="display: none; margin-bottom: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%); border: 1px solid var(--lightning-yellow); border-radius: 1rem; text-align: center;">
@@ -858,7 +858,7 @@
                         <h2 class="section-title">Complete Your Setup</h2>
                         <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Finish setting up your Stripe account to start receiving payouts.</p>
                         <div id="stripeOnboardingContainer" class="stripe-container">
-                            <div class="loading">Loading Stripe onboarding...</div>
+                            <div class="loading-skeleton" style="height: 200px;"></div>
                         </div>
                     </div>
                 </div>
@@ -885,17 +885,17 @@
                     </div>
                 </div>
 
-                <div class="section" id="payoutsSection">
+                <div class="section" id="payoutsSection" style="display: none;">
                     <h2 class="section-title">Payouts</h2>
                     <div id="stripePayoutsContainer" class="stripe-container">
-                        <div class="loading">Loading Stripe...</div>
+                        <div class="loading-skeleton" style="height: 150px;"></div>
                     </div>
                 </div>
 
-                <div class="section" id="accountSettingsSection">
+                <div class="section" id="accountSettingsSection" style="display: none;">
                     <h2 class="section-title">Account Settings</h2>
                     <div id="stripeAccountContainer" class="stripe-container">
-                        <div class="loading">Loading Stripe...</div>
+                        <div class="loading-skeleton" style="height: 150px;"></div>
                     </div>
                 </div>
             </div>
@@ -2205,9 +2205,10 @@
                     });
                 }
 
-                // Notification banner
+                // Notification banner - only for onboarded accounts
                 const bannerContainer = document.getElementById('stripeNotificationBanner');
                 bannerContainer.innerHTML = '';
+                bannerContainer.style.display = 'block';
                 const notificationBanner = stripeConnectInstance.create('notification-banner');
                 bannerContainer.appendChild(notificationBanner);
 
