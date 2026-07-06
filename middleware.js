@@ -44,8 +44,11 @@ export default async function middleware(request) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
+  // Debug mode: add ?og=1 to force OG response
+  const forceOg = url.searchParams.get('og') === '1';
+
   // Skip static assets
-  if (pathname.includes('.') || pathname.startsWith('/js/') || pathname.startsWith('/css/') || pathname.startsWith('/images/')) {
+  if (pathname.includes('.') || pathname.startsWith('/js/') || pathname.startsWith('/css/') || pathname.startsWith('/images/') || pathname.startsWith('/api/')) {
     return;
   }
 
@@ -62,8 +65,8 @@ export default async function middleware(request) {
     const hostSlug = pathname.substring(3).split('/')[0];
     if (hostSlug) ogPath = `/api/v1/og/@${hostSlug}`;
   }
-  // /events/:slug routes
-  else if (pathname.startsWith('/events/') && pathname !== '/events') {
+  // /events/:slug routes (not just /events)
+  else if (pathname.startsWith('/events/') && pathname.length > 8) {
     const slug = pathname.substring(8).split('/')[0];
     if (slug) ogPath = `/api/v1/og/events/${slug}`;
   }
@@ -73,8 +76,8 @@ export default async function middleware(request) {
     return;
   }
 
-  // Check if this is a crawler
-  const isCrawler = CRAWLER_PATTERNS.some(pattern =>
+  // Check if this is a crawler OR force mode
+  const isCrawler = forceOg || CRAWLER_PATTERNS.some(pattern =>
     userAgent.toLowerCase().includes(pattern.toLowerCase())
   );
 
@@ -93,16 +96,19 @@ export default async function middleware(request) {
       },
     });
 
+    const html = await response.text();
+
     // Return the server-rendered HTML
-    return new Response(response.body, {
+    return new Response(html, {
       status: response.status,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=300',
+        'Cache-Control': 'public, s-maxage=300',
+        'X-OG-Served': 'true',
       },
     });
   } catch (error) {
-    console.error('OG proxy error:', error);
+    // On error, let Vercel serve static
     return;
   }
 }

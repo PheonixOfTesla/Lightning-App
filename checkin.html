@@ -138,7 +138,20 @@
   </div>
 
   <script>
-    const API_URL = 'https://lightning-backend-production.up.railway.app/api/v1/embed/event/sunset-bash/checkin';
+    // Dynamic API URL based on event parameter
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://lightning-backend-production.up.railway.app';
+
+    // Get event slug from URL param (?event=slug) or default to sunset-bash for legacy
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventSlug = urlParams.get('event') || 'sunset-bash';
+    const API_URL = `${API_BASE}/api/v1/embed/event/${eventSlug}/checkin`;
+
+    // Update page title if event specified
+    if (urlParams.get('event')) {
+      document.title = `${eventSlug} Guest List`;
+    }
 
     // Auto-focus and auto-advance code inputs
     const inputs = [document.getElementById('c1'), document.getElementById('c2'), document.getElementById('c3'), document.getElementById('c4')];
@@ -231,7 +244,6 @@
     }
 
     // Check for code in URL
-    const urlParams = new URLSearchParams(window.location.search);
     const urlCode = urlParams.get('code');
     if (urlCode && urlCode.length === 4) {
       urlCode.split('').forEach((c, i) => inputs[i].value = c);
