@@ -1211,14 +1211,22 @@
         }
 
         function gatherTickets() {
-            const rows = document.querySelectorAll('.ticket-row');
+            // Scope to the ticket container to avoid finding rows elsewhere
+            const container = document.getElementById('ticketTiersContainer');
+            const rows = container ? container.querySelectorAll('.ticket-row') : [];
             const tickets = [];
             rows.forEach(row => {
-                const name = row.querySelector('.ticket-name').value.trim();
-                const priceStr = row.querySelector('.ticket-price').value;
-                const availableStr = row.querySelector('.ticket-available').value;
-                const ticketId = row.querySelector('.ticket-id').value;
-                const sold = parseInt(row.querySelector('.ticket-sold').value) || 0;
+                const nameInput = row.querySelector('.ticket-name');
+                const priceInput = row.querySelector('.ticket-price');
+                const availableInput = row.querySelector('.ticket-available');
+                const ticketIdInput = row.querySelector('.ticket-id');
+                const soldInput = row.querySelector('.ticket-sold');
+
+                const name = nameInput ? nameInput.value.trim() : '';
+                const priceStr = priceInput ? priceInput.value : '';
+                const availableStr = availableInput ? availableInput.value : '';
+                const ticketId = ticketIdInput ? ticketIdInput.value : '';
+                const sold = soldInput ? (parseInt(soldInput.value) || 0) : 0;
 
                 if (name) {
                     const price = Math.round(parseFloat(priceStr || 0) * 100);  // Convert to cents
@@ -1234,6 +1242,7 @@
                     });
                 }
             });
+            console.log('[DEBUG] gatherTickets found', rows.length, 'rows, returning', tickets.length, 'tickets:', tickets);
             return tickets;
         }
 
