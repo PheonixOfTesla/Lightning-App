@@ -940,8 +940,18 @@
             };
             if (body) options.body = JSON.stringify(body);
 
-            const res = await fetch(`${API_BASE}${endpoint}`, options);
-            return res.json();
+            try {
+                const res = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await res.json();
+                if (!res.ok) {
+                    console.error(`API error ${res.status}:`, data.error || data.message);
+                    return { success: false, error: data.error || data.message || `HTTP ${res.status}` };
+                }
+                return data;
+            } catch (err) {
+                console.error('API call failed:', err.message);
+                return { success: false, error: err.message };
+            }
         }
 
         // ===== LOAD ALL DATA =====
@@ -955,7 +965,7 @@
             const data = await apiCall('/api/v1/host/events');
             const container = document.getElementById('eventsList');
 
-            if (!data.success || !data.events.length) {
+            if (!data.success || !data.events || !data.events.length) {
                 container.innerHTML = '<div class="empty-state">No events yet. Create your first event!</div>';
                 return;
             }
@@ -1068,6 +1078,9 @@
                 } else {
                     document.getElementById('storefrontUrl').textContent = 'Save your display name to generate your link';
                 }
+            } else {
+                // API error - show defaults
+                document.getElementById('storefrontUrl').textContent = 'Save your display name to generate your link';
             }
 
             // Load events for the storefront picker
@@ -1183,13 +1196,13 @@
         async function loadEarnings() {
             const data = await apiCall('/api/v1/host/earnings');
 
-            if (data.success) {
+            if (data.success && data.totals) {
                 document.getElementById('totalEarnings').textContent = `$${(data.totals.lifetimeEarnings || 0).toFixed(2)}`;
                 document.getElementById('pendingPayout').textContent = `$${(data.totals.pendingPayout || 0).toFixed(2)}`;
                 document.getElementById('totalPaidOut').textContent = `$${(data.totals.totalPaidOut || 0).toFixed(2)}`;
 
                 const container = document.getElementById('earningsByEvent');
-                if (data.events.length === 0) {
+                if (!data.events || data.events.length === 0) {
                     container.innerHTML = '<div class="empty-state">No earnings yet</div>';
                 } else {
                     container.innerHTML = data.events.map(e => `
@@ -1205,6 +1218,12 @@
                         </div>
                     `).join('');
                 }
+            } else {
+                // API error or no data
+                document.getElementById('totalEarnings').textContent = '$0';
+                document.getElementById('pendingPayout').textContent = '$0';
+                document.getElementById('totalPaidOut').textContent = '$0';
+                document.getElementById('earningsByEvent').innerHTML = '<div class="empty-state">No earnings yet</div>';
             }
 
             // Load Stripe components
@@ -1213,8 +1232,8 @@
 
         async function loadStripeComponents() {
             if (typeof StripeConnect === 'undefined') {
-                document.getElementById('stripePayoutsContainer').innerHTML = '<div class="empty-state">Stripe loading...</div>';
-                document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Stripe loading...</div>';
+                // Wait a bit for Stripe to load
+                setTimeout(loadStripeComponents, 1000);
                 return;
             }
 
@@ -1230,7 +1249,14 @@
                             }
                         });
                         const data = await res.json();
-                        if (!data.success) throw new Error(data.error);
+                        if (!res.ok || !data.success) {
+                            // Host doesn't have Stripe connected yet - this is expected, not an error
+                            const errorMsg = data.error || 'Setup required';
+                            if (errorMsg.includes('No Stripe account')) {
+                                throw new Error('SETUP_REQUIRED');
+                            }
+                            throw new Error(errorMsg);
+                        }
                         return data.clientSecret;
                     },
                     appearance: {
@@ -1258,9 +1284,19 @@
                 accountContainer.appendChild(accountComponent);
 
             } catch (err) {
-                console.error('Stripe error:', err);
-                document.getElementById('stripePayoutsContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
-                document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
+                // Don't log SETUP_REQUIRED as an error - it's expected for new hosts
+                if (err.message === 'SETUP_REQUIRED') {
+                    document.getElementById('stripePayoutsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <p>Connect your Stripe account to receive payouts.</p>
+                            <a href="/stripe-onboard" class="btn btn-primary" style="margin-top: 1rem;">Connect Stripe</a>
+                        </div>`;
+                    document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Complete Stripe setup above</div>';
+                } else {
+                    console.warn('Stripe setup:', err.message);
+                    document.getElementById('stripePayoutsContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
+                    document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
+                }
             }
         }
 
@@ -1268,10 +1304,15 @@
         async function loadLiveStats() {
             const data = await apiCall('/api/v1/host/live/stats');
 
-            if (data.success) {
-                document.getElementById('liveInside').textContent = data.totals.inside;
-                document.getElementById('liveSold').textContent = data.totals.totalSold;
+            if (data.success && data.totals) {
+                document.getElementById('liveInside').textContent = data.totals.inside || 0;
+                document.getElementById('liveSold').textContent = data.totals.totalSold || 0;
                 document.getElementById('liveRevenue').textContent = `$${(data.totals.revenue || 0).toFixed(0)}`;
+            } else {
+                // API error or no data - show zeros
+                document.getElementById('liveInside').textContent = '0';
+                document.getElementById('liveSold').textContent = '0';
+                document.getElementById('liveRevenue').textContent = '$0';
             }
         }
 
@@ -1285,18 +1326,30 @@
             socket.on('connect', () => {
                 console.log('Socket connected');
                 socket.emit('join:host', (res) => {
-                    if (res.success) console.log('Joined host room:', res.room);
+                    if (res && res.success) {
+                        console.log('Joined host room:', res.room);
+                    } else if (res && res.error) {
+                        console.warn('Failed to join host room:', res.error);
+                    }
                 });
+            });
+
+            socket.on('connect_error', (err) => {
+                console.warn('Socket connection error:', err.message);
+            });
+
+            socket.on('disconnect', (reason) => {
+                console.log('Socket disconnected:', reason);
             });
 
             // Live events
             socket.on('host:sale', (data) => {
-                addLiveFeedItem('sale', `${data.guestName || 'Someone'} purchased ${data.quantity} ticket(s)`, data.eventSlug);
+                addLiveFeedItem('sale', `${data.guestName || 'Someone'} purchased ${data.quantity || 1} ticket(s)`, data.eventSlug || 'event');
                 loadLiveStats();
             });
 
             socket.on('host:entry', (data) => {
-                addLiveFeedItem('entry', `${data.guestName || 'Guest'} checked in${data.entryCount > 1 ? ` (re-entry #${data.entryCount})` : ''}`, data.eventSlug);
+                addLiveFeedItem('entry', `${data.guestName || 'Guest'} checked in${data.entryCount > 1 ? ` (re-entry #${data.entryCount})` : ''}`, data.eventSlug || 'event');
                 loadLiveStats();
             });
 
