@@ -838,7 +838,7 @@
                 Your event will be submitted for review. Once approved, it will appear on your storefront.
             </p>
 
-            <button class="btn btn-primary" onclick="createEvent()" style="width:100%;">Submit for Review</button>
+            <button class="btn btn-primary" onclick="submitNewEvent()" style="width:100%;">Submit for Review</button>
         </div>
     </div>
 
@@ -1025,7 +1025,7 @@
             document.getElementById('createEventModal').style.display = 'none';
         }
 
-        async function createEvent() {
+        async function submitNewEvent() {
             const name = document.getElementById('newEventName').value.trim();
             const date = document.getElementById('newEventDate').value;
 
