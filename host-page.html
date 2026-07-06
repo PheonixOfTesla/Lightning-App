@@ -450,9 +450,9 @@
             </div>
             <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-dark); border-radius: 8px; padding: 1rem;">
                 <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.75rem;">Your tickets will be sent via text</p>
-                <input type="text" id="guestName" class="form-input" placeholder="Your name" required>
-                <input type="tel" id="guestPhone" class="form-input" placeholder="Phone number" required>
-                <input type="email" id="guestEmail" class="form-input" placeholder="Email (for receipt)">
+                <input type="text" id="guestFirstName" class="form-input" placeholder="First name" required>
+                <input type="text" id="guestLastName" class="form-input" placeholder="Last name" required>
+                <input type="email" id="guestEmail" class="form-input" placeholder="Email" required>
             </div>
             <div class="checkout-total">Total: $<span id="totalAmount">0</span></div>
             <button id="payBtn" class="btn-pay" onclick="processPayment()">PAY NOW</button>
@@ -651,8 +651,8 @@
             }
 
             // Clear form
-            document.getElementById('guestName').value = '';
-            document.getElementById('guestPhone').value = '';
+            document.getElementById('guestFirstName').value = '';
+            document.getElementById('guestLastName').value = '';
             document.getElementById('guestEmail').value = '';
 
             document.getElementById('checkoutModal').style.display = 'block';
@@ -690,12 +690,12 @@
                 return;
             }
 
-            const name = document.getElementById('guestName').value.trim();
-            const phone = document.getElementById('guestPhone').value.trim();
+            const firstName = document.getElementById('guestFirstName').value.trim();
+            const lastName = document.getElementById('guestLastName').value.trim();
             const email = document.getElementById('guestEmail').value.trim();
 
-            if (!name || !phone) {
-                alert('Name and phone are required');
+            if (!firstName || !lastName || !email) {
+                alert('Please fill in all fields');
                 return;
             }
 
@@ -704,11 +704,6 @@
             btn.textContent = 'Processing...';
 
             try {
-                // Parse name into firstName/lastName
-                const nameParts = name.trim().split(' ');
-                const firstName = nameParts[0] || name;
-                const lastName = nameParts.slice(1).join(' ') || firstName;
-
                 // Create payment intent
                 const response = await fetch(`${API_BASE}/api/v1/embed/create-intent`, {
                     method: 'POST',
@@ -717,7 +712,7 @@
                         eventSlug: selectedEvent.slug,
                         ticketId: selectedTier.ticketId,
                         ticketCount: ticketQty,
-                        guest: { firstName, lastName, email, phone }
+                        guest: { firstName, lastName, email }
                     })
                 });
 
