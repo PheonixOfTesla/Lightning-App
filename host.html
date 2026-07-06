@@ -726,6 +726,29 @@
 
             <!-- MONEY TAB -->
             <div id="tabMoney" class="tab-content">
+                <!-- Stripe Notification Banner -->
+                <div id="stripeNotificationBanner" class="stripe-container" style="margin-bottom: 1rem;"></div>
+
+                <!-- Connect Stripe CTA (shown when no Stripe account) -->
+                <div id="stripeConnectCTA" style="display: none; margin-bottom: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%); border: 1px solid var(--lightning-yellow); border-radius: 1rem; text-align: center;">
+                    <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">Get Paid for Your Events</h3>
+                    <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Connect your bank account to receive payouts from ticket sales.</p>
+                    <button onclick="connectStripe()" class="btn btn-primary" id="connectStripeBtn">
+                        Connect Stripe Account
+                    </button>
+                </div>
+
+                <!-- Stripe Onboarding (shown when account created but not fully onboarded) -->
+                <div id="stripeOnboardingSection" style="display: none; margin-bottom: 1.5rem;">
+                    <div class="section">
+                        <h2 class="section-title">Complete Your Setup</h2>
+                        <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Finish setting up your Stripe account to start receiving payouts.</p>
+                        <div id="stripeOnboardingContainer" class="stripe-container">
+                            <div class="loading">Loading Stripe onboarding...</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value green" id="totalEarnings">$0</div>
@@ -748,14 +771,14 @@
                     </div>
                 </div>
 
-                <div class="section">
+                <div class="section" id="payoutsSection">
                     <h2 class="section-title">Payouts</h2>
                     <div id="stripePayoutsContainer" class="stripe-container">
                         <div class="loading">Loading Stripe...</div>
                     </div>
                 </div>
 
-                <div class="section">
+                <div class="section" id="accountSettingsSection">
                     <h2 class="section-title">Account Settings</h2>
                     <div id="stripeAccountContainer" class="stripe-container">
                         <div class="loading">Loading Stripe...</div>
@@ -1122,10 +1145,8 @@
         let currentUser = null;
         let socket = null;
 
-        // Stripe Connect
-        const STRIPE_PK = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'pk_test_51SFvASIfYqbb49BvcGEb5I6j8fhvXw18UqH9ZZeTDyGP1PFc4tZtIDmSNVRE3FXDk3YXqnQp9OOaKLnDKIqP2STO00B61z8FLp'
-            : 'pk_live_51SFvASIfYqbb49BvkDC7JOqe7OKJkLZDJrWJsN7lfmVlPHQZmFVoRzPRHTj6DfnLRXBuqNuS9y4GBbqhWCDIX2Oo00z0MKAqsZ';
+        // Stripe Connect - fetched from backend config
+        let STRIPE_PK = null;
 
         // ===== SVG ICONS =====
         const SVG_ICONS = {
@@ -1160,7 +1181,22 @@
         }
 
         // ===== INIT =====
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Fetch Stripe config from backend first
+            try {
+                const configRes = await fetch(`${API_BASE}/api/v1/lightning/config`);
+                const configData = await configRes.json();
+                if (configData.stripePublishableKey) {
+                    STRIPE_PK = configData.stripePublishableKey;
+                }
+            } catch (err) {
+                console.warn('Failed to fetch config, using fallback key');
+                // Fallback to hardcoded key if config fetch fails
+                STRIPE_PK = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'pk_test_51SFvASIfYqbb49BvcGEb5I6j8fhvXw18UqH9ZZeTDyGP1PFc4tZtIDmSNVRE3FXDk3YXqnQp9OOaKLnDKIqP2STO00B61z8FLp'
+                    : 'pk_live_51SFvASIfYqbb49BvkDC7JOqe7OKJkLZDJrWJsN7lfmVlPHQZmFVoRzPRHTj6DfnLRXBuqNuS9y4GBbqhWCDIX2Oo00z0MKAqsZ';
+            }
+
             const token = localStorage.getItem('token');
             const userRoles = getUserRolesFromToken();
             const userEmail = localStorage.getItem('userEmail');
@@ -1712,46 +1748,213 @@
             loadStripeComponents();
         }
 
+        // Stripe state tracking
+        let stripeConnectInstance = null;
+        let stripeStatus = { connected: false, onboarded: false };
+
         async function loadStripeComponents() {
+            // First check Stripe status
+            const statusRes = await fetch(`${API_BASE}/api/v1/lightning/host/connect/status`, {
+                headers: { 'Authorization': `Bearer ${currentUser.token}` }
+            });
+            const statusData = await statusRes.json();
+
+            if (!statusData.success) {
+                console.warn('Failed to get Stripe status');
+                showStripeError();
+                return;
+            }
+
+            stripeStatus = {
+                connected: statusData.connected,
+                onboarded: statusData.onboarded || (statusData.chargesEnabled && statusData.payoutsEnabled),
+                chargesEnabled: statusData.chargesEnabled,
+                payoutsEnabled: statusData.payoutsEnabled,
+                detailsSubmitted: statusData.detailsSubmitted
+            };
+
+            // Show appropriate UI based on status
+            if (!stripeStatus.connected) {
+                // No Stripe account - show Connect CTA
+                showStripeConnectCTA();
+            } else if (!stripeStatus.onboarded) {
+                // Account created but not fully onboarded - show onboarding
+                await showStripeOnboarding();
+            } else {
+                // Fully onboarded - show payouts and account management
+                await showStripeFullComponents();
+            }
+        }
+
+        function showStripeConnectCTA() {
+            document.getElementById('stripeConnectCTA').style.display = 'block';
+            document.getElementById('stripeOnboardingSection').style.display = 'none';
+            document.getElementById('payoutsSection').style.display = 'none';
+            document.getElementById('accountSettingsSection').style.display = 'none';
+            document.getElementById('stripeNotificationBanner').innerHTML = '';
+        }
+
+        async function connectStripe() {
+            const btn = document.getElementById('connectStripeBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/connect/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to create Stripe account');
+                }
+
+                // Account created - now show onboarding
+                stripeStatus.connected = true;
+                await showStripeOnboarding();
+
+            } catch (err) {
+                console.error('Connect Stripe error:', err);
+                alert(err.message || 'Failed to connect Stripe');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        async function showStripeOnboarding() {
+            document.getElementById('stripeConnectCTA').style.display = 'none';
+            document.getElementById('stripeOnboardingSection').style.display = 'block';
+            document.getElementById('payoutsSection').style.display = 'none';
+            document.getElementById('accountSettingsSection').style.display = 'none';
+
+            // Wait for StripeConnect to load
             if (typeof StripeConnect === 'undefined') {
-                // Wait a bit for Stripe to load
-                setTimeout(loadStripeComponents, 1000);
+                setTimeout(showStripeOnboarding, 500);
+                return;
+            }
+
+            // PRE-VALIDATE: Fetch client secret first
+            let clientSecret;
+            try {
+                clientSecret = await fetchStripeClientSecret();
+            } catch (err) {
+                console.error('Failed to get Stripe session:', err);
+                document.getElementById('stripeOnboardingContainer').innerHTML = `
+                    <div class="empty-state">
+                        <p style="margin-bottom: 0.75rem;">Your Stripe account connection has expired or is invalid.</p>
+                        <button onclick="reconnectStripe()" class="btn btn-primary">Reconnect Stripe</button>
+                    </div>`;
                 return;
             }
 
             try {
-                const stripeConnectInstance = StripeConnect.init({
+                stripeConnectInstance = StripeConnect.init({
                     publishableKey: STRIPE_PK,
-                    fetchClientSecret: async () => {
-                        const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${currentUser.token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        const data = await res.json();
-                        if (!res.ok || !data.success) {
-                            // Host doesn't have Stripe connected yet - this is expected, not an error
-                            const errorMsg = data.error || 'Setup required';
-                            if (errorMsg.includes('No Stripe account')) {
-                                throw new Error('SETUP_REQUIRED');
-                            }
-                            throw new Error(errorMsg);
-                        }
-                        return data.clientSecret;
-                    },
-                    appearance: {
-                        variables: {
-                            colorPrimary: '#ffd700',
-                            colorBackground: '#1b2838',
-                            colorText: '#ffffff',
-                            colorDanger: '#ff0044',
-                            fontFamily: 'Inter, sans-serif',
-                            borderRadius: '8px'
-                        }
+                    fetchClientSecret: () => Promise.resolve(clientSecret),
+                    appearance: getStripeAppearance()
+                });
+
+                // Notification banner
+                const bannerContainer = document.getElementById('stripeNotificationBanner');
+                bannerContainer.innerHTML = '';
+                const notificationBanner = stripeConnectInstance.create('notification-banner');
+                bannerContainer.appendChild(notificationBanner);
+
+                // Account onboarding
+                const onboardingContainer = document.getElementById('stripeOnboardingContainer');
+                onboardingContainer.innerHTML = '';
+                const onboardingComponent = stripeConnectInstance.create('account-onboarding');
+                onboardingContainer.appendChild(onboardingComponent);
+
+                // Listen for onboarding completion
+                onboardingComponent.addEventListener('exit', () => {
+                    // User completed onboarding - reload to show full components
+                    loadStripeComponents();
+                });
+
+                // Timeout fallback for auth errors
+                setTimeout(() => {
+                    const container = document.getElementById('stripeOnboardingContainer');
+                    if (container && container.textContent.includes('Something went wrong')) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <p style="margin-bottom: 0.75rem;">Your Stripe account connection is invalid.</p>
+                                <button onclick="reconnectStripe()" class="btn btn-primary">Reconnect Stripe</button>
+                            </div>`;
+                    }
+                }, 5000);
+
+            } catch (err) {
+                console.error('Stripe onboarding error:', err);
+                document.getElementById('stripeOnboardingContainer').innerHTML = `
+                    <div class="empty-state">
+                        <p>Unable to load Stripe onboarding.</p>
+                        <button onclick="refreshStripeOnboarding()" class="btn btn-secondary" style="margin-top: 0.5rem;">Try Again</button>
+                    </div>`;
+            }
+        }
+
+        async function refreshStripeOnboarding() {
+            // Get a new onboarding link as fallback
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/connect/refresh`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
+                const data = await res.json();
+
+                if (data.success && data.onboardingUrl) {
+                    window.location.href = data.onboardingUrl;
+                } else {
+                    alert(data.error || 'Failed to refresh onboarding');
+                }
+            } catch (err) {
+                alert('Failed to refresh onboarding');
+            }
+        }
+
+        async function showStripeFullComponents() {
+            document.getElementById('stripeConnectCTA').style.display = 'none';
+            document.getElementById('stripeOnboardingSection').style.display = 'none';
+            document.getElementById('payoutsSection').style.display = 'block';
+            document.getElementById('accountSettingsSection').style.display = 'block';
+
+            // Wait for StripeConnect to load
+            if (typeof StripeConnect === 'undefined') {
+                setTimeout(showStripeFullComponents, 500);
+                return;
+            }
+
+            // PRE-VALIDATE: Fetch client secret first to check if account is valid
+            let clientSecret;
+            try {
+                clientSecret = await fetchStripeClientSecret();
+            } catch (err) {
+                console.error('Failed to get Stripe session:', err);
+                showStripeError(true);  // Show reconnect option
+                return;
+            }
+
+            try {
+                stripeConnectInstance = StripeConnect.init({
+                    publishableKey: STRIPE_PK,
+                    fetchClientSecret: () => Promise.resolve(clientSecret),  // Use pre-fetched secret
+                    appearance: getStripeAppearance()
+                });
+
+                // Notification banner
+                const bannerContainer = document.getElementById('stripeNotificationBanner');
+                bannerContainer.innerHTML = '';
+                const notificationBanner = stripeConnectInstance.create('notification-banner');
+                bannerContainer.appendChild(notificationBanner);
 
                 // Payouts
                 const payoutsContainer = document.getElementById('stripePayoutsContainer');
@@ -1765,20 +1968,104 @@
                 const accountComponent = stripeConnectInstance.create('account-management');
                 accountContainer.appendChild(accountComponent);
 
+                // Timeout fallback: If Stripe components show error after 5 seconds, offer reconnect
+                setTimeout(() => {
+                    const payoutsEl = document.getElementById('stripePayoutsContainer');
+                    // Check if Stripe rendered an error message
+                    if (payoutsEl && (payoutsEl.textContent.includes('Something went wrong') ||
+                        payoutsEl.textContent.includes('error'))) {
+                        showStripeError(true);
+                    }
+                }, 5000);
+
             } catch (err) {
-                // Don't log SETUP_REQUIRED as an error - it's expected for new hosts
-                if (err.message === 'SETUP_REQUIRED') {
-                    document.getElementById('stripePayoutsContainer').innerHTML = `
-                        <div class="empty-state">
-                            <p>Connect your Stripe account to receive payouts.</p>
-                            <a href="/stripe-onboard" class="btn btn-primary" style="margin-top: 1rem;">Connect Stripe</a>
-                        </div>`;
-                    document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Complete Stripe setup above</div>';
-                } else {
-                    console.warn('Stripe setup:', err.message);
-                    document.getElementById('stripePayoutsContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
-                    document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
+                console.error('Stripe components error:', err);
+                showStripeError(true);
+            }
+        }
+
+        async function fetchStripeClientSecret() {
+            const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${currentUser.token}`,
+                    'Content-Type': 'application/json'
                 }
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                // Check if backend cleared the invalid account
+                if (data.needsReconnect) {
+                    stripeStatus.connected = false;
+                    stripeStatus.onboarded = false;
+                    showStripeConnectCTA();
+                }
+                throw new Error(data.error || 'Failed to get Stripe session');
+            }
+            return data.clientSecret;
+        }
+
+        function getStripeAppearance() {
+            return {
+                variables: {
+                    colorPrimary: '#ffd700',
+                    colorBackground: '#1b2838',
+                    colorText: '#ffffff',
+                    colorDanger: '#ff0044',
+                    fontFamily: 'Inter, sans-serif',
+                    borderRadius: '8px'
+                }
+            };
+        }
+
+        function showStripeError(isAuthError = false) {
+            document.getElementById('stripeConnectCTA').style.display = 'none';
+            document.getElementById('stripeOnboardingSection').style.display = 'none';
+            document.getElementById('payoutsSection').style.display = 'block';
+            document.getElementById('accountSettingsSection').style.display = 'block';
+
+            if (isAuthError) {
+                // Authentication failed - show reconnect option
+                const errorHtml = `
+                    <div class="empty-state">
+                        <p style="margin-bottom: 0.75rem;">Your Stripe account connection has expired or is invalid.</p>
+                        <button onclick="reconnectStripe()" class="btn btn-primary">Reconnect Stripe</button>
+                    </div>`;
+                document.getElementById('stripePayoutsContainer').innerHTML = errorHtml;
+                document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Complete Stripe reconnection above</div>';
+            } else {
+                document.getElementById('stripePayoutsContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
+                document.getElementById('stripeAccountContainer').innerHTML = '<div class="empty-state">Unable to load Stripe</div>';
+            }
+        }
+
+        async function reconnectStripe() {
+            if (!confirm('This will disconnect your current Stripe account and start fresh. Continue?')) {
+                return;
+            }
+
+            try {
+                // Call backend to clear the invalid Stripe account
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/disconnect`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to disconnect');
+                }
+
+                // Reset state and show connect CTA
+                stripeStatus.connected = false;
+                stripeStatus.onboarded = false;
+                showStripeConnectCTA();
+            } catch (err) {
+                console.error('Reconnect error:', err);
+                alert('Failed to disconnect: ' + err.message);
             }
         }
 

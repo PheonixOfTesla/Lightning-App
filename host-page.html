@@ -138,6 +138,8 @@
             overflow: hidden;
             border: 1px solid var(--border-dark);
             transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
         }
 
         .event-card:hover {
@@ -154,6 +156,9 @@
 
         .event-content {
             padding: 1rem 1.25rem 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .event-date {
@@ -181,6 +186,8 @@
             font-size: 1rem;
             font-weight: 600;
             color: var(--lightning-yellow);
+            margin-top: auto;
+            padding-top: 0.5rem;
         }
 
         .btn-tickets {
@@ -196,6 +203,8 @@
             border-radius: 0.5rem;
             margin-top: 0.875rem;
             transition: background 0.2s;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-tickets:hover {
