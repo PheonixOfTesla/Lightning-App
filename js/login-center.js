@@ -855,22 +855,37 @@ const LoginCenter = (function() {
                            selectedRoles.includes('dj') ? 'dj' : 'member';
 
         try {
+            // Build registration payload
+            const registrationData = {
+                firstName,
+                lastName,
+                email,
+                phone,
+                password,
+                userType: primaryRole,
+                roles: selectedRoles,
+                venueStatus: selectedRoles.includes('venue') ? 'pending' : null,
+                adminStatus: selectedRoles.includes('admin') ? 'pending' : null,
+                hostStatus: selectedRoles.includes('host') ? 'pending' : null,
+                partnerCode: partnerCode || null
+            };
+
+            // Attribute signup to event if pending claim exists (funnel tracking)
+            const pendingClaimEvent = sessionStorage.getItem('pendingClaimEvent');
+            if (pendingClaimEvent) {
+                try {
+                    const claimEvent = JSON.parse(pendingClaimEvent);
+                    if (claimEvent._id) registrationData.eventId = claimEvent._id;
+                    if (claimEvent.slug) registrationData.eventSlug = claimEvent.slug;
+                } catch (e) {
+                    console.error('Failed to parse pending claim event for funnel:', e);
+                }
+            }
+
             const response = await fetch(`${config.apiBase}/api/v1/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    firstName,
-                    lastName,
-                    email,
-                    phone,
-                    password,
-                    userType: primaryRole,
-                    roles: selectedRoles,
-                    venueStatus: selectedRoles.includes('venue') ? 'pending' : null,
-                    adminStatus: selectedRoles.includes('admin') ? 'pending' : null,
-                    hostStatus: selectedRoles.includes('host') ? 'pending' : null,
-                    partnerCode: partnerCode || null
-                })
+                body: JSON.stringify(registrationData)
             });
 
             const data = await response.json();

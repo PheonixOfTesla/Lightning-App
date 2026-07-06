@@ -477,6 +477,20 @@
 
         // Open login modal
         function openLogin() {
+            // Track claim_signup_viewed in funnel (fire-and-forget)
+            if (passData && passData.eventId) {
+                fetch(`${API_BASE}/api/v1/funnel/track`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        step: 'claim_signup_viewed',
+                        eventId: passData.eventId,
+                        eventSlug: passData.eventSlug,
+                        passId: passData.passId
+                    })
+                }).catch(err => console.error('Funnel track:', err));
+            }
+
             if (typeof LoginCenter !== 'undefined') {
                 LoginCenter.open();
             } else {
