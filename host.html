@@ -162,6 +162,7 @@
                 border: none;
                 max-width: 1200px;
                 margin: 0 auto;
+                margin-top: 4rem; /* Clear the fixed header */
                 padding: 1rem;
                 justify-content: flex-start;
                 gap: 0.5rem;
@@ -186,11 +187,11 @@
         main {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 4.5rem 1rem 5rem;
+            padding: 4.5rem 1rem 5rem; /* Mobile: clear fixed header */
         }
 
         @media (min-width: 769px) {
-            main { padding: 4.5rem 1rem 2rem; }
+            main { padding: 0 1rem 2rem; } /* Desktop: tab-bar already clears header */
         }
 
         /* Tab Content */
