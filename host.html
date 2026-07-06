@@ -840,7 +840,39 @@
 
             <!-- MONEY TAB -->
             <div id="tabMoney" class="tab-content">
-                <!-- Stripe Notification Banner - hidden by default, only shown when onboarded -->
+                <!-- Stats grid comes FIRST for immediate visibility -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value green" id="totalEarnings">$0</div>
+                        <div class="stat-label">Total Earned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pendingPayout">$0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value blue" id="totalPaidOut">$0</div>
+                        <div class="stat-label">Paid Out</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">By Event</h2>
+                    <div id="earningsByEvent">
+                        <div class="loading-skeleton" style="height: 60px; margin-bottom: 0.5rem;"></div>
+                        <div class="loading-skeleton" style="height: 60px;"></div>
+                    </div>
+                </div>
+
+                <!-- Stripe Setup Section - shows loading initially -->
+                <div id="stripeSetupSection" class="section">
+                    <h2 class="section-title">Payouts</h2>
+                    <div id="stripeSetupContent">
+                        <div class="loading-skeleton" style="height: 100px;"></div>
+                    </div>
+                </div>
+
+                <!-- Stripe Notification Banner - hidden by default -->
                 <div id="stripeNotificationBanner" class="stripe-container" style="display: none; margin-bottom: 1rem;"></div>
 
                 <!-- Connect Stripe CTA (shown when no Stripe account) -->
@@ -860,28 +892,6 @@
                         <div id="stripeOnboardingContainer" class="stripe-container">
                             <div class="loading-skeleton" style="height: 200px;"></div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value green" id="totalEarnings">$0</div>
-                        <div class="stat-label">Total Earned</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="pendingPayout">$0</div>
-                        <div class="stat-label">Pending</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value blue" id="totalPaidOut">$0</div>
-                        <div class="stat-label">Paid Out</div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2 class="section-title">By Event</h2>
-                    <div id="earningsByEvent">
-                        <div class="loading">Loading earnings...</div>
                     </div>
                 </div>
 
@@ -1905,27 +1915,32 @@
 
         // ===== MONEY TAB =====
         async function loadEarnings() {
-            // Show loading state for earnings
+            // Show loading state for earnings (skeleton already in HTML)
             document.getElementById('totalEarnings').textContent = '...';
             document.getElementById('pendingPayout').textContent = '...';
             document.getElementById('totalPaidOut').textContent = '...';
-            document.getElementById('earningsByEvent').innerHTML = `
-                <div class="loading-skeleton" style="height: 60px; margin-bottom: 0.5rem;"></div>
-                <div class="loading-skeleton" style="height: 60px;"></div>
-            `;
 
-            const data = await apiCall('/api/v1/host/earnings');
+            // Load earnings and Stripe status IN PARALLEL for faster load
+            const [earningsData] = await Promise.all([
+                apiCall('/api/v1/host/earnings'),
+                loadStripeComponents()  // Start loading Stripe at the same time
+            ]);
 
-            if (data.success && data.totals) {
-                document.getElementById('totalEarnings').textContent = `$${(data.totals.lifetimeEarnings || 0).toFixed(2)}`;
-                document.getElementById('pendingPayout').textContent = `$${(data.totals.pendingPayout || 0).toFixed(2)}`;
-                document.getElementById('totalPaidOut').textContent = `$${(data.totals.totalPaidOut || 0).toFixed(2)}`;
+            // Hide the initial loading skeleton
+            const setupSection = document.getElementById('stripeSetupSection');
+            if (setupSection) setupSection.style.display = 'none';
+
+            // Process earnings data
+            if (earningsData.success && earningsData.totals) {
+                document.getElementById('totalEarnings').textContent = `$${(earningsData.totals.lifetimeEarnings || 0).toFixed(2)}`;
+                document.getElementById('pendingPayout').textContent = `$${(earningsData.totals.pendingPayout || 0).toFixed(2)}`;
+                document.getElementById('totalPaidOut').textContent = `$${(earningsData.totals.totalPaidOut || 0).toFixed(2)}`;
 
                 const container = document.getElementById('earningsByEvent');
-                if (!data.events || data.events.length === 0) {
+                if (!earningsData.events || earningsData.events.length === 0) {
                     container.innerHTML = '<div class="empty-state">No earnings yet</div>';
                 } else {
-                    container.innerHTML = data.events.map(e => `
+                    container.innerHTML = earningsData.events.map(e => `
                         <div style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--border-dark);">
                             <div>
                                 <div style="font-weight:500;">${e.name}</div>
@@ -1940,14 +1955,11 @@
                 }
             } else {
                 // API error or no data
-                document.getElementById('totalEarnings').textContent = '$0';
-                document.getElementById('pendingPayout').textContent = '$0';
-                document.getElementById('totalPaidOut').textContent = '$0';
+                document.getElementById('totalEarnings').textContent = '$0.00';
+                document.getElementById('pendingPayout').textContent = '$0.00';
+                document.getElementById('totalPaidOut').textContent = '$0.00';
                 document.getElementById('earningsByEvent').innerHTML = '<div class="empty-state">No earnings yet</div>';
             }
-
-            // Load Stripe components
-            loadStripeComponents();
         }
 
         // Stripe state tracking - SINGLETON pattern to prevent 429 rate limits
@@ -2033,6 +2045,7 @@
         }
 
         function showStripeConnectCTA() {
+            document.getElementById('stripeSetupSection').style.display = 'none';
             document.getElementById('stripeConnectCTA').style.display = 'block';
             document.getElementById('stripeOnboardingSection').style.display = 'none';
             document.getElementById('payoutsSection').style.display = 'none';
@@ -2073,6 +2086,7 @@
         }
 
         async function showStripeOnboarding() {
+            document.getElementById('stripeSetupSection').style.display = 'none';
             document.getElementById('stripeConnectCTA').style.display = 'none';
             document.getElementById('stripeOnboardingSection').style.display = 'block';
             document.getElementById('payoutsSection').style.display = 'none';
@@ -2187,6 +2201,7 @@
         }
 
         async function showStripeFullComponents() {
+            document.getElementById('stripeSetupSection').style.display = 'none';
             document.getElementById('stripeConnectCTA').style.display = 'none';
             document.getElementById('stripeOnboardingSection').style.display = 'none';
             document.getElementById('payoutsSection').style.display = 'block';
