@@ -1912,15 +1912,22 @@
             document.getElementById('pendingPayout').textContent = '...';
             document.getElementById('totalPaidOut').textContent = '...';
 
-            // Load earnings and Stripe status IN PARALLEL for faster load
-            const [earningsData] = await Promise.all([
-                apiCall('/api/v1/host/earnings'),
-                loadStripeComponents()  // Start loading Stripe at the same time
-            ]);
+            // Load earnings only - Stripe loads on-demand when user clicks button
+            const earningsData = await apiCall('/api/v1/host/earnings');
 
-            // Hide the initial loading skeleton
+            // Show the "Manage Payouts" button (lazy load pattern)
             const setupSection = document.getElementById('stripeSetupSection');
-            if (setupSection) setupSection.style.display = 'none';
+            if (setupSection) {
+                setupSection.innerHTML = `
+                    <h2 class="section-title">Payouts</h2>
+                    <div style="text-align: center; padding: 1rem;">
+                        <button onclick="loadStripeComponents(true)" class="btn btn-primary" id="loadStripeBtn">
+                            Manage Payouts
+                        </button>
+                        <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and account settings</p>
+                    </div>
+                `;
+            }
 
             // Process earnings data
             if (earningsData.success && earningsData.totals) {
@@ -1983,6 +1990,18 @@
 
             stripeComponentsLoading = true;
             stripeAttempted = true;
+
+            // Show loading state immediately (lazy load feedback)
+            const setupSection = document.getElementById('stripeSetupSection');
+            if (setupSection) {
+                setupSection.innerHTML = `
+                    <h2 class="section-title">Payouts</h2>
+                    <div style="text-align: center; padding: 2rem;">
+                        <div class="loading-skeleton" style="height: 100px; margin-bottom: 1rem;"></div>
+                        <p style="color: var(--gray); font-size: 0.8rem;">Loading Stripe...</p>
+                    </div>
+                `;
+            }
 
             try {
                 // First check Stripe status
