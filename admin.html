@@ -988,6 +988,10 @@
 
             <!-- Tabs -->
             <div class="tabs" style="flex-wrap: wrap;">
+                <button class="tab" onclick="switchTab('pending')" id="pendingTab" style="background: #ff6b35; color: #fff; position: relative;">
+                    Pending
+                    <span id="pendingBadge" style="display: none; position: absolute; top: -6px; right: -6px; background: #fff; color: #ff6b35; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center;">0</span>
+                </button>
                 <button class="tab active" onclick="switchTab('events')">Events</button>
                 <button class="tab" onclick="switchTab('passes')">Passes</button>
                 <button class="tab" onclick="switchTab('users')">Users</button>
@@ -1001,6 +1005,58 @@
                 <button class="tab" onclick="switchTab('funnel')">Funnel</button>
                 <button class="tab" onclick="switchTab('email')">Email</button>
                 <button class="tab" onclick="switchTab('generate')" style="background: var(--lightning-yellow); color: #000;">Generate</button>
+            </div>
+
+            <!-- Pending Tab -->
+            <div id="pendingTab" class="tab-content">
+                <div class="card">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Pending Approvals
+                    </h3>
+
+                    <!-- Pending Events Section -->
+                    <div style="margin-top: 1.5rem;">
+                        <h4 style="color: var(--lightning-yellow); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Pending Events
+                            <span id="pendingEventsCount" style="background: #ff6b35; color: white; padding: 0.125rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">0</span>
+                        </h4>
+                        <div id="pendingEventsLoading" class="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Loading pending events...</p>
+                        </div>
+                        <div id="pendingEventsList" style="display: grid; gap: 1rem;"></div>
+                    </div>
+
+                    <!-- Pending Hosts Section -->
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-dark);">
+                        <h4 style="color: var(--electric-purple); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Pending Host Applications
+                            <span id="pendingHostsCount" style="background: var(--electric-purple); color: white; padding: 0.125rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">0</span>
+                        </h4>
+                        <div id="pendingHostsList" style="display: grid; gap: 1rem;"></div>
+                    </div>
+
+                    <!-- Pending Venues Section -->
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-dark);">
+                        <h4 style="color: var(--electric-blue); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                            Pending Venue Applications
+                            <span id="pendingVenuesCount" style="background: var(--electric-blue); color: white; padding: 0.125rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">0</span>
+                        </h4>
+                        <div id="pendingVenuesList" style="display: grid; gap: 1rem;"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Events Tab -->
@@ -2865,6 +2921,7 @@
             loadEvents();
             loadDeals();
             loadPendingApprovals();
+            updatePendingBadge();
         }
 
         // ============================
@@ -4455,6 +4512,260 @@
             } else if (tabName === 'funnel') {
                 loadFunnelEvents();
                 loadFunnel();
+            } else if (tabName === 'pending') {
+                loadPendingTab();
+            }
+        }
+
+        // ============================
+        // Pending Approvals Functions
+        // ============================
+        async function loadPendingTab() {
+            const eventsLoading = document.getElementById('pendingEventsLoading');
+            const eventsList = document.getElementById('pendingEventsList');
+            const hostsList = document.getElementById('pendingHostsList');
+            const venuesList = document.getElementById('pendingVenuesList');
+            const eventsCount = document.getElementById('pendingEventsCount');
+            const hostsCount = document.getElementById('pendingHostsCount');
+            const venuesCount = document.getElementById('pendingVenuesCount');
+            const badge = document.getElementById('pendingBadge');
+
+            eventsLoading.style.display = 'block';
+            eventsList.innerHTML = '';
+            hostsList.innerHTML = '';
+            venuesList.innerHTML = '';
+
+            try {
+                // Fetch all events and filter for pending
+                const eventsRes = await fetch(`${API_BASE}/api/v1/lightning/events`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const eventsData = await eventsRes.json();
+                const pendingEvents = (eventsData.events || []).filter(e => e.status === 'pending');
+
+                // Fetch users with pending host/venue status
+                const usersRes = await fetch(`${API_BASE}/api/v1/lightning/admin/users/list`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const usersData = await usersRes.json();
+                const users = usersData.users || [];
+                const pendingHosts = users.filter(u => u.hostStatus === 'pending');
+                const pendingVenues = users.filter(u => u.venueStatus === 'pending');
+
+                eventsLoading.style.display = 'none';
+
+                // Update counts
+                eventsCount.textContent = pendingEvents.length;
+                hostsCount.textContent = pendingHosts.length;
+                venuesCount.textContent = pendingVenues.length;
+
+                // Update main badge
+                const totalPending = pendingEvents.length + pendingHosts.length + pendingVenues.length;
+                if (totalPending > 0) {
+                    badge.style.display = 'block';
+                    badge.textContent = totalPending;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                // Render pending events
+                if (pendingEvents.length === 0) {
+                    eventsList.innerHTML = '<p style="color: var(--gray);">No pending events</p>';
+                } else {
+                    eventsList.innerHTML = pendingEvents.map(event => `
+                        <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <strong style="color: var(--white);">${event.name}</strong>
+                                <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">
+                                    ${event.date ? new Date(event.date).toLocaleDateString() : 'No date'} - ${event.location || event.eventLocation || 'No location'}
+                                </p>
+                                <p style="color: var(--gray); font-size: 0.8rem;">
+                                    Host: ${event.hostId?.hostDisplayName || event.organizerName || 'Unknown'}
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="approveEvent('${event._id}')" style="padding: 0.5rem 1rem; background: var(--neon-green); color: #000; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Approve</button>
+                                <button onclick="viewEventDetails('${event._id}')" style="padding: 0.5rem 1rem; background: var(--electric-blue); color: #000; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">View</button>
+                                <button onclick="rejectEvent('${event._id}')" style="padding: 0.5rem 1rem; background: var(--danger-red); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Reject</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Render pending hosts
+                if (pendingHosts.length === 0) {
+                    hostsList.innerHTML = '<p style="color: var(--gray);">No pending host applications</p>';
+                } else {
+                    hostsList.innerHTML = pendingHosts.map(user => `
+                        <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <strong style="color: var(--white);">${user.hostDisplayName || user.name || user.email}</strong>
+                                <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">${user.email}</p>
+                                ${user.hostBio ? `<p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">${user.hostBio.substring(0, 100)}${user.hostBio.length > 100 ? '...' : ''}</p>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="approveHost('${user._id}')" style="padding: 0.5rem 1rem; background: var(--neon-green); color: #000; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Approve</button>
+                                <button onclick="rejectHost('${user._id}')" style="padding: 0.5rem 1rem; background: var(--danger-red); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Reject</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Render pending venues
+                if (pendingVenues.length === 0) {
+                    venuesList.innerHTML = '<p style="color: var(--gray);">No pending venue applications</p>';
+                } else {
+                    venuesList.innerHTML = pendingVenues.map(user => `
+                        <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <strong style="color: var(--white);">${user.venueName || user.name || user.email}</strong>
+                                <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">${user.email}</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="approveVenue('${user._id}')" style="padding: 0.5rem 1rem; background: var(--neon-green); color: #000; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Approve</button>
+                                <button onclick="rejectVenue('${user._id}')" style="padding: 0.5rem 1rem; background: var(--danger-red); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Reject</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (error) {
+                console.error('Load pending error:', error);
+                eventsLoading.innerHTML = '<p style="color: var(--danger-red);">Failed to load pending items</p>';
+            }
+        }
+
+        async function approveHost(userId) {
+            if (!confirm('Approve this host application?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/approve-host`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (res.ok) {
+                    showToast('Host approved!', 'success');
+                    loadPendingTab();
+                } else {
+                    throw new Error('Failed to approve host');
+                }
+            } catch (error) {
+                console.error('Approve host error:', error);
+                showToast('Failed to approve host', 'error');
+            }
+        }
+
+        async function rejectHost(userId) {
+            if (!confirm('Reject this host application?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/reject-host`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (res.ok) {
+                    showToast('Host rejected', 'success');
+                    loadPendingTab();
+                } else {
+                    throw new Error('Failed to reject host');
+                }
+            } catch (error) {
+                console.error('Reject host error:', error);
+                showToast('Failed to reject host', 'error');
+            }
+        }
+
+        async function approveVenue(userId) {
+            if (!confirm('Approve this venue application?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/approve-venue`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (res.ok) {
+                    showToast('Venue approved!', 'success');
+                    loadPendingTab();
+                } else {
+                    throw new Error('Failed to approve venue');
+                }
+            } catch (error) {
+                console.error('Approve venue error:', error);
+                showToast('Failed to approve venue', 'error');
+            }
+        }
+
+        async function rejectVenue(userId) {
+            if (!confirm('Reject this venue application?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/reject-venue`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (res.ok) {
+                    showToast('Venue rejected', 'success');
+                    loadPendingTab();
+                } else {
+                    throw new Error('Failed to reject venue');
+                }
+            } catch (error) {
+                console.error('Reject venue error:', error);
+                showToast('Failed to reject venue', 'error');
+            }
+        }
+
+        async function rejectEvent(eventId) {
+            if (!confirm('Reject this event? This will delete it.')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (res.ok) {
+                    showToast('Event rejected', 'success');
+                    loadPendingTab();
+                } else {
+                    throw new Error('Failed to reject event');
+                }
+            } catch (error) {
+                console.error('Reject event error:', error);
+                showToast('Failed to reject event', 'error');
+            }
+        }
+
+        function viewEventDetails(eventId) {
+            // Switch to events tab and highlight this event
+            switchTab('events');
+            // Could scroll to or highlight the event in the list
+        }
+
+        // Function to update pending badge on page load
+        async function updatePendingBadge() {
+            try {
+                // Fetch events for pending count
+                const eventsRes = await fetch(`${API_BASE}/api/v1/lightning/events`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const eventsData = await eventsRes.json();
+                const pendingEvents = (eventsData.events || []).filter(e => e.status === 'pending');
+
+                // Fetch users for pending host/venue counts
+                const usersRes = await fetch(`${API_BASE}/api/v1/lightning/admin/users/list`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const usersData = await usersRes.json();
+                const users = usersData.users || [];
+                const pendingHosts = users.filter(u => u.hostStatus === 'pending');
+                const pendingVenues = users.filter(u => u.venueStatus === 'pending');
+
+                const totalPending = pendingEvents.length + pendingHosts.length + pendingVenues.length;
+                const badge = document.getElementById('pendingBadge');
+
+                if (totalPending > 0) {
+                    badge.style.display = 'block';
+                    badge.textContent = totalPending;
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Update pending badge error:', error);
             }
         }
 
