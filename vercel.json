@@ -4,6 +4,16 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    {
+      "source": "/@:handle",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|TelegramBot|Applebot|Pinterest).*" }],
+      "destination": "https://lightning-backend-production.up.railway.app/api/v1/og/@:handle"
+    },
+    {
+      "source": "/h/:handle",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|TelegramBot|Applebot|Pinterest).*" }],
+      "destination": "https://lightning-backend-production.up.railway.app/api/v1/og/@:handle"
+    },
     { "source": "/deals", "destination": "/deals.html" },
     { "source": "/calendar", "destination": "/calendar.html" },
     { "source": "/about", "destination": "/about.html" },
