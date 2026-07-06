@@ -1477,6 +1477,7 @@
                             <button onclick="openEventEditor('${event._id}')" class="btn" style="background:var(--lightning-yellow); color:#000;">Edit</button>
                             <a href="/checkin?event=${event.slug}" target="_blank" class="btn btn-secondary">Guests</a>
                             <a href="/staff?event=${event.slug}" target="_blank" class="btn btn-success">Door</a>
+                            <button onclick="deleteEvent('${event._id}', '${event.name.replace(/'/g, "\\'")}')" class="btn" style="background:var(--danger-red); color:#fff;">Delete</button>
                         </div>
                     </div>
                 `;
@@ -1490,6 +1491,21 @@
             const suffix = h >= 12 ? 'PM' : 'AM';
             const h12 = h % 12 || 12;
             return `${h12}:${minutes} ${suffix}`;
+        }
+
+        async function deleteEvent(eventId, eventName) {
+            if (!confirm(`Are you sure you want to delete "${eventName}"?\n\nThis cannot be undone.`)) {
+                return;
+            }
+
+            const data = await apiCall(`/api/v1/host/events/${eventId}`, 'DELETE');
+
+            if (data.success) {
+                alert('Event deleted');
+                loadEvents();  // Refresh the list
+            } else {
+                alert(data.error || 'Failed to delete event');
+            }
         }
 
         // ===== EVENT EDITOR (Rich form - reused pattern from admin) =====
