@@ -1945,22 +1945,30 @@
         let stripeStatus = { connected: false, onboarded: false };
         let stripeComponentsLoading = false;  // Prevent duplicate loads
         let stripeComponentsLoaded = false;   // Track if already loaded
+        let stripeAttempted = false;          // Prevent retry loops on failure
         let cachedClientSecret = null;        // Cache client secret
 
-        async function loadStripeComponents() {
+        async function loadStripeComponents(forceRetry = false) {
             // GUARD: Prevent duplicate loads (fixes 429 rate limit)
             if (stripeComponentsLoading) {
                 console.log('Stripe components already loading, skipping');
                 return;
             }
 
-            // If already loaded and status hasn't changed, skip reload
+            // If already loaded, skip
             if (stripeComponentsLoaded && stripeConnectInstance) {
                 console.log('Stripe components already loaded');
                 return;
             }
 
+            // If already attempted and failed, don't auto-retry (prevents 429 cascade)
+            if (stripeAttempted && !forceRetry) {
+                console.log('Stripe already attempted, use forceRetry to reload');
+                return;
+            }
+
             stripeComponentsLoading = true;
+            stripeAttempted = true;
 
             try {
                 // First check Stripe status
@@ -2341,6 +2349,7 @@
                 stripeStatus.onboarded = false;
                 stripeConnectInstance = null;  // Clear cached instance
                 stripeComponentsLoaded = false;
+                stripeAttempted = false;  // Allow fresh attempt
                 cachedClientSecret = null;
                 showStripeConnectCTA();
             } catch (err) {
