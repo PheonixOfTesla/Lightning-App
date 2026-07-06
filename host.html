@@ -16,9 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Stripe Connect Embedded Components -->
-    <script src="https://connect-js.stripe.com/v1.0/connect.js" async></script>
-
     <!-- Socket.IO for Live tab -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
@@ -1915,18 +1912,47 @@
             // Load earnings only - Stripe loads on-demand when user clicks button
             const earningsData = await apiCall('/api/v1/host/earnings');
 
-            // Show the "Manage Payouts" button (lazy load pattern)
+            // Show simple Stripe dashboard link (no embedded components)
             const setupSection = document.getElementById('stripeSetupSection');
             if (setupSection) {
-                setupSection.innerHTML = `
-                    <h2 class="section-title">Payouts</h2>
-                    <div style="text-align: center; padding: 1rem;">
-                        <button onclick="loadStripeComponents(true)" class="btn btn-primary" id="loadStripeBtn">
-                            Manage Payouts
-                        </button>
-                        <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and account settings</p>
-                    </div>
-                `;
+                // Check Stripe status first
+                try {
+                    const statusRes = await fetch(`${API_BASE}/api/v1/lightning/host/connect/status`, {
+                        headers: { 'Authorization': `Bearer ${currentUser.token}` }
+                    });
+                    const statusData = await statusRes.json();
+
+                    if (statusData.success && statusData.connected) {
+                        // Has Stripe account - show dashboard link
+                        setupSection.innerHTML = `
+                            <h2 class="section-title">Payouts</h2>
+                            <div style="text-align: center; padding: 1rem;">
+                                <button onclick="openStripeDashboard()" class="btn btn-primary" id="stripeDashboardBtn">
+                                    Go to Stripe Dashboard
+                                </button>
+                                <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and tax forms</p>
+                            </div>
+                        `;
+                    } else {
+                        // No Stripe account - show connect button
+                        setupSection.innerHTML = `
+                            <h2 class="section-title">Payouts</h2>
+                            <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%); border: 1px solid var(--lightning-yellow); border-radius: 1rem;">
+                                <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">Get Paid for Your Events</h3>
+                                <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Connect your bank account to receive payouts from ticket sales.</p>
+                                <button onclick="connectStripe()" class="btn btn-primary">
+                                    Connect Stripe Account
+                                </button>
+                            </div>
+                        `;
+                    }
+                } catch (err) {
+                    console.error('Failed to check Stripe status:', err);
+                    setupSection.innerHTML = `
+                        <h2 class="section-title">Payouts</h2>
+                        <div class="empty-state">Unable to load payout settings</div>
+                    `;
+                }
             }
 
             // Process earnings data
@@ -2072,11 +2098,44 @@
             document.getElementById('stripeNotificationBanner').innerHTML = '';
         }
 
+        // Open Stripe Express dashboard in new tab
+        async function openStripeDashboard() {
+            const btn = document.getElementById('stripeDashboardBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Opening...';
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${currentUser.token}` }
+                });
+                const data = await res.json();
+
+                if (data.success && data.url) {
+                    window.open(data.url, '_blank');
+                } else if (data.needsConnect) {
+                    alert('Please connect your Stripe account first.');
+                    loadEarnings(); // Refresh to show connect button
+                } else {
+                    alert(data.error || 'Failed to open Stripe dashboard');
+                }
+            } catch (err) {
+                console.error('Stripe dashboard error:', err);
+                alert('Failed to open Stripe dashboard');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Go to Stripe Dashboard';
+                }
+            }
+        }
+
         async function connectStripe() {
-            const btn = document.getElementById('connectStripeBtn');
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = 'Creating account...';
+            const btn = document.querySelector('#stripeSetupSection button') || document.getElementById('connectStripeBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Creating account...';
+            }
 
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/host/connect/create`, {
@@ -2092,15 +2151,21 @@
                     throw new Error(data.error || 'Failed to create Stripe account');
                 }
 
-                // Account created - now show onboarding
-                stripeStatus.connected = true;
-                await showStripeOnboarding();
+                // Redirect to Stripe's hosted onboarding page
+                if (data.onboardingUrl) {
+                    window.location.href = data.onboardingUrl;
+                } else {
+                    alert('Account created! Please refresh to continue setup.');
+                    loadEarnings();
+                }
 
             } catch (err) {
                 console.error('Connect Stripe error:', err);
                 alert(err.message || 'Failed to connect Stripe');
-                btn.disabled = false;
-                btn.textContent = originalText;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Connect Stripe Account';
+                }
             }
         }
 
