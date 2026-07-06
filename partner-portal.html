@@ -801,9 +801,13 @@
                 document.getElementById('totalEarnings').textContent = '$' + (data.summary?.totalEarnings || 0).toLocaleString();
                 document.getElementById('pendingPayout').textContent = '$' + (data.summary?.pendingPayout || 0).toLocaleString();
 
-                // Stripe section
-                if (data.partner?.stripeOnboarded) {
-                    document.getElementById('stripeStatus').innerHTML = '<p class="stripe-connected">Connected - You\'ll receive automatic payouts</p>';
+                // Stripe section - show dashboard link if connected, otherwise show connect button
+                const stripeStatus = document.getElementById('stripeStatus');
+                if (data.partner?.stripeConnected || data.partner?.stripeOnboarded) {
+                    stripeStatus.innerHTML = `
+                        <p class="stripe-connected" style="color: var(--neon-green); margin-bottom: 1rem;">Connected - You'll receive automatic payouts</p>
+                        <button class="stripe-btn" onclick="openPartnerStripeDashboard()" style="background: var(--neon-green);">Go to Stripe Dashboard</button>
+                    `;
                 }
 
                 // Venues list
@@ -932,6 +936,38 @@
             }
         }
 
+        // Open Stripe Dashboard
+        async function openPartnerStripeDashboard() {
+            const token = localStorage.getItem('token');
+            const btn = document.querySelector('#stripeStatus button');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Opening...';
+            }
+            try {
+                const res = await fetch(`${API_URL}/stripe/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success && data.url) {
+                    window.open(data.url, '_blank');
+                } else if (data.needsConnect) {
+                    alert('Please connect your Stripe account first.');
+                    location.reload();
+                } else {
+                    alert(data.error || 'Failed to open Stripe dashboard');
+                }
+            } catch (err) {
+                console.error('Stripe dashboard error:', err);
+                alert('Failed to open Stripe dashboard');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Go to Stripe Dashboard';
+                }
+            }
+        }
+
         // Logout
         function logout() {
             ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId'].forEach(k => localStorage.removeItem(k));
@@ -944,13 +980,25 @@
             document.getElementById('mobileMenu').classList.toggle('active');
         }
 
-        // Check for Stripe return
+        // Check for Stripe return - verify onboarding completed
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('stripe') === 'success') {
-            setTimeout(() => {
-                checkAuth();
+            // Call status endpoint to update onboarded flag in DB, then reload dashboard
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch(`${API_URL}/stripe/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).then(() => {
+                    history.replaceState({}, '', '/partner-portal');
+                    checkAuth();
+                }).catch(() => {
+                    history.replaceState({}, '', '/partner-portal');
+                    checkAuth();
+                });
+            } else {
                 history.replaceState({}, '', '/partner-portal');
-            }, 500);
+                checkAuth();
+            }
         }
 
         // Init
