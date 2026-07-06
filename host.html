@@ -104,6 +104,48 @@
             color: white;
         }
 
+        /* Nav Links - Role-based navigation */
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover { color: var(--lightning-yellow); }
+
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        .dashboard-link {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-link.active {
+            background: rgba(255,221,0,0.15);
+            color: var(--lightning-yellow);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+        }
+
         /* Tab Bar */
         .tab-bar {
             position: fixed;
@@ -659,10 +701,13 @@
             <div class="nav-container">
                 <a href="/" class="logo">
                     <img src="logo.png" alt="Lightning Pass" class="logo-img">
-                    <span>Lightning Pass</span>
-                    <span class="nav-badge">Host</span>
                 </a>
-                <button class="btn-logout" onclick="logout()">Logout</button>
+                <div class="nav-links" id="navLinks">
+                    <a href="/" class="nav-link">Events</a>
+                    <div class="nav-divider"></div>
+                    <!-- Role-based nav links injected by buildRoleNav() -->
+                    <a href="#" onclick="logout(); return false;" class="btn-logout">LOGOUT</a>
+                </div>
             </div>
         </nav>
 
@@ -1249,6 +1294,46 @@
             window.location.href = '/';
         }
 
+        // Build role-based navigation from user's roles
+        function buildRoleNav() {
+            const currentPage = 'host';
+            const userRoles = getUserRolesFromToken();
+
+            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
+            const allDashboards = [
+                { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
+                { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
+                { id: 'host', role: 'host', label: 'Host', href: '/host' },
+                { id: 'partner', role: 'partner', label: 'Partner', href: '/partner-portal' },
+                { id: 'dj', role: 'dj', label: 'DJ', href: '/dj' },
+                { id: 'member', role: 'member', label: 'Member', href: '/members' }
+            ];
+
+            // Filter to only user's roles
+            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
+
+            const navLinks = document.getElementById('navLinks');
+            if (!navLinks) return;
+
+            const divider = navLinks.querySelector('.nav-divider');
+            if (!divider) return;
+
+            // Remove any existing dashboard links
+            navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
+
+            // Add dashboard links after divider (reverse to maintain order)
+            dashboards.reverse().forEach(dash => {
+                const link = document.createElement('a');
+                link.href = dash.href;
+                link.className = 'nav-link dashboard-link' + (dash.id === currentPage ? ' active' : '');
+                link.textContent = dash.label;
+                divider.insertAdjacentElement('afterend', link);
+            });
+
+            // Show nav links
+            navLinks.style.display = 'flex';
+        }
+
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', async () => {
             // Fetch Stripe config from backend first
@@ -1283,6 +1368,7 @@
         function showPortal() {
             document.getElementById('accessDenied').style.display = 'none';
             document.getElementById('portalView').style.display = 'block';
+            buildRoleNav();
         }
 
         // ===== TAB NAVIGATION =====
@@ -2008,11 +2094,11 @@
                     });
                 }
 
-                // Notification banner
+                // SKIP notification-banner for non-onboarded accounts
+                // Stripe says "The account has not been onboarded yet, so the notifications banner will not render"
+                // Creating it anyway causes 429 rate limit errors from Stripe's internal API calls
                 const bannerContainer = document.getElementById('stripeNotificationBanner');
-                bannerContainer.innerHTML = '';
-                const notificationBanner = stripeConnectInstance.create('notification-banner');
-                bannerContainer.appendChild(notificationBanner);
+                bannerContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.85rem;">Complete onboarding to enable notifications</p>';
 
                 // Account onboarding
                 const onboardingContainer = document.getElementById('stripeOnboardingContainer');
