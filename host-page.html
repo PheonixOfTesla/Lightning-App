@@ -753,11 +753,20 @@
                 });
                 const timeStr = event.startTime ? formatTime(event.startTime) : '';
 
-                // Get lowest ticket price
-                const lowestPrice = event.tickets && event.tickets.length > 0
-                    ? Math.min(...event.tickets.map(t => t.price))
-                    : 0;
-                const priceStr = lowestPrice > 0 ? `From $${(lowestPrice / 100).toFixed(0)}` : 'FREE';
+                // Get lowest priced ticket (with name and availability)
+                let lowestTicket = null;
+                let totalAvailable = 0;
+                if (event.tickets && event.tickets.length > 0) {
+                    lowestTicket = event.tickets.reduce((lowest, t) =>
+                        (!lowest || t.price < lowest.price) ? t : lowest, null);
+                    totalAvailable = event.tickets.reduce((sum, t) => {
+                        const remaining = t.available === -1 ? 0 : (t.available - (t.sold || 0));
+                        return sum + (remaining > 0 ? remaining * (t.guestCount || 1) : 0);
+                    }, 0);
+                }
+                const priceNum = lowestTicket?.price || 0;
+                const priceStr = priceNum > 0 ? `$${(priceNum / 100).toFixed(0)}` : 'FREE';
+                const tierName = lowestTicket?.name || '';
 
                 const eventJson = JSON.stringify(event).replace(/'/g, '&#39;');
 
@@ -773,7 +782,11 @@
                             <div class="event-date">${dateStr} ${timeStr ? '@ ' + timeStr : ''}</div>
                             <h3 class="event-name">${event.name}</h3>
                             ${locationDisplay}
-                            <div class="event-price">${priceStr}</div>
+                            <div class="event-price">
+                                ${tierName ? `<div style="font-size: 0.8rem; color: var(--gray); font-weight: 400; margin-bottom: 0.15rem;">${tierName}</div>` : ''}
+                                <div>${priceStr}</div>
+                                ${totalAvailable > 0 ? `<div style="font-size: 0.75rem; color: var(--gray); font-weight: 400; margin-top: 0.15rem;">${totalAvailable} tickets available</div>` : ''}
+                            </div>
                             <button class="btn-tickets" onclick='openCheckout(${eventJson})'>GET TICKETS</button>
                         </div>
                     </div>
