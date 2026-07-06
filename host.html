@@ -570,6 +570,75 @@
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .event-stats { flex-wrap: wrap; gap: 1rem; }
         }
+
+        /* Loading States & Animations */
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-dark);
+            border-top-color: var(--lightning-yellow);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--card-black) 25%, var(--border-dark) 50%, var(--card-black) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Smooth tab transitions */
+        .tab-content {
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            pointer-events: none;
+        }
+
+        .tab-content.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Fade-in animation for cards */
+        .card {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Button loading state */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn.loading::after {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-left: 8px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -1265,14 +1334,24 @@
 
         // ===== LOAD ALL DATA =====
         async function loadAllData() {
-            loadEvents();
-            loadStorefront();
+            // Load in parallel for faster initial render
+            Promise.all([
+                loadEvents(),
+                loadStorefront()
+            ]).catch(err => console.error('Data load error:', err));
         }
 
         // ===== EVENTS TAB =====
         async function loadEvents() {
-            const data = await apiCall('/api/v1/host/events');
             const container = document.getElementById('eventsList');
+
+            // Show loading skeleton
+            container.innerHTML = `
+                <div class="loading-skeleton" style="height: 120px; margin-bottom: 1rem;"></div>
+                <div class="loading-skeleton" style="height: 120px; margin-bottom: 1rem;"></div>
+            `;
+
+            const data = await apiCall('/api/v1/host/events');
 
             if (!data.success || !data.events || !data.events.length) {
                 container.innerHTML = '<div class="empty-state">No events yet. Create your first event!</div>';
@@ -1712,6 +1791,15 @@
 
         // ===== MONEY TAB =====
         async function loadEarnings() {
+            // Show loading state for earnings
+            document.getElementById('totalEarnings').textContent = '...';
+            document.getElementById('pendingPayout').textContent = '...';
+            document.getElementById('totalPaidOut').textContent = '...';
+            document.getElementById('earningsByEvent').innerHTML = `
+                <div class="loading-skeleton" style="height: 60px; margin-bottom: 0.5rem;"></div>
+                <div class="loading-skeleton" style="height: 60px;"></div>
+            `;
+
             const data = await apiCall('/api/v1/host/earnings');
 
             if (data.success && data.totals) {
@@ -1748,42 +1836,86 @@
             loadStripeComponents();
         }
 
-        // Stripe state tracking
+        // Stripe state tracking - SINGLETON pattern to prevent 429 rate limits
         let stripeConnectInstance = null;
         let stripeStatus = { connected: false, onboarded: false };
+        let stripeComponentsLoading = false;  // Prevent duplicate loads
+        let stripeComponentsLoaded = false;   // Track if already loaded
+        let cachedClientSecret = null;        // Cache client secret
 
         async function loadStripeComponents() {
-            // First check Stripe status
-            const statusRes = await fetch(`${API_BASE}/api/v1/lightning/host/connect/status`, {
-                headers: { 'Authorization': `Bearer ${currentUser.token}` }
-            });
-            const statusData = await statusRes.json();
-
-            if (!statusData.success) {
-                console.warn('Failed to get Stripe status');
-                showStripeError();
+            // GUARD: Prevent duplicate loads (fixes 429 rate limit)
+            if (stripeComponentsLoading) {
+                console.log('Stripe components already loading, skipping');
                 return;
             }
 
-            stripeStatus = {
-                connected: statusData.connected,
-                onboarded: statusData.onboarded || (statusData.chargesEnabled && statusData.payoutsEnabled),
-                chargesEnabled: statusData.chargesEnabled,
-                payoutsEnabled: statusData.payoutsEnabled,
-                detailsSubmitted: statusData.detailsSubmitted
-            };
-
-            // Show appropriate UI based on status
-            if (!stripeStatus.connected) {
-                // No Stripe account - show Connect CTA
-                showStripeConnectCTA();
-            } else if (!stripeStatus.onboarded) {
-                // Account created but not fully onboarded - show onboarding
-                await showStripeOnboarding();
-            } else {
-                // Fully onboarded - show payouts and account management
-                await showStripeFullComponents();
+            // If already loaded and status hasn't changed, skip reload
+            if (stripeComponentsLoaded && stripeConnectInstance) {
+                console.log('Stripe components already loaded');
+                return;
             }
+
+            stripeComponentsLoading = true;
+
+            try {
+                // First check Stripe status
+                const statusRes = await fetch(`${API_BASE}/api/v1/lightning/host/connect/status`, {
+                    headers: { 'Authorization': `Bearer ${currentUser.token}` }
+                });
+                const statusData = await statusRes.json();
+
+                if (!statusData.success) {
+                    console.warn('Failed to get Stripe status');
+                    showStripeError();
+                    return;
+                }
+
+                stripeStatus = {
+                    connected: statusData.connected,
+                    onboarded: statusData.onboarded || (statusData.chargesEnabled && statusData.payoutsEnabled),
+                    chargesEnabled: statusData.chargesEnabled,
+                    payoutsEnabled: statusData.payoutsEnabled,
+                    detailsSubmitted: statusData.detailsSubmitted
+                };
+
+                // Show appropriate UI based on status
+                if (!stripeStatus.connected) {
+                    // No Stripe account - show Connect CTA
+                    showStripeConnectCTA();
+                } else if (!stripeStatus.onboarded) {
+                    // Account created but not fully onboarded - show onboarding
+                    await showStripeOnboarding();
+                } else {
+                    // Fully onboarded - show payouts and account management
+                    await showStripeFullComponents();
+                }
+
+                stripeComponentsLoaded = true;
+            } finally {
+                stripeComponentsLoading = false;
+            }
+        }
+
+        // Wait for StripeConnect SDK to be available
+        function waitForStripeConnect() {
+            return new Promise((resolve) => {
+                if (typeof StripeConnect !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                const checkInterval = setInterval(() => {
+                    if (typeof StripeConnect !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    resolve();
+                }, 10000);
+            });
         }
 
         function showStripeConnectCTA() {
@@ -1832,32 +1964,49 @@
             document.getElementById('payoutsSection').style.display = 'none';
             document.getElementById('accountSettingsSection').style.display = 'none';
 
-            // Wait for StripeConnect to load
-            if (typeof StripeConnect === 'undefined') {
-                setTimeout(showStripeOnboarding, 500);
-                return;
-            }
+            // Show loading state
+            document.getElementById('stripeOnboardingContainer').innerHTML = `
+                <div class="loading-skeleton" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                    <div class="loading-spinner"></div>
+                </div>`;
 
-            // PRE-VALIDATE: Fetch client secret first
-            let clientSecret;
-            try {
-                clientSecret = await fetchStripeClientSecret();
-            } catch (err) {
-                console.error('Failed to get Stripe session:', err);
+            // Wait for StripeConnect SDK (no recursive setTimeout)
+            await waitForStripeConnect();
+
+            if (typeof StripeConnect === 'undefined') {
                 document.getElementById('stripeOnboardingContainer').innerHTML = `
                     <div class="empty-state">
-                        <p style="margin-bottom: 0.75rem;">Your Stripe account connection has expired or is invalid.</p>
-                        <button onclick="reconnectStripe()" class="btn btn-primary">Reconnect Stripe</button>
+                        <p>Failed to load Stripe. Please refresh the page.</p>
                     </div>`;
                 return;
             }
 
+            // PRE-VALIDATE: Fetch client secret first (use cache if available)
+            let clientSecret = cachedClientSecret;
+            if (!clientSecret) {
+                try {
+                    clientSecret = await fetchStripeClientSecret();
+                    cachedClientSecret = clientSecret;
+                } catch (err) {
+                    console.error('Failed to get Stripe session:', err);
+                    document.getElementById('stripeOnboardingContainer').innerHTML = `
+                        <div class="empty-state">
+                            <p style="margin-bottom: 0.75rem;">Your Stripe account connection has expired or is invalid.</p>
+                            <button onclick="reconnectStripe()" class="btn btn-primary">Reconnect Stripe</button>
+                        </div>`;
+                    return;
+                }
+            }
+
             try {
-                stripeConnectInstance = StripeConnect.init({
-                    publishableKey: STRIPE_PK,
-                    fetchClientSecret: () => Promise.resolve(clientSecret),
-                    appearance: getStripeAppearance()
-                });
+                // SINGLETON: Only init once
+                if (!stripeConnectInstance) {
+                    stripeConnectInstance = StripeConnect.init({
+                        publishableKey: STRIPE_PK,
+                        fetchClientSecret: () => Promise.resolve(clientSecret),
+                        appearance: getStripeAppearance()
+                    });
+                }
 
                 // Notification banner
                 const bannerContainer = document.getElementById('stripeNotificationBanner');
@@ -1873,7 +2022,9 @@
 
                 // Listen for onboarding completion
                 onboardingComponent.addEventListener('exit', () => {
-                    // User completed onboarding - reload to show full components
+                    // User completed onboarding - reset flags and reload
+                    stripeComponentsLoaded = false;
+                    cachedClientSecret = null;
                     loadStripeComponents();
                 });
 
@@ -1927,28 +2078,46 @@
             document.getElementById('payoutsSection').style.display = 'block';
             document.getElementById('accountSettingsSection').style.display = 'block';
 
-            // Wait for StripeConnect to load
+            // Show loading state
+            document.getElementById('stripePayoutsContainer').innerHTML = `
+                <div class="loading-skeleton" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                    <div class="loading-spinner"></div>
+                </div>`;
+            document.getElementById('stripeAccountContainer').innerHTML = `
+                <div class="loading-skeleton" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                    <div class="loading-spinner"></div>
+                </div>`;
+
+            // Wait for StripeConnect SDK (no recursive setTimeout)
+            await waitForStripeConnect();
+
             if (typeof StripeConnect === 'undefined') {
-                setTimeout(showStripeFullComponents, 500);
+                showStripeError(false);
                 return;
             }
 
-            // PRE-VALIDATE: Fetch client secret first to check if account is valid
-            let clientSecret;
-            try {
-                clientSecret = await fetchStripeClientSecret();
-            } catch (err) {
-                console.error('Failed to get Stripe session:', err);
-                showStripeError(true);  // Show reconnect option
-                return;
+            // PRE-VALIDATE: Fetch client secret first (use cache if available)
+            let clientSecret = cachedClientSecret;
+            if (!clientSecret) {
+                try {
+                    clientSecret = await fetchStripeClientSecret();
+                    cachedClientSecret = clientSecret;
+                } catch (err) {
+                    console.error('Failed to get Stripe session:', err);
+                    showStripeError(true);  // Show reconnect option
+                    return;
+                }
             }
 
             try {
-                stripeConnectInstance = StripeConnect.init({
-                    publishableKey: STRIPE_PK,
-                    fetchClientSecret: () => Promise.resolve(clientSecret),  // Use pre-fetched secret
-                    appearance: getStripeAppearance()
-                });
+                // SINGLETON: Only init once
+                if (!stripeConnectInstance) {
+                    stripeConnectInstance = StripeConnect.init({
+                        publishableKey: STRIPE_PK,
+                        fetchClientSecret: () => Promise.resolve(clientSecret),
+                        appearance: getStripeAppearance()
+                    });
+                }
 
                 // Notification banner
                 const bannerContainer = document.getElementById('stripeNotificationBanner');
@@ -2059,9 +2228,12 @@
                     throw new Error(data.error || 'Failed to disconnect');
                 }
 
-                // Reset state and show connect CTA
+                // Reset ALL state and show connect CTA
                 stripeStatus.connected = false;
                 stripeStatus.onboarded = false;
+                stripeConnectInstance = null;  // Clear cached instance
+                stripeComponentsLoaded = false;
+                cachedClientSecret = null;
                 showStripeConnectCTA();
             } catch (err) {
                 console.error('Reconnect error:', err);
@@ -2168,6 +2340,10 @@
 
         // ===== GENERATE TAB =====
         async function loadGenerateTab() {
+            // Show loading state
+            document.getElementById('generateEventSelect').innerHTML = '<option value="">Loading events...</option>';
+            document.getElementById('bulkEventSelect').innerHTML = '<option value="">Loading events...</option>';
+
             const data = await apiCall('/api/v1/host/events');
             if (data.success && data.events && data.events.length > 0) {
                 const options = data.events.map(e => {
@@ -2303,16 +2479,28 @@
         let allGuests = [];
 
         async function loadGuestsTab() {
-            // Load events for filter dropdown
-            const eventsData = await apiCall('/api/v1/host/events');
+            // Show loading state
+            document.getElementById('guestsTotalCount').textContent = '...';
+            document.getElementById('guestsTotalTickets').textContent = '...';
+            document.getElementById('guestsTotalSpent').textContent = '...';
+            document.getElementById('guestsList').innerHTML = `
+                <div class="loading-skeleton" style="height: 50px; margin-bottom: 0.5rem;"></div>
+                <div class="loading-skeleton" style="height: 50px; margin-bottom: 0.5rem;"></div>
+                <div class="loading-skeleton" style="height: 50px;"></div>
+            `;
+
+            // Load events and guests in parallel
+            const [eventsData, data] = await Promise.all([
+                apiCall('/api/v1/host/events'),
+                apiCall('/api/v1/host/guests')
+            ]);
+
             const eventFilter = document.getElementById('guestsEventFilter');
             if (eventsData.success && eventsData.events && eventsData.events.length > 0) {
                 eventFilter.innerHTML = '<option value="all">All Events</option>' +
                     eventsData.events.map(e => `<option value="${e._id}">${e.name}</option>`).join('');
             }
 
-            // Load guests
-            const data = await apiCall('/api/v1/host/guests');
             const container = document.getElementById('guestsList');
 
             if (!data.success || !data.guests || data.guests.length === 0) {
@@ -2386,8 +2574,20 @@
         let emailEventGuests = {};
 
         async function loadEmailTab() {
-            // Load quota
-            const quotaData = await apiCall('/api/v1/host/email/quota');
+            // Show loading state
+            document.getElementById('emailQuota').textContent = 'Loading...';
+            document.getElementById('emailRecipientCount').textContent = 'Loading...';
+            document.getElementById('emailLogs').innerHTML = `
+                <div class="loading-skeleton" style="height: 60px; margin-bottom: 0.5rem;"></div>
+                <div class="loading-skeleton" style="height: 60px;"></div>
+            `;
+
+            // Load quota and events in parallel
+            const [quotaData, eventsData] = await Promise.all([
+                apiCall('/api/v1/host/email/quota'),
+                apiCall('/api/v1/host/events')
+            ]);
+
             if (quotaData.success) {
                 document.getElementById('emailQuota').textContent =
                     `${quotaData.remaining} / ${quotaData.limit} emails remaining today`;
@@ -2395,8 +2595,6 @@
                 document.getElementById('emailQuota').textContent = 'Unable to load quota';
             }
 
-            // Load events for filter
-            const eventsData = await apiCall('/api/v1/host/events');
             const select = document.getElementById('emailEventFilter');
             if (eventsData.success && eventsData.events && eventsData.events.length > 0) {
                 select.innerHTML = '<option value="all">All my events</option>' +
