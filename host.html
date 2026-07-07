@@ -1133,7 +1133,7 @@
     <!-- Event Editor Modal (Rich editor - reused pattern from admin) -->
     <div id="eventEditorModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; overflow-y:auto; padding:2rem;">
         <div style="max-width:700px; margin:0 auto; background:var(--card-black); border-radius:12px; padding:1.5rem; border:1px solid var(--border-dark);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                 <h2 id="eventEditorTitle" style="font-size:1.3rem; display:flex; align-items:center; gap:0.5rem;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
@@ -1142,6 +1142,28 @@
                 </h2>
                 <button onclick="hideEventEditor()" style="background:none; border:none; color:var(--gray); font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
             </div>
+
+            <!-- Mode Toggle: Create New vs Select Existing -->
+            <div id="eventModeToggle" style="display:flex; gap:0.5rem; margin-bottom:1.5rem; padding:0.25rem; background:var(--pure-black); border-radius:0.5rem;">
+                <button type="button" id="modeCreateNew" onclick="setEventMode('create')" style="flex:1; padding:0.6rem 1rem; border:none; border-radius:0.4rem; font-weight:600; cursor:pointer; transition:all 0.2s; background:var(--lightning-yellow); color:#000;">
+                    Create New
+                </button>
+                <button type="button" id="modeSelectExisting" onclick="setEventMode('select')" style="flex:1; padding:0.6rem 1rem; border:none; border-radius:0.4rem; font-weight:600; cursor:pointer; transition:all 0.2s; background:transparent; color:var(--gray);">
+                    Select Existing
+                </button>
+            </div>
+
+            <!-- Select Existing Events Section (hidden by default) -->
+            <div id="selectExistingSection" style="display:none;">
+                <p style="color:var(--gray); margin-bottom:1rem;">Select a Spotlight event to add to your portal:</p>
+                <div id="availableEventsList" style="max-height:400px; overflow-y:auto;">
+                    <div class="loading-skeleton" style="height:60px; margin-bottom:0.5rem;"></div>
+                    <div class="loading-skeleton" style="height:60px; margin-bottom:0.5rem;"></div>
+                </div>
+            </div>
+
+            <!-- Create New Form Section -->
+            <div id="createNewSection">
             <input type="hidden" id="editEventId" value="">
 
             <!-- Basic Info -->
@@ -1262,10 +1284,11 @@
                 </div>
             </div>
 
-            <div style="display:flex; gap:1rem;">
+            <div id="createNewButtons" style="display:flex; gap:1rem;">
                 <button onclick="hideEventEditor()" style="flex:1; padding:0.75rem; background:transparent; border:1px solid var(--border-dark); color:var(--gray); border-radius:0.5rem; cursor:pointer;">Cancel</button>
                 <button onclick="submitEvent()" style="flex:2; padding:0.75rem; background:var(--lightning-yellow); color:#000; border:none; border-radius:0.5rem; cursor:pointer; font-weight:600;">Publish Event</button>
             </div>
+            </div><!-- end createNewSection -->
         </div>
     </div>
 
@@ -1563,6 +1586,22 @@
             document.getElementById('imagePreviewBox').style.display = 'none';
             document.getElementById('imageUploadBtn').textContent = 'Click to upload image...';
 
+            // Handle mode toggle visibility
+            const modeToggle = document.getElementById('eventModeToggle');
+            const selectSection = document.getElementById('selectExistingSection');
+
+            if (event) {
+                // Edit mode - hide mode toggle, show create form only
+                modeToggle.style.display = 'none';
+                selectSection.style.display = 'none';
+                document.getElementById('createNewSection').style.display = 'block';
+                document.getElementById('createNewButtons').style.display = 'flex';
+            } else {
+                // Create mode - show mode toggle, reset to "Create New"
+                modeToggle.style.display = 'flex';
+                setEventMode('create');
+            }
+
             if (event) {
                 // Edit mode
                 title.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Edit Event';
@@ -1633,6 +1672,83 @@
 
         function hideCreateEventModal() {
             hideEventEditor();
+        }
+
+        // ===== EVENT MODE TOGGLE (Create New vs Select Existing) =====
+        let currentEventMode = 'create';
+
+        function setEventMode(mode) {
+            currentEventMode = mode;
+            const createBtn = document.getElementById('modeCreateNew');
+            const selectBtn = document.getElementById('modeSelectExisting');
+            const createSection = document.getElementById('createNewSection');
+            const selectSection = document.getElementById('selectExistingSection');
+            const createButtons = document.getElementById('createNewButtons');
+
+            if (mode === 'create') {
+                createBtn.style.background = 'var(--lightning-yellow)';
+                createBtn.style.color = '#000';
+                selectBtn.style.background = 'transparent';
+                selectBtn.style.color = 'var(--gray)';
+                createSection.style.display = 'block';
+                selectSection.style.display = 'none';
+                createButtons.style.display = 'flex';
+            } else {
+                selectBtn.style.background = 'var(--lightning-yellow)';
+                selectBtn.style.color = '#000';
+                createBtn.style.background = 'transparent';
+                createBtn.style.color = 'var(--gray)';
+                createSection.style.display = 'none';
+                selectSection.style.display = 'block';
+                createButtons.style.display = 'none';
+                loadAvailableEvents();
+            }
+        }
+
+        async function loadAvailableEvents() {
+            const container = document.getElementById('availableEventsList');
+            container.innerHTML = `
+                <div class="loading-skeleton" style="height:60px; margin-bottom:0.5rem;"></div>
+                <div class="loading-skeleton" style="height:60px; margin-bottom:0.5rem;"></div>
+            `;
+
+            const data = await apiCall('/api/v1/host/available-events');
+
+            if (!data.success || !data.events || !data.events.length) {
+                container.innerHTML = '<div style="text-align:center; color:var(--gray); padding:2rem;">No available events to claim. All Spotlight events have been assigned.</div>';
+                return;
+            }
+
+            container.innerHTML = data.events.map(event => {
+                const date = event.date ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+                return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--pure-black); border:1px solid var(--border-dark); border-radius:0.5rem; margin-bottom:0.5rem;">
+                        <div style="flex:1;">
+                            <div style="font-weight:600; color:#fff;">${event.name}</div>
+                            <div style="font-size:0.85rem; color:var(--lightning-yellow);">${date}${event.startTime ? ' @ ' + formatTime(event.startTime) : ''}</div>
+                            <div style="font-size:0.8rem; color:var(--gray);">${event.locationName || event.location || ''}</div>
+                        </div>
+                        ${event.imageUrl ? `<img src="${event.imageUrl}" style="width:50px; height:50px; border-radius:6px; object-fit:cover; margin-right:1rem;">` : ''}
+                        <button onclick="claimEvent('${event._id}', '${event.name.replace(/'/g, "\\'")}')" style="padding:0.5rem 1rem; background:var(--neon-green); color:#000; border:none; border-radius:0.4rem; font-weight:600; cursor:pointer;">
+                            Claim
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function claimEvent(eventId, eventName) {
+            if (!confirm(`Claim "${eventName}" and add it to your events?`)) return;
+
+            const data = await apiCall(`/api/v1/host/claim-event/${eventId}`, 'POST');
+
+            if (data.success) {
+                alert('Event claimed! It now appears in your Events tab.');
+                hideEventEditor();
+                loadEvents();
+            } else {
+                alert(data.error || 'Failed to claim event');
+            }
         }
 
         function addTicketRow(ticket = null) {
