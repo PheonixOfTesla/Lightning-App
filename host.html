@@ -1923,14 +1923,14 @@
                     const statusData = await statusRes.json();
 
                     if (statusData.success && statusData.connected) {
-                        // Has Stripe account - show dashboard link
+                        // Has Stripe account - show lazy-load button for embedded components
                         setupSection.innerHTML = `
                             <h2 class="section-title">Payouts</h2>
-                            <div style="text-align: center; padding: 1rem;">
-                                <button onclick="openStripeDashboard()" class="btn btn-primary" id="stripeDashboardBtn">
-                                    Go to Stripe Dashboard
+                            <div id="stripeEmbedContainer" style="text-align: center; padding: 1rem;">
+                                <button onclick="lazyLoadStripeComponents()" class="btn btn-primary" id="loadStripeBtn">
+                                    Manage Payouts
                                 </button>
-                                <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and tax forms</p>
+                                <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and account settings</p>
                             </div>
                         `;
                     } else {
@@ -2132,6 +2132,83 @@
                     btn.disabled = false;
                     btn.textContent = 'Go to Stripe Dashboard';
                 }
+            }
+        }
+
+        // Lazy load Stripe SDK and show embedded components
+        async function lazyLoadStripeComponents() {
+            const container = document.getElementById('stripeEmbedContainer');
+            const btn = document.getElementById('loadStripeBtn');
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Loading...';
+            }
+
+            try {
+                // Step 1: Load Stripe Connect SDK if not already loaded
+                if (!window.StripeConnect) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://connect-js.stripe.com/v1.0/connect.js';
+                        script.onload = resolve;
+                        script.onerror = () => reject(new Error('Failed to load Stripe SDK'));
+                        document.head.appendChild(script);
+                    });
+                }
+
+                // Step 2: Get account session from backend
+                const sessionRes = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const sessionData = await sessionRes.json();
+
+                if (!sessionData.success || !sessionData.clientSecret) {
+                    throw new Error(sessionData.error || 'Failed to get Stripe session');
+                }
+
+                // Step 3: Initialize Stripe Connect
+                const stripeConnect = window.StripeConnect.init({
+                    publishableKey: 'pk_live_51SFvASIfYqbb49BvA5Y7DxNZSCvYBPYdINAWCjQFujlbNOH13M3d66BwKLVcG0sIE15CDWjf2pEJoEDDqx3rMpXE00NmPHh3W1',
+                    fetchClientSecret: async () => sessionData.clientSecret,
+                    appearance: {
+                        colors: { primary: '#ffd700', background: '#1b2838' },
+                        variables: { fontFamily: 'Inter, sans-serif', borderRadius: '8px' }
+                    }
+                });
+
+                // Step 4: Render embedded components
+                container.innerHTML = `
+                    <div id="stripePayouts" style="margin-bottom: 1.5rem;"></div>
+                    <div id="stripeAccountManagement" style="margin-bottom: 1rem;"></div>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button onclick="openStripeDashboard()" class="btn" style="background: transparent; border: 1px solid var(--gray); color: var(--gray); font-size: 0.85rem;" id="stripeDashboardBtn">
+                            Open Full Stripe Dashboard
+                        </button>
+                    </div>
+                `;
+
+                // Create and mount components
+                const payouts = stripeConnect.create('payouts');
+                payouts.mount('#stripePayouts');
+
+                const accountManagement = stripeConnect.create('account-management');
+                accountManagement.mount('#stripeAccountManagement');
+
+            } catch (err) {
+                console.error('Stripe embed error:', err);
+                // Fallback to dashboard link
+                container.innerHTML = `
+                    <p style="color: var(--danger-red); margin-bottom: 1rem;">${err.message || 'Failed to load Stripe components'}</p>
+                    <button onclick="openStripeDashboard()" class="btn btn-primary" id="stripeDashboardBtn">
+                        Go to Stripe Dashboard
+                    </button>
+                    <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and tax forms</p>
+                `;
             }
         }
 
