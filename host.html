@@ -1923,40 +1923,62 @@
                     const statusData = await statusRes.json();
 
                     if (statusData.success && statusData.connected) {
-                        // Has Stripe account - show skeleton template immediately, load real components in background
+                        // Has Stripe account - show skeleton matching Stripe's actual layout
                         setupSection.innerHTML = `
-                            <h2 class="section-title">Payouts</h2>
                             <div id="stripeEmbedContainer">
-                                <!-- Skeleton that looks like real Stripe dashboard -->
+                                <!-- Skeleton matching Stripe payouts component exactly -->
                                 <div id="stripeSkeleton" style="opacity: 1; transition: opacity 0.3s;">
-                                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+                                    <div style="background: #1e2a3a; border: 1px solid #2d3f52; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;">
+                                        <!-- Header row -->
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                            <div>
+                                                <div style="font-weight: 600; font-size: 1.1rem; color: white; margin-bottom: 0.25rem;">Payouts</div>
+                                                <div style="color: #8b9cb3; font-size: 0.8rem;">Total balance</div>
+                                                <div style="font-size: 1.5rem; font-weight: 500; color: #8b9cb3; margin-top: 0.25rem;">$0.00</div>
+                                            </div>
+                                            <button style="background: white; color: black; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: default;">See details</button>
+                                        </div>
+                                        <!-- Upcoming payout -->
+                                        <div style="display: flex; gap: 2rem; margin-bottom: 1.25rem;">
+                                            <div>
+                                                <div style="color: #6b7c93; font-size: 0.8rem;">Next upcoming payout (estimated)</div>
+                                                <div style="color: #8b9cb3; font-size: 0.95rem; margin-top: 0.25rem;">$0.00</div>
+                                            </div>
+                                            <div>
+                                                <div style="color: #6b7c93; font-size: 0.8rem;">Expected to arrive</div>
+                                                <div style="color: #8b9cb3; font-size: 0.95rem; margin-top: 0.25rem;">--</div>
+                                            </div>
+                                        </div>
+                                        <!-- Filter pills -->
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                            <span style="color: var(--gray); font-size: 0.85rem;">Available Balance</span>
-                                            <span style="background: var(--border-dark); width: 60px; height: 12px; border-radius: 4px; display: inline-block;"></span>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <span style="border: 1px solid #4a5568; color: #8b9cb3; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Status</span>
+                                                <span style="border: 1px solid #4a5568; color: #8b9cb3; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Amount</span>
+                                                <span style="border: 1px solid #4a5568; color: #8b9cb3; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Method</span>
+                                                <span style="border: 1px solid #4a5568; color: #8b9cb3; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">Date</span>
+                                            </div>
+                                            <button style="background: white; color: black; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: default;">Export</button>
                                         </div>
-                                        <div style="font-size: 1.75rem; font-weight: 600; color: var(--neon-green); margin-bottom: 0.5rem;">$0.00</div>
-                                        <div style="color: var(--gray); font-size: 0.8rem;">Updated just now</div>
+                                        <!-- Table header -->
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 0.75rem 0; border-bottom: 1px solid #3d4f61; color: #6b7c93; font-size: 0.8rem;">
+                                            <span>Date</span>
+                                            <span>Status</span>
+                                            <span>Destination</span>
+                                            <span style="text-align: right;">Amount</span>
+                                        </div>
+                                        <!-- Empty state -->
+                                        <div style="text-align: center; padding: 3rem 1rem; color: #6b7c93;">
+                                            <div style="font-size: 0.95rem; margin-bottom: 0.5rem;">Keep track of your payouts</div>
+                                            <div style="font-size: 0.8rem; color: #5a6a7d;">Follow the status of your payouts here</div>
+                                        </div>
                                     </div>
-                                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
-                                        <div style="font-weight: 500; margin-bottom: 1rem; color: white;">Recent Activity</div>
-                                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-dark);">
-                                            <div style="background: var(--border-dark); width: 120px; height: 14px; border-radius: 4px;"></div>
-                                            <div style="background: var(--border-dark); width: 50px; height: 14px; border-radius: 4px;"></div>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
-                                            <div style="background: var(--border-dark); width: 100px; height: 14px; border-radius: 4px;"></div>
-                                            <div style="background: var(--border-dark); width: 60px; height: 14px; border-radius: 4px;"></div>
-                                        </div>
-                                    </div>
-                                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem;">
-                                        <div style="font-weight: 500; margin-bottom: 0.75rem; color: white;">Account</div>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <div style="background: var(--border-dark); width: 80px; height: 32px; border-radius: 6px;"></div>
-                                            <div style="background: var(--border-dark); width: 100px; height: 32px; border-radius: 6px;"></div>
-                                        </div>
+                                    <!-- Account section -->
+                                    <div style="background: #1e2a3a; border: 1px solid #2d3f52; border-radius: 16px; padding: 1.5rem; text-align: center;">
+                                        <div style="color: #8b9cb3; font-size: 0.95rem; margin-bottom: 0.5rem;">Account details</div>
+                                        <div style="color: #5a6a7d; font-size: 0.85rem;">Powered by Stripe</div>
                                     </div>
                                 </div>
-                                <!-- Real Stripe components will be inserted here -->
+                                <!-- Real Stripe components inserted here -->
                                 <div id="stripeRealComponents" style="display: none; opacity: 0; transition: opacity 0.3s;"></div>
                             </div>
                         `;
@@ -2197,28 +2219,42 @@
                     throw new Error('Session failed');
                 }
 
-                // Initialize Stripe Connect
+                // Initialize Stripe Connect with Lightning Pass branding
                 const stripeInstance = window.StripeConnect.init({
                     publishableKey: sessionData.publishableKey,
                     fetchClientSecret: async () => sessionData.clientSecret,
                     appearance: {
-                        colors: { primary: '#ffd700', background: '#1b2838' },
-                        variables: { fontFamily: 'Inter, sans-serif', borderRadius: '8px' }
+                        colors: {
+                            primary: '#ffd700',
+                            background: '#1e2a3a',
+                            componentBackground: '#1e2a3a',
+                            text: '#ffffff',
+                            secondaryText: '#8b9cb3',
+                            border: '#2d3f52',
+                            formBackground: '#0d1b2a',
+                            formHighlightBorder: '#ffd700',
+                            actionPrimaryText: '#000000'
+                        },
+                        variables: {
+                            fontFamily: 'Inter, -apple-system, sans-serif',
+                            borderRadius: '12px',
+                            buttonBorderRadius: '8px',
+                            colorPrimary: '#ffd700'
+                        }
                     }
                 });
 
-                // Build real components
+                // Build container for all Stripe components
                 realContainer.innerHTML = `
+                    <div id="stripeNotifications" style="margin-bottom: 0.75rem;"></div>
                     <div id="stripePayouts" style="margin-bottom: 1rem;"></div>
-                    <div id="stripeAccountManagement" style="margin-bottom: 1rem;"></div>
-                    <div style="text-align: center; padding-top: 0.5rem;">
-                        <button onclick="openStripeDashboard()" class="btn" style="background: transparent; border: 1px solid var(--border-dark); color: var(--gray); font-size: 0.8rem; padding: 0.5rem 1rem;" id="stripeDashboardBtn">
-                            Full Dashboard
-                        </button>
-                    </div>
+                    <div id="stripeAccountManagement"></div>
                 `;
 
-                // Create and append Stripe components
+                // Create and mount all Stripe components
+                const notifications = stripeInstance.create('notification-banner');
+                document.getElementById('stripeNotifications').appendChild(notifications);
+
                 const payouts = stripeInstance.create('payouts');
                 document.getElementById('stripePayouts').appendChild(payouts);
 
