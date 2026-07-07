@@ -2084,11 +2084,17 @@
                     }
                 });
 
-                // Build components container - account management first, then payouts
+                // Build components container
                 realContainer.innerHTML = `
                     <div id="stripeNotifications"></div>
-                    <div id="stripeAccountManagement" style="margin-bottom: 1rem;"></div>
-                    <div id="stripePayouts"></div>
+                    <div id="stripeAccountManagement" style="margin-bottom: 1.5rem;"></div>
+
+                    <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem; font-size: 1.1rem;">Payouts & Transfers</h3>
+                    <div id="stripePayouts" style="margin-bottom: 1.5rem;"></div>
+
+                    <h3 style="color: var(--lightning-yellow); margin-bottom: 1rem; font-size: 1.1rem;">Transaction History</h3>
+                    <div id="stripePayments" style="margin-bottom: 1.5rem;"></div>
+
                     <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
                         <button onclick="disconnectStripe()" style="background: none; border: none; color: var(--gray); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">
                             Disconnect Stripe Account
@@ -2100,11 +2106,15 @@
                 const notifications = stripeConnectInstance.create('notification-banner');
                 document.getElementById('stripeNotifications').appendChild(notifications);
 
+                const account = stripeConnectInstance.create('account-management');
+                document.getElementById('stripeAccountManagement').appendChild(account);
+
                 const payouts = stripeConnectInstance.create('payouts');
                 document.getElementById('stripePayouts').appendChild(payouts);
 
-                const account = stripeConnectInstance.create('account-management');
-                document.getElementById('stripeAccountManagement').appendChild(account);
+                // Transaction history
+                const payments = stripeConnectInstance.create('payments');
+                document.getElementById('stripePayments').appendChild(payments);
 
                 // Wait for Stripe components to fully render before showing
                 // Components render iframes that take time to load
@@ -2114,7 +2124,7 @@
                         attempts++;
                         // Check if iframes have appeared (Stripe renders content in iframes)
                         const iframes = realContainer.querySelectorAll('iframe');
-                        if (iframes.length >= 2 || attempts >= 30) { // 3 seconds max
+                        if (iframes.length >= 3 || attempts >= 40) { // 4 seconds max
                             clearInterval(checkReady);
                             // Extra moment for content to paint
                             setTimeout(resolve, 500);
