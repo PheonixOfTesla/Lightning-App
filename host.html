@@ -853,19 +853,10 @@
 
             <!-- MONEY TAB -->
             <div id="tabMoney" class="tab-content">
-                <!-- Stats grid comes FIRST for immediate visibility -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value green" id="totalEarnings">$0</div>
-                        <div class="stat-label">Total Earned</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="pendingPayout">$0</div>
-                        <div class="stat-label">Pending</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value blue" id="totalPaidOut">$0</div>
-                        <div class="stat-label">Paid Out</div>
+                <!-- Stripe Setup Section - shows balance/payouts from Stripe (source of truth) -->
+                <div id="stripeSetupSection" class="section" style="margin-bottom: 1.5rem;">
+                    <div id="stripeSetupContent">
+                        <div class="loading-skeleton" style="height: 100px;"></div>
                     </div>
                 </div>
 
@@ -877,50 +868,6 @@
                     </div>
                 </div>
 
-                <!-- Stripe Setup Section - shows loading initially -->
-                <div id="stripeSetupSection" class="section">
-                    <h2 class="section-title">Payouts</h2>
-                    <div id="stripeSetupContent">
-                        <div class="loading-skeleton" style="height: 100px;"></div>
-                    </div>
-                </div>
-
-                <!-- Stripe Notification Banner - hidden by default -->
-                <div id="stripeNotificationBanner" class="stripe-container" style="display: none; margin-bottom: 1rem;"></div>
-
-                <!-- Connect Stripe CTA (shown when no Stripe account) -->
-                <div id="stripeConnectCTA" style="display: none; margin-bottom: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%); border: 1px solid var(--lightning-yellow); border-radius: 1rem; text-align: center;">
-                    <h3 style="color: var(--lightning-yellow); margin-bottom: 0.5rem;">Get Paid for Your Events</h3>
-                    <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Connect your bank account to receive payouts from ticket sales.</p>
-                    <button onclick="connectStripe()" class="btn btn-primary" id="connectStripeBtn">
-                        Connect Stripe Account
-                    </button>
-                </div>
-
-                <!-- Stripe Onboarding (shown when account created but not fully onboarded) -->
-                <div id="stripeOnboardingSection" style="display: none; margin-bottom: 1.5rem;">
-                    <div class="section">
-                        <h2 class="section-title">Complete Your Setup</h2>
-                        <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">Finish setting up your Stripe account to start receiving payouts.</p>
-                        <div id="stripeOnboardingContainer" class="stripe-container">
-                            <div class="loading-skeleton" style="height: 200px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section" id="payoutsSection" style="display: none;">
-                    <h2 class="section-title">Payouts</h2>
-                    <div id="stripePayoutsContainer" class="stripe-container">
-                        <div class="loading-skeleton" style="height: 150px;"></div>
-                    </div>
-                </div>
-
-                <div class="section" id="accountSettingsSection" style="display: none;">
-                    <h2 class="section-title">Account Settings</h2>
-                    <div id="stripeAccountContainer" class="stripe-container">
-                        <div class="loading-skeleton" style="height: 150px;"></div>
-                    </div>
-                </div>
             </div>
 
             <!-- LIVE TAB -->
@@ -1920,10 +1867,6 @@
 
         // ===== MONEY TAB =====
         async function loadEarnings() {
-            // Show loading state for earnings (skeleton already in HTML)
-            document.getElementById('totalEarnings').textContent = '...';
-            document.getElementById('pendingPayout').textContent = '...';
-            document.getElementById('totalPaidOut').textContent = '...';
 
             // Load earnings only - Stripe loads on-demand when user clicks button
             const earningsData = await apiCall('/api/v1/host/earnings');
@@ -1988,34 +1931,23 @@
                 }
             }
 
-            // Process earnings data
-            if (earningsData.success && earningsData.totals) {
-                document.getElementById('totalEarnings').textContent = `$${(earningsData.totals.lifetimeEarnings || 0).toFixed(2)}`;
-                document.getElementById('pendingPayout').textContent = `$${(earningsData.totals.pendingPayout || 0).toFixed(2)}`;
-                document.getElementById('totalPaidOut').textContent = `$${(earningsData.totals.totalPaidOut || 0).toFixed(2)}`;
-
-                const container = document.getElementById('earningsByEvent');
-                if (!earningsData.events || earningsData.events.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No earnings yet</div>';
-                } else {
-                    container.innerHTML = earningsData.events.map(e => `
-                        <div style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--border-dark);">
-                            <div>
-                                <div style="font-weight:500;">${e.name}</div>
-                                <div style="font-size:0.8rem; color:var(--gray);">${e.ticketCount} tickets</div>
-                            </div>
-                            <div style="text-align:right;">
-                                <div style="color:var(--neon-green);">$${(e.hostEarnings || 0).toFixed(2)}</div>
-                                <div style="font-size:0.75rem; color:var(--gray);">net</div>
-                            </div>
+            // Process earnings data - show by-event breakdown (Stripe handles balance/payouts)
+            const container = document.getElementById('earningsByEvent');
+            if (earningsData.success && earningsData.events && earningsData.events.length > 0) {
+                container.innerHTML = earningsData.events.map(e => `
+                    <div style="display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--border-dark);">
+                        <div>
+                            <div style="font-weight:500;">${e.name}</div>
+                            <div style="font-size:0.8rem; color:var(--gray);">${e.ticketCount} tickets</div>
                         </div>
-                    `).join('');
-                }
+                        <div style="text-align:right;">
+                            <div style="color:var(--neon-green);">$${(e.hostEarnings || 0).toFixed(2)}</div>
+                            <div style="font-size:0.75rem; color:var(--gray);">net</div>
+                        </div>
+                    </div>
+                `).join('');
             } else {
-                document.getElementById('totalEarnings').textContent = '$0.00';
-                document.getElementById('pendingPayout').textContent = '$0.00';
-                document.getElementById('totalPaidOut').textContent = '$0.00';
-                document.getElementById('earningsByEvent').innerHTML = '<div class="empty-state">No earnings yet</div>';
+                container.innerHTML = '<div class="empty-state">No earnings yet</div>';
             }
         }
 
