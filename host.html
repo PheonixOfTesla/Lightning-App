@@ -2050,34 +2050,32 @@
                     publishableKey: sessionData.publishableKey,
                     fetchClientSecret: async () => sessionData.clientSecret,
                     appearance: {
-                        colors: {
-                            primary: '#ffd700',
-                            background: '#ffffff',
-                            componentBackground: '#ffffff',
-                            text: '#1a1a1a',
-                            secondaryText: '#555555',
-                            border: '#e5e5e5',
-                            actionPrimaryText: '#000000',
-                            formBackground: '#f8f8f8',
-                            formHighlightBorder: '#ffd700'
-                        },
+                        overlays: 'dialog',
                         variables: {
+                            colorPrimary: '#ffd700',
+                            colorBackground: '#ffffff',
+                            colorText: '#1a1a1a',
+                            colorSecondaryText: '#666666',
+                            colorBorder: '#e0e0e0',
                             fontFamily: 'Inter, -apple-system, sans-serif',
                             borderRadius: '12px',
-                            colorPrimary: '#ffd700',
                             buttonPrimaryColorBackground: '#ffd700',
                             buttonPrimaryColorText: '#000000',
-                            badgeSuccessColorBackground: '#d4edda',
-                            badgeSuccessColorText: '#155724'
+                            buttonPrimaryColorBorder: '#ffd700'
                         }
+                    },
+                    uiConfig: {
+                        overlay: 'dialog'
                     }
                 });
 
-                // Build components container
+                // Build components container with white background
                 realContainer.innerHTML = `
-                    <div id="stripeNotifications" style="margin-bottom: 0.5rem;"></div>
-                    <div id="stripePayouts" style="margin-bottom: 1rem;"></div>
-                    <div id="stripeAccountManagement"></div>
+                    <div style="background: #ffffff; border-radius: 16px; padding: 0; overflow: hidden;">
+                        <div id="stripeNotifications"></div>
+                        <div id="stripePayouts"></div>
+                        <div id="stripeAccountManagement"></div>
+                    </div>
                 `;
 
                 // Create and mount components
