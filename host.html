@@ -1496,36 +1496,59 @@
 
                 const address = event.locationAddress || event.location || '';
                 const venueName = event.locationName || '';
+                const ticketPrice = event.tickets?.[0]?.price || 0;
+                const price = ticketPrice ? `$${(ticketPrice / 100).toFixed(0)}` : 'FREE';
+                const totalAvailable = event.tickets?.reduce((sum, t) => {
+                    const remaining = t.available && t.available !== -1 ? (t.available - (t.sold || 0)) : 0;
+                    return sum + remaining;
+                }, 0) || 0;
+                const endTimeStr = event.endTime ? ' - ' + formatTime(event.endTime) : '';
 
                 return `
-                    <div class="event-card">
-                        <div class="event-card-header">
+                    <div class="event-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: 2px solid var(--lightning-yellow); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem;">
+                        <!-- Banner Preview -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div style="flex: 1;">
+                                <p style="color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600; margin: 0 0 0.5rem 0;">${dateStr} · ${event.startTime ? formatTime(event.startTime) : ''}${endTimeStr}</p>
+                                <h3 style="color: #fff; margin: 0 0 0.5rem 0; font-size: 1.25rem; font-weight: 700;">${event.name}</h3>
+                                ${venueName ? `<p style="color: #fff; font-size: 0.9rem; font-weight: 600; margin: 0 0 0.25rem 0;">${venueName}</p>` : ''}
+                                ${address ? `<a href="https://maps.apple.com/?q=${encodeURIComponent(address)}" target="_blank" style="color: rgba(255,255,255,0.7); font-size: 0.8rem; text-decoration: underline;">${address}</a>` : ''}
+                                ${event.description ? `<p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin: 0.75rem 0 0 0; line-height: 1.4;">${event.description}</p>` : ''}
+                            </div>
+                            ${event.imageUrl ? `<img src="${event.imageUrl}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: contain; background: #fff; padding: 4px; margin-left: 1rem;">` : ''}
+                        </div>
+
+                        <!-- Price & Availability -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem;">
                             <div>
-                                <div class="event-name">${event.name}</div>
-                                <div class="event-date">${dateStr}${event.startTime ? ' @ ' + formatTime(event.startTime) : ''}</div>
-                                ${venueName ? `<div style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">${venueName}${address ? ' - ' + address : ''}</div>` : (address ? `<div style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">${address}</div>` : '')}
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--lightning-yellow);">${price}</span>
+                                <span style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-left: 0.5rem;">${totalAvailable} tickets available</span>
                             </div>
-                            <span class="event-status ${event.status}">${event.status}</span>
+                            <span class="event-status ${event.status}" style="padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: ${event.status === 'live' ? 'var(--neon-green)' : event.status === 'pending' ? '#ff6b35' : 'var(--electric-blue)'}; color: #000;">${event.status.toUpperCase()}</span>
                         </div>
-                        <div class="event-stats">
+
+                        <!-- Stats -->
+                        <div class="event-stats" style="display: flex; gap: 2rem; margin-bottom: 1rem;">
                             <div class="event-stat-item">
-                                <span class="event-stat-value">${stats.sold}</span>
-                                <span class="event-stat-label">Sold</span>
+                                <span class="event-stat-value" style="font-size: 1.5rem; font-weight: 700; color: var(--lightning-yellow);">${stats.sold}</span>
+                                <span class="event-stat-label" style="color: var(--gray); font-size: 0.75rem;">Sold</span>
                             </div>
                             <div class="event-stat-item">
-                                <span class="event-stat-value" style="color: var(--neon-green);">${stats.checkedIn}</span>
-                                <span class="event-stat-label">Checked In</span>
+                                <span class="event-stat-value" style="font-size: 1.5rem; font-weight: 700; color: var(--neon-green);">${stats.checkedIn}</span>
+                                <span class="event-stat-label" style="color: var(--gray); font-size: 0.75rem;">Checked In</span>
                             </div>
                             <div class="event-stat-item">
-                                <span class="event-stat-value">$${(stats.revenue || 0).toFixed(0)}</span>
-                                <span class="event-stat-label">Revenue</span>
+                                <span class="event-stat-value" style="font-size: 1.5rem; font-weight: 700; color: #fff;">$${(stats.revenue || 0).toFixed(0)}</span>
+                                <span class="event-stat-label" style="color: var(--gray); font-size: 0.75rem;">Revenue</span>
                             </div>
                         </div>
-                        <div class="event-actions">
-                            <button onclick="openEventEditor('${event._id}')" class="btn" style="background:var(--lightning-yellow); color:#000;">Edit</button>
-                            <a href="/checkin?event=${event.slug}" target="_blank" class="btn btn-secondary">Guests</a>
-                            <a href="/staff?event=${event.slug}" target="_blank" class="btn btn-success">Door</a>
-                            <button onclick="deleteEvent('${event._id}', '${event.name.replace(/'/g, "\\'")}')" class="btn" style="background:var(--danger-red); color:#fff;">Delete</button>
+
+                        <!-- Actions -->
+                        <div class="event-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="openEventEditor('${event._id}')" class="btn" style="background:var(--lightning-yellow); color:#000; padding: 0.5rem 1rem; border: none; border-radius: 0.4rem; font-weight: 600; cursor: pointer;">Edit</button>
+                            <a href="/checkin?event=${event.slug}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--gray); color: #fff; border-radius: 0.4rem; text-decoration: none; font-weight: 500;">Guests</a>
+                            <a href="/staff?event=${event.slug}" target="_blank" class="btn btn-success" style="padding: 0.5rem 1rem; background: var(--neon-green); color: #000; border-radius: 0.4rem; text-decoration: none; font-weight: 600;">Door</a>
+                            <button onclick="deleteEvent('${event._id}', '${event.name.replace(/'/g, "\\'")}')" class="btn" style="background:var(--danger-red); color:#fff; padding: 0.5rem 1rem; border: none; border-radius: 0.4rem; font-weight: 600; cursor: pointer;">Remove</button>
                         </div>
                     </div>
                 `;
