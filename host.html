@@ -1920,8 +1920,9 @@
             const earningsData = await apiCall('/api/v1/host/earnings');
 
             // Show simple Stripe dashboard link (no embedded components)
+            // BUT if Stripe is already initialized, don't rebuild the DOM (preserves auth state)
             const setupSection = document.getElementById('stripeSetupSection');
-            if (setupSection) {
+            if (setupSection && !stripeInitialized) {
                 // Check Stripe status first
                 try {
                     const statusRes = await fetch(`${API_BASE}/api/v1/lightning/host/connect/status`, {
@@ -2011,6 +2012,7 @@
 
         // Stripe state tracking
         let stripeConnectInstance = null;
+        let stripeInitialized = false;
 
         // Load Stripe embedded components
         async function loadStripeEmbedded() {
@@ -2018,6 +2020,14 @@
             const realContainer = document.getElementById('stripeRealComponents');
 
             if (!realContainer) return;
+
+            // If already initialized, just show the existing components
+            if (stripeInitialized && stripeConnectInstance) {
+                if (loader) loader.style.display = 'none';
+                realContainer.style.display = 'block';
+                realContainer.style.opacity = '1';
+                return;
+            }
 
             try {
                 // Load Stripe Connect SDK
@@ -2086,6 +2096,9 @@
                 if (loader) loader.style.display = 'none';
                 realContainer.style.display = 'block';
                 setTimeout(() => { realContainer.style.opacity = '1'; }, 50);
+
+                // Mark as initialized so we don't reinitialize on tab switch
+                stripeInitialized = true;
 
             } catch (err) {
                 // Show fallback with dashboard link
@@ -2194,6 +2207,9 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    // Reset Stripe state so it can reinitialize with new account
+                    stripeInitialized = false;
+                    stripeConnectInstance = null;
                     loadEarnings(); // Refresh to show connect button
                 } else {
                     alert(data.error || 'Failed to disconnect');
