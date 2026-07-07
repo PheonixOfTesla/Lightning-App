@@ -2097,6 +2097,22 @@
                 const account = stripeConnectInstance.create('account-management');
                 document.getElementById('stripeAccountManagement').appendChild(account);
 
+                // Wait for Stripe components to fully render before showing
+                // Components render iframes that take time to load
+                await new Promise(resolve => {
+                    let attempts = 0;
+                    const checkReady = setInterval(() => {
+                        attempts++;
+                        // Check if iframes have appeared (Stripe renders content in iframes)
+                        const iframes = realContainer.querySelectorAll('iframe');
+                        if (iframes.length >= 2 || attempts >= 30) { // 3 seconds max
+                            clearInterval(checkReady);
+                            // Extra moment for content to paint
+                            setTimeout(resolve, 500);
+                        }
+                    }, 100);
+                });
+
                 // Transition: hide loader, show components
                 if (loader) loader.style.display = 'none';
                 realContainer.style.display = 'block';
