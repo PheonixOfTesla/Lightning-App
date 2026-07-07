@@ -1715,23 +1715,35 @@
             const data = await apiCall('/api/v1/host/available-events');
 
             if (!data.success || !data.events || !data.events.length) {
-                container.innerHTML = '<div style="text-align:center; color:var(--gray); padding:2rem;">No available events to claim. All Spotlight events have been assigned.</div>';
+                container.innerHTML = '<div style="text-align:center; color:var(--gray); padding:2rem;">No Spotlight events available. Ask admin to create events first.</div>';
                 return;
             }
 
+            // Get current user ID to check ownership
+            const myUserId = currentUser?._id || currentUser?.id;
+
             container.innerHTML = data.events.map(event => {
                 const date = event.date ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+                const address = event.locationAddress || event.location || '';
+                const isMyEvent = event.hostId && event.hostId === myUserId;
+
                 return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--pure-black); border:1px solid var(--border-dark); border-radius:0.5rem; margin-bottom:0.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--pure-black); border:1px solid ${isMyEvent ? 'var(--neon-green)' : 'var(--border-dark)'}; border-radius:0.5rem; margin-bottom:0.5rem;">
                         <div style="flex:1;">
                             <div style="font-weight:600; color:#fff;">${event.name}</div>
                             <div style="font-size:0.85rem; color:var(--lightning-yellow);">${date}${event.startTime ? ' @ ' + formatTime(event.startTime) : ''}</div>
-                            <div style="font-size:0.8rem; color:var(--gray);">${event.locationName || event.location || ''}</div>
+                            <div style="font-size:0.8rem; color:var(--gray);">${event.locationName || ''}${event.locationName && address ? ' - ' : ''}${address}</div>
                         </div>
                         ${event.imageUrl ? `<img src="${event.imageUrl}" style="width:50px; height:50px; border-radius:6px; object-fit:cover; margin-right:1rem;">` : ''}
-                        <button onclick="claimEvent('${event._id}', '${event.name.replace(/'/g, "\\'")}')" style="padding:0.5rem 1rem; background:var(--neon-green); color:#000; border:none; border-radius:0.4rem; font-weight:600; cursor:pointer;">
-                            Claim
-                        </button>
+                        ${isMyEvent ? `
+                            <span style="padding:0.5rem 1rem; background:rgba(57,255,20,0.2); color:var(--neon-green); border-radius:0.4rem; font-weight:600; font-size:0.85rem;">
+                                In Your Portal
+                            </span>
+                        ` : `
+                            <button onclick="claimEvent('${event._id}', '${event.name.replace(/'/g, "\\'")}')" style="padding:0.5rem 1rem; background:var(--neon-green); color:#000; border:none; border-radius:0.4rem; font-weight:600; cursor:pointer;">
+                                Add
+                            </button>
+                        `}
                     </div>
                 `;
             }).join('');
