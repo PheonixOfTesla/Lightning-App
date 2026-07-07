@@ -2053,29 +2053,23 @@
                         overlays: 'dialog',
                         variables: {
                             colorPrimary: '#ffd700',
-                            colorBackground: '#ffffff',
-                            colorText: '#1a1a1a',
-                            colorSecondaryText: '#666666',
-                            colorBorder: '#e0e0e0',
+                            colorBackground: '#1b2838',
+                            colorText: '#ffffff',
+                            colorSecondaryText: '#888888',
+                            colorBorder: '#2d3748',
                             fontFamily: 'Inter, -apple-system, sans-serif',
                             borderRadius: '12px',
                             buttonPrimaryColorBackground: '#ffd700',
-                            buttonPrimaryColorText: '#000000',
-                            buttonPrimaryColorBorder: '#ffd700'
+                            buttonPrimaryColorText: '#000000'
                         }
-                    },
-                    uiConfig: {
-                        overlay: 'dialog'
                     }
                 });
 
-                // Build components container with white background
+                // Build components container - dark theme matching Lightning specs
                 realContainer.innerHTML = `
-                    <div style="background: #ffffff; border-radius: 16px; padding: 0; overflow: hidden;">
-                        <div id="stripeNotifications"></div>
-                        <div id="stripePayouts"></div>
-                        <div id="stripeAccountManagement"></div>
-                    </div>
+                    <div id="stripeNotifications"></div>
+                    <div id="stripePayouts"></div>
+                    <div id="stripeAccountManagement"></div>
                 `;
 
                 // Create and mount components
