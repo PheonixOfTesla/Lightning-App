@@ -1494,12 +1494,16 @@
                 const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                 const stats = event.derivedStats || { sold: 0, revenue: 0, checkedIn: 0 };
 
+                const address = event.locationAddress || event.location || '';
+                const venueName = event.locationName || '';
+
                 return `
                     <div class="event-card">
                         <div class="event-card-header">
                             <div>
                                 <div class="event-name">${event.name}</div>
                                 <div class="event-date">${dateStr}${event.startTime ? ' @ ' + formatTime(event.startTime) : ''}</div>
+                                ${venueName ? `<div style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">${venueName}${address ? ' - ' + address : ''}</div>` : (address ? `<div style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">${address}</div>` : '')}
                             </div>
                             <span class="event-status ${event.status}">${event.status}</span>
                         </div>
