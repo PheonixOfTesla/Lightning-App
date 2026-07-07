@@ -2065,11 +2065,11 @@
                     }
                 });
 
-                // Build components container - dark theme matching Lightning specs
+                // Build components container - account management first, then payouts
                 realContainer.innerHTML = `
                     <div id="stripeNotifications"></div>
+                    <div id="stripeAccountManagement" style="margin-bottom: 1rem;"></div>
                     <div id="stripePayouts"></div>
-                    <div id="stripeAccountManagement"></div>
                 `;
 
                 // Create and mount components
