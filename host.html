@@ -853,18 +853,46 @@
 
             <!-- MONEY TAB -->
             <div id="tabMoney" class="tab-content">
-                <!-- Stripe Setup Section - shows balance/payouts from Stripe (source of truth) -->
-                <div id="stripeSetupSection" class="section" style="margin-bottom: 1.5rem;">
-                    <div id="stripeSetupContent">
-                        <div class="loading-skeleton" style="height: 100px;"></div>
+                <!-- OUR totals - master data from Pass/HostTransaction records -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value green" id="totalEarned">$0</div>
+                        <div class="stat-label">Total Earned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTransferred">$0</div>
+                        <div class="stat-label">Transferred</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value blue" id="totalPaidOut">$0</div>
+                        <div class="stat-label">Paid to Bank</div>
                     </div>
                 </div>
 
+                <!-- Transaction History - OUR records -->
+                <div class="section">
+                    <h2 class="section-title">Transaction History</h2>
+                    <div id="transactionHistory">
+                        <div class="loading-skeleton" style="height: 60px; margin-bottom: 0.5rem;"></div>
+                        <div class="loading-skeleton" style="height: 60px;"></div>
+                    </div>
+                </div>
+
+                <!-- By Event breakdown -->
                 <div class="section">
                     <h2 class="section-title">By Event</h2>
                     <div id="earningsByEvent">
                         <div class="loading-skeleton" style="height: 60px; margin-bottom: 0.5rem;"></div>
                         <div class="loading-skeleton" style="height: 60px;"></div>
+                    </div>
+                </div>
+
+                <!-- Stripe Account Management - for current connected account only -->
+                <div id="stripeSetupSection" class="section" style="margin-top: 1.5rem;">
+                    <h2 class="section-title">Stripe Account</h2>
+                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem;">Manage your current connected Stripe account for receiving payouts.</p>
+                    <div id="stripeSetupContent">
+                        <div class="loading-skeleton" style="height: 100px;"></div>
                     </div>
                 </div>
 
@@ -1867,9 +1895,55 @@
 
         // ===== MONEY TAB =====
         async function loadEarnings() {
+            // Show loading state
+            document.getElementById('totalEarned').textContent = '...';
+            document.getElementById('totalTransferred').textContent = '...';
+            document.getElementById('totalPaidOut').textContent = '...';
 
-            // Load earnings only - Stripe loads on-demand when user clicks button
-            const earningsData = await apiCall('/api/v1/host/earnings');
+            // Fetch both earnings and transactions (our master data)
+            const [earningsData, transactionsData] = await Promise.all([
+                apiCall('/api/v1/host/earnings'),
+                apiCall('/api/v1/host/transactions')
+            ]);
+
+            // Update totals from OUR transaction records
+            if (transactionsData.success && transactionsData.totals) {
+                document.getElementById('totalEarned').textContent = `$${(transactionsData.totals.totalReceived || 0).toFixed(2)}`;
+                document.getElementById('totalTransferred').textContent = `$${(transactionsData.totals.inStripeBalance || 0).toFixed(2)}`;
+                document.getElementById('totalPaidOut').textContent = `$${(transactionsData.totals.totalPaidOut || 0).toFixed(2)}`;
+            } else {
+                document.getElementById('totalEarned').textContent = '$0.00';
+                document.getElementById('totalTransferred').textContent = '$0.00';
+                document.getElementById('totalPaidOut').textContent = '$0.00';
+            }
+
+            // Render transaction history
+            const historyContainer = document.getElementById('transactionHistory');
+            if (transactionsData.success && transactionsData.transactions?.length > 0) {
+                historyContainer.innerHTML = transactionsData.transactions.map(t => {
+                    const statusColor = t.status === 'paid_out' ? 'var(--neon-green)' :
+                                       t.status === 'transferred' ? 'var(--electric-blue)' :
+                                       t.status === 'refunded' ? 'var(--danger-red)' : 'var(--gray)';
+                    const statusText = t.status === 'paid_out' ? 'Paid' :
+                                      t.status === 'transferred' ? 'In Stripe' :
+                                      t.status === 'refunded' ? 'Refunded' : 'Pending';
+                    const date = new Date(t.createdAt).toLocaleDateString();
+                    return `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; border-bottom:1px solid var(--border-dark);">
+                            <div>
+                                <div style="font-weight:500;">${t.customerName || t.customerEmail}</div>
+                                <div style="font-size:0.8rem; color:var(--gray);">${t.eventName || 'Ticket Sale'} · ${date}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="color:var(--neon-green);">+$${(t.hostAmount || 0).toFixed(2)}</div>
+                                <div style="font-size:0.75rem; color:${statusColor};">${statusText}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                historyContainer.innerHTML = '<div class="empty-state" style="color:var(--gray); padding:1rem;">No transactions yet</div>';
+            }
 
             // Show simple Stripe dashboard link (no embedded components)
             // BUT if Stripe is already initialized, don't rebuild the DOM (preserves auth state)
