@@ -1353,7 +1353,12 @@
             ];
 
             // Filter to only user's roles
-            const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
+            // Always include member for hosts (they need access to their passes)
+            const effectiveRoles = [...userRoles];
+            if (userRoles.includes('host') && !userRoles.includes('member')) {
+                effectiveRoles.push('member');
+            }
+            const dashboards = allDashboards.filter(dash => effectiveRoles.includes(dash.role));
 
             const navLinks = document.getElementById('navLinks');
             if (!navLinks) return;
