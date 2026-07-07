@@ -2049,17 +2049,27 @@
                 document.getElementById('stripePayments').appendChild(payments);
 
                 // Wait for Stripe components to fully render before showing
-                // Components render iframes that take time to load
+                // Components render iframes that take time to load their content
                 await new Promise(resolve => {
                     let attempts = 0;
                     const checkReady = setInterval(() => {
                         attempts++;
-                        // Check if iframes have appeared (Stripe renders content in iframes)
                         const iframes = realContainer.querySelectorAll('iframe');
-                        if (iframes.length >= 3 || attempts >= 40) { // 4 seconds max
+
+                        // Check if iframes exist AND have loaded (have contentWindow)
+                        let loadedCount = 0;
+                        iframes.forEach(iframe => {
+                            try {
+                                // iframe is considered loaded if it has dimensions
+                                if (iframe.offsetHeight > 50) loadedCount++;
+                            } catch(e) {}
+                        });
+
+                        // Need at least 2 loaded iframes OR 6 seconds max
+                        if (loadedCount >= 2 || attempts >= 60) {
                             clearInterval(checkReady);
-                            // Extra moment for content to paint
-                            setTimeout(resolve, 500);
+                            // Extra time for content to fully paint
+                            setTimeout(resolve, 1000);
                         }
                     }, 100);
                 });
@@ -2067,7 +2077,7 @@
                 // Transition: hide loader, show components
                 if (loader) loader.style.display = 'none';
                 realContainer.style.display = 'block';
-                setTimeout(() => { realContainer.style.opacity = '1'; }, 50);
+                setTimeout(() => { realContainer.style.opacity = '1'; }, 100);
 
                 // Mark as initialized so we don't reinitialize on tab switch
                 stripeInitialized = true;
