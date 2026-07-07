@@ -1005,6 +1005,8 @@
                 <button class="tab" onclick="switchTab('funnel')">Funnel</button>
                 <button class="tab" onclick="switchTab('email')">Email</button>
                 <button class="tab" onclick="switchTab('generate')" style="background: var(--lightning-yellow); color: #000;">Generate</button>
+                <button class="tab" onclick="switchTab('payouts')" style="background: #10b981; color: #fff;">Payouts</button>
+                <button class="tab" onclick="switchTab('revenue')" style="background: #ffd700; color: #000;">Revenue</button>
             </div>
 
             <!-- Pending Tab -->
@@ -2238,6 +2240,302 @@
                         <div id="abandonedCheckouts" style="max-height: 300px; overflow-y: auto;">
                             <div style="color: var(--gray); font-size: 0.85rem;">Click refresh to load abandoned checkouts</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payouts Console Tab -->
+            <div id="payoutsTab" class="tab-content">
+                <div class="card" style="margin-bottom: 1rem;">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                        Payout Console
+                    </h3>
+
+                    <!-- Search by Email -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-size: 0.85rem; color: var(--gray); margin-bottom: 0.5rem;">Search User by Email</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="email" id="payoutSearchEmail" placeholder="user@example.com"
+                                   style="flex: 1; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.75rem; color: #fff;">
+                            <button onclick="searchPayoutUser()" class="action-btn view">Search</button>
+                        </div>
+                    </div>
+
+                    <!-- User Details (hidden until search) -->
+                    <div id="payoutUserSection" style="display: none;">
+                        <div style="background: var(--card-black); border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                <div>
+                                    <div style="font-size: 1.1rem; font-weight: 600;" id="payoutUserName">--</div>
+                                    <div style="color: var(--gray); font-size: 0.9rem;" id="payoutUserEmail">--</div>
+                                </div>
+                                <div id="payoutUserRoles" style="display: flex; gap: 0.25rem; flex-wrap: wrap;"></div>
+                            </div>
+
+                            <!-- Stripe Status -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                <div style="text-align: center; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem;">
+                                    <div style="font-size: 0.75rem; color: var(--gray);">Stripe Status</div>
+                                    <div id="payoutStripeStatus" style="font-weight: 600; margin-top: 0.25rem;">--</div>
+                                </div>
+                                <div style="text-align: center; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem;">
+                                    <div style="font-size: 0.75rem; color: var(--gray);">Lifetime Earnings</div>
+                                    <div id="payoutLifetimeEarnings" style="font-weight: 600; color: #10b981; margin-top: 0.25rem;">$0</div>
+                                </div>
+                                <div style="text-align: center; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem;">
+                                    <div style="font-size: 0.75rem; color: var(--gray);">Total Paid Out</div>
+                                    <div id="payoutTotalPaidOut" style="font-weight: 600; color: var(--lightning-yellow); margin-top: 0.25rem;">$0</div>
+                                </div>
+                            </div>
+
+                            <!-- Split Configuration -->
+                            <div style="border-top: 1px solid var(--border-dark); padding-top: 1rem; margin-top: 1rem;">
+                                <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem;">Split Configuration</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0.75rem; align-items: end;">
+                                    <div>
+                                        <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Split Type</label>
+                                        <select id="payoutSplitType" style="width: 100%; background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem; color: #fff;">
+                                            <option value="percent">Percent</option>
+                                            <option value="flat">Flat</option>
+                                        </select>
+                                    </div>
+                                    <div id="payoutPercentGroup">
+                                        <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Platform Fee %</label>
+                                        <input type="number" id="payoutPlatformFeeRate" min="0" max="100" step="1" value="15"
+                                               style="width: 100%; background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem; color: #fff;">
+                                    </div>
+                                    <div id="payoutFlatGroup" style="display: none;">
+                                        <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Flat Amount ($)</label>
+                                        <input type="number" id="payoutFlatAmount" min="0" step="0.01" value="0"
+                                               style="width: 100%; background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem; color: #fff;">
+                                    </div>
+                                    <button onclick="updatePayoutSplit()" class="action-btn edit" style="padding: 0.5rem 1rem;">Save Split</button>
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--gray); margin-top: 0.5rem;">
+                                    Rate changes apply to FUTURE charges only (fee is set at charge time)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Offer Composer - Send Payment Offer -->
+                        <div id="payoutAllocateSection" style="background: var(--card-black); border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1.5rem; border: 2px solid #ffd700;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div style="font-size: 0.95rem; font-weight: 600; color: #ffd700; display: flex; align-items: center; gap: 0.5rem;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                    </svg>
+                                    Send Offer
+                                </div>
+                                <!-- Stripe status indicator -->
+                                <div id="payoutStripeIndicator" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">--</div>
+                            </div>
+
+                            <!-- Platform Balance Readout -->
+                            <div id="platformBalanceReadout" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: rgba(255, 221, 0, 0.08); border: 1px solid rgba(255, 221, 0, 0.25); border-radius: 0.5rem; margin-bottom: 1rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                                </svg>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 0.7rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.05em;">Platform Balance (Available)</div>
+                                    <div id="platformBalanceAmount" style="font-size: 1.1rem; font-weight: 700; color: #ffd700;">Loading...</div>
+                                </div>
+                                <button onclick="refreshPlatformBalance()" style="background: transparent; border: 1px solid var(--border-dark); border-radius: 0.25rem; padding: 0.25rem 0.5rem; color: var(--gray); cursor: pointer; font-size: 0.7rem;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle;">
+                                        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 120px 1fr; gap: 0.75rem; align-items: end; margin-bottom: 0.75rem;">
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Amount ($)</label>
+                                    <input type="number" id="payoutAllocateAmount" min="0.01" step="0.01" placeholder="100.00"
+                                           oninput="validateOfferAmount()"
+                                           style="width: 100%; background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.625rem; color: #fff; font-size: 1rem;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Reason</label>
+                                    <input type="text" id="payoutAllocateReason" placeholder="Event payout: Sunset Bash"
+                                           style="width: 100%; background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.625rem; color: #fff;">
+                                </div>
+                            </div>
+
+                            <!-- Amount validation warning -->
+                            <div id="amountValidationWarning" style="display: none; font-size: 0.75rem; color: #ef4444; margin-bottom: 0.75rem; padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 0.25rem;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 0.25rem;">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                <span id="amountValidationMessage">Amount exceeds available balance</span>
+                            </div>
+
+                            <!-- Send Offer Button -->
+                            <button id="payoutActionBtn" onclick="allocatePayout()" class="action-btn" style="width: 100%; background: #ffd700; color: #000; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; border-radius: 0.5rem; font-size: 0.95rem;">
+                                <svg id="payoutBtnIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                                <span id="payoutBtnText">Send Offer</span>
+                            </button>
+
+                            <div id="payoutAllocateNote" style="font-size: 0.75rem; margin-top: 0.75rem; color: var(--gray); text-align: center;"></div>
+                        </div>
+
+                        <!-- Pending Payouts for User -->
+                        <div style="background: var(--card-black); border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1.5rem;">
+                            <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem;">Pending Payouts</div>
+                            <div id="payoutUserPending" style="font-size: 0.85rem; color: var(--gray);">No pending payouts</div>
+                        </div>
+
+                        <!-- Recent Transactions -->
+                        <div style="background: var(--card-black); border-radius: 0.75rem; padding: 1.25rem;">
+                            <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem;">Recent Transactions</div>
+                            <div id="payoutUserTransactions" style="font-size: 0.85rem; color: var(--gray);">No transactions</div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="payoutEmptyState" style="text-align: center; padding: 3rem; color: var(--gray);">
+                        Search for a user by email to manage their payout settings
+                    </div>
+                </div>
+
+                <!-- All Pending Payouts -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            All Pending Payouts (Awaiting Stripe Setup)
+                        </h3>
+                        <button onclick="loadAllPendingPayouts()" class="action-btn view">Refresh</button>
+                    </div>
+                    <div id="allPendingPayoutsList" style="font-size: 0.85rem; color: var(--gray);">
+                        Click refresh to load pending payouts
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Tab -->
+            <div id="revenueTab" class="tab-content">
+                <div class="card">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                        Revenue by Event (Stripe)
+                    </h3>
+
+                    <!-- Date Range Filters -->
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: flex-end;">
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Start Date</label>
+                            <input type="date" id="revenueStartDate" style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem; color: #fff;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">End Date</label>
+                            <input type="date" id="revenueEndDate" style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem; color: #fff;">
+                        </div>
+                        <button onclick="loadRevenueData()" class="action-btn view" style="background: #ffd700; color: #000; border: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.25rem;">
+                                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Load Data
+                        </button>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Search</label>
+                            <input type="text" id="revenueSearch" placeholder="Search event..." oninput="filterRevenueTable()"
+                                   style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; padding: 0.5rem; color: #fff; width: 200px;">
+                        </div>
+                    </div>
+
+                    <!-- Selection Summary -->
+                    <div id="revenueSelectionSummary" style="display: none; background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,215,0,0.05) 100%); border: 2px solid #ffd700; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <span style="color: var(--gray); font-size: 0.85rem;">Selected:</span>
+                                <span id="revenueSelectedCount" style="font-weight: 700; color: #ffd700; margin-left: 0.5rem;">0</span>
+                                <span style="color: var(--gray); font-size: 0.85rem;"> events</span>
+                            </div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #ffd700;">
+                                Selected Total: $<span id="revenueSelectedTotal">0.00</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="selectAllRevenue()" class="action-btn edit" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">Select All</button>
+                                <button onclick="clearRevenueSelection()" class="action-btn" style="font-size: 0.8rem; padding: 0.4rem 0.75rem; background: var(--border-dark);">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totals Summary -->
+                    <div id="revenueTotals" style="display: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,215,0,0.1); border-radius: 0.75rem; border: 1px solid rgba(255,215,0,0.3);">
+                            <div style="font-size: 0.75rem; color: var(--gray);">Gross</div>
+                            <div id="revenueTotalGross" style="font-size: 1.25rem; font-weight: 700; color: #fff;">$0</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem;">
+                            <div style="font-size: 0.75rem; color: var(--gray);">Sales</div>
+                            <div id="revenueTotalCount" style="font-size: 1.25rem; font-weight: 700; color: #fff;">0</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem;">
+                            <div style="font-size: 0.75rem; color: var(--gray);">Stripe Fees</div>
+                            <div id="revenueTotalFees" style="font-size: 1.25rem; font-weight: 700; color: #ff6b6b;">-$0</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.75rem;">
+                            <div style="font-size: 0.75rem; color: var(--gray);">Refunded</div>
+                            <div id="revenueTotalRefunded" style="font-size: 1.25rem; font-weight: 700; color: #ff6b6b;">-$0</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(16,185,129,0.15); border-radius: 0.75rem; border: 1px solid rgba(16,185,129,0.3);">
+                            <div style="font-size: 0.75rem; color: var(--gray);">Net</div>
+                            <div id="revenueTotalNet" style="font-size: 1.25rem; font-weight: 700; color: #10b981;">$0</div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Table -->
+                    <div id="revenueTableContainer" style="overflow-x: auto;">
+                        <table id="revenueTable" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-dark);">
+                                    <th style="padding: 0.75rem; text-align: left; color: var(--gray); font-weight: 500;">
+                                        <input type="checkbox" id="revenueSelectAll" onchange="toggleAllRevenue(this.checked)" style="cursor: pointer;">
+                                    </th>
+                                    <th style="padding: 0.75rem; text-align: left; color: var(--gray); font-weight: 500; cursor: pointer;" onclick="sortRevenueTable('eventSlug')">
+                                        Event Slug
+                                        <svg id="sortIconSlug" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; opacity: 0.3;"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                                    </th>
+                                    <th style="padding: 0.75rem; text-align: left; color: var(--gray); font-weight: 500;">Event Name</th>
+                                    <th style="padding: 0.75rem; text-align: right; color: var(--gray); font-weight: 500; cursor: pointer;" onclick="sortRevenueTable('count')">
+                                        Sales
+                                        <svg id="sortIconCount" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; opacity: 0.3;"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                                    </th>
+                                    <th style="padding: 0.75rem; text-align: right; color: var(--gray); font-weight: 500; cursor: pointer;" onclick="sortRevenueTable('gross')">
+                                        Gross
+                                        <svg id="sortIconGross" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2" style="vertical-align: middle;"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                                    </th>
+                                    <th style="padding: 0.75rem; text-align: right; color: var(--gray); font-weight: 500;">Fees</th>
+                                    <th style="padding: 0.75rem; text-align: right; color: var(--gray); font-weight: 500;">Refunded</th>
+                                    <th style="padding: 0.75rem; text-align: right; color: var(--gray); font-weight: 500; cursor: pointer;" onclick="sortRevenueTable('net')">
+                                        Net
+                                        <svg id="sortIconNet" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; opacity: 0.3;"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="revenueTableBody">
+                                <tr>
+                                    <td colspan="8" style="padding: 2rem; text-align: center; color: var(--gray);">
+                                        Click "Load Data" to fetch revenue from Stripe
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="revenueLoading" style="display: none; text-align: center; padding: 2rem;">
+                        <div style="display: inline-block; width: 24px; height: 24px; border: 2px solid #ffd700; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <div style="color: var(--gray); margin-top: 0.5rem;">Loading revenue data from Stripe...</div>
                     </div>
                 </div>
             </div>
@@ -4514,6 +4812,10 @@
                 loadFunnel();
             } else if (tabName === 'pending') {
                 loadPendingTab();
+            } else if (tabName === 'payouts') {
+                loadAllPendingPayouts();
+            } else if (tabName === 'revenue') {
+                // Revenue tab - don't auto-load, user clicks Load Data
             }
         }
 
@@ -7403,6 +7705,641 @@
                     <span style="color: var(--electric-purple);">${u.visits} (${u.conversionRate}%)</span>
                 </div>
             `).join('');
+        }
+
+        // ============================
+        // PAYOUT CONSOLE FUNCTIONS
+        // ============================
+
+        let currentPayoutUser = null;
+        let platformAvailableBalance = 0;
+
+        async function refreshPlatformBalance() {
+            const balanceEl = document.getElementById('platformBalanceAmount');
+            if (!balanceEl) return;
+
+            balanceEl.textContent = 'Loading...';
+            balanceEl.style.color = 'var(--gray)';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/platform-balance`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (!res.ok) throw new Error('Failed to fetch balance');
+
+                const data = await res.json();
+                platformAvailableBalance = data.available || 0;
+
+                balanceEl.textContent = `$${platformAvailableBalance.toFixed(2)}`;
+                balanceEl.style.color = platformAvailableBalance > 0 ? '#ffd700' : '#ef4444';
+
+                // Re-validate current amount if any
+                validateOfferAmount();
+
+            } catch (err) {
+                console.error('Balance fetch error:', err);
+                balanceEl.textContent = 'Error loading';
+                balanceEl.style.color = '#ef4444';
+            }
+        }
+
+        function validateOfferAmount() {
+            const amountInput = document.getElementById('payoutAllocateAmount');
+            const warningEl = document.getElementById('amountValidationWarning');
+            const warningMsg = document.getElementById('amountValidationMessage');
+            const sendBtn = document.getElementById('payoutActionBtn');
+
+            if (!amountInput || !warningEl || !sendBtn) return;
+
+            const amount = parseFloat(amountInput.value) || 0;
+
+            if (amount > 0 && amount > platformAvailableBalance) {
+                warningEl.style.display = 'block';
+                warningMsg.textContent = `Amount exceeds available balance ($${platformAvailableBalance.toFixed(2)})`;
+                sendBtn.disabled = true;
+                sendBtn.style.opacity = '0.5';
+                sendBtn.style.cursor = 'not-allowed';
+                amountInput.style.borderColor = '#ef4444';
+            } else {
+                warningEl.style.display = 'none';
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+                sendBtn.style.cursor = 'pointer';
+                amountInput.style.borderColor = 'var(--border-dark)';
+            }
+        }
+
+        // ==================== REVENUE TAB ====================
+        let revenueData = [];
+        let revenueSelectedSlugs = new Set();
+        let revenueSortField = 'gross';
+        let revenueSortAsc = false; // Default descending (highest first)
+
+        async function loadRevenueData() {
+            const startDate = document.getElementById('revenueStartDate').value;
+            const endDate = document.getElementById('revenueEndDate').value;
+            const loadingEl = document.getElementById('revenueLoading');
+            const tableContainer = document.getElementById('revenueTableContainer');
+            const totalsEl = document.getElementById('revenueTotals');
+
+            // Show loading
+            loadingEl.style.display = 'block';
+            tableContainer.style.display = 'none';
+
+            try {
+                let url = `${API_BASE}/api/v1/lightning/admin/revenue/by-event`;
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || 'Failed to load revenue');
+
+                revenueData = data.events || [];
+                revenueSelectedSlugs.clear();
+
+                // Update totals
+                totalsEl.style.display = 'grid';
+                document.getElementById('revenueTotalGross').textContent = '$' + formatCurrency(data.totals?.gross || 0);
+                document.getElementById('revenueTotalCount').textContent = (data.totals?.count || 0).toLocaleString();
+                document.getElementById('revenueTotalFees').textContent = '-$' + formatCurrency(data.totals?.stripeFees || 0);
+                document.getElementById('revenueTotalRefunded').textContent = '-$' + formatCurrency(data.totals?.refunded || 0);
+                document.getElementById('revenueTotalNet').textContent = '$' + formatCurrency(data.totals?.net || 0);
+
+                renderRevenueTable();
+                updateRevenueSelection();
+
+            } catch (err) {
+                console.error('Error loading revenue:', err);
+                alert('Error: ' + err.message);
+            } finally {
+                loadingEl.style.display = 'none';
+                tableContainer.style.display = 'block';
+            }
+        }
+
+        function formatCurrency(amount) {
+            return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function renderRevenueTable() {
+            const tbody = document.getElementById('revenueTableBody');
+            const searchTerm = (document.getElementById('revenueSearch')?.value || '').toLowerCase();
+
+            // Filter by search
+            let filtered = revenueData;
+            if (searchTerm) {
+                filtered = revenueData.filter(e =>
+                    e.eventSlug.toLowerCase().includes(searchTerm) ||
+                    e.eventName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Sort
+            filtered.sort((a, b) => {
+                let valA = a[revenueSortField];
+                let valB = b[revenueSortField];
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+                if (revenueSortAsc) {
+                    return valA > valB ? 1 : valA < valB ? -1 : 0;
+                } else {
+                    return valA < valB ? 1 : valA > valB ? -1 : 0;
+                }
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="padding: 2rem; text-align: center; color: var(--gray);">No events found</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(e => `
+                <tr style="border-bottom: 1px solid var(--border-dark);" data-slug="${e.eventSlug}">
+                    <td style="padding: 0.75rem;">
+                        <input type="checkbox" class="revenue-checkbox" data-slug="${e.eventSlug}" data-gross="${e.gross}"
+                               ${revenueSelectedSlugs.has(e.eventSlug) ? 'checked' : ''}
+                               onchange="toggleRevenueRow('${e.eventSlug}', ${e.gross}, this.checked)" style="cursor: pointer;">
+                    </td>
+                    <td style="padding: 0.75rem; font-family: monospace; font-size: 0.85rem; color: #ffd700;">${e.eventSlug}</td>
+                    <td style="padding: 0.75rem; color: #fff;">${e.eventName}</td>
+                    <td style="padding: 0.75rem; text-align: right; color: #fff;">${e.count}</td>
+                    <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: #fff;">$${formatCurrency(e.gross)}</td>
+                    <td style="padding: 0.75rem; text-align: right; color: #ff6b6b;">-$${formatCurrency(e.stripeFees)}</td>
+                    <td style="padding: 0.75rem; text-align: right; color: ${e.refunded > 0 ? '#ff6b6b' : 'var(--gray)'};">${e.refunded > 0 ? '-$' + formatCurrency(e.refunded) : '$0'}</td>
+                    <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: #10b981;">$${formatCurrency(e.net)}</td>
+                </tr>
+            `).join('');
+
+            // Update select all checkbox
+            const selectAllCheckbox = document.getElementById('revenueSelectAll');
+            selectAllCheckbox.checked = filtered.length > 0 && filtered.every(e => revenueSelectedSlugs.has(e.eventSlug));
+        }
+
+        function toggleRevenueRow(slug, gross, isChecked) {
+            if (isChecked) {
+                revenueSelectedSlugs.add(slug);
+            } else {
+                revenueSelectedSlugs.delete(slug);
+            }
+            updateRevenueSelection();
+        }
+
+        function toggleAllRevenue(isChecked) {
+            const searchTerm = (document.getElementById('revenueSearch')?.value || '').toLowerCase();
+            let filtered = revenueData;
+            if (searchTerm) {
+                filtered = revenueData.filter(e =>
+                    e.eventSlug.toLowerCase().includes(searchTerm) ||
+                    e.eventName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            filtered.forEach(e => {
+                if (isChecked) {
+                    revenueSelectedSlugs.add(e.eventSlug);
+                } else {
+                    revenueSelectedSlugs.delete(e.eventSlug);
+                }
+            });
+
+            // Update checkboxes in table
+            document.querySelectorAll('.revenue-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+
+            updateRevenueSelection();
+        }
+
+        function selectAllRevenue() {
+            revenueData.forEach(e => revenueSelectedSlugs.add(e.eventSlug));
+            document.querySelectorAll('.revenue-checkbox').forEach(cb => cb.checked = true);
+            document.getElementById('revenueSelectAll').checked = true;
+            updateRevenueSelection();
+        }
+
+        function clearRevenueSelection() {
+            revenueSelectedSlugs.clear();
+            document.querySelectorAll('.revenue-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('revenueSelectAll').checked = false;
+            updateRevenueSelection();
+        }
+
+        function updateRevenueSelection() {
+            const summaryEl = document.getElementById('revenueSelectionSummary');
+            const countEl = document.getElementById('revenueSelectedCount');
+            const totalEl = document.getElementById('revenueSelectedTotal');
+
+            if (revenueSelectedSlugs.size === 0) {
+                summaryEl.style.display = 'none';
+                return;
+            }
+
+            // Calculate selected total
+            const selectedTotal = revenueData
+                .filter(e => revenueSelectedSlugs.has(e.eventSlug))
+                .reduce((sum, e) => sum + e.gross, 0);
+
+            summaryEl.style.display = 'block';
+            countEl.textContent = revenueSelectedSlugs.size;
+            totalEl.textContent = formatCurrency(selectedTotal);
+        }
+
+        function sortRevenueTable(field) {
+            // Update sort icons
+            ['Slug', 'Count', 'Gross', 'Net'].forEach(f => {
+                const icon = document.getElementById('sortIcon' + f);
+                if (icon) {
+                    icon.style.opacity = '0.3';
+                    icon.innerHTML = '<path d="M12 5v14M5 12l7 7 7-7"/>';
+                    icon.querySelector('path').setAttribute('stroke', 'currentColor');
+                }
+            });
+
+            // Toggle direction if same field, otherwise default to descending
+            if (revenueSortField === field) {
+                revenueSortAsc = !revenueSortAsc;
+            } else {
+                revenueSortField = field;
+                revenueSortAsc = false;
+            }
+
+            // Update active sort icon
+            const fieldMap = { eventSlug: 'Slug', count: 'Count', gross: 'Gross', net: 'Net' };
+            const activeIcon = document.getElementById('sortIcon' + fieldMap[field]);
+            if (activeIcon) {
+                activeIcon.style.opacity = '1';
+                activeIcon.querySelector('path').setAttribute('stroke', '#ffd700');
+                if (revenueSortAsc) {
+                    activeIcon.innerHTML = '<path d="M12 19V5M5 12l7-7 7 7"/>';
+                } else {
+                    activeIcon.innerHTML = '<path d="M12 5v14M5 12l7 7 7-7"/>';
+                }
+            }
+
+            renderRevenueTable();
+        }
+
+        function filterRevenueTable() {
+            renderRevenueTable();
+        }
+
+        async function searchPayoutUser() {
+            const email = document.getElementById('payoutSearchEmail').value.trim();
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/payout-console/search?email=${encodeURIComponent(email)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'User not found');
+                }
+
+                const data = await res.json();
+                currentPayoutUser = data.user;
+
+                // Show user section, hide empty state
+                document.getElementById('payoutUserSection').style.display = 'block';
+                document.getElementById('payoutEmptyState').style.display = 'none';
+
+                // Populate user info
+                document.getElementById('payoutUserName').textContent = data.user.name || data.user.hostDisplayName || 'Unknown';
+                document.getElementById('payoutUserEmail').textContent = data.user.email;
+
+                // Roles badges
+                const rolesDiv = document.getElementById('payoutUserRoles');
+                rolesDiv.innerHTML = (data.user.roles || []).map(r =>
+                    `<span style="background: ${r === 'host' ? '#10b981' : r === 'admin' ? '#f59e0b' : '#6366f1'}; color: #fff; padding: 0.15rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; text-transform: uppercase;">${r}</span>`
+                ).join('');
+
+                // Stripe status (in details section)
+                const stripeStatus = document.getElementById('payoutStripeStatus');
+                if (data.user.hostStripeOnboarded) {
+                    stripeStatus.innerHTML = '<span style="color: #10b981;">Connected</span>';
+                } else if (data.user.hostStripeAccountId) {
+                    stripeStatus.innerHTML = '<span style="color: #f59e0b;">Incomplete</span>';
+                } else {
+                    stripeStatus.innerHTML = '<span style="color: #ef4444;">Not Connected</span>';
+                }
+
+                // Earnings
+                document.getElementById('payoutLifetimeEarnings').textContent = `$${(data.user.hostLifetimeEarnings || 0).toFixed(2)}`;
+                document.getElementById('payoutTotalPaidOut').textContent = `$${(data.user.hostTotalPaidOut || 0).toFixed(2)}`;
+
+                // Split configuration
+                document.getElementById('payoutSplitType').value = data.user.hostSplitType || 'percent';
+                document.getElementById('payoutPlatformFeeRate').value = Math.round((data.user.hostPlatformFeeRate || 0.15) * 100);
+                document.getElementById('payoutFlatAmount').value = data.user.hostFlatPayout || 0;
+                updateSplitTypeUI();
+
+                // Fetch platform balance for offer validation
+                refreshPlatformBalance();
+
+                // Update Stripe status indicator and offer note
+                const stripeIndicator = document.getElementById('payoutStripeIndicator');
+                const payoutBtn = document.getElementById('payoutActionBtn');
+                const payoutBtnIcon = document.getElementById('payoutBtnIcon');
+                const payoutBtnText = document.getElementById('payoutBtnText');
+                const allocateNote = document.getElementById('payoutAllocateNote');
+
+                // Button is ALWAYS "Send Offer" - host must accept
+                payoutBtn.style.background = '#ffd700';
+                payoutBtnIcon.innerHTML = '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>';
+                payoutBtnText.textContent = 'Send Offer';
+                payoutBtnText.style.color = '#000';
+                payoutBtnIcon.style.stroke = '#000';
+
+                if (data.user.hostStripeOnboarded) {
+                    // STRIPE CONNECTED: Green indicator
+                    stripeIndicator.textContent = 'Stripe: Connected';
+                    stripeIndicator.style.background = 'rgba(16, 185, 129, 0.15)';
+                    stripeIndicator.style.color = '#10b981';
+                    stripeIndicator.style.border = '1px solid #10b981';
+
+                    allocateNote.innerHTML = '<span style="color: #10b981;">Host can accept and receive payment immediately.</span>';
+                } else {
+                    // STRIPE NOT LINKED: Orange indicator
+                    stripeIndicator.textContent = 'Stripe: Not linked';
+                    stripeIndicator.style.background = 'rgba(245, 158, 11, 0.15)';
+                    stripeIndicator.style.color = '#f59e0b';
+                    stripeIndicator.style.border = '1px solid #f59e0b';
+
+                    allocateNote.innerHTML = '<span style="color: #f59e0b;">Host must accept + link payout account to receive payment.</span>';
+                }
+
+                // Pending payouts
+                renderUserPendingPayouts(data.pendingPayouts || []);
+
+                // Recent transactions
+                renderUserTransactions(data.recentTransactions || []);
+
+            } catch (err) {
+                alert('Error: ' + err.message);
+                document.getElementById('payoutUserSection').style.display = 'none';
+                document.getElementById('payoutEmptyState').style.display = 'block';
+            }
+        }
+
+        function updateSplitTypeUI() {
+            const splitType = document.getElementById('payoutSplitType').value;
+            document.getElementById('payoutPercentGroup').style.display = splitType === 'percent' ? 'block' : 'none';
+            document.getElementById('payoutFlatGroup').style.display = splitType === 'flat' ? 'block' : 'none';
+        }
+
+        // Add event listener for split type change
+        document.addEventListener('DOMContentLoaded', () => {
+            const splitTypeSelect = document.getElementById('payoutSplitType');
+            if (splitTypeSelect) {
+                splitTypeSelect.addEventListener('change', updateSplitTypeUI);
+            }
+        });
+
+        async function updatePayoutSplit() {
+            if (!currentPayoutUser) {
+                alert('No user selected');
+                return;
+            }
+
+            const splitType = document.getElementById('payoutSplitType').value;
+            const platformFeeRate = parseFloat(document.getElementById('payoutPlatformFeeRate').value) / 100;
+            const flatPayout = parseFloat(document.getElementById('payoutFlatAmount').value);
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/payout-console/split`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({
+                        userId: currentPayoutUser._id,
+                        splitType,
+                        platformFeeRate,
+                        flatPayout
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                alert('Split updated successfully! Note: Rate changes apply to FUTURE charges only.');
+
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function allocatePayout() {
+            if (!currentPayoutUser) {
+                alert('No user selected');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('payoutAllocateAmount').value);
+            const reason = document.getElementById('payoutAllocateReason').value.trim();
+
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            if (!reason) {
+                alert('Please enter a reason for the payout');
+                return;
+            }
+
+            // Confirmation message - always creates an offer that host must accept
+            const isStripeConnected = currentPayoutUser.hostStripeOnboarded;
+            const confirmMsg = `SEND OFFER of $${amount.toFixed(2)} to ${currentPayoutUser.email}?\n\nThis will:\n1. Create an offer (requires host acceptance)\n2. Email them about the offer\n3. If accepted${isStripeConnected ? ', transfer immediately' : ' + Stripe linked, transfer money'}\n\nReason: ${reason}`;
+
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/payout-console/allocate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({
+                        userId: currentPayoutUser._id,
+                        amount,
+                        reason,
+                        sendEmail: true
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                alert(data.message);
+
+                // Clear form
+                document.getElementById('payoutAllocateAmount').value = '';
+                document.getElementById('payoutAllocateReason').value = '';
+
+                // Refresh user data
+                searchPayoutUser();
+
+                // Refresh pending list
+                loadAllPendingPayouts();
+
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        function renderUserPendingPayouts(payouts) {
+            const container = document.getElementById('payoutUserPending');
+            // Include offered, accepted, and pending statuses
+            const pending = payouts.filter(p => ['offered', 'accepted', 'pending'].includes(p.status));
+
+            if (pending.length === 0) {
+                container.innerHTML = '<div style="color: var(--gray);">No pending payouts or offers</div>';
+                return;
+            }
+
+            container.innerHTML = pending.map(p => {
+                const statusColors = {
+                    offered: { bg: 'rgba(255, 221, 0, 0.15)', text: '#ffd700', label: 'OFFERED' },
+                    accepted: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', label: 'ACCEPTED' },
+                    pending: { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b', label: 'PENDING' }
+                };
+                const style = statusColors[p.status] || statusColors.pending;
+
+                return `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: ${style.bg}; border-radius: 0.5rem; margin-bottom: 0.5rem; border: 1px solid ${style.text}33;">
+                    <div>
+                        <span style="color: ${style.text}; font-weight: 600;">$${p.amount.toFixed(2)}</span>
+                        <span style="color: var(--gray); margin-left: 0.5rem;">${p.reason}</span>
+                        <span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem; background: ${style.bg}; color: ${style.text}; margin-left: 0.5rem; font-weight: 600;">${style.label}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: var(--gray);">${new Date(p.createdAt).toLocaleDateString()}</span>
+                        <button onclick="cancelPendingPayout('${p._id}')" style="background: #ef4444; color: #fff; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem;">Cancel</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderUserTransactions(transactions) {
+            const container = document.getElementById('payoutUserTransactions');
+
+            if (transactions.length === 0) {
+                container.innerHTML = '<div style="color: var(--gray);">No recent transactions</div>';
+                return;
+            }
+
+            container.innerHTML = transactions.map(t => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-dark);">
+                    <div>
+                        <span style="color: ${t.status === 'transferred' || t.status === 'paid_out' ? '#10b981' : '#f59e0b'}; font-weight: 600;">$${(t.hostAmount / 100).toFixed(2)}</span>
+                        <span style="color: var(--gray); margin-left: 0.5rem; font-size: 0.85rem;">${t.eventName || t.notes || t.type}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.75rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem; background: ${t.status === 'transferred' ? 'rgba(16, 185, 129, 0.2)' : t.status === 'paid_out' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.2)'}; color: ${t.status === 'transferred' || t.status === 'paid_out' ? '#10b981' : '#f59e0b'};">${t.status}</span>
+                        <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">${new Date(t.createdAt).toLocaleDateString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadAllPendingPayouts() {
+            const container = document.getElementById('allPendingPayoutsList');
+            container.innerHTML = '<div style="text-align: center; padding: 1rem;"><div class="spinner"></div> Loading...</div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/payout-console/pending`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                // Include offered, accepted, and pending statuses
+                const pending = data.payouts.filter(p => ['offered', 'accepted', 'pending'].includes(p.status));
+
+                if (pending.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; color: var(--gray); padding: 1rem;">No pending offers or payouts</div>';
+                    return;
+                }
+
+                const statusColors = {
+                    offered: { bg: 'rgba(255, 221, 0, 0.15)', text: '#ffd700', label: 'OFFERED' },
+                    accepted: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', label: 'ACCEPTED' },
+                    pending: { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b', label: 'PENDING' }
+                };
+
+                const total = pending.reduce((sum, p) => sum + p.amount, 0);
+
+                container.innerHTML = `
+                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255, 221, 0, 0.1); border-radius: 0.5rem; display: flex; justify-content: space-between;">
+                        <span><strong>${pending.length}</strong> active offers/payouts</span>
+                        <span style="color: #ffd700; font-weight: 600;">$${total.toFixed(2)} total</span>
+                    </div>
+                    ${pending.map(p => {
+                        const style = statusColors[p.status] || statusColors.pending;
+                        return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--card-black); border-radius: 0.5rem; margin-bottom: 0.5rem; border-left: 3px solid ${style.text};">
+                            <div>
+                                <div style="font-weight: 600;">${p.userName || p.userEmail}</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${p.userEmail}</div>
+                                <div style="font-size: 0.75rem; color: var(--gray); margin-top: 0.25rem;">${p.reason}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: ${style.text}; font-weight: 700; font-size: 1.1rem;">$${p.amount.toFixed(2)}</div>
+                                <span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem; background: ${style.bg}; color: ${style.text}; font-weight: 600;">${style.label}</span>
+                                <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">${new Date(p.createdAt).toLocaleDateString()}</div>
+                                <button onclick="cancelPendingPayout('${p._id}')" style="background: #ef4444; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.7rem; margin-top: 0.25rem;">Cancel</button>
+                            </div>
+                        </div>
+                    `}).join('')}
+                `;
+
+            } catch (err) {
+                container.innerHTML = `<div style="color: var(--danger-red); text-align: center; padding: 1rem;">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function cancelPendingPayout(payoutId) {
+            const reason = prompt('Reason for cancellation (optional):');
+            if (reason === null) return; // User cancelled prompt
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/payout-console/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ payoutId, reason: reason || 'Cancelled by admin' })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                alert('Pending payout cancelled');
+                loadAllPendingPayouts();
+                if (currentPayoutUser) searchPayoutUser();
+
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
         }
 
         // Initialize
