@@ -1150,10 +1150,12 @@
 
       // Always verify with backend (for entry count, used/refunded checks)
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (staffToken) headers['Authorization'] = `Bearer ${staffToken}`;
         const res = await fetch(`${API_BASE}/api/v1/staff/validate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ passId, code: STAFF_CODE })
+          headers,
+          body: JSON.stringify({ passId, code: staffToken ? '' : STAFF_CODE })
         });
         const data = await res.json();
 
@@ -1182,12 +1184,14 @@
     }
 
     async function validatePass(passId) {
-      // Use the staff validate endpoint (passcode auth, no JWT needed)
+      // Use the staff validate endpoint (passcode or host token auth)
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (staffToken) headers['Authorization'] = `Bearer ${staffToken}`;
         const res = await fetch(`${API_BASE}/api/v1/staff/validate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ passId, code: STAFF_CODE })
+          headers,
+          body: JSON.stringify({ passId, code: staffToken ? '' : STAFF_CODE })
         });
 
         const data = await res.json();
@@ -1849,13 +1853,15 @@
       btnAdmit.textContent = 'Processing...';
 
       try {
-        // Use passcode-authenticated admit endpoint (allows re-entry)
+        // Use passcode or host token authenticated admit endpoint (allows re-entry)
+        const headers = { 'Content-Type': 'application/json' };
+        if (staffToken) headers['Authorization'] = `Bearer ${staffToken}`;
         const response = await fetch(`${API_BASE}/api/v1/staff/admit`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             passId: currentPass.passId,
-            code: STAFF_CODE,
+            code: staffToken ? '' : STAFF_CODE,
             ageCheckPerformed,
             ageOver21: ageCheckPerformed ? ageOver21 : undefined
           })
@@ -2009,25 +2015,68 @@
       btnAdmit.textContent = 'ADMIT';
     }
 
+    // Check for host token - auto-authenticate if host owns this event
+    async function tryHostAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) return false;
+
+      // Get event slug from URL (hosts link to /staff?event=slug)
+      const urlParams = new URLSearchParams(window.location.search);
+      const eventSlug = urlParams.get('event');
+      if (!eventSlug) return false;
+
+      try {
+        // Try to validate with host token (no passcode)
+        const res = await fetch(`${API_BASE}/api/v1/staff/validate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ passId: 'test-host-auth', code: '' })
+        });
+        // 404 = pass not found (expected), but auth worked
+        // 401 = not authorized
+        if (res.status !== 401) {
+          staffToken = token;
+          document.getElementById('passcodeOverlay').style.display = 'none';
+          document.getElementById('mainApp').classList.remove('hidden');
+          sessionStorage.setItem('staffAuthed', 'true');
+          switchScannerMode('qr');
+          return true;
+        }
+      } catch (err) {
+        console.log('Host auth check failed, falling back to passcode');
+      }
+      return false;
+    }
+
     // Init
-    function init() {
+    async function init() {
       // Check if already authed this session
       if (sessionStorage.getItem('staffAuthed') === 'true') {
+        // Check if we have a host token
+        staffToken = localStorage.getItem('token') || null;
         document.getElementById('passcodeOverlay').style.display = 'none';
         document.getElementById('mainApp').classList.remove('hidden');
         // Door staff doesn't need to load events - they validate individual passes
         switchScannerMode('qr');
-      } else {
-        // Focus first input
-        inputs[0].focus();
+        return;
+      }
 
-        // Check for code in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlCode = urlParams.get('code');
-        if (urlCode && urlCode.length === 4) {
-          urlCode.split('').forEach((c, i) => inputs[i].value = c);
-          submitPasscode();
-        }
+      // Try host authentication first
+      const hostAuthed = await tryHostAuth();
+      if (hostAuthed) return;
+
+      // Fall back to passcode entry
+      inputs[0].focus();
+
+      // Check for code in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCode = urlParams.get('code');
+      if (urlCode && urlCode.length === 4) {
+        urlCode.split('').forEach((c, i) => inputs[i].value = c);
+        submitPasscode();
       }
     }
 
