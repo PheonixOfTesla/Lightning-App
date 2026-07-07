@@ -64,16 +64,23 @@
         }
 
         .logo {
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             text-decoration: none;
             color: var(--white);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        .logo-img { height: 28px; width: auto; object-fit: contain; }
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
 
         .nav-badge {
             background: var(--electric-purple);
@@ -705,7 +712,7 @@
         <nav class="nav">
             <div class="nav-container">
                 <a href="/" class="logo">
-                    <img src="logo.png" alt="Lightning Pass" class="logo-img">
+                    <img src="logo.png" alt="Lightning Pass">
                     <span>Lightning Pass</span>
                 </a>
                 <div class="nav-links" id="navLinks">
