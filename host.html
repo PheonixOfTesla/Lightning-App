@@ -1923,16 +1923,45 @@
                     const statusData = await statusRes.json();
 
                     if (statusData.success && statusData.connected) {
-                        // Has Stripe account - show lazy-load button for embedded components
+                        // Has Stripe account - show skeleton template immediately, load real components in background
                         setupSection.innerHTML = `
                             <h2 class="section-title">Payouts</h2>
-                            <div id="stripeEmbedContainer" style="text-align: center; padding: 1rem;">
-                                <button onclick="lazyLoadStripeComponents()" class="btn btn-primary" id="loadStripeBtn">
-                                    Manage Payouts
-                                </button>
-                                <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and account settings</p>
+                            <div id="stripeEmbedContainer">
+                                <!-- Skeleton that looks like real Stripe dashboard -->
+                                <div id="stripeSkeleton" style="opacity: 1; transition: opacity 0.3s;">
+                                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <span style="color: var(--gray); font-size: 0.85rem;">Available Balance</span>
+                                            <span style="background: var(--border-dark); width: 60px; height: 12px; border-radius: 4px; display: inline-block;"></span>
+                                        </div>
+                                        <div style="font-size: 1.75rem; font-weight: 600; color: var(--neon-green); margin-bottom: 0.5rem;">$0.00</div>
+                                        <div style="color: var(--gray); font-size: 0.8rem;">Updated just now</div>
+                                    </div>
+                                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+                                        <div style="font-weight: 500; margin-bottom: 1rem; color: white;">Recent Activity</div>
+                                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-dark);">
+                                            <div style="background: var(--border-dark); width: 120px; height: 14px; border-radius: 4px;"></div>
+                                            <div style="background: var(--border-dark); width: 50px; height: 14px; border-radius: 4px;"></div>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
+                                            <div style="background: var(--border-dark); width: 100px; height: 14px; border-radius: 4px;"></div>
+                                            <div style="background: var(--border-dark); width: 60px; height: 14px; border-radius: 4px;"></div>
+                                        </div>
+                                    </div>
+                                    <div style="background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 12px; padding: 1.25rem;">
+                                        <div style="font-weight: 500; margin-bottom: 0.75rem; color: white;">Account</div>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <div style="background: var(--border-dark); width: 80px; height: 32px; border-radius: 6px;"></div>
+                                            <div style="background: var(--border-dark); width: 100px; height: 32px; border-radius: 6px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Real Stripe components will be inserted here -->
+                                <div id="stripeRealComponents" style="display: none; opacity: 0; transition: opacity 0.3s;"></div>
                             </div>
                         `;
+                        // Start loading Stripe components in background
+                        loadStripeEmbedded();
                     } else {
                         // No Stripe account - show connect button
                         setupSection.innerHTML = `
@@ -2135,29 +2164,26 @@
             }
         }
 
-        // Lazy load Stripe SDK and show embedded components
-        async function lazyLoadStripeComponents() {
-            const container = document.getElementById('stripeEmbedContainer');
-            const btn = document.getElementById('loadStripeBtn');
+        // Load Stripe embedded components silently in background
+        async function loadStripeEmbedded() {
+            const skeleton = document.getElementById('stripeSkeleton');
+            const realContainer = document.getElementById('stripeRealComponents');
 
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Loading...';
-            }
+            if (!skeleton || !realContainer) return;
 
             try {
-                // Step 1: Load Stripe Connect SDK if not already loaded
+                // Load Stripe Connect SDK silently
                 if (!window.StripeConnect) {
                     await new Promise((resolve, reject) => {
                         const script = document.createElement('script');
                         script.src = 'https://connect-js.stripe.com/v1.0/connect.js';
                         script.onload = resolve;
-                        script.onerror = () => reject(new Error('Failed to load Stripe SDK'));
+                        script.onerror = reject;
                         document.head.appendChild(script);
                     });
                 }
 
-                // Step 2: Get account session from backend
+                // Get account session from backend
                 const sessionRes = await fetch(`${API_BASE}/api/v1/lightning/host/stripe/account-session`, {
                     method: 'POST',
                     headers: {
@@ -2167,12 +2193,12 @@
                 });
                 const sessionData = await sessionRes.json();
 
-                if (!sessionData.success || !sessionData.clientSecret) {
-                    throw new Error(sessionData.error || 'Failed to get Stripe session');
+                if (!sessionData.success || !sessionData.clientSecret || !sessionData.publishableKey) {
+                    throw new Error('Session failed');
                 }
 
-                // Step 3: Initialize Stripe Connect with key from backend
-                const stripeConnectInstance = window.StripeConnect.init({
+                // Initialize Stripe Connect
+                const stripeInstance = window.StripeConnect.init({
                     publishableKey: sessionData.publishableKey,
                     fetchClientSecret: async () => sessionData.clientSecret,
                     appearance: {
@@ -2181,36 +2207,43 @@
                     }
                 });
 
-                // Step 4: Render embedded components container
-                container.innerHTML = `
-                    <div id="stripePayouts" style="margin-bottom: 1.5rem; min-height: 200px;"></div>
-                    <div id="stripeAccountManagement" style="margin-bottom: 1rem; min-height: 150px;"></div>
-                    <div style="text-align: center; margin-top: 1rem;">
-                        <button onclick="openStripeDashboard()" class="btn" style="background: transparent; border: 1px solid var(--gray); color: var(--gray); font-size: 0.85rem;" id="stripeDashboardBtn">
-                            Open Full Stripe Dashboard
+                // Build real components
+                realContainer.innerHTML = `
+                    <div id="stripePayouts" style="margin-bottom: 1rem;"></div>
+                    <div id="stripeAccountManagement" style="margin-bottom: 1rem;"></div>
+                    <div style="text-align: center; padding-top: 0.5rem;">
+                        <button onclick="openStripeDashboard()" class="btn" style="background: transparent; border: 1px solid var(--border-dark); color: var(--gray); font-size: 0.8rem; padding: 0.5rem 1rem;" id="stripeDashboardBtn">
+                            Full Dashboard
                         </button>
                     </div>
                 `;
 
-                // Create and mount components (await since create returns Promise)
-                const payoutsComponent = stripeConnectInstance.create('payouts');
-                const payoutsContainer = document.getElementById('stripePayouts');
-                payoutsContainer.appendChild(payoutsComponent);
+                // Create and append Stripe components
+                const payouts = stripeInstance.create('payouts');
+                document.getElementById('stripePayouts').appendChild(payouts);
 
-                const accountComponent = stripeConnectInstance.create('account-management');
-                const accountContainer = document.getElementById('stripeAccountManagement');
-                accountContainer.appendChild(accountComponent);
+                const account = stripeInstance.create('account-management');
+                document.getElementById('stripeAccountManagement').appendChild(account);
+
+                // Smooth transition: fade out skeleton, fade in real
+                skeleton.style.opacity = '0';
+                setTimeout(() => {
+                    skeleton.style.display = 'none';
+                    realContainer.style.display = 'block';
+                    setTimeout(() => { realContainer.style.opacity = '1'; }, 50);
+                }, 300);
 
             } catch (err) {
-                console.error('Stripe embed error:', err);
-                // Fallback to dashboard link
-                container.innerHTML = `
-                    <p style="color: var(--danger-red); margin-bottom: 1rem;">${err.message || 'Failed to load Stripe components'}</p>
-                    <button onclick="openStripeDashboard()" class="btn btn-primary" id="stripeDashboardBtn">
-                        Go to Stripe Dashboard
-                    </button>
-                    <p style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">View payouts, bank details, and tax forms</p>
-                `;
+                // Silent fail - add subtle dashboard link to skeleton
+                const accountSection = skeleton.querySelector('div:last-child');
+                if (accountSection && !accountSection.querySelector('button')) {
+                    accountSection.innerHTML = `
+                        <div style="font-weight: 500; margin-bottom: 0.75rem; color: white;">Account</div>
+                        <button onclick="openStripeDashboard()" class="btn" style="background: var(--lightning-yellow); color: black; font-size: 0.85rem; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;" id="stripeDashboardBtn">
+                            Manage in Stripe
+                        </button>
+                    `;
+                }
             }
         }
 
