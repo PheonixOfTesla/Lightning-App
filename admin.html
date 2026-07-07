@@ -5551,29 +5551,38 @@
                 document.getElementById('editButtonType').value = event.buttonType || 'tickets';
 
                 // Format dates for separate date + time inputs
+                // Use LOCAL date (getFullYear/Month/Date) not UTC (toISOString) to avoid timezone shift
                 if (event.date) {
                     const d = new Date(event.date);
-                    // Date portion (YYYY-MM-DD)
-                    document.getElementById('editEventDate').value = d.toISOString().slice(0, 10);
+                    // Date portion (YYYY-MM-DD) in LOCAL timezone
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    document.getElementById('editEventDate').value = `${year}-${month}-${day}`;
                     // Time: use startTime string if present, otherwise extract from Date
                     if (event.startTime) {
                         document.getElementById('editEventStartTime').value = event.startTime;
                     } else {
-                        // Fallback: extract time from Date (for old events)
-                        const hours = d.getUTCHours().toString().padStart(2, '0');
-                        const mins = d.getUTCMinutes().toString().padStart(2, '0');
+                        // Fallback: extract time from Date (for old events) - use LOCAL time
+                        const hours = d.getHours().toString().padStart(2, '0');
+                        const mins = d.getMinutes().toString().padStart(2, '0');
                         document.getElementById('editEventStartTime').value = `${hours}:${mins}`;
                     }
                 }
                 if (event.endDate) {
                     const d = new Date(event.endDate);
-                    document.getElementById('editEventEndDate').value = d.toISOString().slice(0, 10);
+                    // Date portion (YYYY-MM-DD) in LOCAL timezone
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    document.getElementById('editEventEndDate').value = `${year}-${month}-${day}`;
                     // Time: use endTime string if present, otherwise extract from Date
                     if (event.endTime) {
                         document.getElementById('editEventEndTime').value = event.endTime;
                     } else {
-                        const hours = d.getUTCHours().toString().padStart(2, '0');
-                        const mins = d.getUTCMinutes().toString().padStart(2, '0');
+                        // Fallback: use LOCAL time
+                        const hours = d.getHours().toString().padStart(2, '0');
+                        const mins = d.getMinutes().toString().padStart(2, '0');
                         document.getElementById('editEventEndTime').value = `${hours}:${mins}`;
                     }
                 }
