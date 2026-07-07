@@ -2171,9 +2171,9 @@
                     throw new Error(sessionData.error || 'Failed to get Stripe session');
                 }
 
-                // Step 3: Initialize Stripe Connect
-                const stripeConnect = window.StripeConnect.init({
-                    publishableKey: 'pk_live_51SFvASIfYqbb49BvA5Y7DxNZSCvYBPYdINAWCjQFujlbNOH13M3d66BwKLVcG0sIE15CDWjf2pEJoEDDqx3rMpXE00NmPHh3W1',
+                // Step 3: Initialize Stripe Connect with key from backend
+                const stripeConnectInstance = window.StripeConnect.init({
+                    publishableKey: sessionData.publishableKey,
                     fetchClientSecret: async () => sessionData.clientSecret,
                     appearance: {
                         colors: { primary: '#ffd700', background: '#1b2838' },
@@ -2181,10 +2181,10 @@
                     }
                 });
 
-                // Step 4: Render embedded components
+                // Step 4: Render embedded components container
                 container.innerHTML = `
-                    <div id="stripePayouts" style="margin-bottom: 1.5rem;"></div>
-                    <div id="stripeAccountManagement" style="margin-bottom: 1rem;"></div>
+                    <div id="stripePayouts" style="margin-bottom: 1.5rem; min-height: 200px;"></div>
+                    <div id="stripeAccountManagement" style="margin-bottom: 1rem; min-height: 150px;"></div>
                     <div style="text-align: center; margin-top: 1rem;">
                         <button onclick="openStripeDashboard()" class="btn" style="background: transparent; border: 1px solid var(--gray); color: var(--gray); font-size: 0.85rem;" id="stripeDashboardBtn">
                             Open Full Stripe Dashboard
@@ -2192,12 +2192,14 @@
                     </div>
                 `;
 
-                // Create and mount components
-                const payouts = stripeConnect.create('payouts');
-                payouts.mount('#stripePayouts');
+                // Create and mount components (await since create returns Promise)
+                const payoutsComponent = stripeConnectInstance.create('payouts');
+                const payoutsContainer = document.getElementById('stripePayouts');
+                payoutsContainer.appendChild(payoutsComponent);
 
-                const accountManagement = stripeConnect.create('account-management');
-                accountManagement.mount('#stripeAccountManagement');
+                const accountComponent = stripeConnectInstance.create('account-management');
+                const accountContainer = document.getElementById('stripeAccountManagement');
+                accountContainer.appendChild(accountComponent);
 
             } catch (err) {
                 console.error('Stripe embed error:', err);
