@@ -810,6 +810,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Logo</label>
+                        <p style="color: var(--gray); font-size: 0.8rem; margin: 0.25rem 0 0.5rem 0;">Recommended: 400x400px (square)</p>
                         <div class="image-upload">
                             <img id="logoPreview" class="image-preview" src="" alt="Logo">
                             <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="uploadLogo()">
@@ -819,6 +820,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Banner</label>
+                        <p style="color: var(--gray); font-size: 0.8rem; margin: 0.25rem 0 0.5rem 0;">Recommended: 1200x400px (3:1 ratio)</p>
                         <div class="image-upload">
                             <img id="bannerPreview" class="image-preview banner" src="" alt="Banner">
                             <input type="file" id="bannerInput" accept="image/*" style="display:none" onchange="uploadBanner()">
@@ -1097,7 +1099,8 @@
                         <h2 class="section-title">Email My Guests</h2>
                     </div>
                     <p style="color: var(--gray); font-size: 0.9rem;">Send updates to your ticket holders</p>
-                    <div id="emailQuota" style="color: var(--lightning-yellow); font-size: 0.9rem; margin-top: 0.5rem;">Loading quota...</div>
+                    <div id="emailRecipientCount" style="color: #10b981; font-size: 0.9rem; margin-top: 0.5rem;">Loading...</div>
+                    <div id="emailQuota" style="color: var(--lightning-yellow); font-size: 0.9rem; margin-top: 0.25rem;">Loading quota...</div>
                 </div>
 
                 <div class="section">
