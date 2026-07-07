@@ -130,13 +130,20 @@
 
         .dashboard-link {
             padding: 0.4rem 0.75rem;
-            border-radius: 0.25rem;
+            border-radius: 6px;
             font-size: 0.85rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .dashboard-link:hover {
+            border-color: var(--border-dark);
         }
 
         .dashboard-link.active {
-            background: rgba(255,221,0,0.15);
+            border: 1px solid var(--lightning-yellow);
             color: var(--lightning-yellow);
+            background: transparent;
         }
 
         @media (max-width: 768px) {
