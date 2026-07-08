@@ -2679,11 +2679,11 @@
         </div>
     </div>
 
-    <div id="refundModal" class="modal">
+    <div id="userRefundModal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
-            <button class="modal-close" onclick="closeModal('refundModal')">&times;</button>
+            <button class="modal-close" onclick="closeModal('userRefundModal')">&times;</button>
             <h3 style="margin-bottom: 1rem; color: var(--danger-red);">Process Refund</h3>
-            <div id="refundModalContent">
+            <div id="userRefundModalContent">
                 <div class="loading">
                     <div class="spinner"></div>
                     <p>Loading passes...</p>
@@ -4319,8 +4319,8 @@
             }
 
             // Show refund modal with passes
-            document.getElementById('refundModal').classList.add('active');
-            const content = document.getElementById('refundModalContent');
+            document.getElementById('userRefundModal').classList.add('active');
+            const content = document.getElementById('userRefundModalContent');
             content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading passes...</p></div>';
 
             try {
@@ -4388,7 +4388,7 @@
                 const data = await res.json();
                 if (data.success) {
                     showToast('Pass refunded successfully', 'success');
-                    closeModal('refundModal');
+                    closeModal('userRefundModal');
                     loadUsers();
                     loadRefunds();
                 } else {
