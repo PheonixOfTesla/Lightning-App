@@ -4361,7 +4361,7 @@
                                     <td style="font-size: 0.85rem;">${p.eventName || p.venueName || '-'}</td>
                                     <td style="color: var(--neon-green); font-weight: 600;">$${(p.amount || 0).toFixed(0)}</td>
                                     <td style="font-size: 0.8rem;">${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</td>
-                                    <td><button class="action-btn reject" onclick="processRefund('${p.passId}', '${email}')">Refund</button></td>
+                                    <td><button class="action-btn reject" onclick="processUserRefund('${p.passId}', '${email}')">Refund</button></td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -4373,7 +4373,7 @@
             }
         }
 
-        async function processRefund(passId, email) {
+        async function processUserRefund(passId, email) {
             if (!confirm(`Are you sure you want to refund pass ${passId}?`)) return;
 
             try {
