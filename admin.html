@@ -1963,24 +1963,50 @@
 
                     <!-- Paid Link Mode Form -->
                     <div id="linkForm" style="display: none;">
-                        <p style="color: var(--electric-blue); font-size: 0.85rem; margin-bottom: 1rem;">Creates a payment link. Guest pays via Stripe, then receives tickets.</p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                            <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Name</label>
-                                <input type="text" id="linkGuestName" placeholder="John Doe" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
-                            </div>
-                            <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Email</label>
-                                <input type="email" id="linkGuestEmail" placeholder="guest@email.com" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                        <p style="color: var(--electric-blue); font-size: 0.85rem; margin-bottom: 1rem;">Creates payment links. Guest pays via Stripe, then receives tickets.</p>
+
+                        <!-- Single vs Bulk Toggle -->
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <button onclick="setLinkMode('single')" id="linkModeSingle" class="link-mode-btn active" style="flex: 1; padding: 0.5rem; border: 1px solid var(--electric-blue); border-radius: 0.5rem; background: var(--electric-blue); color: #000; cursor: pointer; font-weight: 600;">Single</button>
+                            <button onclick="setLinkMode('bulk')" id="linkModeBulk" class="link-mode-btn" style="flex: 1; padding: 0.5rem; border: 1px solid var(--electric-blue); border-radius: 0.5rem; background: transparent; color: var(--electric-blue); cursor: pointer; font-weight: 600;">Bulk</button>
+                        </div>
+
+                        <!-- Single Recipient Fields -->
+                        <div id="linkSingleFields">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Name</label>
+                                    <input type="text" id="linkGuestName" placeholder="John Doe" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                </div>
+                                <div>
+                                    <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Guest Email</label>
+                                    <input type="email" id="linkGuestEmail" placeholder="guest@email.com" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Bulk Recipients Fields -->
+                        <div id="linkBulkFields" style="display: none;">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Recipients (Name, Email - one per line)</label>
+                                <textarea id="linkBulkRecipients" placeholder="John Doe, john@email.com&#10;Jane Smith, jane@email.com&#10;Bob Wilson, bob@email.com" rows="6" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white); resize: vertical; font-family: monospace; font-size: 0.85rem;"></textarea>
+                                <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.25rem;">Format: Name, Email (one per line). Everyone pays the same price.</p>
+                            </div>
+                            <div style="margin-bottom: 1rem; display: flex; align-items: center;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="linkBulkSendEmails" checked style="margin-right: 0.5rem;">
+                                    <span style="color: var(--gray); font-size: 0.85rem;">Send payment link emails</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                             <div>
                                 <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Price per Ticket ($)</label>
                                 <input type="number" id="linkPrice" value="10" min="1" step="0.01" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                             <div>
-                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Quantity</label>
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Quantity (per person)</label>
                                 <input type="number" id="linkQuantity" value="1" min="1" max="10" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
                             </div>
                             <div>
@@ -2003,7 +2029,7 @@
                                 </div>
                             </label>
                         </div>
-                        <button onclick="generatePaymentLink()" style="width: 100%; padding: 0.75rem; background: var(--electric-blue); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Payment Link</button>
+                        <button onclick="generatePaymentLink()" id="linkSubmitBtn" style="width: 100%; padding: 0.75rem; background: var(--electric-blue); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Generate Payment Link</button>
                     </div>
 
                     <!-- Results -->
@@ -6946,10 +6972,25 @@
 
         // Bulk mode state
         let bulkSource = 'manual';
+        let linkMode = 'single';  // 'single' or 'bulk'
         let allUsers = [];
         let filteredUsers = [];
         let selectedUsers = new Set();
         let searchTimeout = null;
+
+        function setLinkMode(mode) {
+            linkMode = mode;
+            document.getElementById('linkModeSingle').style.background = mode === 'single' ? 'var(--electric-blue)' : 'transparent';
+            document.getElementById('linkModeSingle').style.color = mode === 'single' ? '#000' : 'var(--electric-blue)';
+            document.getElementById('linkModeBulk').style.background = mode === 'bulk' ? 'var(--electric-blue)' : 'transparent';
+            document.getElementById('linkModeBulk').style.color = mode === 'bulk' ? '#000' : 'var(--electric-blue)';
+
+            document.getElementById('linkSingleFields').style.display = mode === 'single' ? 'block' : 'none';
+            document.getElementById('linkBulkFields').style.display = mode === 'bulk' ? 'block' : 'none';
+
+            // Update button text
+            document.getElementById('linkSubmitBtn').textContent = mode === 'single' ? 'Generate Payment Link' : 'Generate Bulk Payment Links';
+        }
 
         function setBulkSource(source) {
             bulkSource = source;
@@ -7266,21 +7307,92 @@
 
         async function generatePaymentLink() {
             const eventSlug = document.getElementById('genEventSelect').value;
-            const guestName = document.getElementById('linkGuestName').value.trim();
-            const guestEmail = document.getElementById('linkGuestEmail').value.trim();
             const customPrice = parseFloat(document.getElementById('linkPrice').value) || 0;
             const quantity = parseInt(document.getElementById('linkQuantity').value) || 1;
             const promoCode = document.getElementById('linkPromoCode').value.trim();
             const requireMemberAccess = document.getElementById('linkRequireMemberAccess').checked;
             const customMessage = document.getElementById('linkMessage').value.trim();
 
-            if (!eventSlug || !guestName || !guestEmail) {
-                showGenError('Please fill in all required fields.');
+            if (!eventSlug) {
+                showGenError('Please select an event.');
                 return;
             }
 
             if (customPrice <= 0) {
                 showGenError('Price must be greater than 0. For free tickets, use Comp mode.');
+                return;
+            }
+
+            // BULK MODE
+            if (linkMode === 'bulk') {
+                const recipientsText = document.getElementById('linkBulkRecipients').value.trim();
+                const sendEmails = document.getElementById('linkBulkSendEmails').checked;
+
+                if (!recipientsText) {
+                    showGenError('Please enter at least one recipient.');
+                    return;
+                }
+
+                // Parse recipients from textarea (Name, Email format)
+                const lines = recipientsText.split('\n').filter(l => l.trim());
+                const recipients = lines.map(line => {
+                    const parts = line.split(',').map(p => p.trim());
+                    return {
+                        name: parts[0] || '',
+                        email: parts[1] || '',
+                        quantity: quantity
+                    };
+                });
+
+                if (recipients.length === 0) {
+                    showGenError('Please enter at least one recipient.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/api/v1/admin/tickets/link-bulk`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${adminToken}`
+                        },
+                        body: JSON.stringify({ eventSlug, recipients, customPrice, promoCode, requireMemberAccess, customMessage, sendEmails })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        let html = `<p style="color: var(--electric-blue);"><strong>Bulk Payment Links Created</strong></p>`;
+                        html += `<p><strong>Created:</strong> ${data.created} links @ $${customPrice} each</p>`;
+                        if (data.failed > 0) {
+                            html += `<p style="color: var(--danger-red);"><strong>Failed:</strong> ${data.failed}</p>`;
+                        }
+                        html += '<div style="max-height: 200px; overflow-y: auto; margin-top: 0.5rem;">';
+                        data.results.forEach(r => {
+                            html += `<p style="font-size: 0.85rem;">${r.name}: <a href="${r.payUrl}" target="_blank" style="color: var(--electric-blue);">$${r.totalAmount.toFixed(2)}</a></p>`;
+                        });
+                        html += '</div>';
+                        showGenResults(html);
+
+                        // Clear form
+                        document.getElementById('linkBulkRecipients').value = '';
+                        document.getElementById('linkRequireMemberAccess').checked = false;
+                        document.getElementById('linkMessage').value = '';
+                    } else {
+                        showGenError(data.error || 'Failed to generate payment links');
+                    }
+                } catch (err) {
+                    showGenError(err.message);
+                }
+                return;
+            }
+
+            // SINGLE MODE
+            const guestName = document.getElementById('linkGuestName').value.trim();
+            const guestEmail = document.getElementById('linkGuestEmail').value.trim();
+
+            if (!guestName || !guestEmail) {
+                showGenError('Please fill in guest name and email.');
                 return;
             }
 
