@@ -2230,6 +2230,14 @@
                             <div id="blastPeopleResults" style="max-height: 150px; overflow-y: auto;">
                                 <div style="color: var(--gray); font-size: 0.85rem;">Type to search...</div>
                             </div>
+                            <!-- ADD EMAIL MANUALLY -->
+                            <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-dark);">
+                                <div style="font-size: 0.75rem; color: var(--gray); margin-bottom: 0.25rem;">Add any email:</div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="email" id="blastManualEmail" placeholder="email@example.com" style="flex: 1; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-dark); border-radius: 0.25rem; color: var(--white); font-size: 0.85rem;">
+                                    <button onclick="addManualEmail()" style="padding: 0.5rem 1rem; background: var(--neon-green); color: #000; border: none; border-radius: 0.25rem; font-weight: 600; cursor: pointer; font-size: 0.85rem;">Add</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -6499,6 +6507,34 @@
                 console.error('Failed to search people:', error);
                 container.innerHTML = '<div style="color: var(--danger-red); font-size: 0.85rem;">Search failed</div>';
             }
+        }
+
+        function addManualEmail() {
+            const input = document.getElementById('blastManualEmail');
+            const email = input.value.trim().toLowerCase();
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            // Check if already added
+            if (blastRecipientMap.has(email)) {
+                alert('This email is already in the recipient list');
+                input.value = '';
+                return;
+            }
+
+            // Add to recipients
+            blastRecipientMap.set(email, { name: '', source: 'manual' });
+            updateBlastRecipientCount();
+
+            // Clear input and show confirmation
+            input.value = '';
+            input.placeholder = 'Added! Enter another...';
+            setTimeout(() => { input.placeholder = 'email@example.com'; }, 2000);
         }
 
         function toggleBlastPerson(checkbox) {
