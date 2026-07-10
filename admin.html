@@ -2205,6 +2205,18 @@
 
             <!-- Email Tab -->
             <div id="emailTab" class="tab-content">
+                <!-- Email Sub-Tabs -->
+                <div style="display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 1px solid var(--border-dark);">
+                    <button onclick="showEmailSubTab('compose')" id="emailSubTabCompose" class="email-subtab active" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--lightning-yellow); font-weight: 600; cursor: pointer; border-bottom: 2px solid var(--lightning-yellow);">Compose</button>
+                    <button onclick="showEmailSubTab('inbox')" id="emailSubTabInbox" class="email-subtab" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--gray); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; position: relative;">
+                        Inbox
+                        <span id="inboxUnreadBadge" style="display: none; position: absolute; top: 0.5rem; right: 0.25rem; background: var(--danger-red); color: #fff; font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 10px; font-weight: 700;"></span>
+                    </button>
+                    <button onclick="showEmailSubTab('sent')" id="emailSubTabSent" class="email-subtab" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--gray); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Sent</button>
+                </div>
+
+                <!-- COMPOSE SUB-TAB -->
+                <div id="emailSubTabComposeContent" class="email-subtab-content">
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3>Email Blast Tool</h3>
@@ -2279,6 +2291,60 @@
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
                         <div style="font-size: 0.85rem; font-weight: 600; color: var(--gray); margin-bottom: 0.5rem;">Recent Sends</div>
                         <div id="blastRecentSends" style="font-size: 0.8rem; color: var(--gray);">Loading...</div>
+                    </div>
+                </div>
+                </div>
+
+                <!-- INBOX SUB-TAB -->
+                <div id="emailSubTabInboxContent" class="email-subtab-content" style="display: none;">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Inbox</h3>
+                            <button onclick="loadInboxEmails()" class="action-btn view" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">Refresh</button>
+                        </div>
+                        <div id="inboxEmailList" style="min-height: 200px;">
+                            <div style="color: var(--gray); text-align: center; padding: 2rem;">Loading inbox...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SENT SUB-TAB -->
+                <div id="emailSubTabSentContent" class="email-subtab-content" style="display: none;">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Sent</h3>
+                            <button onclick="loadSentEmails()" class="action-btn view" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">Refresh</button>
+                        </div>
+                        <div id="sentEmailList" style="min-height: 200px;">
+                            <div style="color: var(--gray); text-align: center; padding: 2rem;">Loading sent emails...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMAIL VIEW MODAL -->
+                <div id="emailViewModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2000; overflow-y: auto;">
+                    <div style="max-width: 700px; margin: 2rem auto; background: var(--card-black); border-radius: 1rem; overflow: hidden;">
+                        <div style="padding: 1rem 1.5rem; background: var(--pure-black); border-bottom: 1px solid var(--border-dark); display: flex; justify-content: space-between; align-items: center;">
+                            <h3 id="emailViewSubject" style="margin: 0; font-size: 1.1rem;">Subject</h3>
+                            <button onclick="closeEmailView()" style="background: none; border: none; color: var(--gray); font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-dark);">
+                            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div>
+                                    <span style="color: var(--gray); font-size: 0.85rem;">From:</span>
+                                    <span id="emailViewFrom" style="color: var(--white); margin-left: 0.5rem;"></span>
+                                </div>
+                                <div>
+                                    <span style="color: var(--gray); font-size: 0.85rem;">To:</span>
+                                    <span id="emailViewTo" style="color: var(--white); margin-left: 0.5rem;"></span>
+                                </div>
+                                <div>
+                                    <span style="color: var(--gray); font-size: 0.85rem;">Date:</span>
+                                    <span id="emailViewDate" style="color: var(--white); margin-left: 0.5rem;"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="emailViewBody" style="padding: 1.5rem; color: var(--white); line-height: 1.6; max-height: 60vh; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -6345,6 +6411,161 @@
         // ============================
         // Email Blast Tool Functions
         // ============================
+
+        // Email Sub-Tab Navigation
+        function showEmailSubTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.email-subtab').forEach(btn => {
+                btn.style.color = 'var(--gray)';
+                btn.style.borderBottomColor = 'transparent';
+                btn.style.fontWeight = '500';
+            });
+            const activeBtn = document.getElementById(`emailSubTab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            if (activeBtn) {
+                activeBtn.style.color = 'var(--lightning-yellow)';
+                activeBtn.style.borderBottomColor = 'var(--lightning-yellow)';
+                activeBtn.style.fontWeight = '600';
+            }
+
+            // Show/hide content
+            document.querySelectorAll('.email-subtab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            const activeContent = document.getElementById(`emailSubTab${tab.charAt(0).toUpperCase() + tab.slice(1)}Content`);
+            if (activeContent) {
+                activeContent.style.display = 'block';
+            }
+
+            // Load data for the tab
+            if (tab === 'inbox') loadInboxEmails();
+            if (tab === 'sent') loadSentEmails();
+        }
+
+        // Load Inbox Emails
+        async function loadInboxEmails() {
+            const container = document.getElementById('inboxEmailList');
+            try {
+                const response = await apiCall('/admin/email/inbox');
+                const { emails, unreadCount } = response;
+
+                // Update unread badge
+                const badge = document.getElementById('inboxUnreadBadge');
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                if (!emails || emails.length === 0) {
+                    container.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 2rem;">No emails received yet</div>';
+                    return;
+                }
+
+                container.innerHTML = emails.map(email => `
+                    <div onclick="viewEmail('${email._id}')" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--border-dark); cursor: pointer; background: ${email.isRead ? 'transparent' : 'rgba(255,221,0,0.05)'};" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='${email.isRead ? 'transparent' : 'rgba(255,221,0,0.05)}'">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${email.isRead ? 'transparent' : 'var(--electric-blue)'}; flex-shrink: 0;"></div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                                <span style="font-weight: ${email.isRead ? '400' : '600'}; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(email.from)}</span>
+                                <span style="font-size: 0.75rem; color: var(--gray); flex-shrink: 0;">${formatEmailDate(email.receivedAt || email.createdAt)}</span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--white); font-weight: ${email.isRead ? '400' : '500'}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(email.subject)}</div>
+                            <div style="font-size: 0.8rem; color: var(--gray); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml((email.bodyText || '').substring(0, 100))}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load inbox:', error);
+                container.innerHTML = '<div style="color: var(--danger-red); text-align: center; padding: 2rem;">Failed to load inbox</div>';
+            }
+        }
+
+        // Load Sent Emails
+        async function loadSentEmails() {
+            const container = document.getElementById('sentEmailList');
+            try {
+                const response = await apiCall('/admin/email/sent');
+                const { emails } = response;
+
+                if (!emails || emails.length === 0) {
+                    container.innerHTML = '<div style="color: var(--gray); text-align: center; padding: 2rem;">No sent emails yet</div>';
+                    return;
+                }
+
+                container.innerHTML = emails.map(email => `
+                    <div onclick="viewEmail('${email._id}')" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--border-dark); cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                                <span style="color: var(--gray); font-size: 0.85rem;">To: <span style="color: var(--white);">${escapeHtml(email.to)}</span></span>
+                                <span style="font-size: 0.75rem; color: var(--gray); flex-shrink: 0;">${formatEmailDate(email.sentAt || email.createdAt)}</span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(email.subject)}</div>
+                            <div style="font-size: 0.8rem; color: var(--gray); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml((email.bodyText || '').substring(0, 100))}</div>
+                        </div>
+                        <div style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 3px; background: ${email.status === 'sent' || email.status === 'delivered' ? 'rgba(57,255,20,0.2)' : 'rgba(255,0,68,0.2)'}; color: ${email.status === 'sent' || email.status === 'delivered' ? 'var(--neon-green)' : 'var(--danger-red)'};">${email.status}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load sent emails:', error);
+                container.innerHTML = '<div style="color: var(--danger-red); text-align: center; padding: 2rem;">Failed to load sent emails</div>';
+            }
+        }
+
+        // View single email
+        async function viewEmail(emailId) {
+            try {
+                const response = await apiCall(`/admin/email/${emailId}`);
+                const { email } = response;
+
+                document.getElementById('emailViewSubject').textContent = email.subject || '(no subject)';
+                document.getElementById('emailViewFrom').textContent = email.from;
+                document.getElementById('emailViewTo').textContent = email.to;
+                document.getElementById('emailViewDate').textContent = new Date(email.receivedAt || email.sentAt || email.createdAt).toLocaleString();
+
+                // Display HTML or text body
+                const bodyContainer = document.getElementById('emailViewBody');
+                if (email.bodyHtml) {
+                    bodyContainer.innerHTML = email.bodyHtml;
+                } else {
+                    bodyContainer.textContent = email.bodyText || '(no content)';
+                }
+
+                document.getElementById('emailViewModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+
+                // Refresh inbox to update read status
+                if (email.direction === 'inbound') {
+                    loadInboxEmails();
+                }
+            } catch (error) {
+                console.error('Failed to load email:', error);
+                alert('Failed to load email');
+            }
+        }
+
+        function closeEmailView() {
+            document.getElementById('emailViewModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function formatEmailDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+            if (isToday) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         // Helper for authenticated API calls (matches admin.html pattern)
         async function apiCall(endpoint, method = 'GET', body = null) {
