@@ -6345,7 +6345,7 @@
                 }
 
                 container.innerHTML = emails.map(email => `
-                    <div onclick="viewEmail('${email._id}')" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--border-dark); cursor: pointer; background: ${email.isRead ? 'transparent' : 'rgba(255,221,0,0.05)'};" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='${email.isRead ? 'transparent' : 'rgba(255,221,0,0.05)}'">
+                    <div onclick="viewEmail('${email._id}')" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--border-dark); cursor: pointer; background: ${email.isRead ? 'transparent' : 'rgba(255,221,0,0.05)'};" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='${email.isRead ? 'transparent' : 'rgba(255,221,0,0.05)'}'">
                         <div style="width: 8px; height: 8px; border-radius: 50%; background: ${email.isRead ? 'transparent' : 'var(--electric-blue)'}; flex-shrink: 0;"></div>
                         <div style="flex: 1; min-width: 0;">
                             <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
