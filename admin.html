@@ -3208,6 +3208,7 @@
             if (token && userRoles.includes('admin')) {
                 adminToken = token;
                 document.getElementById('adminEmail').textContent = userEmail || 'Admin';
+                document.getElementById('navLinks').style.display = 'flex';
                 buildRoleNav();
                 loadDashboardData();
                 return;
