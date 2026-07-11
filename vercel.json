@@ -47,6 +47,7 @@
     { "source": "/checkin", "destination": "/checkin.html" },
     { "source": "/staff", "destination": "/staff.html" },
     { "source": "/claim", "destination": "/claim.html" },
+    { "source": "/unsubscribe", "destination": "/unsubscribe.html" },
     { "source": "/receipt/:claimId", "destination": "/receipt.html" },
     { "source": "/pay/(.*)", "destination": "/pay.html" },
     { "source": "/sarasota-events", "destination": "/sarasota-events.html" },

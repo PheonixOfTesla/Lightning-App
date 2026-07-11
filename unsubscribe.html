@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unsubscribe - Lightning Pass</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1b2a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 480px;
+      text-align: center;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      color: #ffdd00;
+    }
+    p {
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    .card {
+      background: #1b2838;
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .status {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .status.success {
+      background: rgba(57, 255, 20, 0.1);
+      border: 1px solid #39ff14;
+      color: #39ff14;
+    }
+    .status.error {
+      background: rgba(255, 0, 68, 0.1);
+      border: 1px solid #ff0044;
+      color: #ff0044;
+    }
+    .status.loading {
+      background: rgba(255, 221, 0, 0.1);
+      border: 1px solid #ffdd00;
+      color: #ffdd00;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.875rem 2rem;
+      background: #ffdd00;
+      color: #0d1b2a;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 221, 0, 0.3);
+    }
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/logo.png" alt="Lightning Pass" class="logo">
+
+    <div class="card">
+      <div id="loading" class="status loading">
+        Processing your request...
+      </div>
+
+      <div id="success" class="hidden">
+        <div class="status success">
+          Successfully unsubscribed
+        </div>
+        <h1>You're Unsubscribed</h1>
+        <p>You will no longer receive promotional emails from Lightning Pass. You'll still receive transactional emails about your ticket purchases and account activity.</p>
+      </div>
+
+      <div id="already" class="hidden">
+        <div class="status success">
+          Already unsubscribed
+        </div>
+        <h1>You're Already Unsubscribed</h1>
+        <p>Your email preferences were already set to not receive promotional emails.</p>
+      </div>
+
+      <div id="error" class="hidden">
+        <div class="status error">
+          <span id="errorMessage">Invalid or expired link</span>
+        </div>
+        <h1>Oops!</h1>
+        <p>We couldn't process your unsubscribe request. The link may be invalid or expired. Please contact support if you need assistance.</p>
+      </div>
+    </div>
+
+    <a href="/" class="btn">Back to Lightning Pass</a>
+
+    <div class="footer">
+      <p>Lightning Pass | Sarasota, FL</p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://lightning-backend-production.up.railway.app';
+
+    async function processUnsubscribe() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+
+      const loadingEl = document.getElementById('loading');
+      const successEl = document.getElementById('success');
+      const alreadyEl = document.getElementById('already');
+      const errorEl = document.getElementById('error');
+      const errorMsgEl = document.getElementById('errorMessage');
+
+      if (!token) {
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        errorMsgEl.textContent = 'Missing unsubscribe token';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/lightning/email/unsubscribe/${token}`);
+        const data = await response.json();
+
+        loadingEl.classList.add('hidden');
+
+        if (response.ok && data.success) {
+          if (data.alreadyUnsubscribed) {
+            alreadyEl.classList.remove('hidden');
+          } else {
+            successEl.classList.remove('hidden');
+          }
+        } else {
+          errorEl.classList.remove('hidden');
+          errorMsgEl.textContent = data.error || 'Failed to unsubscribe';
+        }
+      } catch (err) {
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        errorMsgEl.textContent = 'Network error. Please try again.';
+      }
+    }
+
+    // Process on page load
+    processUnsubscribe();
+  </script>
+</body>
+</html>

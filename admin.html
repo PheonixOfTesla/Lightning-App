@@ -2147,6 +2147,7 @@
                         <span id="inboxUnreadBadge" style="display: none; position: absolute; top: 0.5rem; right: 0.25rem; background: var(--danger-red); color: #fff; font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 10px; font-weight: 700;"></span>
                     </button>
                     <button onclick="showEmailSubTab('sent')" id="emailSubTabSent" class="email-subtab" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--gray); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Sent</button>
+                    <button onclick="showEmailSubTab('deliverability')" id="emailSubTabDeliverability" class="email-subtab" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--gray); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Deliverability</button>
                 </div>
 
                 <!-- COMPOSE SUB-TAB -->
@@ -2251,6 +2252,59 @@
                         </div>
                         <div id="sentEmailList" style="min-height: 200px;">
                             <div style="color: var(--gray); text-align: center; padding: 2rem;">Loading sent emails...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DELIVERABILITY SUB-TAB -->
+                <div id="emailSubTabDeliverabilityContent" class="email-subtab-content" style="display: none;">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Email Deliverability</h3>
+                            <button onclick="loadDeliverabilityStats()" class="action-btn view" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">Refresh</button>
+                        </div>
+
+                        <!-- Stats Cards -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="background: rgba(255,0,68,0.1); border: 1px solid rgba(255,0,68,0.3); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                                <div id="statsHardBounce" style="font-size: 2rem; font-weight: 700; color: var(--danger-red);">-</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">Hard Bounces</div>
+                            </div>
+                            <div style="background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.3); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                                <div id="statsSoftBounce" style="font-size: 2rem; font-weight: 700; color: #ff8c00;">-</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">Soft Bounces</div>
+                            </div>
+                            <div style="background: rgba(255,0,68,0.1); border: 1px solid rgba(255,0,68,0.3); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                                <div id="statsSpamComplaint" style="font-size: 2rem; font-weight: 700; color: var(--danger-red);">-</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">Spam Complaints</div>
+                            </div>
+                            <div style="background: rgba(100,100,100,0.1); border: 1px solid rgba(100,100,100,0.3); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                                <div id="statsUnsubscribe" style="font-size: 2rem; font-weight: 700; color: var(--gray);">-</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">Unsubscribes</div>
+                            </div>
+                            <div style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                                <div id="statsTotalSuppressed" style="font-size: 2rem; font-weight: 700; color: var(--electric-blue);">-</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">Total Suppressed</div>
+                            </div>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div style="background: rgba(255,221,0,0.1); border-left: 3px solid var(--lightning-yellow); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0.5rem;">
+                            <div style="font-weight: 600; color: var(--lightning-yellow); margin-bottom: 0.25rem;">What is this?</div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">
+                                Suppressed emails are addresses that won't receive future emails. They are added automatically when emails bounce or when recipients mark emails as spam. This protects your sender reputation.
+                            </div>
+                        </div>
+
+                        <!-- Recent Suppressions -->
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span>Recent Suppressions</span>
+                                <span style="font-size: 0.8rem; color: var(--gray);">Click to remove (manual override)</span>
+                            </div>
+                            <div id="recentSuppressions" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div style="color: var(--gray); font-size: 0.85rem; text-align: center; padding: 1rem;">Loading...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -6321,6 +6375,78 @@
             // Load data for the tab
             if (tab === 'inbox') loadInboxEmails();
             if (tab === 'sent') loadSentEmails();
+            if (tab === 'deliverability') loadDeliverabilityStats();
+        }
+
+        // Load Email Deliverability Stats
+        async function loadDeliverabilityStats() {
+            try {
+                const response = await apiCall('/admin/email/suppression-stats');
+                const { stats, recent } = response;
+
+                // Update stat cards
+                document.getElementById('statsHardBounce').textContent = stats.hard_bounce || 0;
+                document.getElementById('statsSoftBounce').textContent = stats.soft_bounce || 0;
+                document.getElementById('statsSpamComplaint').textContent = stats.spam_complaint || 0;
+                document.getElementById('statsUnsubscribe').textContent = stats.unsubscribe || 0;
+                document.getElementById('statsTotalSuppressed').textContent = stats.total || 0;
+
+                // Render recent suppressions
+                const container = document.getElementById('recentSuppressions');
+                if (!recent || recent.length === 0) {
+                    container.innerHTML = '<div style="color: var(--neon-green); font-size: 0.9rem; text-align: center; padding: 1rem;">No suppressed emails - great deliverability!</div>';
+                    return;
+                }
+
+                container.innerHTML = recent.map(s => {
+                    const reasonColors = {
+                        hard_bounce: 'var(--danger-red)',
+                        soft_bounce: '#ff8c00',
+                        spam_complaint: 'var(--danger-red)',
+                        unsubscribe: 'var(--gray)',
+                        manual: 'var(--electric-blue)'
+                    };
+                    const reasonLabels = {
+                        hard_bounce: 'Hard Bounce',
+                        soft_bounce: 'Soft Bounce',
+                        spam_complaint: 'Spam Complaint',
+                        unsubscribe: 'Unsubscribe',
+                        manual: 'Manual'
+                    };
+                    const date = new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span style="color: ${reasonColors[s.reason] || 'var(--gray)'}; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;">${reasonLabels[s.reason] || s.reason}</span>
+                                <span style="color: var(--white);">${s.email}</span>
+                                ${s.bounceCount > 1 ? `<span style="font-size: 0.75rem; color: var(--gray);">(${s.bounceCount}x)</span>` : ''}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span style="font-size: 0.8rem; color: var(--gray);">${date}</span>
+                                <button onclick="removeFromSuppression('${s.email}')" style="background: none; border: none; color: var(--electric-blue); cursor: pointer; font-size: 0.8rem; text-decoration: underline;">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Failed to load deliverability stats:', err);
+                document.getElementById('recentSuppressions').innerHTML = '<div style="color: var(--danger-red); font-size: 0.85rem; text-align: center; padding: 1rem;">Failed to load stats</div>';
+            }
+        }
+
+        // Remove email from suppression list
+        async function removeFromSuppression(email) {
+            if (!confirm(`Remove ${email} from the suppression list? This will allow future emails to be sent to this address.`)) {
+                return;
+            }
+            try {
+                await apiCall(`/admin/email/suppressions/${encodeURIComponent(email)}`, 'DELETE');
+                showNotification('Email removed from suppression list', 'success');
+                loadDeliverabilityStats(); // Refresh
+            } catch (err) {
+                showNotification('Failed to remove from suppression list', 'error');
+            }
         }
 
         // Load Inbox Emails
