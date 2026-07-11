@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Cache Control -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Venue Dashboard - Lightning Pass</title>
-    <meta name="description" content="Manage your venue bookings and customers on Lightning Pass.">
+    <title>Venue Dashboard | Lightning Pass</title>
+    <meta name="description" content="Venue Dashboard - Manage your events, track sales, and view customer data on Lightning Pass.">
+    <meta name="robots" content="noindex, nofollow">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
@@ -19,17 +17,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --pure-black: #0d1b2a;
             --card-black: #1b2838;
             --border-dark: #2d3748;
-            --lightning-yellow: #ffdd00;
+            --lightning-yellow: #ffd700;
             --electric-blue: #00d4ff;
             --electric-purple: #9d4edd;
             --neon-green: #39ff14;
@@ -46,34 +40,20 @@
             min-height: 100vh;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                radial-gradient(ellipse at 50% 30%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 30% 60%, rgba(255, 255, 255, 0.03) 0%, transparent 40%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
         /* Navigation */
-        nav {
+        .nav {
             background: var(--pure-black);
+            border-bottom: 1px solid var(--border-dark);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 0.875rem 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0.75rem 1rem;
         }
 
         .nav-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -88,6 +68,8 @@
             gap: 0.5rem;
             text-decoration: none;
             color: var(--white);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .logo img {
@@ -97,406 +79,569 @@
             object-fit: cover;
         }
 
+        .nav-badge {
+            background: var(--electric-purple);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .btn-logout {
+            padding: 0.5rem 1.2rem;
+            background: var(--lightning-yellow);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #e6c200;
+            color: #000;
+        }
+
         .nav-links {
             display: flex;
             gap: 1.5rem;
             align-items: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .nav-link {
             color: var(--white);
             text-decoration: none;
-            transition: all 0.3s;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            white-space: nowrap;
         }
 
-        .nav-link:hover,
-        .nav-link.active {
-            color: var(--lightning-yellow);
-        }
-
-        .btn-logout {
-            padding: 0.5rem 1.25rem;
-            background: var(--lightning-yellow);
-            color: var(--pure-black);
-            border: none;
-            border-radius: 25px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.85rem;
-            box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
-            transition: all 0.3s ease;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .btn-logout:hover {
-            background: #fff;
-            color: var(--pure-black);
-            box-shadow: 0 0 25px rgba(255, 221, 0, 0.6);
-            transform: scale(1.05);
-        }
+        .nav-link:hover { color: var(--lightning-yellow); }
 
         .nav-divider {
             width: 1px;
             height: 20px;
             background: rgba(255,255,255,0.2);
-            margin: 0 0.5rem;
+            flex-shrink: 0;
         }
 
         .dashboard-link {
             padding: 0.4rem 0.75rem;
-            border-radius: 0.25rem;
+            border-radius: 6px;
             font-size: 0.85rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .dashboard-link:hover {
+            border-color: var(--border-dark);
         }
 
         .dashboard-link.active {
-            background: rgba(255,221,0,0.15);
+            border: 1px solid var(--lightning-yellow);
             color: var(--lightning-yellow);
+            background: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-black);
+            border-top: 1px solid var(--border-dark);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0;
+            z-index: 1000;
+        }
+
+        .tab-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .tab-btn.active { color: var(--lightning-yellow); }
+        .tab-btn:hover { color: var(--white); }
+
+        .tab-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tab-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Desktop: horizontal tab bar at top */
+        @media (min-width: 769px) {
+            .tab-bar {
+                position: static;
+                background: transparent;
+                border: none;
+                max-width: 1200px;
+                margin: 0 auto;
+                margin-top: 4rem;
+                padding: 1rem;
+                justify-content: flex-start;
+                gap: 0.5rem;
+            }
+
+            .tab-btn {
+                flex-direction: row;
+                padding: 0.6rem 1.25rem;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                background: var(--card-black);
+                border: 1px solid var(--border-dark);
+            }
+
+            .tab-btn.active {
+                border-color: var(--lightning-yellow);
+                background: rgba(255, 215, 0, 0.1);
+            }
         }
 
         /* Main Content */
-        .main-content {
-            padding: 6rem 2rem 2rem;
+        main {
             max-width: 1200px;
             margin: 0 auto;
-            position: relative;
-            z-index: 10;
+            padding: 4.5rem 1rem 5rem;
         }
 
-        /* Dashboard Header */
-        .dashboard-header {
+        @media (min-width: 769px) {
+            main { padding: 0 1rem 2rem; }
+        }
+
+        /* Tab Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Section Cards */
+        .section {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
-        .dashboard-header h1 {
-            font-size: 2rem;
-            background: linear-gradient(135deg, var(--lightning-yellow), var(--lightning-yellow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
         }
 
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
         }
 
         .stat-card {
-            background: var(--card-black);
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
         }
 
-        .stat-card-label {
-            color: var(--gray);
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-card-value {
-            font-size: 1.75rem;
+        .stat-value {
+            font-size: 1.5rem;
             font-weight: 700;
-        }
-
-        .stat-card-value.yellow { color: var(--lightning-yellow); }
-        .stat-card-value.green { color: var(--neon-green); }
-        .stat-card-value.blue { color: var(--electric-blue); }
-
-        /* Bookings Grid */
-        .bookings-grid {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .booking-card {
-            background: var(--card-black);
-            border-radius: 1rem;
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 1.25rem;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 1rem;
-            align-items: center;
-            transition: border-color 0.2s;
-        }
-
-        .booking-card:hover {
-            border-color: var(--lightning-yellow);
-        }
-
-        .booking-info h3 {
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .booking-meta {
-            color: var(--gray);
-            font-size: 0.85rem;
-        }
-
-        .booking-meta span {
-            margin-right: 1rem;
-        }
-
-        .booking-date {
-            text-align: right;
-        }
-
-        .booking-date .date {
-            font-weight: 600;
             color: var(--lightning-yellow);
         }
 
-        .booking-date .time {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
+        .stat-value.green { color: var(--neon-green); }
+        .stat-value.blue { color: var(--electric-blue); }
 
-        .booking-amount {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--neon-green);
-            margin-top: 0.5rem;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+        .stat-label {
             font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+
+        /* Event List */
+        .event-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+        .event-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .event-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-name { font-weight: 600; font-size: 1rem; }
+
+        .event-date { color: var(--electric-blue); font-size: 0.85rem; }
+
+        .event-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
             font-weight: 600;
             text-transform: uppercase;
         }
 
-        .status-badge.upcoming { background: rgba(0, 212, 255, 0.2); color: var(--electric-blue); }
-        .status-badge.completed { background: rgba(57, 255, 20, 0.2); color: var(--neon-green); }
-        .status-badge.cancelled { background: rgba(255, 0, 68, 0.2); color: var(--danger-red); }
+        .event-status.live { background: var(--neon-green); color: #000; }
+        .event-status.pending { background: var(--lightning-yellow); color: #000; }
 
-        /* Filter Tabs */
-        .filter-tabs {
+        .event-stats {
             display: flex;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .event-stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-stat-value { font-weight: 600; color: var(--lightning-yellow); }
+        .event-stat-label { font-size: 0.7rem; color: var(--gray); }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--lightning-yellow);
+            color: #000;
+        }
+
+        .btn-primary:hover { background: #e6c700; }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--lightning-yellow);
+            color: var(--lightning-yellow);
+        }
+
+        .btn-success {
+            background: var(--neon-green);
+            color: #000;
+        }
+
+        /* Customer List */
+        .customer-list {
+            display: flex;
+            flex-direction: column;
             gap: 0.5rem;
+        }
+
+        .customer-row {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 1fr;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            align-items: center;
+        }
+
+        .customer-row:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .customer-name { font-weight: 500; }
+        .customer-email { color: var(--gray); }
+        .customer-spent { color: var(--neon-green); }
+        .customer-tickets { color: var(--electric-blue); }
+
+        @media (max-width: 768px) {
+            .customer-row {
+                grid-template-columns: 1fr;
+                gap: 0.25rem;
+            }
+        }
+
+        /* Access Denied */
+        .access-denied {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .access-denied h2 {
+            margin: 1rem 0 0.5rem;
+            color: var(--lightning-yellow);
+        }
+
+        .access-denied p {
+            color: var(--gray);
             margin-bottom: 1.5rem;
         }
 
-        .filter-tab {
-            padding: 0.5rem 1rem;
-            background: transparent;
-            border: 1px solid var(--border-dark);
-            border-radius: 0.5rem;
-            color: var(--white);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-
-        .filter-tab:hover { border-color: var(--lightning-yellow); }
-
-        .filter-tab.active {
-            background: var(--lightning-yellow);
-            border-color: var(--lightning-yellow);
-            color: var(--pure-black);
+        .access-denied a {
+            color: var(--lightning-yellow);
+            text-decoration: none;
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 4rem 2rem;
+            padding: 2rem;
             color: var(--gray);
         }
-
-        .empty-state h3 { color: var(--white); margin-bottom: 0.5rem; }
 
         /* Loading */
         .loading {
             text-align: center;
-            padding: 4rem;
+            padding: 2rem;
+            color: var(--gray);
         }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
             border: 3px solid var(--border-dark);
             border-top-color: var(--lightning-yellow);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
             margin: 0 auto 1rem;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Mobile Menu */
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            cursor: pointer;
-            padding: 5px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: var(--white);
-            transition: all 0.3s;
-        }
-
-        .mobile-menu {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(13, 27, 42, 0.98);
-            z-index: 999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .mobile-menu.active { display: flex; }
-
-        .mobile-menu a {
-            color: var(--white);
-            text-decoration: none;
-            font-size: 1.5rem;
-            font-weight: 500;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        /* Mobile */
-        @media (max-width: 768px) {
-            nav { padding: 0.75rem 1rem; }
-            .nav-links { display: none; }
-            .hamburger { display: flex; }
-            .main-content { padding: 5rem 1rem 1rem; }
-            .dashboard-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            .dashboard-header h1 { font-size: 1.5rem; }
-            .booking-card { grid-template-columns: 1fr; }
-            .booking-date { text-align: left; margin-top: 0.5rem; }
+        /* Responsive */
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .event-stats { flex-wrap: wrap; gap: 1rem; }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="nav-container">
-            <a href="/" class="logo">
-                <img src="logo.png" alt="Lightning Pass">
-                <span>Lightning Pass</span>
-            </a>
-            <div class="nav-links" id="navLinks">
-                <a href="/" class="nav-link">Events</a>
-                <div class="nav-divider"></div>
-                <!-- Role-based nav links injected by JS -->
-                <a href="#" onclick="logout(); return false;" class="btn-logout">LOGOUT</a>
-            </div>
-            <div class="hamburger" onclick="toggleMobileMenu()">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <a href="/">Events</a>
-        <a href="/venue" class="active">Venue</a>
-        <a href="#" onclick="logout()" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>
+    <!-- Access Denied View -->
+    <div id="accessDenied" class="access-denied">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--lightning-yellow)">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+        <h2>Venue Access Required</h2>
+        <p id="accessMessage">Please log in to access the venue dashboard.</p>
+        <p><a href="/members">Go to Member Dashboard</a> | <a href="/">Home</a></p>
     </div>
 
-    <main class="main-content">
-        <!-- Loading State -->
-        <div id="loadingState" class="loading">
-            <div class="spinner"></div>
-            <p>Loading your dashboard...</p>
+    <!-- Portal View -->
+    <div id="portalView" style="display: none;">
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="/" class="logo">
+                    <img src="logo.png" alt="Lightning Pass">
+                    <span>Lightning Pass</span>
+                </a>
+                <div class="nav-links" id="navLinks">
+                    <a href="/" class="nav-link">Events</a>
+                    <div class="nav-divider"></div>
+                    <a href="#" onclick="logout(); return false;" class="btn-logout">LOGOUT</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="events">
+                <span class="tab-icon">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </span>
+                <span>Events</span>
+            </button>
+            <button class="tab-btn" data-tab="sales">
+                <span class="tab-icon">
+                    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="currentColor"/></svg>
+                </span>
+                <span>Sales</span>
+            </button>
+            <button class="tab-btn" data-tab="customers">
+                <span class="tab-icon">
+                    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
+                <span>Customers</span>
+            </button>
+            <button class="tab-btn" data-tab="payouts">
+                <span class="tab-icon">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </span>
+                <span>Payouts</span>
+            </button>
         </div>
 
-        <!-- Login Required State -->
-        <div id="loginRequired" style="display: none;">
-            <div class="empty-state">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--lightning-yellow)" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <h3>Login Required</h3>
-                <p>Please log in to view your venue dashboard</p>
-                <a href="/" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: var(--lightning-yellow); color: var(--pure-black); border-radius: 0.5rem; text-decoration: none; font-weight: 600;">Login</a>
-            </div>
-        </div>
+        <main>
+            <!-- EVENTS TAB -->
+            <div id="tabEvents" class="tab-content active">
+                <div class="stats-grid" id="eventStats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalSold">0</div>
+                        <div class="stat-label">Total Sold</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value green" id="totalRevenue">$0</div>
+                        <div class="stat-label">Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value blue" id="totalCheckedIn">0</div>
+                        <div class="stat-label">Checked In</div>
+                    </div>
+                </div>
 
-        <!-- Dashboard Content -->
-        <div id="dashboardContent" style="display: none;">
-            <div class="dashboard-header">
-                <div>
-                    <h1 id="venueName">Venue Dashboard</h1>
-                    <p style="color: var(--gray);" id="venueAddress"></p>
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Events at Your Venue</h2>
+                    </div>
+                    <div id="eventsList" class="event-list">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading events...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-card-label">Total Bookings</div>
-                    <div class="stat-card-value yellow" id="totalBookings">0</div>
+            <!-- SALES TAB -->
+            <div id="tabSales" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value green" id="liveInside">0</div>
+                        <div class="stat-label">Inside</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="liveSold">0</div>
+                        <div class="stat-label">Sold</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value blue" id="liveRevenue">$0</div>
+                        <div class="stat-label">Revenue</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-card-label">Upcoming</div>
-                    <div class="stat-card-value blue" id="upcomingBookings">0</div>
+
+                <div class="section">
+                    <h2 class="section-title">Live Events</h2>
+                    <div id="liveEventsList" class="event-list">
+                        <div class="empty-state">No live events</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-card-label">This Month</div>
-                    <div class="stat-card-value" id="monthlyBookings">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-card-label">Total Revenue</div>
-                    <div class="stat-card-value green" id="totalRevenue">$0</div>
+
+                <div class="section">
+                    <h2 class="section-title">Earnings by Event</h2>
+                    <div id="earningsList" class="event-list">
+                        <div class="loading">Loading...</div>
+                    </div>
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 style="font-size: 1.25rem;">Bookings</h2>
-            </div>
-
-            <div class="filter-tabs">
-                <button class="filter-tab active" data-filter="all">All</button>
-                <button class="filter-tab" data-filter="upcoming">Upcoming</button>
-                <button class="filter-tab" data-filter="past">Past</button>
-            </div>
-
-            <div id="bookingsGrid" class="bookings-grid">
-                <div class="empty-state">
-                    <h3>No Bookings Yet</h3>
-                    <p>Bookings will appear here when customers make reservations.</p>
+            <!-- CUSTOMERS TAB -->
+            <div id="tabCustomers" class="tab-content">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Your Customers</h2>
+                        <button class="btn btn-secondary" onclick="exportCustomers()">Export CSV</button>
+                    </div>
+                    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem;">
+                        All customers who have purchased tickets to your events.
+                    </p>
+                    <div id="customerStats" class="stats-grid" style="margin-bottom: 1rem;">
+                        <div class="stat-card">
+                            <div class="stat-value" id="customerCount">0</div>
+                            <div class="stat-label">Total Customers</div>
+                        </div>
+                    </div>
+                    <div id="customersList" class="customer-list">
+                        <div class="loading">Loading...</div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <footer>
-        <p>Lightning Pass &copy; 2026</p>
-    </footer>
+            <!-- PAYOUTS TAB -->
+            <div id="tabPayouts" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value green" id="lifetimeRevenue">$0</div>
+                        <div class="stat-label">Lifetime Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value blue" id="totalPaidOut">$0</div>
+                        <div class="stat-label">Paid to Bank</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">Payout Account</h2>
+                    <div id="payoutStatus">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
         // ===== CONFIGURATION =====
@@ -504,10 +649,9 @@
             ? 'http://localhost:3000'
             : 'https://lightning-backend-production.up.railway.app';
 
-        let allBookings = [];
-        let currentFilter = 'all';
+        let currentVenue = null;
 
-        // Graceful degradation for OLD tokens (pre-roles[])
+        // Get user roles from token
         function getUserRolesFromToken() {
             let userRoles = [];
             try {
@@ -536,14 +680,11 @@
             }
         }
 
-        // Build role-based navigation from user's roles
+        // Build role-based navigation
         function buildRoleNav() {
             const currentPage = 'venue';
-
-            // Get user's roles (graceful old-token handling)
             const userRoles = getUserRolesFromToken();
 
-            // Map roles to dashboard links (order: Admin, Venue, Host, Partner, DJ, Member)
             const allDashboards = [
                 { id: 'admin', role: 'admin', label: 'Admin', href: '/admin' },
                 { id: 'venue', role: 'venue', label: 'Venue', href: '/venue' },
@@ -553,16 +694,12 @@
                 { id: 'member', role: 'member', label: 'Member', href: '/members' }
             ];
 
-            // Filter to only user's roles
             const dashboards = allDashboards.filter(dash => userRoles.includes(dash.role));
-
             const navLinks = document.getElementById('navLinks');
             const divider = navLinks.querySelector('.nav-divider');
 
-            // Remove any existing dashboard links
             navLinks.querySelectorAll('.dashboard-link').forEach(el => el.remove());
 
-            // Add dashboard links after divider (reverse to maintain order)
             dashboards.reverse().forEach(dash => {
                 const link = document.createElement('a');
                 link.href = dash.href;
@@ -570,183 +707,321 @@
                 link.textContent = dash.label;
                 divider.insertAdjacentElement('afterend', link);
             });
-
-            // Also update mobile menu
-            const mobileMenu = document.getElementById('mobileMenu');
-            if (mobileMenu) {
-                mobileMenu.innerHTML = '<a href="/">Events</a>' +
-                    dashboards.reverse().map(dash =>
-                        `<a href="${dash.href}"${dash.id === currentPage ? ' class="active"' : ''}>${dash.label}</a>`
-                    ).join('') +
-                    '<a href="#" onclick="logout()" style="color: var(--lightning-yellow); font-weight: 700;">Logout</a>';
-            }
         }
 
-        // Check authentication on load
+        // API call helper
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'API error');
+            }
+            return res.json();
+        }
+
+        // Check authentication
         async function checkAuth() {
             const token = localStorage.getItem('token');
             const userRoles = getUserRolesFromToken();
 
             if (!token) {
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('loginRequired').style.display = 'block';
+                document.getElementById('accessMessage').textContent = 'Please log in to access the venue dashboard.';
                 return;
             }
 
-            // Check if user has venue role
             if (!userRoles.includes('venue') && !userRoles.includes('admin')) {
-                document.getElementById('loadingState').innerHTML = `
-                    <p style="color: var(--danger-red);">Access Denied</p>
-                    <p style="color: var(--gray);">You don't have venue access</p>
-                    <a href="/" style="color: var(--lightning-yellow); margin-top: 1rem; display: inline-block;">Go to Events</a>
-                `;
+                document.getElementById('accessMessage').textContent = 'You don\'t have venue access.';
                 return;
             }
 
             try {
-                await loadDashboard(token);
-            } catch (error) {
-                console.error('Dashboard error:', error);
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('loginRequired').style.display = 'block';
-            }
-        }
+                // Load venue info
+                const venueRes = await apiCall('/api/v1/venue-dashboard/me');
+                currentVenue = venueRes.venue;
 
-        async function loadDashboard(token) {
-            try {
-                // Get venue info
-                const venueRes = await fetch(`${API_BASE}/api/v1/lightning/venue/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // Show portal
+                document.getElementById('accessDenied').style.display = 'none';
+                document.getElementById('portalView').style.display = 'block';
 
-                if (!venueRes.ok) {
-                    const errData = await venueRes.json();
-                    throw new Error(errData.error || 'Failed to load venue');
-                }
-
-                const venueData = await venueRes.json();
-                const venue = venueData.venue;
-
-                document.getElementById('venueName').textContent = venue.name;
-                document.getElementById('venueAddress').textContent = venue.address || '';
-
-                // Get bookings/passes for this venue
-                const passesRes = await fetch(`${API_BASE}/api/v1/lightning/venue/passes`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (passesRes.ok) {
-                    const passesData = await passesRes.json();
-                    allBookings = passesData.passes || [];
-                }
-
-                // Calculate stats
-                const now = new Date();
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-                const upcoming = allBookings.filter(b => new Date(b.validUntil || b.bookingDate) >= now);
-                const thisMonth = allBookings.filter(b => new Date(b.createdAt) >= startOfMonth);
-                const totalRevenue = allBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
-
-                document.getElementById('totalBookings').textContent = allBookings.length;
-                document.getElementById('upcomingBookings').textContent = upcoming.length;
-                document.getElementById('monthlyBookings').textContent = thisMonth.length;
-                document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(0);
-
-                // Build role-based navigation
+                // Build nav
                 buildRoleNav();
 
-                // Render bookings
-                renderBookings(allBookings);
+                // Load initial data
+                loadEvents();
 
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('dashboardContent').style.display = 'block';
-
-            } catch (error) {
-                console.error('Dashboard error:', error);
-                document.getElementById('loadingState').innerHTML = `
-                    <p style="color: var(--danger-red);">Failed to load dashboard</p>
-                    <p style="color: var(--gray);">${error.message}</p>
-                `;
+            } catch (err) {
+                console.error('Auth error:', err);
+                document.getElementById('accessMessage').textContent = err.message;
             }
         }
 
-        function renderBookings(bookings) {
-            const grid = document.getElementById('bookingsGrid');
-            const now = new Date();
+        // Load events
+        async function loadEvents() {
+            try {
+                const data = await apiCall('/api/v1/venue-dashboard/events');
 
-            // Apply filter
-            let filtered = bookings;
-            if (currentFilter === 'upcoming') {
-                filtered = bookings.filter(b => new Date(b.validUntil || b.bookingDate) >= now);
-            } else if (currentFilter === 'past') {
-                filtered = bookings.filter(b => new Date(b.validUntil || b.bookingDate) < now);
-            }
+                // Update stats
+                document.getElementById('totalSold').textContent = data.totals.sold || 0;
+                document.getElementById('totalRevenue').textContent = '$' + ((data.totals.revenue || 0) / 100).toFixed(0);
+                document.getElementById('totalCheckedIn').textContent = data.totals.checkedIn || 0;
 
-            // Sort by date (newest first for past, soonest first for upcoming)
-            filtered.sort((a, b) => {
-                const dateA = new Date(a.validUntil || a.bookingDate || a.createdAt);
-                const dateB = new Date(b.validUntil || b.bookingDate || b.createdAt);
-                return currentFilter === 'past' ? dateB - dateA : dateA - dateB;
-            });
+                // Render events
+                const eventsList = document.getElementById('eventsList');
+                if (!data.events || data.events.length === 0) {
+                    eventsList.innerHTML = '<div class="empty-state">No events at your venue</div>';
+                    return;
+                }
 
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No ${currentFilter === 'all' ? '' : currentFilter} bookings</h3>
-                    </div>
-                `;
-                return;
-            }
+                eventsList.innerHTML = data.events.map(event => {
+                    const date = new Date(event.date);
+                    const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    const stats = event.derivedStats || { sold: 0, revenue: 0, checkedIn: 0 };
 
-            grid.innerHTML = filtered.map(booking => {
-                const bookingDate = new Date(booking.bookingDate || booking.validUntil || booking.createdAt);
-                const isUpcoming = bookingDate >= now;
-                const status = booking.status === 'refunded' ? 'cancelled' : (isUpcoming ? 'upcoming' : 'completed');
-
-                const dateStr = bookingDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                const timeStr = booking.bookingTime || bookingDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-                return `
-                    <div class="booking-card">
-                        <div class="booking-info">
-                            <h3>${booking.guestName || booking.email}</h3>
-                            <div class="booking-meta">
-                                <span>${booking.passName || 'Booking'}</span>
-                                <span>${booking.duration || ''}</span>
+                    return `
+                        <div class="event-card">
+                            <div class="event-card-header">
+                                <div>
+                                    <div class="event-name">${event.name}</div>
+                                    <div class="event-date">${dateStr}</div>
+                                </div>
+                                <span class="event-status ${event.status}">${event.status}</span>
                             </div>
-                            <div class="booking-meta" style="margin-top: 0.5rem;">
-                                <span>Email: ${booking.email}</span>
-                                ${booking.phone ? `<span>Phone: ${booking.phone}</span>` : ''}
+                            <div class="event-stats">
+                                <div class="event-stat-item">
+                                    <span class="event-stat-value">${stats.sold}</span>
+                                    <span class="event-stat-label">Sold</span>
+                                </div>
+                                <div class="event-stat-item">
+                                    <span class="event-stat-value">$${(stats.revenue / 100).toFixed(0)}</span>
+                                    <span class="event-stat-label">Revenue</span>
+                                </div>
+                                <div class="event-stat-item">
+                                    <span class="event-stat-value">${stats.checkedIn}</span>
+                                    <span class="event-stat-label">Checked In</span>
+                                </div>
                             </div>
-                            <span class="status-badge ${status}">${status}</span>
                         </div>
-                        <div class="booking-date">
-                            <div class="date">${dateStr}</div>
-                            <div class="time">${timeStr}</div>
-                            <div class="booking-amount">$${booking.amount || 0}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Load events error:', err);
+                document.getElementById('eventsList').innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+            }
         }
 
-        // Filter tabs
-        document.querySelectorAll('.filter-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentFilter = tab.dataset.filter;
-                renderBookings(allBookings);
+        // Load live stats
+        async function loadLiveStats() {
+            try {
+                const data = await apiCall('/api/v1/venue-dashboard/live/stats');
+
+                document.getElementById('liveInside').textContent = data.totals.inside || 0;
+                document.getElementById('liveSold').textContent = data.totals.totalSold || 0;
+                document.getElementById('liveRevenue').textContent = '$' + ((data.totals.revenue || 0) / 100).toFixed(0);
+
+                const liveList = document.getElementById('liveEventsList');
+                if (!data.events || data.events.length === 0) {
+                    liveList.innerHTML = '<div class="empty-state">No upcoming events</div>';
+                } else {
+                    liveList.innerHTML = data.events.map(event => {
+                        const date = new Date(event.date);
+                        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        return `
+                            <div class="event-card">
+                                <div class="event-name">${event.name}</div>
+                                <div class="event-date">${dateStr}</div>
+                                <div class="event-stats">
+                                    <div class="event-stat-item">
+                                        <span class="event-stat-value">${event.inside}</span>
+                                        <span class="event-stat-label">Inside</span>
+                                    </div>
+                                    <div class="event-stat-item">
+                                        <span class="event-stat-value">${event.totalSold}</span>
+                                        <span class="event-stat-label">Sold</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+            } catch (err) {
+                console.error('Live stats error:', err);
+            }
+        }
+
+        // Load earnings
+        async function loadEarnings() {
+            try {
+                const data = await apiCall('/api/v1/venue-dashboard/earnings');
+
+                const earningsList = document.getElementById('earningsList');
+                if (!data.events || data.events.length === 0) {
+                    earningsList.innerHTML = '<div class="empty-state">No earnings data</div>';
+                    return;
+                }
+
+                earningsList.innerHTML = data.events.map(event => {
+                    return `
+                        <div class="event-card">
+                            <div class="event-card-header">
+                                <div class="event-name">${event.name}</div>
+                                <span style="color: var(--neon-green);">$${(event.venueEarnings / 100).toFixed(2)}</span>
+                            </div>
+                            <div class="event-stats">
+                                <div class="event-stat-item">
+                                    <span class="event-stat-value">$${(event.gross / 100).toFixed(0)}</span>
+                                    <span class="event-stat-label">Gross</span>
+                                </div>
+                                <div class="event-stat-item">
+                                    <span class="event-stat-value" style="color: var(--danger-red);">-$${(event.platformFee / 100).toFixed(0)}</span>
+                                    <span class="event-stat-label">Platform</span>
+                                </div>
+                                <div class="event-stat-item">
+                                    <span class="event-stat-value">${event.ticketCount}</span>
+                                    <span class="event-stat-label">Tickets</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Earnings error:', err);
+                document.getElementById('earningsList').innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+            }
+        }
+
+        // Load customers
+        async function loadCustomers() {
+            try {
+                const data = await apiCall('/api/v1/venue-dashboard/customers');
+
+                document.getElementById('customerCount').textContent = data.total || 0;
+
+                const customersList = document.getElementById('customersList');
+                if (!data.customers || data.customers.length === 0) {
+                    customersList.innerHTML = '<div class="empty-state">No customers yet</div>';
+                    return;
+                }
+
+                customersList.innerHTML = data.customers.map(c => {
+                    return `
+                        <div class="customer-row">
+                            <span class="customer-name">${c.name}</span>
+                            <span class="customer-email">${c.email}</span>
+                            <span class="customer-spent">$${(c.totalSpent / 100).toFixed(0)}</span>
+                            <span class="customer-tickets">${c.totalTickets} tickets</span>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Customers error:', err);
+                document.getElementById('customersList').innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+            }
+        }
+
+        // Export customers to CSV
+        async function exportCustomers() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE}/api/v1/venue-dashboard/customers/export`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error('Export failed');
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'customers.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+            } catch (err) {
+                alert('Export failed: ' + err.message);
+            }
+        }
+
+        // Load payout status
+        async function loadPayoutStatus() {
+            try {
+                const data = await apiCall('/api/v1/venue-dashboard/payout-status');
+
+                document.getElementById('lifetimeRevenue').textContent = '$' + ((data.payout.lifetimeRevenue || 0) / 100).toFixed(0);
+                document.getElementById('totalPaidOut').textContent = '$' + ((data.payout.totalPaidOut || 0) / 100).toFixed(0);
+
+                const payoutStatus = document.getElementById('payoutStatus');
+
+                if (data.payout.stripeConnectId) {
+                    payoutStatus.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            <div>
+                                <div style="font-weight: 600;">Stripe Account Connected</div>
+                                <div style="color: var(--gray); font-size: 0.85rem;">
+                                    ${data.payout.bankAccountLast4 ? 'Bank ending in ' + data.payout.bankAccountLast4 : 'Account configured'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    payoutStatus.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <p style="color: var(--gray); margin-bottom: 1rem;">Connect your Stripe account to receive payouts</p>
+                            <button class="btn btn-primary" onclick="alert('Contact admin to set up payouts')">Set Up Payouts</button>
+                        </div>
+                    `;
+                }
+
+            } catch (err) {
+                console.error('Payout status error:', err);
+                document.getElementById('payoutStatus').innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+            }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Show correct tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+
+                // Load tab data
+                if (tab === 'sales') {
+                    loadLiveStats();
+                    loadEarnings();
+                } else if (tab === 'customers') {
+                    loadCustomers();
+                } else if (tab === 'payouts') {
+                    loadPayoutStatus();
+                }
             });
         });
 
-        function toggleMobileMenu() {
-            document.getElementById('mobileMenu').classList.toggle('active');
-        }
-
         function logout() {
-            // Clear ALL auth keys
             ['token', 'user', 'authToken', 'adminToken', 'partnerToken', 'hostToken', 'dealToken', 'venueToken', 'djToken', 'userEmail', 'userRoles', 'userRole', 'userType', 'userId', 'partnerUser', 'dealUser'].forEach(k => localStorage.removeItem(k));
             window.location.href = '/';
         }
