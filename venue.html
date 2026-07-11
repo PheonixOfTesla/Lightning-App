@@ -770,7 +770,7 @@
 
                 // Update stats
                 document.getElementById('totalSold').textContent = data.totals.sold || 0;
-                document.getElementById('totalRevenue').textContent = '$' + ((data.totals.revenue || 0) / 100).toFixed(0);
+                document.getElementById('totalRevenue').textContent = '$' + (data.totals.revenue || 0).toFixed(0);
                 document.getElementById('totalCheckedIn').textContent = data.totals.checkedIn || 0;
 
                 // Render events
@@ -800,7 +800,7 @@
                                     <span class="event-stat-label">Sold</span>
                                 </div>
                                 <div class="event-stat-item">
-                                    <span class="event-stat-value">$${(stats.revenue / 100).toFixed(0)}</span>
+                                    <span class="event-stat-value">$${(stats.revenue || 0).toFixed(0)}</span>
                                     <span class="event-stat-label">Revenue</span>
                                 </div>
                                 <div class="event-stat-item">
@@ -825,7 +825,7 @@
 
                 document.getElementById('liveInside').textContent = data.totals.inside || 0;
                 document.getElementById('liveSold').textContent = data.totals.totalSold || 0;
-                document.getElementById('liveRevenue').textContent = '$' + ((data.totals.revenue || 0) / 100).toFixed(0);
+                document.getElementById('liveRevenue').textContent = '$' + (data.totals.revenue || 0).toFixed(0);
 
                 const liveList = document.getElementById('liveEventsList');
                 if (!data.events || data.events.length === 0) {
@@ -874,15 +874,15 @@
                         <div class="event-card">
                             <div class="event-card-header">
                                 <div class="event-name">${event.name}</div>
-                                <span style="color: var(--neon-green);">$${(event.venueEarnings / 100).toFixed(2)}</span>
+                                <span style="color: var(--neon-green);">$${(event.venueEarnings || 0).toFixed(2)}</span>
                             </div>
                             <div class="event-stats">
                                 <div class="event-stat-item">
-                                    <span class="event-stat-value">$${(event.gross / 100).toFixed(0)}</span>
+                                    <span class="event-stat-value">$${(event.gross || 0).toFixed(0)}</span>
                                     <span class="event-stat-label">Gross</span>
                                 </div>
                                 <div class="event-stat-item">
-                                    <span class="event-stat-value" style="color: var(--danger-red);">-$${(event.platformFee / 100).toFixed(0)}</span>
+                                    <span class="event-stat-value" style="color: var(--danger-red);">-$${(event.platformFee || 0).toFixed(0)}</span>
                                     <span class="event-stat-label">Platform</span>
                                 </div>
                                 <div class="event-stat-item">
@@ -918,7 +918,7 @@
                         <div class="customer-row">
                             <span class="customer-name">${c.name}</span>
                             <span class="customer-email">${c.email}</span>
-                            <span class="customer-spent">$${(c.totalSpent / 100).toFixed(0)}</span>
+                            <span class="customer-spent">$${(c.totalSpent || 0).toFixed(0)}</span>
                             <span class="customer-tickets">${c.totalTickets} tickets</span>
                         </div>
                     `;
@@ -960,8 +960,8 @@
             try {
                 const data = await apiCall('/api/v1/venue-dashboard/payout-status');
 
-                document.getElementById('lifetimeRevenue').textContent = '$' + ((data.payout.lifetimeRevenue || 0) / 100).toFixed(0);
-                document.getElementById('totalPaidOut').textContent = '$' + ((data.payout.totalPaidOut || 0) / 100).toFixed(0);
+                document.getElementById('lifetimeRevenue').textContent = '$' + (data.payout.lifetimeRevenue || 0).toFixed(0);
+                document.getElementById('totalPaidOut').textContent = '$' + (data.payout.totalPaidOut || 0).toFixed(0);
 
                 const payoutStatus = document.getElementById('payoutStatus');
 
