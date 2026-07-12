@@ -554,8 +554,9 @@
                 </div>
 
                 <div class="section">
-                    <div class="section-header">
+                    <div class="section-header" style="display: flex; align-items: center; justify-content: space-between;">
                         <h2 class="section-title">Events at Your Venue</h2>
+                        <div id="liveIndicator" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--card-black); border-radius: 0.25rem;"><span style="color: var(--gray);">Connecting...</span></div>
                     </div>
                     <div id="eventsList" class="event-list">
                         <div class="loading">
@@ -643,6 +644,7 @@
         </main>
     </div>
 
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script>
         // ===== CONFIGURATION =====
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -650,6 +652,91 @@
             : 'https://lightning-backend-production.up.railway.app';
 
         let currentVenue = null;
+        let venueSocket = null;
+
+        // Initialize Socket.IO for live venue updates
+        // SECURITY: Server validates venue ownership before allowing room join
+        function initVenueSocket() {
+            if (!currentVenue || !currentVenue._id) {
+                console.warn('[Venue Socket] No venue ID, skipping socket init');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            venueSocket = io(API_BASE, {
+                auth: { token },
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 2000
+            });
+
+            venueSocket.on('connect', () => {
+                console.log('[Venue] Socket connected');
+                // Join venue-specific room (server validates ownership)
+                venueSocket.emit('join:venue', currentVenue._id, (response) => {
+                    if (response?.success) {
+                        console.log('[Venue] Joined venue room:', response.room);
+                        updateLiveStatus('connected');
+                    } else {
+                        console.error('[Venue] Failed to join room:', response?.error);
+                        updateLiveStatus('error');
+                    }
+                });
+            });
+
+            venueSocket.on('disconnect', () => {
+                console.log('[Venue] Socket disconnected');
+                updateLiveStatus('disconnected');
+            });
+
+            venueSocket.on('connect_error', (err) => {
+                console.log('[Venue] Socket error:', err.message);
+                updateLiveStatus('error');
+            });
+
+            // Live sale event - refresh dashboard when sale occurs
+            venueSocket.on('venue:sale', (data) => {
+                console.log('[Venue] New sale:', data);
+                showSaleNotification(data);
+                // Refresh the current tab data
+                const activeTab = document.querySelector('.tab-btn.active')?.dataset?.tab;
+                if (activeTab === 'events') loadEventsTab();
+                else if (activeTab === 'sales') loadSalesTab();
+            });
+
+            // Also listen for passPurchased (existing event from LightningController)
+            venueSocket.on('passPurchased', (data) => {
+                console.log('[Venue] Pass purchased:', data);
+                showSaleNotification(data);
+                const activeTab = document.querySelector('.tab-btn.active')?.dataset?.tab;
+                if (activeTab === 'events') loadEventsTab();
+                else if (activeTab === 'sales') loadSalesTab();
+            });
+        }
+
+        function updateLiveStatus(status) {
+            const indicator = document.getElementById('liveIndicator');
+            if (!indicator) return;
+
+            if (status === 'connected') {
+                indicator.innerHTML = '<span style="color: var(--neon-green);">LIVE</span>';
+            } else if (status === 'disconnected') {
+                indicator.innerHTML = '<span style="color: var(--gray);">Reconnecting...</span>';
+            } else {
+                indicator.innerHTML = '<span style="color: var(--danger-red);">Offline</span>';
+            }
+        }
+
+        function showSaleNotification(data) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position: fixed; top: 80px; right: 20px; background: var(--card-black); border: 1px solid var(--neon-green); padding: 1rem 1.5rem; border-radius: 0.5rem; z-index: 9999; animation: slideIn 0.3s ease;';
+            toast.innerHTML = '<div style="color: var(--neon-green); font-weight: 600;">New Sale!</div><div style="color: var(--gray); font-size: 0.85rem;">' + (data.eventName || data.event || 'Event') + ' - $' + (data.amount || 0).toFixed(2) + '</div>';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
 
         // Get user roles from token
         function getUserRolesFromToken() {
@@ -746,6 +833,9 @@
                 // Load venue info
                 const venueRes = await apiCall('/api/v1/venue-dashboard/me');
                 currentVenue = venueRes.venue;
+
+                // Initialize Socket.IO for live updates (after we have venueId)
+                initVenueSocket();
 
                 // Show portal
                 document.getElementById('accessDenied').style.display = 'none';

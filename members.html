@@ -883,12 +883,59 @@
         <p>Lightning Pass &copy; 2026</p>
     </footer>
 
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script>
         // ===== CONFIGURATION =====
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'
             : 'https://lightning-backend-production.up.railway.app';
         let memberData = null;
+        let memberSocket = null;
+
+        // Initialize Socket.IO for live wallet updates
+        function initMemberSocket() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            memberSocket = io(API_BASE, {
+                auth: { token },
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 2000
+            });
+
+            memberSocket.on('connect', () => {
+                console.log('[Member] Socket connected');
+                memberSocket.emit('join:member', (response) => {
+                    if (response?.success) {
+                        console.log('[Member] Joined member room:', response.room);
+                    }
+                });
+            });
+
+            memberSocket.on('disconnect', () => {
+                console.log('[Member] Socket disconnected');
+            });
+
+            // Live wallet update - new pass purchased
+            memberSocket.on('member:pass_created', (data) => {
+                console.log('[Member] New pass created:', data);
+                // Show notification
+                showPassNotification(data);
+                // Refresh passes list
+                loadMemberData();
+            });
+        }
+
+        function showPassNotification(data) {
+            // Create a toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position: fixed; top: 80px; right: 20px; background: var(--card-black); border: 1px solid var(--neon-green); padding: 1rem 1.5rem; border-radius: 0.5rem; z-index: 9999; animation: slideIn 0.3s ease;';
+            toast.innerHTML = '<div style="color: var(--neon-green); font-weight: 600;">New Pass Added!</div><div style="color: var(--gray); font-size: 0.85rem;">' + (data.eventName || 'Event') + '</div>';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
 
         // Graceful degradation for OLD tokens (pre-roles[])
         function getUserRolesFromToken() {
@@ -1441,6 +1488,7 @@
 
         // Initialize
         checkAuth();
+        initMemberSocket();
 
         // Check URL for subscription success/cancel
         const urlParams = new URLSearchParams(window.location.search);

@@ -8028,6 +8028,23 @@
                 addLiveFeedItem('claim_started', data);
                 incrementFunnelStep('claimFunnel', 'Claim Started');
             });
+
+            // Live inbox updates - new inbound email
+            analyticsSocket.on('email:inbound', (data) => {
+                console.log('[Inbox] New email received:', data);
+                // Update unread badge
+                const badge = document.getElementById('inboxUnreadBadge');
+                if (badge) {
+                    const currentCount = parseInt(badge.textContent) || 0;
+                    badge.textContent = currentCount + 1;
+                    badge.style.display = 'inline-block';
+                }
+                // If inbox tab is visible, prepend the new email
+                const inboxContent = document.getElementById('emailSubTabInboxContent');
+                if (inboxContent && inboxContent.style.display !== 'none') {
+                    loadInboxEmails(); // Refresh the inbox list
+                }
+            });
         }
 
         function updateLiveStatus(status) {
