@@ -3169,6 +3169,32 @@
 
     <div id="toast" class="toast"></div>
 
+    <!-- Owner Code Modal - Security gate for high-risk actions -->
+    <div id="ownerCodeModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="cancelOwnerCode()">&times;</button>
+            <h3 style="color: var(--danger-red); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                Owner Authorization Required
+            </h3>
+            <p id="ownerCodeMessage" style="color: var(--gray); margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,0,68,0.1); border-radius: 0.5rem; border-left: 3px solid var(--danger-red);">
+                <!-- Data-driven consequence line -->
+            </p>
+            <div class="form-group">
+                <label>Enter Owner Code</label>
+                <input type="password" id="ownerCodeInput" placeholder="Enter owner code"
+                       onkeypress="if(event.key==='Enter')submitOwnerCode()">
+            </div>
+            <p id="ownerCodeError" style="color: var(--danger-red); font-size: 0.85rem; margin-bottom: 1rem; display: none;"></p>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="cancelOwnerCode()" class="btn" style="flex: 1; background: var(--card-black); border: 1px solid var(--border-dark);">Cancel</button>
+                <button onclick="submitOwnerCode()" class="btn" style="flex: 1; background: var(--danger-red); color: white;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Shared API configuration -->
     <script src="js/api.js"></script>
     <script>
@@ -3176,6 +3202,74 @@
         // API_BASE loaded from js/api.js
         let adminToken = null;
         let currentRefundPassId = null;
+
+        // ===== OWNER CODE GATE =====
+        // Security gate for high-risk admin actions (MONEY-OUT, DESTRUCTIVE, SCALE)
+        let ownerCodeResolve = null;
+        let ownerCodeReject = null;
+
+        /**
+         * Require owner code before executing sensitive operations
+         * @param {Object} options - { message: string (consequence description) }
+         * @returns {Promise<string>} - Resolves with the owner code if valid
+         */
+        function requireOwnerCode({ message }) {
+            return new Promise((resolve, reject) => {
+                ownerCodeResolve = resolve;
+                ownerCodeReject = reject;
+
+                // Set the consequence message
+                document.getElementById('ownerCodeMessage').textContent = message;
+                document.getElementById('ownerCodeInput').value = '';
+                document.getElementById('ownerCodeError').style.display = 'none';
+
+                // Show modal
+                openModal('ownerCodeModal');
+
+                // Focus input
+                setTimeout(() => {
+                    document.getElementById('ownerCodeInput').focus();
+                }, 100);
+            });
+        }
+
+        function submitOwnerCode() {
+            const code = document.getElementById('ownerCodeInput').value;
+
+            if (!code) {
+                document.getElementById('ownerCodeError').textContent = 'Please enter the owner code';
+                document.getElementById('ownerCodeError').style.display = 'block';
+                return;
+            }
+
+            // Close modal and resolve with code
+            closeModal('ownerCodeModal');
+            if (ownerCodeResolve) {
+                ownerCodeResolve(code);
+                ownerCodeResolve = null;
+                ownerCodeReject = null;
+            }
+        }
+
+        function cancelOwnerCode() {
+            closeModal('ownerCodeModal');
+            if (ownerCodeReject) {
+                ownerCodeReject(new Error('Owner code cancelled'));
+                ownerCodeResolve = null;
+                ownerCodeReject = null;
+            }
+        }
+
+        /**
+         * Helper: Add owner code header to fetch requests
+         * @param {string} code - The owner code
+         * @returns {Object} - Headers object with x-owner-code
+         */
+        function ownerCodeHeaders(code) {
+            return {
+                'x-owner-code': code
+            };
+        }
 
         // ===== TICKET ID GENERATION =====
         // Generate unique ticketId for new ticket tiers
@@ -3494,10 +3588,23 @@
         async function deleteEvent(eventId, eventName) {
             if (!confirm(`Delete event "${eventName}"? This cannot be undone.`)) return;
 
+            // Owner code required for event deletion
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Permanently delete "${eventName}" — all event data and tickets will be lost.`
+                });
+            } catch (e) {
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/events/${eventId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
+                    }
                 });
 
                 if (res.ok) {
@@ -4034,7 +4141,7 @@
                     const statsHtml = stats.length > 0 ? stats.join('<br>') : '-';
 
                     // Action buttons
-                    const deleteBtn = user.isGuest ? '' : `<button class="action-btn reject" onclick="deleteUser('${user._id}')" style="margin-left: 0.25rem;">Delete</button>`;
+                    const deleteBtn = user.isGuest ? '' : `<button class="action-btn reject" onclick="deleteUser('${user._id}', '${(user.email || '').replace(/'/g, "\\'")}')" style="margin-left: 0.25rem;">Delete</button>`;
                     const viewBtn = user.isGuest ? '' : `<button class="action-btn view" onclick="viewUser('${user._id}')">View</button>`;
                     const passesBtn = user.passCount > 0 ? `<button class="action-btn" style="background: var(--electric-purple); margin-left: 0.25rem;" onclick="viewUserPasses('${user.email}')">Passes</button>` : '';
                     const refundBtn = user.passCount > 0 ? `<button class="action-btn" style="background: var(--danger-red); margin-left: 0.25rem;" onclick="initiateUserRefund('${user.email}')">Refund</button>` : '';
@@ -4298,7 +4405,7 @@
                 <div class="user-detail-section" style="border-color: var(--danger-red);">
                     <h4 style="color: var(--danger-red);">Danger Zone</h4>
                     <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem;">Permanently delete this user account. This cannot be undone.</p>
-                    <button onclick="deleteUser('${user._id}')" style="background: var(--danger-red); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+                    <button onclick="deleteUser('${user._id}', '${(user.email || '').replace(/'/g, "\\'")}')" style="background: var(--danger-red); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
                         Delete User
                     </button>
                 </div>
@@ -4484,13 +4591,26 @@
             }
         }
 
-        async function deleteUser(userId) {
+        async function deleteUser(userId, userEmail = 'user') {
             if (!confirm('Are you sure you want to permanently delete this user? This cannot be undone.')) return;
+
+            // Owner code required for user deletion
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Permanently delete ${userEmail} — all user data, passes, and history will be lost.`
+                });
+            } catch (e) {
+                return;
+            }
 
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
+                    }
                 });
 
                 const data = await res.json();
@@ -4643,10 +4763,23 @@
         async function deleteDeal(dealId) {
             if (!confirm('Delete this deal?')) return;
 
+            // Owner code required for deal deletion
+            let ownerCode;
             try {
-                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/${dealId}`, {
+                ownerCode = await requireOwnerCode({
+                    message: `Permanently delete this deal — cannot be undone.`
+                });
+            } catch (e) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/deals/admin/${dealId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
+                    }
                 });
 
                 if (res.ok) {
@@ -4688,7 +4821,7 @@
                             <span style="color: var(--neon-green);">$${((pass.amount || 0) / 100).toFixed(2)}</span>
                         </div>
                         ${pass.status !== 'refunded' ? `
-                            <button class="action-btn refund" onclick="showRefundModal('${pass.passId || pass._id}')">Refund</button>
+                            <button class="action-btn refund" onclick="showRefundModal('${pass.passId || pass._id}', ${pass.amount || 0}, '${(pass.customerEmail || pass.email || '').replace(/'/g, "\\'")}')">Refund</button>
                         ` : '<span class="status-badge rejected">Refunded</span>'}
                     </div>
                 `).join('');
@@ -4698,8 +4831,12 @@
             }
         }
 
-        function showRefundModal(passId) {
+        // Store refund context for owner code message
+        let currentRefundContext = null;
+
+        function showRefundModal(passId, amount = 0, email = '') {
             currentRefundPassId = passId;
+            currentRefundContext = { passId, amount, email };
             document.getElementById('refundPassId').textContent = passId;
             document.getElementById('refundReason').value = '';
             document.getElementById('refundModal').classList.add('active');
@@ -4710,12 +4847,28 @@
 
             const reason = document.getElementById('refundReason').value || 'Admin refund';
 
+            // Owner code required for refunds
+            const amount = currentRefundContext?.amount || 0;
+            const email = currentRefundContext?.email || 'customer';
+            const amountDisplay = (amount / 100).toFixed(2);
+
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Refund $${amountDisplay} to ${email} — this action is irreversible.`
+                });
+            } catch (e) {
+                // User cancelled
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/${currentRefundPassId}/refund`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
                     },
                     body: JSON.stringify({ reason, notifyCustomer: true })
                 });
@@ -6167,10 +6320,23 @@
         async function deleteExperience(experienceId) {
             if (!confirm('Are you sure you want to delete this experience?')) return;
 
+            // Owner code required for experience deletion
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Permanently delete this experience — cannot be undone.`
+                });
+            } catch (e) {
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/experiences/${experienceId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
+                    }
                 });
 
                 const data = await res.json();
@@ -6440,8 +6606,26 @@
             if (!confirm(`Remove ${email} from the suppression list? This will allow future emails to be sent to this address.`)) {
                 return;
             }
+
+            // Owner code required for suppression list changes
+            let ownerCode;
             try {
-                await apiCall(`/admin/email/suppressions/${encodeURIComponent(email)}`, 'DELETE');
+                ownerCode = await requireOwnerCode({
+                    message: `Remove ${email} from suppression list — allows future emails to this address.`
+                });
+            } catch (e) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/admin/email/suppressions/${encodeURIComponent(email)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
+                    }
+                });
+                if (!res.ok) throw new Error('Failed to remove');
                 showNotification('Email removed from suppression list', 'success');
                 loadDeliverabilityStats(); // Refresh
             } catch (err) {
@@ -6948,25 +7132,35 @@
 
             const manualAdditions = Array.from(blastRecipientMap.values()).filter(r => r.source === 'manual').length;
 
-            // Confirm gate
-            const confirmMsg = `CONFIRM: Send email to ${recipients.length} recipients?\n\nSubject: ${subject}\n\nThis action cannot be undone.`;
-            if (!confirm(confirmMsg)) return;
-
-            // Double confirm for large sends
-            if (recipients.length > 50) {
-                if (!confirm(`You are about to send to ${recipients.length} people. Are you absolutely sure?`)) return;
+            // Owner code required for email blasts
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Send email to ${recipients.length} recipient${recipients.length > 1 ? 's' : ''} — cannot be undone.`
+                });
+            } catch (e) {
+                return;
             }
 
             try {
-                const response = await apiCall('/admin/email/send', 'POST', {
-                    recipients,
-                    subject,
-                    body,
-                    template,
-                    sourceEvents,
-                    manualAdditions,
-                    isTestSend: false
+                const res = await fetch(`${API_BASE}/api/v1/admin/email/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
+                    },
+                    body: JSON.stringify({
+                        recipients,
+                        subject,
+                        body,
+                        template,
+                        sourceEvents,
+                        manualAdditions,
+                        isTestSend: false
+                    })
                 });
+                const response = await res.json();
 
                 if (response.success) {
                     alert(`Email blast sent!\n\nSent: ${response.sentCount}\nFailed: ${response.failedCount}\nOpted out: ${response.optedOutCount || 0}`);
@@ -7671,12 +7865,24 @@
                 });
             }
 
+            // Owner code required for bulk ticket generation
+            const totalTickets = recipients.reduce((sum, r) => sum + (r.quantity || 1), 0);
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Generate ${totalTickets} ticket${totalTickets > 1 ? 's' : ''} for ${eventSlug}${sendEmails ? ` — sends ${recipients.length} email${recipients.length > 1 ? 's' : ''}` : ''}.`
+                });
+            } catch (e) {
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_BASE}/api/v1/admin/tickets/bulk`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
                     },
                     body: JSON.stringify({ eventSlug, recipients, sendEmails, requireMemberAccess, customMessage })
                 });
@@ -7834,12 +8040,24 @@
                     return;
                 }
 
+                // Owner code required for bulk payment link generation
+                const totalLinks = recipients.length;
+                let ownerCode;
+                try {
+                    ownerCode = await requireOwnerCode({
+                        message: `Generate ${totalLinks} payment link${totalLinks > 1 ? 's' : ''} @ $${customPrice} for ${eventSlug}${sendEmails ? ` — sends ${totalLinks} email${totalLinks > 1 ? 's' : ''}` : ''}.`
+                    });
+                } catch (e) {
+                    return;
+                }
+
                 try {
                     const response = await fetch(`${API_BASE}/api/v1/admin/tickets/link-bulk`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${adminToken}`
+                            'Authorization': `Bearer ${adminToken}`,
+                            'x-owner-code': ownerCode
                         },
                         body: JSON.stringify({ eventSlug, recipients, customPrice, promoCode, requireMemberAccess, customMessage, sendEmails })
                     });
@@ -7886,12 +8104,23 @@
                 return;
             }
 
+            // Owner code required for single payment link generation
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Generate payment link ($${customPrice}) for ${guestEmail} — creates financial transaction.`
+                });
+            } catch (e) {
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_BASE}/api/v1/admin/tickets/link`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
                     },
                     body: JSON.stringify({ eventSlug, guestName, guestEmail, quantity, customPrice, promoCode, requireMemberAccess, customMessage })
                 });
@@ -8752,12 +8981,23 @@
             const platformFeeRate = parseFloat(document.getElementById('payoutPlatformFeeRate').value) / 100;
             const flatPayout = parseFloat(document.getElementById('payoutFlatAmount').value);
 
+            // Owner code required for split configuration changes
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Update payout split for ${currentPayoutUser.email} — affects future revenue calculations.`
+                });
+            } catch (e) {
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/payout-console/split`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
                     },
                     body: JSON.stringify({
                         userId: currentPayoutUser._id,
@@ -8796,11 +9036,13 @@
                 return;
             }
 
-            // Confirmation message - always creates an offer that host must accept
-            const isStripeConnected = currentPayoutUser.hostStripeOnboarded;
-            const confirmMsg = `SEND OFFER of $${amount.toFixed(2)} to ${currentPayoutUser.email}?\n\nThis will:\n1. Create an offer (requires host acceptance)\n2. Email them about the offer\n3. If accepted${isStripeConnected ? ', transfer immediately' : ' + Stripe linked, transfer money'}\n\nReason: ${reason}`;
-
-            if (!confirm(confirmMsg)) {
+            // Owner code required for payout allocation
+            let ownerCode;
+            try {
+                ownerCode = await requireOwnerCode({
+                    message: `Allocate $${amount.toFixed(2)} payout offer to ${currentPayoutUser.email} — creates financial obligation.`
+                });
+            } catch (e) {
                 return;
             }
 
@@ -8809,7 +9051,8 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
                     },
                     body: JSON.stringify({
                         userId: currentPayoutUser._id,
@@ -8866,7 +9109,7 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 0.75rem; color: var(--gray);">${new Date(p.createdAt).toLocaleDateString()}</span>
-                        <button onclick="cancelPendingPayout('${p._id}')" style="background: #ef4444; color: #fff; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem;">Cancel</button>
+                        <button onclick="cancelPendingPayout('${p._id}', ${p.amount}, '${(currentPayoutUser?.email || '').replace(/'/g, "\\'")}')" style="background: #ef4444; color: #fff; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem;">Cancel</button>
                     </div>
                 </div>
             `}).join('');
@@ -8940,7 +9183,7 @@
                                 <div style="color: ${style.text}; font-weight: 700; font-size: 1.1rem;">$${p.amount.toFixed(2)}</div>
                                 <span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 0.25rem; background: ${style.bg}; color: ${style.text}; font-weight: 600;">${style.label}</span>
                                 <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">${new Date(p.createdAt).toLocaleDateString()}</div>
-                                <button onclick="cancelPendingPayout('${p._id}')" style="background: #ef4444; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.7rem; margin-top: 0.25rem;">Cancel</button>
+                                <button onclick="cancelPendingPayout('${p._id}', ${p.amount}, '${(p.userEmail || '').replace(/'/g, "\\'")}')" style="background: #ef4444; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.7rem; margin-top: 0.25rem;">Cancel</button>
                             </div>
                         </div>
                     `}).join('')}
@@ -8951,16 +9194,28 @@
             }
         }
 
-        async function cancelPendingPayout(payoutId) {
+        async function cancelPendingPayout(payoutId, amount = 0, userEmail = 'host') {
             const reason = prompt('Reason for cancellation (optional):');
             if (reason === null) return; // User cancelled prompt
+
+            // Owner code required for cancelling payouts
+            let ownerCode;
+            try {
+                const amountDisplay = amount ? `$${amount.toFixed(2)}` : 'payout';
+                ownerCode = await requireOwnerCode({
+                    message: `Cancel ${amountDisplay} payout offer to ${userEmail} — cannot be undone.`
+                });
+            } catch (e) {
+                return;
+            }
 
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/payout-console/cancel`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
+                        'Authorization': `Bearer ${adminToken}`,
+                        'x-owner-code': ownerCode
                     },
                     body: JSON.stringify({ payoutId, reason: reason || 'Cancelled by admin' })
                 });
