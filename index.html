@@ -4146,11 +4146,11 @@
 
     <div id="toast" class="toast"></div>
 
+    <!-- Shared API configuration -->
+    <script src="js/api.js"></script>
     <script>
         // ===== CONFIGURATION =====
-        const API_BASE = window.location.hostname === 'localhost'
-            ? 'http://localhost:3000'
-            : 'https://lightning-backend-production.up.railway.app';
+        // API_BASE loaded from js/api.js
 
         // ===== FUNNEL TRACKING (fire-and-forget) =====
         function trackFunnelEvent(step, data = {}) {

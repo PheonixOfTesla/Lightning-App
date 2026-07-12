@@ -482,10 +482,10 @@
         </div>
     </div>
 
+    <!-- Shared API configuration -->
+    <script src="js/api.js"></script>
     <script>
-        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000'
-            : 'https://lightning-backend-production.up.railway.app';
+        // API_BASE loaded from js/api.js
 
         const STRIPE_PK = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'pk_test_51TcHI8K7yd8VSKfWoM8GUdVwl6PW5lsf4NRDSuIBedFZvn7aOHxs7gx1mH8dLu00nAhiqQQelJZ1RFhFcaR0qH6C00H3FNwhBp'

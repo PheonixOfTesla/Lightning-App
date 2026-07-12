@@ -884,11 +884,11 @@
     </footer>
 
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <!-- Shared API configuration -->
+    <script src="js/api.js"></script>
     <script>
         // ===== CONFIGURATION =====
-        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000'
-            : 'https://lightning-backend-production.up.railway.app';
+        // API_BASE loaded from js/api.js
         let memberData = null;
         let memberSocket = null;
 

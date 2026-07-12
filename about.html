@@ -781,6 +781,8 @@
         <p>Lightning Pass &copy; 2026 &middot; Sarasota, FL</p>
     </footer>
 
+    <!-- Shared API configuration -->
+    <script src="js/api.js"></script>
     <script>
         // Mobile menu toggle
         function toggleMenu() {
@@ -809,7 +811,7 @@
         window.scrollTo(0, 0);
 
         // Unified Auth System
-        const API_BASE = 'https://lightning-backend-production.up.railway.app';
+        // API_BASE loaded from js/api.js
 
         function showLoginModal() {
             document.getElementById('authModal').style.display = 'flex';
