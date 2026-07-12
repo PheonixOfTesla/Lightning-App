@@ -4503,11 +4503,15 @@
             }
         }
 
+        // Store owner code for refund session
+        let pendingRefundOwnerCode = null;
+
         async function initiateUserRefund(email) {
-            const code = prompt('Enter security code to proceed with refund:');
-            if (code !== '3898') {
-                if (code !== null) showToast('Invalid security code', 'error');
-                return;
+            // Use owner code gate instead of old security code
+            try {
+                pendingRefundOwnerCode = await requireOwnerCode(`Refund passes for ${email} — money will be returned to customer.`);
+            } catch (e) {
+                return; // User cancelled
             }
 
             // Show refund modal with passes
@@ -4568,12 +4572,20 @@
         async function processUserRefund(passId, email) {
             if (!confirm(`Are you sure you want to refund pass ${passId}?`)) return;
 
+            // Use stored owner code from initiateUserRefund
+            if (!pendingRefundOwnerCode) {
+                showToast('Owner code expired. Please try again.', 'error');
+                closeModal('userRefundModal');
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/passes/${passId}/refund`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${adminToken}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'x-owner-code': pendingRefundOwnerCode
                     }
                 });
 
