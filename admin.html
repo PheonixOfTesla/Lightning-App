@@ -3224,7 +3224,7 @@
                 document.getElementById('ownerCodeError').style.display = 'none';
 
                 // Show modal
-                openModal('ownerCodeModal');
+                document.getElementById('ownerCodeModal').classList.add('active');
 
                 // Focus input
                 setTimeout(() => {
@@ -3243,7 +3243,7 @@
             }
 
             // Close modal and resolve with code
-            closeModal('ownerCodeModal');
+            document.getElementById('ownerCodeModal').classList.remove('active');
             if (ownerCodeResolve) {
                 ownerCodeResolve(code);
                 ownerCodeResolve = null;
@@ -3252,7 +3252,7 @@
         }
 
         function cancelOwnerCode() {
-            closeModal('ownerCodeModal');
+            document.getElementById('ownerCodeModal').classList.remove('active');
             if (ownerCodeReject) {
                 ownerCodeReject(new Error('Owner code cancelled'));
                 ownerCodeResolve = null;
