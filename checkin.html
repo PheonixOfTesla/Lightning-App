@@ -238,11 +238,13 @@
 
     function makeTable(rows) {
       if (!rows || !rows.length) return '<div class="empty">No entries</div>';
-      let html = '<table><thead><tr><th>#</th><th>Name</th><th>Type</th><th>People</th></tr></thead><tbody>';
+      let html = '<table><thead><tr><th>#</th><th>Name</th><th>Type</th><th style="text-align:center;">In</th></tr></thead><tbody>';
       rows.forEach((r, i) => {
         const name = r.firstName + (r.lastName ? ' ' + r.lastName : '');
-        const partyFlag = r.isParty ? ' <span style="color:#ffdd00;">[party]</span>' : '';
-        html += `<tr><td>${i+1}</td><td>${name}${partyFlag}</td><td>${r.idType}</td><td>${r.people}</td></tr>`;
+        const checkBox = r.checkedIn
+          ? '<span style="color:#4CAF50;font-size:1.2em;">&#10003;</span>'
+          : '<span style="color:#666;font-size:1.2em;">&#9744;</span>';
+        html += `<tr><td>${i+1}</td><td>${name}</td><td>${r.idType}</td><td style="text-align:center;">${checkBox}</td></tr>`;
       });
       return html + '</tbody></table>';
     }
