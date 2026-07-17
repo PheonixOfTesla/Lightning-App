@@ -105,18 +105,6 @@
       <div class="stat"><div class="stat-value" id="statGuests">--</div><div class="stat-label">Guest Headcount</div></div>
       <div class="stat"><div class="stat-value" id="statTeam" style="color: #4CAF50;">--</div><div class="stat-label">Team</div></div>
       <div class="stat"><div class="stat-value" id="statCapacity" style="color: #2196F3;">--</div><div class="stat-label">Sold / Capacity</div></div>
-      <div class="stat"><div class="stat-value" id="statProfit" style="color: #4CAF50;">--</div><div class="stat-label">Net Volume</div></div>
-    </div>
-
-    <div class="section" style="margin-bottom: 24px;">
-      <h2>Revenue Breakdown</h2>
-      <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px 20px; max-width: 300px; margin-top: 16px;">
-        <span style="color: #aaa;">Gross Volume</span><span style="text-align: right;" id="revGross">--</span>
-        <span style="color: #aaa;">Stripe Fees</span><span style="text-align: right; color: #f44336;" id="revFees">--</span>
-        <span style="color: #aaa;">Refunds</span><span style="text-align: right; color: #f44336;" id="revRefunds">--</span>
-        <div style="grid-column: span 2; border-top: 1px solid rgba(255,255,255,0.2); margin: 8px 0;"></div>
-        <span style="font-weight: bold;">Net Volume</span><span style="text-align: right; font-weight: bold; color: #4CAF50;" id="revNet">--</span>
-      </div>
     </div>
 
     <div class="section">
@@ -236,13 +224,6 @@
       document.getElementById('statTeam').textContent = stats.teamPeople;
       const capDisplay = stats.capacityPeople === 'Unlimited' ? 'Unlimited' : stats.capacityPeople;
       document.getElementById('statCapacity').textContent = stats.soldPeople + ' / ' + capDisplay;
-      document.getElementById('statProfit').textContent = '$' + stats.netVolume.toFixed(2);
-
-      // Revenue breakdown (Stripe formula: Net = Gross - Fees - Refunds)
-      document.getElementById('revGross').textContent = '$' + stats.grossVolume.toFixed(2);
-      document.getElementById('revFees').textContent = '-$' + stats.stripeFees.toFixed(2);
-      document.getElementById('revRefunds').textContent = '-$' + stats.refunds.toFixed(2);
-      document.getElementById('revNet').textContent = '$' + stats.netVolume.toFixed(2);
 
       // Badges - show PEOPLE count
       document.getElementById('badgeTeam').textContent = stats.teamPeople + ' people';
