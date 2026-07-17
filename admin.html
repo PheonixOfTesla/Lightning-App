@@ -4084,6 +4084,16 @@
                 const data = await res.json();
                 console.log('Users API response:', data);
 
+                // Handle auth failure - clear invalid token and redirect to re-login
+                if (res.status === 401 || data.error === 'Invalid or expired token') {
+                    console.error('Token invalid/expired - clearing and redirecting to login');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userRoles');
+                    localStorage.removeItem('userEmail');
+                    window.location.href = '/?login=true';
+                    return;
+                }
+
                 if (!res.ok || data.error) {
                     throw new Error(data.error || `HTTP ${res.status}`);
                 }
