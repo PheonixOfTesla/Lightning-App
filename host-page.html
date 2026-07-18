@@ -462,6 +462,19 @@
                 <input type="text" id="guestFirstName" class="form-input" placeholder="First name" required>
                 <input type="text" id="guestLastName" class="form-input" placeholder="Last name" required>
                 <input type="email" id="guestEmail" class="form-input" placeholder="Email" required>
+                <input type="tel" id="guestPhone" class="form-input" placeholder="Phone number" required>
+            </div>
+            <div style="margin-top: 0.75rem;">
+                <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.75rem; color: var(--gray); line-height: 1.4;">
+                    <input type="checkbox" id="smsConsent" required style="accent-color: var(--lightning-yellow); margin-top: 2px;">
+                    <span>I agree to receive SMS or emails about my ticket purchase and event updates. Msg & data rates may apply. Reply STOP to unsubscribe.</span>
+                </label>
+            </div>
+            <div style="margin-top: 0.5rem;">
+                <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.75rem; color: var(--gray); line-height: 1.4;">
+                    <input type="checkbox" id="termsAccepted" required style="accent-color: var(--lightning-yellow); margin-top: 2px;">
+                    <span>I agree to the <a href="/terms" target="_blank" style="color: var(--lightning-yellow);">Terms of Service</a>. All ticket sales are final. Refund requests must be made 24+ hours before the event.</span>
+                </label>
             </div>
             <!-- Apple Pay / Google Pay Button -->
             <div id="paymentRequestSection" style="display: none; margin-top: 0.5rem;">
@@ -500,6 +513,25 @@
         let selectedEvent = null;
         let selectedTier = null;
         let ticketQty = 1;
+
+        // Session token for idempotency - persists across retries of same checkout session
+        let checkoutSessionToken = null;
+        // Track if payment has succeeded (to prevent re-charging on fulfillment failure)
+        let paymentSucceeded = false;
+        let succeededPaymentIntentId = null;
+
+        // Generate stable idempotency key for this checkout attempt
+        function generateIdempotencyKey(email, ticketId, ticketCount) {
+            const data = `${email}|${ticketId}|${ticketCount}|${checkoutSessionToken}`;
+            // Simple hash function for browser compatibility
+            let hash = 0;
+            for (let i = 0; i < data.length; i++) {
+                const char = data.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return `hp_${Math.abs(hash).toString(36)}_${checkoutSessionToken}`;
+        }
 
         // Initialize Stripe Elements
         function initStripeElements() {
@@ -548,7 +580,8 @@
                     amount: priceInCents
                 },
                 requestPayerName: true,
-                requestPayerEmail: true
+                requestPayerEmail: true,
+                requestPayerPhone: true
             });
 
             const prElements = stripe.elements();
@@ -577,14 +610,22 @@
 
             // Handle Apple Pay / Google Pay payment
             paymentRequest.on('paymentmethod', async (ev) => {
-                try {
-                    // Parse payer name
-                    const payerNameParts = (ev.payerName || '').trim().split(' ');
-                    const firstName = payerNameParts[0] || 'Guest';
-                    const lastName = payerNameParts.slice(1).join(' ') || firstName;
-                    const email = ev.payerEmail;
+                // Parse payer info
+                const payerNameParts = (ev.payerName || '').trim().split(' ');
+                const firstName = payerNameParts[0] || 'Guest';
+                const lastName = payerNameParts.slice(1).join(' ') || firstName;
+                const email = ev.payerEmail;
+                const phone = ev.payerPhone || '';
 
-                    // Create payment intent
+                // Generate idempotency key for Apple Pay
+                const idempotencyKey = generateIdempotencyKey(email, selectedTier.ticketId, ticketQty);
+
+                // Track if Stripe charge succeeded (for fulfillment retry logic)
+                let applePayChargeSucceeded = false;
+                let applePayIntentId = null;
+
+                try {
+                    // Create payment intent (with idempotency key)
                     const response = await fetch(`${API_BASE}/api/v1/embed/create-intent`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -592,7 +633,8 @@
                             eventSlug: selectedEvent.slug,
                             ticketId: selectedTier.ticketId,
                             ticketCount: ticketQty,
-                            guest: { firstName, lastName, email }
+                            guest: { firstName, lastName, email, phone },
+                            idempotencyKey: idempotencyKey
                         })
                     });
 
@@ -617,37 +659,76 @@
                         return;
                     }
 
+                    // CRITICAL: Mark charge as succeeded BEFORE completing Apple Pay
+                    applePayChargeSucceeded = true;
+                    applePayIntentId = paymentIntent.id;
                     ev.complete('success');
 
-                    // Confirm with backend to create pass
-                    const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            paymentIntentId: paymentIntent.id,
-                            eventSlug: selectedEvent.slug,
-                            ticketType: selectedTier.type,
-                            ticketCount: ticketQty,
-                            guest: { firstName, lastName, email },
-                            termsAccepted: true,
-                            termsAcceptedAt: new Date().toISOString(),
-                            termsVersion: '2026-07'
-                        })
-                    });
-
-                    if (!confirmResponse.ok) {
-                        throw new Error('Failed to create ticket');
-                    }
-
-                    alert(`Success! Your ${ticketQty > 1 ? 'tickets have' : 'ticket has'} been sent to ${email}`);
-                    closeCheckout();
+                    // Confirm with backend to create pass (with retry logic)
+                    await retryApplePayConfirmation(paymentIntent.id, firstName, lastName, email, phone);
 
                 } catch (error) {
                     console.error('Apple Pay / Google Pay error:', error);
-                    ev.complete('fail');
-                    alert(error.message || 'Payment failed');
+
+                    if (!applePayChargeSucceeded) {
+                        // Charge didn't succeed - safe to tell user to retry
+                        ev.complete('fail');
+                        alert(error.message || 'Payment failed');
+                    } else {
+                        // Charge succeeded but fulfillment failed
+                        // ev.complete already called with 'success'
+                        alert('Your payment was received! There was an issue creating your ticket - it will be delivered shortly. Payment ID: ' + applePayIntentId);
+                        // Retry confirmation in background
+                        retryApplePayConfirmation(applePayIntentId, firstName, lastName, email, phone, 2);
+                    }
                 }
             });
+        }
+
+        // Retry Apple Pay confirmation (separate from card payment retry)
+        async function retryApplePayConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt = 1) {
+            const maxRetries = 3;
+
+            try {
+                const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentIntentId: paymentIntentId,
+                        eventSlug: selectedEvent.slug,
+                        ticketType: selectedTier.type,
+                        ticketCount: ticketQty,
+                        guest: { firstName, lastName, email, phone },
+                        termsAccepted: true,
+                        termsAcceptedAt: new Date().toISOString(),
+                        termsVersion: '2026-07'
+                    })
+                });
+
+                if (!confirmResponse.ok) {
+                    throw new Error('Failed to create ticket');
+                }
+
+                if (attempt === 1) {
+                    alert(`Success! Your ${ticketQty > 1 ? 'tickets have' : 'ticket has'} been sent to ${email}`);
+                } else {
+                    alert(`Your ticket has been created and sent to ${email}`);
+                }
+                closeCheckout();
+
+            } catch (err) {
+                console.error(`Apple Pay confirmation attempt ${attempt} failed:`, err);
+
+                if (attempt < maxRetries) {
+                    // Retry with exponential backoff
+                    setTimeout(() => {
+                        retryApplePayConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt + 1);
+                    }, Math.pow(2, attempt) * 1000);
+                } else {
+                    console.error(`Apple Pay confirmation failed after ${maxRetries} attempts. Payment ID: ${paymentIntentId}`);
+                    // Backend webhook should still create the pass
+                }
+            }
         }
 
         // Extract hostSlug from query params (Vercel rewrite) or path (direct access)
@@ -841,6 +922,11 @@
             selectedTier = null;
             ticketQty = 1;
 
+            // Reset payment state for new checkout session
+            checkoutSessionToken = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            paymentSucceeded = false;
+            succeededPaymentIntentId = null;
+
             // Init Stripe if needed
             if (!stripe) stripe = Stripe(STRIPE_PK);
 
@@ -874,6 +960,9 @@
             document.getElementById('guestFirstName').value = '';
             document.getElementById('guestLastName').value = '';
             document.getElementById('guestEmail').value = '';
+            document.getElementById('guestPhone').value = '';
+            document.getElementById('smsConsent').checked = false;
+            document.getElementById('termsAccepted').checked = false;
 
             document.getElementById('checkoutModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
@@ -936,9 +1025,16 @@
             const firstName = document.getElementById('guestFirstName').value.trim();
             const lastName = document.getElementById('guestLastName').value.trim();
             const email = document.getElementById('guestEmail').value.trim();
+            const phone = document.getElementById('guestPhone').value.trim();
+            const smsConsent = document.getElementById('smsConsent').checked;
+            const termsAccepted = document.getElementById('termsAccepted').checked;
 
-            if (!firstName || !lastName || !email) {
+            if (!firstName || !lastName || !email || !phone) {
                 alert('Please fill in all fields');
+                return;
+            }
+            if (!smsConsent || !termsAccepted) {
+                alert('Please agree to the terms and SMS consent');
                 return;
             }
 
@@ -947,8 +1043,18 @@
             btn.disabled = true;
             btn.textContent = 'Processing...';
 
+            // Generate idempotency key for this checkout attempt
+            const idempotencyKey = generateIdempotencyKey(email, selectedTier.ticketId, ticketQty);
+
             try {
-                // Step 1: Create payment intent
+                // CASE 1: Payment already succeeded in this session - only retry fulfillment
+                if (paymentSucceeded && succeededPaymentIntentId) {
+                    btn.textContent = 'Finalizing ticket...';
+                    await retryConfirmation(succeededPaymentIntentId, firstName, lastName, email, phone);
+                    return;
+                }
+
+                // Step 1: Create payment intent (with idempotency key)
                 const response = await fetch(`${API_BASE}/api/v1/embed/create-intent`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -956,7 +1062,8 @@
                         eventSlug: selectedEvent.slug,
                         ticketId: selectedTier.ticketId,
                         ticketCount: ticketQty,
-                        guest: { firstName, lastName, email }
+                        guest: { firstName, lastName, email, phone },
+                        idempotencyKey: idempotencyKey
                     })
                 });
 
@@ -966,9 +1073,18 @@
                     throw new Error(data.error || 'Payment failed');
                 }
 
+                // CASE 2: Backend detected this was already charged (duplicate prevention)
+                if (data.alreadyCharged) {
+                    console.log('Backend detected existing charge - skipping payment, going to confirmation');
+                    paymentSucceeded = true;
+                    succeededPaymentIntentId = data.paymentIntentId;
+                    btn.textContent = 'Finalizing ticket...';
+                    await retryConfirmation(data.paymentIntentId, firstName, lastName, email, phone);
+                    return;
+                }
+
                 // Step 2: Handle free tickets
                 if (data.isFree) {
-                    // Confirm free ticket
                     const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -977,7 +1093,7 @@
                             eventSlug: selectedEvent.slug,
                             ticketType: selectedTier.type,
                             ticketCount: ticketQty,
-                            guest: { firstName, lastName, email },
+                            guest: { firstName, lastName, email, phone },
                             termsAccepted: true,
                             termsAcceptedAt: new Date().toISOString(),
                             termsVersion: '2026-07'
@@ -1009,41 +1125,98 @@
                 });
 
                 if (error) {
+                    // Card/payment error - safe to retry payment
                     throw new Error(error.message);
                 }
 
                 if (paymentIntent.status === 'succeeded') {
+                    // CRITICAL: Mark payment as succeeded BEFORE attempting confirmation
+                    // From this point on, NEVER tell user to retry payment
+                    paymentSucceeded = true;
+                    succeededPaymentIntentId = paymentIntent.id;
+                    btn.textContent = 'Finalizing ticket...';
+
                     // Step 4: Confirm with backend to create pass
-                    const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            paymentIntentId: paymentIntent.id,
-                            eventSlug: selectedEvent.slug,
-                            ticketType: selectedTier.type,
-                            ticketCount: ticketQty,
-                            guest: { firstName, lastName, email },
-                            termsAccepted: true,
-                            termsAcceptedAt: new Date().toISOString(),
-                            termsVersion: '2026-07'
-                        })
-                    });
-
-                    const confirmData = await confirmResponse.json();
-
-                    if (!confirmResponse.ok) {
-                        throw new Error(confirmData.error || 'Failed to create ticket');
-                    }
-
-                    alert(`Success! Your ${ticketQty > 1 ? 'tickets have' : 'ticket has'} been sent to ${email}`);
-                    closeCheckout();
+                    await retryConfirmation(paymentIntent.id, firstName, lastName, email, phone);
                 }
 
             } catch (err) {
                 console.error('Payment error:', err);
-                alert(err.message || 'Payment failed. Please try again.');
-                btn.disabled = false;
-                btn.textContent = originalBtnText;
+
+                // Only allow retry if payment hasn't succeeded yet
+                if (!paymentSucceeded) {
+                    alert(err.message || 'Payment failed. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = originalBtnText;
+                } else {
+                    // Payment succeeded but fulfillment failed - don't re-enable pay button
+                    // Show different message and offer to retry confirmation only
+                    alert('Your payment was received. There was an issue creating your ticket. Please wait while we retry...');
+                    btn.textContent = 'Finalizing ticket...';
+                    // Auto-retry confirmation after short delay
+                    setTimeout(() => {
+                        const firstName = document.getElementById('guestFirstName').value.trim();
+                        const lastName = document.getElementById('guestLastName').value.trim();
+                        const email = document.getElementById('guestEmail').value.trim();
+                        const phone = document.getElementById('guestPhone').value.trim();
+                        retryConfirmation(succeededPaymentIntentId, firstName, lastName, email, phone);
+                    }, 2000);
+                }
+            }
+        }
+
+        // Retry confirmation step only (NOT payment) - for when charge succeeded but fulfillment failed
+        async function retryConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt = 1) {
+            const btn = document.getElementById('payBtn');
+            const maxRetries = 3;
+
+            try {
+                const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentIntentId: paymentIntentId,
+                        eventSlug: selectedEvent.slug,
+                        ticketType: selectedTier.type,
+                        ticketCount: ticketQty,
+                        guest: { firstName, lastName, email, phone },
+                        termsAccepted: true,
+                        termsAcceptedAt: new Date().toISOString(),
+                        termsVersion: '2026-07'
+                    })
+                });
+
+                const confirmData = await confirmResponse.json();
+
+                if (!confirmResponse.ok) {
+                    throw new Error(confirmData.error || 'Failed to create ticket');
+                }
+
+                // Success!
+                alert(`Success! Your ${ticketQty > 1 ? 'tickets have' : 'ticket has'} been sent to ${email}`);
+                closeCheckout();
+
+            } catch (err) {
+                console.error(`Confirmation attempt ${attempt} failed:`, err);
+
+                if (attempt < maxRetries) {
+                    btn.textContent = `Retrying... (${attempt}/${maxRetries})`;
+                    // Exponential backoff: 2s, 4s, 8s
+                    setTimeout(() => {
+                        retryConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt + 1);
+                    }, Math.pow(2, attempt) * 1000);
+                } else {
+                    // Max retries exhausted - give user manual option
+                    alert(`Your payment was successful, but we couldn't finalize your ticket after ${maxRetries} attempts. Your ticket will be delivered shortly, or contact support with Payment ID: ${paymentIntentId}`);
+                    btn.textContent = 'Retry Ticket Creation';
+                    btn.disabled = false;
+                    // Button now only retries confirmation, not payment
+                    btn.onclick = () => {
+                        btn.disabled = true;
+                        btn.textContent = 'Finalizing ticket...';
+                        retryConfirmation(paymentIntentId, firstName, lastName, email, phone, 1);
+                    };
+                }
             }
         }
 
