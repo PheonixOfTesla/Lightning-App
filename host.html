@@ -1294,6 +1294,7 @@
 
     <!-- Shared API configuration -->
     <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
     <script>
         // ===== CONFIGURATION =====
         // API_BASE loaded from js/api.js
@@ -1394,16 +1395,28 @@
                     : 'pk_live_51SFvASIfYqbb49BvkDC7JOqe7OKJkLZDJrWJsN7lfmVlPHQZmFVoRzPRHTj6DfnLRXBuqNuS9y4GBbqhWCDIX2Oo00z0MKAqsZ';
             }
 
-            const token = localStorage.getItem('token');
-            const userRoles = getUserRolesFromToken();
-            const userEmail = localStorage.getItem('userEmail');
+            // Use LPAuth for proper token validation
+            const validation = LPAuth.validateToken();
+            const token = LPAuth.getToken();
 
-            if (token && userEmail && userRoles.includes('host')) {
+            if (!token || !validation.valid) {
+                // Clear stale auth if expired
+                if (validation.expired) {
+                    LPAuth.clearAuth();
+                    document.getElementById('accessMessage').textContent = 'Session expired. Please log in again.';
+                }
+                return;
+            }
+
+            const userRoles = LPAuth.getUserRoles();
+            const userEmail = LPAuth.getUserEmail();
+
+            if (userRoles.includes('host')) {
                 currentUser = { email: userEmail, token };
                 showPortal();
                 loadAllData();
                 initSocket();
-            } else if (token && userEmail) {
+            } else {
                 document.getElementById('accessMessage').textContent = 'You do not have host access.';
             }
         });

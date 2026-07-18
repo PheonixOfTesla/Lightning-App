@@ -3197,6 +3197,7 @@
 
     <!-- Shared API configuration -->
     <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
     <script>
         // ===== CONFIGURATION =====
         // API_BASE loaded from js/api.js
@@ -3346,24 +3347,42 @@
             });
         }
 
-        // Check for existing session - single canonical token
+        // Check for existing session - validates token, not just existence
         function checkAuth() {
-            const token = localStorage.getItem('token');
-            const userRoles = getUserRolesFromToken();
-            const userEmail = localStorage.getItem('userEmail');
+            // Use LPAuth for proper token validation
+            const validation = LPAuth.validateToken();
+            const token = LPAuth.getToken();
 
-            // Check if user has admin role
-            if (token && userRoles.includes('admin')) {
-                adminToken = token;
-                document.getElementById('adminEmail').textContent = userEmail || 'Admin';
-                document.getElementById('navLinks').style.display = 'flex';
-                buildRoleNav();
-                loadDashboardData();
+            // If no token or invalid format, redirect immediately
+            if (!token || !validation.valid) {
+                // Clear any stale auth state
+                LPAuth.clearAuth();
+
+                // Build redirect URL with appropriate message
+                let redirectUrl = '/?login=true';
+                if (validation.expired) {
+                    redirectUrl += '&expired=true';
+                }
+                window.location.href = redirectUrl;
                 return;
             }
 
-            // Not authenticated - redirect to homepage
-            window.location.href = '/';
+            // Token exists and is valid - check roles
+            const userRoles = LPAuth.getUserRoles();
+            const userEmail = LPAuth.getUserEmail();
+
+            if (!userRoles.includes('admin')) {
+                // Has valid token but not admin role
+                window.location.href = '/';
+                return;
+            }
+
+            // Authenticated admin - proceed
+            adminToken = token;
+            document.getElementById('adminEmail').textContent = userEmail || 'Admin';
+            document.getElementById('navLinks').style.display = 'flex';
+            buildRoleNav();
+            loadDashboardData();
         }
 
         async function loadDashboardData() {

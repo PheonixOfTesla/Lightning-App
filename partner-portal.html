@@ -622,6 +622,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <!-- Shared API configuration -->
     <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
     <script>
         // ===== CONFIGURATION =====
         // API_BASE loaded from js/api.js
@@ -740,16 +741,22 @@
             }
         }
 
-        // Check authentication on load
+        // Check authentication on load - validates token, not just existence
         async function checkAuth() {
-            const token = localStorage.getItem('token');
-            const userRoles = getUserRolesFromToken();
+            const validation = LPAuth.validateToken();
+            const token = LPAuth.getToken();
 
-            if (!token) {
+            if (!token || !validation.valid) {
+                // Clear stale auth if expired
+                if (validation.expired) {
+                    LPAuth.clearAuth();
+                }
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('loginRequired').style.display = 'block';
                 return;
             }
+
+            const userRoles = LPAuth.getUserRoles();
 
             // Check if user has partner role
             if (!userRoles.includes('partner') && !userRoles.includes('admin')) {
