@@ -230,10 +230,19 @@ async function authFetch(endpoint, options = {}) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return fetch(url, {
+    const response = await fetch(url, {
         ...options,
         headers
     });
+
+    // Handle 401 - session expired or invalid token
+    if (response.status === 401) {
+        clearAuth();
+        window.location.href = '/?login=true&expired=true';
+        return response; // Return for any code that catches before redirect
+    }
+
+    return response;
 }
 
 /**
