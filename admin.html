@@ -360,7 +360,7 @@
             color: var(--gray); padding: 0.25rem 0.65rem; margin-bottom: 0.3rem; font-weight: 700;
         }
         /* Turn the horizontal .tab pills into vertical nav items inside the sidebar */
-        .sidebar-nav .tab, .sidebar-footer .tab {
+        .sidebar-nav .tab, .sidebar-footer .tab, #sidebarDashboardLinks .tab {
             display: flex; align-items: center; gap: 0.65rem;
             width: 100%; text-align: left; justify-content: flex-start;
             padding: 0.6rem 0.7rem; margin-bottom: 0.12rem;
@@ -368,11 +368,12 @@
             background: transparent !important; color: var(--white) !important;
             font-size: 0.9rem; font-weight: 500; white-space: nowrap;
         }
-        .sidebar-nav .tab:hover, .sidebar-footer .tab:hover { background: rgba(255,255,255,0.05) !important; border-color: transparent; }
-        .sidebar-nav .tab.active {
+        .sidebar-nav .tab:hover, .sidebar-footer .tab:hover, #sidebarDashboardLinks .tab:hover { background: rgba(255,255,255,0.05) !important; border-color: transparent; }
+        .sidebar-nav .tab.active, #sidebarDashboardLinks .tab.active {
             background: rgba(255,221,0,0.12) !important; color: var(--lightning-yellow) !important;
             border-color: rgba(255,221,0,0.28); font-weight: 700;
         }
+        #sidebarDashboardLinks { display: flex; flex-direction: column; }
         .sidebar-nav .tab .nav-ico, .sidebar-footer .tab .nav-ico { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.9; }
         .sidebar-nav .tab .nav-count {
             margin-left: auto; background: #ff6b35; color: #fff; font-size: 0.66rem; font-weight: 800;
@@ -391,6 +392,10 @@
                to flex inline). Hide them below the drawer breakpoint and switch
                dashboards from inside the drawer instead. */
             .nav-links { display: none !important; }
+            /* Center the logo; hamburger sits absolute-left so it doesn't push it. */
+            .nav-container { position: relative; justify-content: center; }
+            .sidebar-toggle { position: absolute; left: 0; top: 50%; transform: translateY(-50%); margin-right: 0; }
+            .logo { margin: 0 auto; }
             .admin-layout { gap: 0; }
             .admin-sidebar {
                 position: fixed; top: 0; left: 0; bottom: 0;
@@ -4266,17 +4271,20 @@
 
                 tbody.innerHTML = events.map(event => {
                     const placement = event.placement || 'scene';
-                    const placementBadge = placement === 'spotlight'
-                        ? '<span style="background: var(--lightning-yellow); color: #000; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600;">SPOTLIGHT</span>'
-                        : placement === 'scene'
-                        ? '<span style="background: var(--electric-blue); color: #000; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600;">SCENE</span>'
-                        : '<span style="background: var(--gray); color: #fff; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">HIDDEN</span>';
+                    // Editable placement: admin can spotlight / show as scene / hide (unhide).
+                    const placementSelect = `
+                        <select onchange="setEventPlacement('${event._id}', this.value)" title="Change where this event appears on the homepage"
+                                style="padding: 0.3rem 0.5rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.35rem; color: var(--white); font-size: 0.78rem; cursor: pointer;">
+                            <option value="spotlight" ${placement === 'spotlight' ? 'selected' : ''}>★ Spotlight</option>
+                            <option value="scene" ${placement === 'scene' ? 'selected' : ''}>Scene</option>
+                            <option value="none" ${placement === 'none' ? 'selected' : ''}>Hidden</option>
+                        </select>`;
 
                     return `
                     <tr>
                         <td><strong>${event.name}</strong></td>
                         <td>${new Date(event.date).toLocaleDateString()}</td>
-                        <td>${placementBadge}</td>
+                        <td>${placementSelect}</td>
                         <td><span class="status-badge ${event.status}">${event.status}</span></td>
                         <td>${event.ticketsSold || 0}</td>
                         <td>
@@ -4293,6 +4301,30 @@
             } catch (error) {
                 console.error('Events error:', error);
                 loading.innerHTML = '<p style="color: var(--danger-red);">Failed to load events</p>';
+            }
+        }
+
+        // Change an event's placement (spotlight / scene / none). Lets admin unhide
+        // a HIDDEN event by promoting it back to spotlight or scene.
+        async function setEventPlacement(eventId, placement) {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/spotlight-events/${eventId}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ placement })
+                });
+                if (res.ok) {
+                    const label = placement === 'none' ? 'hidden' : (placement === 'spotlight' ? 'moved to Spotlight' : 'shown as Scene');
+                    showToast(`Event ${label}`, 'success');
+                    loadEvents();
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    showToast(data.error || 'Failed to update placement', 'error');
+                    loadEvents(); // revert the select to the true value
+                }
+            } catch (e) {
+                showToast('Network error updating placement', 'error');
+                loadEvents();
             }
         }
 
