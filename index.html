@@ -12141,7 +12141,7 @@
                 document.getElementById('loginPasscodeSection').style.display = 'block';
                 document.getElementById('loginPasscode').value = '';
                 document.getElementById('loginPasscode').focus();
-                document.getElementById('loginError').style.display = 'none';
+                document.getElementById('loginCenterError').style.display = 'none';
 
             } catch (error) {
                 console.error('Lookup error:', error);
@@ -12158,7 +12158,7 @@
             event.preventDefault();
             const passcode = document.getElementById('loginPasscode').value;
             const btn = document.getElementById('quickLoginBtn');
-            const errorDiv = document.getElementById('loginError');
+            const errorDiv = document.getElementById('loginCenterError');
 
             btn.textContent = 'LOGGING IN...';
             btn.disabled = true;
@@ -12613,7 +12613,7 @@
                         <input type="password" id="loginPasscode" placeholder="Enter Passcode" required style="text-align: center;">
                         <button type="submit" id="quickLoginBtn">LOGIN</button>
                     </form>
-                    <div id="loginError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                    <div id="loginCenterError" style="display: none; color: #ff4444; text-align: center; margin-top: 0.5rem; font-size: 0.85rem;"></div>
                     <p style="text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 1rem;">
                         <a href="#" onclick="showForgotPasscode()" style="color: var(--lightning-yellow);">Forgot passcode?</a>
                     </p>
