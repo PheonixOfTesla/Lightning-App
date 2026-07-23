@@ -3958,8 +3958,8 @@
             const userRoles = LPAuth.getUserRoles();
             const userEmail = LPAuth.getUserEmail();
 
-            if (!userRoles.includes('admin')) {
-                // Has valid token but not admin role
+            if (!userRoles.includes('admin') && !userRoles.includes('owner')) {
+                // Has valid token but neither admin nor owner (owner is a superset of admin)
                 window.location.href = '/';
                 return;
             }
