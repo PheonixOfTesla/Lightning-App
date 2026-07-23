@@ -1816,6 +1816,7 @@
                                     <th>Status</th>
                                     <th>Passes Sold</th>
                                     <th>Revenue</th>
+                                    <th>Venue Fee %</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -6161,11 +6162,13 @@
                 table.style.display = 'block';
 
                 if (venues.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No venues found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--gray);">No venues found</td></tr>';
                     return;
                 }
 
-                tbody.innerHTML = venues.map(venue => `
+                tbody.innerHTML = venues.map(venue => {
+                    const feePct = Math.round((venue.platformFeeRate ?? 0.15) * 100);
+                    return `
                     <tr>
                         <td>
                             <strong>${venue.name}</strong><br>
@@ -6176,15 +6179,49 @@
                         <td>${venue.totalPassesSold || 0}</td>
                         <td>$${((venue.totalRevenue || 0) / 100).toFixed(2)}</td>
                         <td>
+                            <div style="display:flex; align-items:center; gap:0.35rem;">
+                                <input type="number" min="0" max="100" step="1" value="${feePct}" id="venueFee_${venue._id}"
+                                       style="width:58px; background:var(--pure-black); border:1px solid var(--border-dark); border-radius:0.4rem; padding:0.35rem; color:#fff;">
+                                <span style="color:var(--gray); font-size:0.8rem;">%</span>
+                                <button class="action-btn edit" onclick="setVenueSplit('${venue._id}')" style="padding:0.35rem 0.7rem;">Save</button>
+                            </div>
+                            <div style="color:var(--gray); font-size:0.7rem; margin-top:0.2rem;">venue keeps ${100 - feePct}%</div>
+                        </td>
+                        <td>
                             <button class="action-btn view" onclick="viewVenue('${venue._id}')">View</button>
                         </td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
 
             } catch (error) {
                 console.error('Load venues error:', error);
                 loading.style.display = 'none';
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Failed to load venues</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger-red);">Failed to load venues</td></tr>';
+            }
+        }
+
+        // Admin sets a venue's revenue split (platform fee %). Venue keeps the rest.
+        // Applies to future charges only (fee is computed at charge time).
+        async function setVenueSplit(venueId) {
+            const input = document.getElementById(`venueFee_${venueId}`);
+            const pct = parseFloat(input.value);
+            if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
+                showToast('Enter a platform fee between 0 and 100', 'error');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/venue/${venueId}/split`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+                    body: JSON.stringify({ platformFeeRate: pct / 100 })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to update split');
+                showToast(`Saved — venue keeps ${(100 - pct).toFixed(0)}%, platform fee ${pct.toFixed(0)}%`, 'success');
+                loadVenues();
+            } catch (e) {
+                showToast(e.message || 'Failed to update split', 'error');
             }
         }
 
