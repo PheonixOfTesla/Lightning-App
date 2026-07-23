@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Host Events - Lightning Pass</title>
+
+    <!-- Dynamic OG tags set by JS -->
+    <meta property="og:title" content="Events - Lightning Pass">
+    <meta property="og:description" content="Get tickets to exclusive events">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Stripe -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pure-black: #0d1b2a;
+            --card-black: #1b2838;
+            --border-dark: #2d3748;
+            --lightning-yellow: #ffd700;
+            --electric-blue: #00d4ff;
+            --electric-purple: #9d4edd;
+            --neon-green: #39ff14;
+            --white: #ffffff;
+            --gray: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pure-black);
+            color: var(--white);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Banner with gradient fade into page */
+        .host-banner {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, var(--card-black) 0%, var(--pure-black) 100%);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        /* Gradient overlay - fades banner into navy */
+        .host-banner::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent 0%, var(--pure-black) 100%);
+            pointer-events: none;
+        }
+
+        /* Content wrapper - shared left axis */
+        .host-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header overlaps banner, logo straddles seam */
+        .host-header {
+            position: relative;
+            margin-top: -70px;
+            padding-bottom: 0.75rem;
+        }
+
+        .host-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--pure-black);
+            background: var(--card-black);
+            object-fit: cover;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 1;
+        }
+
+        .host-info {
+            margin-top: 0.75rem;
+        }
+
+        .host-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.01em;
+        }
+
+        .host-bio {
+            color: var(--gray);
+            font-size: 0.95rem;
+            max-width: 560px;
+            line-height: 1.5;
+        }
+
+        /* Events Section - tighter spacing */
+        .events-section {
+            margin-top: 1.5rem;
+            padding-bottom: 3rem;
+        }
+
+        .events-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--lightning-yellow);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .event-card {
+            background: var(--card-black);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid var(--border-dark);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(255, 215, 0, 0.08);
+        }
+
+        .event-image {
+            width: 100%;
+            aspect-ratio: 4/5;
+            object-fit: contain;
+            background: var(--pure-black);
+        }
+
+        .event-content {
+            padding: 1rem 1.25rem 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-date {
+            font-size: 0.8rem;
+            color: var(--electric-blue);
+            font-weight: 500;
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .event-name {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .event-location {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.75rem;
+        }
+
+        .event-price {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--lightning-yellow);
+            margin-top: auto;
+            padding-top: 0.5rem;
+        }
+
+        .btn-tickets {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--lightning-yellow);
+            color: #000;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 0.5rem;
+            margin-top: 0.875rem;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-tickets:hover {
+            background: #e6c700;
+        }
+
+        /* Empty state - styled card */
+        .no-events {
+            background: var(--card-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.75rem;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Loading/Error states */
+        .loading {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--gray);
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            color: #ff6b6b;
+        }
+
+        /* Footer */
+        .powered-by {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+
+        .powered-by a {
+            color: var(--lightning-yellow);
+            text-decoration: none;
+        }
+
+        /* Checkout Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .modal-content {
+            max-width: 420px;
+            margin: 2rem auto;
+            background: var(--card-black);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-dark);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .modal-header h2 {
+            font-size: 1.25rem;
+            color: var(--white);
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .tier-option {
+            background: rgba(255,255,255,0.03);
+            border: 2px solid var(--border-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tier-option:hover, .tier-option.selected {
+            border-color: var(--lightning-yellow);
+            background: rgba(255,215,0,0.05);
+        }
+        .tier-name {
+            font-weight: 600;
+            color: var(--white);
+        }
+        .tier-price {
+            color: var(--lightning-yellow);
+            font-weight: 600;
+        }
+        .tier-avail {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+        .qty-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .qty-btn {
+            width: 36px; height: 36px;
+            border: 2px solid var(--lightning-yellow);
+            background: transparent;
+            color: var(--lightning-yellow);
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .qty-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 6px;
+            color: var(--white);
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--lightning-yellow);
+        }
+        .btn-pay {
+            width: 100%;
+            padding: 1rem;
+            background: var(--lightning-yellow);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .btn-pay:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .checkout-total {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--lightning-yellow);
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .host-banner {
+                height: 160px;
+            }
+            .host-banner::after {
+                height: 60px;
+            }
+            .host-content {
+                padding: 0 1.25rem;
+            }
+            .host-header {
+                margin-top: -50px;
+            }
+            .host-logo {
+                width: 80px;
+                height: 80px;
+            }
+            .host-name {
+                font-size: 1.4rem;
+            }
+            .host-bio {
+                font-size: 0.9rem;
+            }
+            .events-section {
+                margin-top: 1.25rem;
+            }
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner with gradient fade -->
+    <div class="host-banner" id="hostBanner"></div>
+
+    <!-- Content wrapper - shared left axis -->
+    <div class="host-content">
+        <!-- Header with Logo (straddles banner seam) -->
+        <div class="host-header">
+            <img class="host-logo" id="hostLogo" src="" alt="Host Logo">
+            <div class="host-info">
+                <h1 class="host-name" id="hostName">Loading...</h1>
+                <p class="host-bio" id="hostBio"></p>
+            </div>
+        </div>
+
+        <!-- Events -->
+        <section class="events-section">
+            <h2 class="events-title">Upcoming Events</h2>
+            <div class="events-grid" id="eventsGrid">
+                <div class="loading">Loading events...</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <div class="powered-by">
+        Powered by <a href="https://thelightningpass.com">Lightning Pass</a>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="checkoutTitle">Get Tickets</h2>
+                <button class="modal-close" onclick="closeCheckout()">&times;</button>
+            </div>
+            <div id="checkoutTiers"></div>
+            <div class="qty-row">
+                <span style="color: var(--gray);">How many?</span>
+                <div class="qty-controls">
+                    <button type="button" class="qty-btn" onclick="adjustQty(-1)">−</button>
+                    <span id="qtyValue" class="qty-value">1</span>
+                    <button type="button" class="qty-btn" onclick="adjustQty(1)">+</button>
+                </div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-dark); border-radius: 8px; padding: 1rem;">
+                <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.75rem;">Your tickets will be sent via email</p>
+                <input type="text" id="guestFirstName" class="form-input" placeholder="First name" required>
+                <input type="text" id="guestLastName" class="form-input" placeholder="Last name" required>
+                <input type="email" id="guestEmail" class="form-input" placeholder="Email" required>
+                <input type="tel" id="guestPhone" class="form-input" placeholder="Phone number" required>
+            </div>
+            <div style="margin-top: 0.75rem;">
+                <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.75rem; color: var(--gray); line-height: 1.4;">
+                    <input type="checkbox" id="smsConsent" required style="accent-color: var(--lightning-yellow); margin-top: 2px;">
+                    <span>I agree to receive SMS or emails about my ticket purchase and event updates. Msg & data rates may apply. Reply STOP to unsubscribe.</span>
+                </label>
+            </div>
+            <div style="margin-top: 0.5rem;">
+                <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.75rem; color: var(--gray); line-height: 1.4;">
+                    <input type="checkbox" id="termsAccepted" required style="accent-color: var(--lightning-yellow); margin-top: 2px;">
+                    <span>I agree to the <a href="/terms" target="_blank" style="color: var(--lightning-yellow);">Terms of Service</a>. All ticket sales are final. Refund requests must be made 24+ hours before the event.</span>
+                </label>
+            </div>
+            <!-- Apple Pay / Google Pay Button -->
+            <div id="paymentRequestSection" style="display: none; margin-top: 0.5rem;">
+                <div id="payment-request-btn" style="border: 2px solid rgba(255,255,255,0.8); border-radius: 8px; padding: 2px; overflow: hidden;"></div>
+                <div id="payment-divider" style="display: none; text-align: center; margin: 0.75rem 0; color: var(--gray); font-size: 0.85rem;">
+                    <span style="background: var(--card-black); padding: 0 0.5rem;">or pay with card</span>
+                </div>
+            </div>
+            <!-- Stripe Card Element -->
+            <div id="cardSection" style="display: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border-dark); border-radius: 8px; padding: 1rem; margin-top: 0.5rem;">
+                <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 0.75rem;">Payment Details</p>
+                <div id="card-element" style="background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 4px; border: 1px solid var(--border-dark);"></div>
+                <div id="card-errors" style="color: #ff4444; font-size: 0.8rem; margin-top: 0.5rem;"></div>
+                <p style="color: var(--gray); font-size: 0.75rem; margin-top: 0.5rem; text-align: center;">Secure payment via Stripe. Apple Pay & Google Pay accepted.</p>
+            </div>
+            <div class="checkout-total">Total: $<span id="totalAmount">0</span></div>
+            <button id="payBtn" class="btn-pay" onclick="processPayment()">PAY NOW</button>
+        </div>
+    </div>
+
+    <!-- Shared API configuration -->
+    <script src="js/api.js"></script>
+    <script>
+        // API_BASE loaded from js/api.js
+
+        const STRIPE_PK = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'pk_test_51TcHI8K7yd8VSKfWoM8GUdVwl6PW5lsf4NRDSuIBedFZvn7aOHxs7gx1mH8dLu00nAhiqQQelJZ1RFhFcaR0qH6C00H3FNwhBp'
+            : 'pk_live_51TcHI8K7yd8VSKfWfiACy9DhKpnUdTym0GqWWA3qkAd3sFPIlNM3RBR9YBKjBXPfFF8OssF2kXlb5UQRsHP4vrlX00qXxmW6D1';
+
+        let stripe = null;
+        let elements = null;
+        let cardElement = null;
+        let paymentRequest = null;
+        let prButton = null;
+        let allEvents = [];
+        let selectedEvent = null;
+        let selectedTier = null;
+        let ticketQty = 1;
+
+        // Session token for idempotency - persists across retries of same checkout session
+        let checkoutSessionToken = null;
+        // Track if payment has succeeded (to prevent re-charging on fulfillment failure)
+        let paymentSucceeded = false;
+        let succeededPaymentIntentId = null;
+
+        // Generate stable idempotency key for this checkout attempt
+        function generateIdempotencyKey(email, ticketId, ticketCount) {
+            const data = `${email}|${ticketId}|${ticketCount}|${checkoutSessionToken}`;
+            // Simple hash function for browser compatibility
+            let hash = 0;
+            for (let i = 0; i < data.length; i++) {
+                const char = data.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return `hp_${Math.abs(hash).toString(36)}_${checkoutSessionToken}`;
+        }
+
+        // Initialize Stripe Elements
+        function initStripeElements() {
+            if (!stripe) {
+                stripe = Stripe(STRIPE_PK);
+            }
+            if (!elements) {
+                elements = stripe.elements();
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            color: '#ffffff',
+                            fontFamily: '"Inter", sans-serif',
+                            fontSize: '16px',
+                            '::placeholder': { color: '#888888' }
+                        },
+                        invalid: { color: '#ff4444' }
+                    }
+                });
+                cardElement.mount('#card-element');
+                cardElement.on('change', (event) => {
+                    const displayError = document.getElementById('card-errors');
+                    displayError.textContent = event.error ? event.error.message : '';
+                });
+            }
+        }
+
+        // Initialize Apple Pay / Google Pay
+        function initPaymentRequest(priceInCents, ticketName) {
+            if (!stripe) {
+                stripe = Stripe(STRIPE_PK);
+            }
+
+            const prBtnContainer = document.getElementById('payment-request-btn');
+            const prSection = document.getElementById('paymentRequestSection');
+            const divider = document.getElementById('payment-divider');
+
+            if (prBtnContainer) prBtnContainer.innerHTML = '';
+            if (divider) divider.style.display = 'none';
+
+            paymentRequest = stripe.paymentRequest({
+                country: 'US',
+                currency: 'usd',
+                total: {
+                    label: `${selectedEvent.name} - ${ticketName}`,
+                    amount: priceInCents
+                },
+                requestPayerName: true,
+                requestPayerEmail: true,
+                requestPayerPhone: true
+            });
+
+            const prElements = stripe.elements();
+            prButton = prElements.create('paymentRequestButton', {
+                paymentRequest: paymentRequest,
+                style: {
+                    paymentRequestButton: {
+                        type: 'default',
+                        theme: 'dark',
+                        height: '48px'
+                    }
+                }
+            });
+
+            paymentRequest.canMakePayment().then((result) => {
+                if (result) {
+                    if (prBtnContainer) {
+                        prButton.mount('#payment-request-btn');
+                        prSection.style.display = 'block';
+                        divider.style.display = 'block';
+                    }
+                } else {
+                    prSection.style.display = 'none';
+                }
+            });
+
+            // Handle Apple Pay / Google Pay payment
+            paymentRequest.on('paymentmethod', async (ev) => {
+                // Parse payer info
+                const payerNameParts = (ev.payerName || '').trim().split(' ');
+                const firstName = payerNameParts[0] || 'Guest';
+                const lastName = payerNameParts.slice(1).join(' ') || firstName;
+                const email = ev.payerEmail;
+                const phone = ev.payerPhone || '';
+
+                // Generate idempotency key for Apple Pay
+                const idempotencyKey = generateIdempotencyKey(email, selectedTier.ticketId, ticketQty);
+
+                // Track if Stripe charge succeeded (for fulfillment retry logic)
+                let applePayChargeSucceeded = false;
+                let applePayIntentId = null;
+
+                try {
+                    // Create payment intent (with idempotency key)
+                    const response = await fetch(`${API_BASE}/api/v1/embed/create-intent`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            eventSlug: selectedEvent.slug,
+                            ticketId: selectedTier.ticketId,
+                            ticketCount: ticketQty,
+                            guest: { firstName, lastName, email, phone },
+                            idempotencyKey: idempotencyKey
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        ev.complete('fail');
+                        alert(data.error || 'Payment failed');
+                        return;
+                    }
+
+                    // Confirm payment with Stripe
+                    const { error, paymentIntent } = await stripe.confirmCardPayment(
+                        data.clientSecret,
+                        { payment_method: ev.paymentMethod.id },
+                        { handleActions: false }
+                    );
+
+                    if (error) {
+                        ev.complete('fail');
+                        alert('Payment failed: ' + error.message);
+                        return;
+                    }
+
+                    // CRITICAL: Mark charge as succeeded BEFORE completing Apple Pay
+                    applePayChargeSucceeded = true;
+                    applePayIntentId = paymentIntent.id;
+                    ev.complete('success');
+
+                    // Confirm with backend to create pass (with retry logic)
+                    await retryApplePayConfirmation(paymentIntent.id, firstName, lastName, email, phone);
+
+                } catch (error) {
+                    console.error('Apple Pay / Google Pay error:', error);
+
+                    if (!applePayChargeSucceeded) {
+                        // Charge didn't succeed - safe to tell user to retry
+                        ev.complete('fail');
+                        alert(error.message || 'Payment failed');
+                    } else {
+                        // Charge succeeded but fulfillment failed
+                        // ev.complete already called with 'success'
+                        alert('Your payment was received! There was an issue creating your ticket - it will be delivered shortly. Payment ID: ' + applePayIntentId);
+                        // Retry confirmation in background
+                        retryApplePayConfirmation(applePayIntentId, firstName, lastName, email, phone, 2);
+                    }
+                }
+            });
+        }
+
+        // Retry Apple Pay confirmation (separate from card payment retry)
+        async function retryApplePayConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt = 1) {
+            const maxRetries = 3;
+
+            try {
+                const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentIntentId: paymentIntentId,
+                        eventSlug: selectedEvent.slug,
+                        ticketType: selectedTier.type,
+                        ticketCount: ticketQty,
+                        guest: { firstName, lastName, email, phone },
+                        termsAccepted: true,
+                        termsAcceptedAt: new Date().toISOString(),
+                        termsVersion: '2026-07'
+                    })
+                });
+
+                if (!confirmResponse.ok) {
+                    throw new Error('Failed to create ticket');
+                }
+
+                if (attempt === 1) {
+                    alert(`Success! Your ${ticketQty > 1 ? 'tickets have' : 'ticket has'} been sent to ${email}`);
+                } else {
+                    alert(`Your ticket has been created and sent to ${email}`);
+                }
+                closeCheckout();
+
+            } catch (err) {
+                console.error(`Apple Pay confirmation attempt ${attempt} failed:`, err);
+
+                if (attempt < maxRetries) {
+                    // Retry with exponential backoff
+                    setTimeout(() => {
+                        retryApplePayConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt + 1);
+                    }, Math.pow(2, attempt) * 1000);
+                } else {
+                    console.error(`Apple Pay confirmation failed after ${maxRetries} attempts. Payment ID: ${paymentIntentId}`);
+                    // Backend webhook should still create the pass
+                }
+            }
+        }
+
+        // Extract venueSlug from query params (Vercel rewrite) or path (direct access)
+        // Query params are primary source due to Vercel cleanUrls + path params issue
+        const urlParams = new URLSearchParams(window.location.search);
+        let venueSlug = urlParams.get('v');
+        let eventSlug = urlParams.get('e');
+
+        // Fallback: parse from path if no query params (direct /v/slug access)
+        if (!venueSlug) {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts[0] === 'v' && pathParts[1]) {
+                venueSlug = pathParts[1];
+                eventSlug = pathParts[2];
+            } else if (pathParts[0] === 'venue-page') {
+                // Direct /venue-page access without params - show error
+                venueSlug = null;
+            }
+        }
+
+        async function loadHostPage() {
+            if (!venueSlug) {
+                showError('Invalid venue URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/lightning/v/${venueSlug}`);
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    showError(data.error || 'Venue not found');
+                    return;
+                }
+
+                // Handle case-insensitive redirect to the canonical /v/ URL
+                if (data.redirect && data.canonicalSlug) {
+                    let newPath = `/v/${data.canonicalSlug}`;
+                    if (eventSlug) newPath += `/${eventSlug}`;
+                    window.location.replace(newPath);
+                    return;
+                }
+
+                renderVenue(data.venue);
+                renderEvents(data.events);
+
+                // Update page title
+                document.title = `${data.venue.displayName || 'Events'} - Lightning Pass`;
+
+            } catch (err) {
+                console.error('Load error:', err);
+                showError('Failed to load page');
+            }
+        }
+
+        function renderVenue(host) {
+            // Banner
+            const banner = document.getElementById('hostBanner');
+            if (host.banner) {
+                banner.style.backgroundImage = `url(${host.banner})`;
+            }
+
+            // Logo
+            const logo = document.getElementById('hostLogo');
+            if (host.logo) {
+                logo.src = host.logo;
+            } else {
+                logo.style.display = 'none';
+            }
+
+            // Info
+            document.getElementById('hostName').textContent = host.displayName || host.slug;
+            document.getElementById('hostBio').textContent = host.bio || '';
+        }
+
+        function renderEvents(events) {
+            const grid = document.getElementById('eventsGrid');
+            allEvents = events || [];
+
+            if (!events || events.length === 0) {
+                grid.innerHTML = '<div class="no-events">No upcoming events</div>';
+                return;
+            }
+
+            grid.innerHTML = events.map(event => {
+                // Parse date as local (not UTC) to avoid off-by-one timezone shift
+                const dateParts = event.date ? event.date.split('T')[0].split('-') : null;
+                const date = dateParts ? new Date(dateParts[0], dateParts[1] - 1, dateParts[2]) : new Date();
+                const dateStr = date.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                const timeStr = event.startTime ? formatTime(event.startTime) : '';
+
+                // Get lowest priced ticket (with name and availability)
+                let lowestTicket = null;
+                let totalAvailable = 0;
+                if (event.tickets && event.tickets.length > 0) {
+                    lowestTicket = event.tickets.reduce((lowest, t) =>
+                        (!lowest || t.price < lowest.price) ? t : lowest, null);
+                    totalAvailable = event.tickets.reduce((sum, t) => {
+                        const remaining = t.available === -1 ? 0 : (t.available - (t.sold || 0));
+                        return sum + (remaining > 0 ? remaining * (t.guestCount || 1) : 0);
+                    }, 0);
+                }
+                const priceNum = lowestTicket?.price || 0;
+                const priceStr = priceNum > 0 ? `$${(priceNum / 100).toFixed(0)}` : 'FREE';
+                const tierName = lowestTicket?.name || '';
+
+                const eventJson = JSON.stringify(event).replace(/'/g, '&#39;');
+
+                // Build location display with clickable address
+                const locationName = event.locationName || '';
+                const locationAddress = event.locationAddress || '';
+                const locationDisplay = buildLocationDisplay(locationName, locationAddress, event.eventTag);
+
+                return `
+                    <div class="event-card">
+                        ${event.imageUrl ? `<img class="event-image" src="${event.imageUrl}" alt="${event.name}">` : '<div class="event-image"></div>'}
+                        <div class="event-content">
+                            <div class="event-date">${dateStr} ${timeStr ? '@ ' + timeStr : ''}</div>
+                            <h3 class="event-name">${event.name}</h3>
+                            ${locationDisplay}
+                            <div class="event-price">
+                                ${tierName ? `<div style="font-size: 0.8rem; color: var(--gray); font-weight: 400; margin-bottom: 0.15rem;">${tierName}</div>` : ''}
+                                <div>${priceStr}</div>
+                                ${totalAvailable > 0 ? `<div style="font-size: 0.75rem; color: var(--gray); font-weight: 400; margin-top: 0.15rem;">${totalAvailable} tickets available</div>` : ''}
+                            </div>
+                            <button class="btn-tickets" onclick='openCheckout(${eventJson})'>GET TICKETS</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const [hours, minutes] = timeStr.split(':');
+            const h = parseInt(hours);
+            const suffix = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${minutes} ${suffix}`;
+        }
+
+        // Build location display with clickable address for Google/Apple Maps
+        function buildLocationDisplay(locationName, locationAddress, eventTag) {
+            const parts = [];
+
+            // Event tag (if present)
+            if (eventTag) {
+                parts.push(`<span style="background: var(--lightning-yellow); color: #000; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;">${eventTag}</span>`);
+            }
+
+            // Location name
+            if (locationName) {
+                parts.push(`<span>${locationName}</span>`);
+            }
+
+            // Clickable address - opens in Google Maps (works on iOS/Android/Desktop)
+            if (locationAddress) {
+                const encodedAddress = encodeURIComponent(locationAddress);
+                // Universal maps link - Google Maps on web, prompts native app on mobile
+                const mapsUrl = `https://maps.google.com/maps?q=${encodedAddress}`;
+                parts.push(`<a href="${mapsUrl}" target="_blank" rel="noopener" style="color: var(--electric-blue); text-decoration: underline; cursor: pointer;" onclick="event.stopPropagation();">${locationAddress}</a>`);
+            }
+
+            if (parts.length === 0) return '';
+
+            return `<div class="event-location" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">${parts.join(' ')}</div>`;
+        }
+
+        function showError(message) {
+            document.getElementById('hostName').textContent = 'Not Found';
+            document.getElementById('eventsGrid').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // ===== CHECKOUT FUNCTIONS =====
+        function openCheckout(event) {
+            selectedEvent = event;
+            selectedTier = null;
+            ticketQty = 1;
+
+            // Reset payment state for new checkout session
+            checkoutSessionToken = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            paymentSucceeded = false;
+            succeededPaymentIntentId = null;
+
+            // Init Stripe if needed
+            if (!stripe) stripe = Stripe(STRIPE_PK);
+
+            document.getElementById('checkoutTitle').textContent = event.name;
+            document.getElementById('qtyValue').textContent = '1';
+
+            // Render ticket tiers
+            const tiersDiv = document.getElementById('checkoutTiers');
+            if (!event.tickets || event.tickets.length === 0) {
+                tiersDiv.innerHTML = '<p style="color: var(--gray); text-align: center;">No tickets available</p>';
+            } else {
+                tiersDiv.innerHTML = event.tickets.map((t, i) => {
+                    const avail = t.available === -1 ? 'Unlimited' : `${t.available - (t.sold || 0)} left`;
+                    const price = t.price > 0 ? `$${(t.price / 100).toFixed(0)}` : 'FREE';
+                    return `
+                        <div class="tier-option" onclick="selectTier(${i})" data-tier="${i}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="tier-name">${t.name}</span>
+                                <span class="tier-price">${price}</span>
+                            </div>
+                            <div class="tier-avail">${avail}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Auto-select first tier
+                setTimeout(() => selectTier(0), 10);
+            }
+
+            // Clear form
+            document.getElementById('guestFirstName').value = '';
+            document.getElementById('guestLastName').value = '';
+            document.getElementById('guestEmail').value = '';
+            document.getElementById('guestPhone').value = '';
+            document.getElementById('smsConsent').checked = false;
+            document.getElementById('termsAccepted').checked = false;
+
+            document.getElementById('checkoutModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkoutModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function selectTier(index) {
+            selectedTier = selectedEvent.tickets[index];
+            document.querySelectorAll('.tier-option').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+            updateTotal();
+        }
+
+        function adjustQty(delta) {
+            ticketQty = Math.max(1, Math.min(10, ticketQty + delta));
+            document.getElementById('qtyValue').textContent = ticketQty;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const price = selectedTier ? selectedTier.price : 0;
+            const totalCents = price * ticketQty;
+            const totalDollars = totalCents / 100;
+            document.getElementById('totalAmount').textContent = totalDollars.toFixed(0);
+
+            // Show/hide payment elements based on price
+            const cardSection = document.getElementById('cardSection');
+            const prSection = document.getElementById('paymentRequestSection');
+            const payBtn = document.getElementById('payBtn');
+
+            if (price > 0) {
+                cardSection.style.display = 'block';
+                payBtn.textContent = 'PAY NOW';
+
+                // Initialize Stripe Elements if not already
+                if (!cardElement) {
+                    initStripeElements();
+                }
+
+                // Initialize Apple Pay / Google Pay
+                initPaymentRequest(totalCents, selectedTier.name || 'Ticket');
+            } else {
+                cardSection.style.display = 'none';
+                prSection.style.display = 'none';
+                payBtn.textContent = 'GET FREE TICKET';
+            }
+        }
+
+        async function processPayment() {
+            if (!selectedTier) {
+                alert('Please select a ticket tier');
+                return;
+            }
+
+            const firstName = document.getElementById('guestFirstName').value.trim();
+            const lastName = document.getElementById('guestLastName').value.trim();
+            const email = document.getElementById('guestEmail').value.trim();
+            const phone = document.getElementById('guestPhone').value.trim();
+            const smsConsent = document.getElementById('smsConsent').checked;
+            const termsAccepted = document.getElementById('termsAccepted').checked;
+
+            if (!firstName || !lastName || !email || !phone) {
+                alert('Please fill in all fields');
+                return;
+            }
+            if (!smsConsent || !termsAccepted) {
+                alert('Please agree to the terms and SMS consent');
+                return;
+            }
+
+            const btn = document.getElementById('payBtn');
+            const originalBtnText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            // Generate idempotency key for this checkout attempt
+            const idempotencyKey = generateIdempotencyKey(email, selectedTier.ticketId, ticketQty);
+
+            try {
+                // CASE 1: Payment already succeeded in this session - only retry fulfillment
+                if (paymentSucceeded && succeededPaymentIntentId) {
+                    btn.textContent = 'Finalizing ticket...';
+                    await retryConfirmation(succeededPaymentIntentId, firstName, lastName, email, phone);
+                    return;
+                }
+
+                // Step 1: Create payment intent (with idempotency key)
+                const response = await fetch(`${API_BASE}/api/v1/embed/create-intent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventSlug: selectedEvent.slug,
+                        ticketId: selectedTier.ticketId,
+                        ticketCount: ticketQty,
+                        guest: { firstName, lastName, email, phone },
+                        idempotencyKey: idempotencyKey
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Payment failed');
+                }
+
+                // CASE 2: Backend detected this was already charged (duplicate prevention)
+                if (data.alreadyCharged) {
+                    console.log('Backend detected existing charge - skipping payment, going to confirmation');
+                    paymentSucceeded = true;
+                    succeededPaymentIntentId = data.paymentIntentId;
+                    btn.textContent = 'Finalizing ticket...';
+                    await retryConfirmation(data.paymentIntentId, firstName, lastName, email, phone);
+                    return;
+                }
+
+                // Step 2: Handle free tickets
+                if (data.isFree) {
+                    const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            paymentIntentId: data.paymentIntentId,
+                            eventSlug: selectedEvent.slug,
+                            ticketType: selectedTier.type,
+                            ticketCount: ticketQty,
+                            guest: { firstName, lastName, email, phone },
+                            termsAccepted: true,
+                            termsAcceptedAt: new Date().toISOString(),
+                            termsVersion: '2026-07'
+                        })
+                    });
+
+                    if (!confirmResponse.ok) {
+                        throw new Error('Failed to confirm free ticket');
+                    }
+
+                    alert('Success! Your pass has been sent to your email.');
+                    closeCheckout();
+                    return;
+                }
+
+                // Step 3: Confirm paid ticket with Stripe
+                if (!cardElement) {
+                    throw new Error('Card element not initialized');
+                }
+
+                const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: `${firstName} ${lastName}`,
+                            email: email
+                        }
+                    }
+                });
+
+                if (error) {
+                    // Card/payment error - safe to retry payment
+                    throw new Error(error.message);
+                }
+
+                if (paymentIntent.status === 'succeeded') {
+                    // CRITICAL: Mark payment as succeeded BEFORE attempting confirmation
+                    // From this point on, NEVER tell user to retry payment
+                    paymentSucceeded = true;
+                    succeededPaymentIntentId = paymentIntent.id;
+                    btn.textContent = 'Finalizing ticket...';
+
+                    // Step 4: Confirm with backend to create pass
+                    await retryConfirmation(paymentIntent.id, firstName, lastName, email, phone);
+                }
+
+            } catch (err) {
+                console.error('Payment error:', err);
+
+                // Only allow retry if payment hasn't succeeded yet
+                if (!paymentSucceeded) {
+                    alert(err.message || 'Payment failed. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = originalBtnText;
+                } else {
+                    // Payment succeeded but fulfillment failed - don't re-enable pay button
+                    // Show different message and offer to retry confirmation only
+                    alert('Your payment was received. There was an issue creating your ticket. Please wait while we retry...');
+                    btn.textContent = 'Finalizing ticket...';
+                    // Auto-retry confirmation after short delay
+                    setTimeout(() => {
+                        const firstName = document.getElementById('guestFirstName').value.trim();
+                        const lastName = document.getElementById('guestLastName').value.trim();
+                        const email = document.getElementById('guestEmail').value.trim();
+                        const phone = document.getElementById('guestPhone').value.trim();
+                        retryConfirmation(succeededPaymentIntentId, firstName, lastName, email, phone);
+                    }, 2000);
+                }
+            }
+        }
+
+        // Retry confirmation step only (NOT payment) - for when charge succeeded but fulfillment failed
+        async function retryConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt = 1) {
+            const btn = document.getElementById('payBtn');
+            const maxRetries = 3;
+
+            try {
+                const confirmResponse = await fetch(`${API_BASE}/api/v1/embed/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentIntentId: paymentIntentId,
+                        eventSlug: selectedEvent.slug,
+                        ticketType: selectedTier.type,
+                        ticketCount: ticketQty,
+                        guest: { firstName, lastName, email, phone },
+                        termsAccepted: true,
+                        termsAcceptedAt: new Date().toISOString(),
+                        termsVersion: '2026-07'
+                    })
+                });
+
+                const confirmData = await confirmResponse.json();
+
+                if (!confirmResponse.ok) {
+                    throw new Error(confirmData.error || 'Failed to create ticket');
+                }
+
+                // Success!
+                alert(`Success! Your ${ticketQty > 1 ? 'tickets have' : 'ticket has'} been sent to ${email}`);
+                closeCheckout();
+
+            } catch (err) {
+                console.error(`Confirmation attempt ${attempt} failed:`, err);
+
+                if (attempt < maxRetries) {
+                    btn.textContent = `Retrying... (${attempt}/${maxRetries})`;
+                    // Exponential backoff: 2s, 4s, 8s
+                    setTimeout(() => {
+                        retryConfirmation(paymentIntentId, firstName, lastName, email, phone, attempt + 1);
+                    }, Math.pow(2, attempt) * 1000);
+                } else {
+                    // Max retries exhausted - give user manual option
+                    alert(`Your payment was successful, but we couldn't finalize your ticket after ${maxRetries} attempts. Your ticket will be delivered shortly, or contact support with Payment ID: ${paymentIntentId}`);
+                    btn.textContent = 'Retry Ticket Creation';
+                    btn.disabled = false;
+                    // Button now only retries confirmation, not payment
+                    btn.onclick = () => {
+                        btn.disabled = true;
+                        btn.textContent = 'Finalizing ticket...';
+                        retryConfirmation(paymentIntentId, firstName, lastName, email, phone, 1);
+                    };
+                }
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeCheckout();
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('checkoutModal').addEventListener('click', (e) => {
+            if (e.target.id === 'checkoutModal') closeCheckout();
+        });
+
+        // Load on page ready
+        loadHostPage();
+    </script>
+    <script src="/js/lp-tracker.js" defer></script>
+</body>
+</html>

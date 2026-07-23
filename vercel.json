@@ -28,6 +28,8 @@
     { "source": "/host-portal", "destination": "/host-portal.html" },
     { "source": "/h/:hostSlug", "destination": "/host-page?h=:hostSlug" },
     { "source": "/h/:hostSlug/:eventSlug", "destination": "/host-page?h=:hostSlug&e=:eventSlug" },
+    { "source": "/v/:venueSlug", "destination": "/venue-page?v=:venueSlug" },
+    { "source": "/v/:venueSlug/:eventSlug", "destination": "/venue-page?v=:venueSlug&e=:eventSlug" },
     { "source": "/@:handle", "destination": "/host-page?h=:handle" },
     { "source": "/@:handle/:eventSlug", "destination": "/host-page?h=:handle&e=:eventSlug" },
     { "source": "/host/connect/success", "destination": "/host.html" },
