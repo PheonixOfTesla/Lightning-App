@@ -12849,6 +12849,12 @@
     <script src="/nav.js"></script>
     <script src="/js/lp-tracker.js" defer></script>
 
+    <!-- PWA Install button (shown when installable / not already installed) -->
+    <button id="installAppBtn" aria-label="Install Lightning Pass" style="display:none; position:fixed; left:50%; transform:translateX(-50%); bottom:1.25rem; z-index:9000; align-items:center; gap:0.5rem; padding:0.7rem 1.4rem; background:#ffdd00; color:#0d1b2a; border:none; border-radius:30px; font-weight:800; font-family:inherit; font-size:0.9rem; box-shadow:0 6px 24px rgba(255,221,0,0.45); cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#0d1b2a"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Install App
+    </button>
+
     <!-- iOS Install Overlay -->
     <div id="iosInstallOverlay" class="ios-overlay">
         <div class="ios-sheet">
@@ -12884,14 +12890,33 @@
     <script>
     (function() {
         let deferredInstallPrompt = null;
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const ua = navigator.userAgent || '';
+        const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+        const isAndroid = /Android/i.test(ua);
+        const isMobile = isIOS || isAndroid;  // smartphones only — not desktop
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 
-        // Capture beforeinstallprompt for Android/desktop
+        // Show the Install button only on smartphones that haven't installed yet.
+        // iOS shows the manual Add-to-Home-Screen steps; Android uses the native prompt.
+        function updateInstallButton() {
+            const btn = document.getElementById('installAppBtn');
+            if (!btn) return;
+            const show = isMobile && !isStandalone && (isIOS || !!deferredInstallPrompt);
+            btn.style.display = show ? 'inline-flex' : 'none';
+        }
+
+        // Capture beforeinstallprompt for Android
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredInstallPrompt = e;
             console.log('[PWA] Install prompt captured');
+            updateInstallButton();
+        });
+
+        // Hide the button once installed
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            updateInstallButton();
         });
 
         function showIOSInstallOverlay() {
@@ -12938,6 +12963,14 @@
 
             const iosOverlay = document.getElementById('iosInstallOverlay');
             if (iosOverlay) iosOverlay.onclick = (e) => { if (e.target === iosOverlay) hideIOSInstallOverlay(); };
+
+            // Install button: iOS -> manual steps overlay; Android -> native prompt
+            const installBtn = document.getElementById('installAppBtn');
+            if (installBtn) installBtn.onclick = () => {
+                if (isIOS) showIOSInstallOverlay();
+                else handleInstallClick();
+            };
+            updateInstallButton();
 
             // Check for install intent on load
             checkInstallIntent();
