@@ -3993,7 +3993,7 @@
                 </button>
             </form>
 
-            <div id="editPassStatus" style="display: none; margin-top: 1rem;"></div>
+            <div id="editPassStatusMsg" style="display: none; margin-top: 1rem;"></div>
         </div>
     </div>
 
@@ -6684,7 +6684,7 @@
                     <p><strong>Amount:</strong> $${(price * numPasses).toFixed(2)}</p>
                     ${tagline ? `<p style="color: var(--electric-purple); font-style: italic;">"${tagline}"</p>` : ''}
                     <p>Confirmation sent via ${confirmationMethod} to ${confirmationDest}</p>
-                    <a href="https://lightning-backend-production.up.railway.app/api/v1/lightning/passes/${confirmData.passId}/view"
+                    <a href="${API_BASE}/api/v1/lightning/passes/${confirmData.passId}/view"
                        target="_blank"
                        style="display: inline-block; margin-top: 0.5rem; color: var(--electric-blue);">
                         View Your Ticket
@@ -7987,7 +7987,7 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; align-items: center;">
-                                <button class="btn" style="${event.placement === 'spotlight' ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleSpotlight('${event._id}', ${event.placement !== 'spotlight'}, '${event.placement}')">
+                                <button class="btn" style="${event.placement === 'spotlight' ? 'background: var(--lightning-yellow); color: #000; border-color: var(--lightning-yellow);' : 'border-color: var(--lightning-yellow); color: var(--lightning-yellow);'}" onclick="toggleEventSpotlight('${event._id}', ${event.placement !== 'spotlight'}, '${event.placement}')">
                                     ${event.placement === 'spotlight' ? 'In Spotlight' : 'Add to Spotlight'}
                                 </button>
                                 ${event.placement === 'spotlight' ? `<div style="display: flex; align-items: center; gap: 0.25rem;">
@@ -8233,7 +8233,7 @@
             }
         }
 
-        async function toggleSpotlight(eventId, addToSpotlight, currentPlacement) {
+        async function toggleEventSpotlight(eventId, addToSpotlight, currentPlacement) {
             try {
                 // When toggling ON: set placement to 'spotlight'
                 // When toggling OFF: revert to 'scene' (default visible placement)

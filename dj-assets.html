@@ -134,7 +134,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        const API='https://lightning-backend-production.up.railway.app';
+        const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3000' : 'https://lightning-backend-production.up.railway.app';
         const djId=window.location.pathname.split('/').pop();
         let djName='DJ';
 
