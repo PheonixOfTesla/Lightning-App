@@ -3690,8 +3690,11 @@
         function buildRoleNav() {
             const currentPage = 'admin';
 
-            // Get user's roles (graceful old-token handling)
-            const userRoles = getUserRolesFromToken();
+            // Get user's roles from the FRESH token (not the possibly-stale
+            // localStorage cache) so a newly-issued owner token always shows Owner.
+            const userRoles = (window.LPAuth && LPAuth.getUserRoles)
+                ? LPAuth.getUserRoles()
+                : getUserRolesFromToken();
 
             // Map roles to dashboard links (order: Owner, Admin, Venue, Host, Partner, DJ, Member)
             // Owner is a superset of admin and only appears for the seeded owner account.
@@ -3983,6 +3986,9 @@
 
             // Authenticated admin - proceed
             adminToken = token;
+            // Refresh the cached roles from the fresh token so nothing downstream
+            // (e.g. buildRoleNav / getUserRolesFromToken) reads a stale array.
+            try { localStorage.setItem('userRoles', JSON.stringify(userRoles)); } catch (e) {}
             isOwner = userRoles.includes('owner');
             document.getElementById('adminEmail').textContent = userEmail || 'Admin';
             document.getElementById('navLinks').style.display = 'flex';
