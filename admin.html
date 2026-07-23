@@ -3578,6 +3578,7 @@
         let currentRefundPassId = null;
         let isOwner = false;  // Top-level overseer (owner role). Set in checkAuth.
         const OWNER_REVENUE_SHARE = 0.15;  // Owner override of all revenue (mirrors backend default)
+        let operatorEarnings = 0;  // Operator's 85% accrued from their start date (0 until backend reports it)
 
         // ===== OWNER CODE GATE =====
         // Security gate for high-risk admin actions (MONEY-OUT, DESTRUCTIVE, SCALE)
@@ -3847,9 +3848,12 @@
                 shareValue.textContent = money(net * 0.15);
             } else {
                 title.textContent = 'Connect your Stripe account';
-                desc.textContent = 'As systems operator you receive 85% of total profit, paid to your connected Stripe account.';
-                shareLabel.textContent = 'Your share (85%)';
-                shareValue.textContent = money(net * 0.85);
+                desc.textContent = 'As systems operator you receive 85% of profit earned from your start date forward, paid to your connected Stripe account.';
+                shareLabel.textContent = 'Your share (85%) so far';
+                // Operator starts at $0 and accrues only on revenue earned after they
+                // onboard — NOT 85% of revenue earned before them. Until the backend
+                // reports operator-since-start earnings, show the forward baseline of $0.
+                shareValue.textContent = money(operatorEarnings || 0);
             }
         }
 
