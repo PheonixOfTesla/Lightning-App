@@ -387,6 +387,10 @@
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 900; }
 
         @media (max-width: 1023px) {
+            /* Header role links overflow the phone viewport (checkAuth forces them
+               to flex inline). Hide them below the drawer breakpoint and switch
+               dashboards from inside the drawer instead. */
+            .nav-links { display: none !important; }
             .admin-layout { gap: 0; }
             .admin-sidebar {
                 position: fixed; top: 0; left: 0; bottom: 0;
@@ -983,7 +987,7 @@
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--lightning-yellow)">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
-                    Owner Dashboard
+                    <span id="dashboardTitle">Admin Console</span>
                 </h1>
                 <div style="color: var(--gray);">
                     Welcome, <span id="adminEmail">Admin</span>
@@ -1054,6 +1058,26 @@
                 <div class="stat-card">
                     <div class="stat-card-label">Pending Approvals</div>
                     <div class="stat-card-value yellow" id="pendingCount">0</div>
+                </div>
+            </div>
+
+            <!-- Payout / Stripe Connect (role-aware). Operator = 85%, Owner override = 15% -->
+            <div class="stat-card" id="payoutConnectCard" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; justify-content: space-between; border: 1px solid rgba(57,255,20,0.25);">
+                <div style="display: flex; gap: 1rem; align-items: center; min-width: 0;">
+                    <div style="width: 48px; height: 48px; border-radius: 0.75rem; background: rgba(99,91,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#635bff" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                    <div style="min-width: 0;">
+                        <div style="font-weight: 700; font-size: 1.05rem;" id="payoutConnectTitle">Connect your Stripe account</div>
+                        <div style="color: var(--gray); font-size: 0.9rem;" id="payoutConnectDesc">As systems operator you receive 85% of total profit, paid to your connected Stripe account.</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                    <div style="text-align: right;">
+                        <div style="color: var(--gray); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;" id="payoutShareLabel">Your share (85%)</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--neon-green);" id="payoutShareValue">$0</div>
+                    </div>
+                    <button class="btn btn-primary" style="width: auto; padding: 0.7rem 1.4rem;" id="payoutConnectBtn" onclick="connectPayoutStripe()">Connect Stripe</button>
                 </div>
             </div>
 
@@ -1159,6 +1183,11 @@
                                 Diagnostic
                             </button>
                         </div>
+                    </div>
+
+                    <div class="sidebar-group" id="sidebarDashboards" style="display:none;">
+                        <div class="sidebar-group-label">Switch Dashboard</div>
+                        <div id="sidebarDashboardLinks"></div>
                     </div>
 
                     <div class="sidebar-footer">
@@ -3673,6 +3702,49 @@
                 link.textContent = dash.label;
                 divider.insertAdjacentElement('afterend', link);
             });
+
+            // Mirror dashboard switching into the mobile drawer (header links hide < 1024px)
+            const sidebarWrap = document.getElementById('sidebarDashboards');
+            const sidebarLinks = document.getElementById('sidebarDashboardLinks');
+            if (sidebarWrap && sidebarLinks && dashboards.length) {
+                sidebarWrap.style.display = '';
+                sidebarLinks.innerHTML = '';
+                // dashboards was reversed above; restore intended order
+                dashboards.slice().reverse().forEach(dash => {
+                    const a = document.createElement('a');
+                    a.href = dash.href;
+                    a.className = 'tab' + (dash.id === currentPage ? ' active' : '');
+                    a.style.textDecoration = 'none';
+                    a.textContent = dash.label;
+                    sidebarLinks.appendChild(a);
+                });
+            }
+        }
+
+        // Stripe Connect for the current account's payout (operator 85% / owner 15%)
+        function connectPayoutStripe() {
+            showToast('Stripe Connect onboarding is not wired to the backend yet — coming soon', 'info');
+        }
+
+        // Populate the role-aware payout / Stripe-connect card
+        function updatePayoutCard(net) {
+            const title = document.getElementById('payoutConnectTitle');
+            const desc = document.getElementById('payoutConnectDesc');
+            const shareLabel = document.getElementById('payoutShareLabel');
+            const shareValue = document.getElementById('payoutShareValue');
+            if (!title) return;
+            const money = (n) => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (isOwner) {
+                title.textContent = 'Owner Stripe (platform account)';
+                desc.textContent = 'As owner you hold the main Lightning Stripe account and take a 15% override of total profit.';
+                shareLabel.textContent = 'Owner override (15%)';
+                shareValue.textContent = money(net * 0.15);
+            } else {
+                title.textContent = 'Connect your Stripe account';
+                desc.textContent = 'As systems operator you receive 85% of total profit, paid to your connected Stripe account.';
+                shareLabel.textContent = 'Your share (85%)';
+                shareValue.textContent = money(net * 0.85);
+            }
         }
 
         // ============================
@@ -3809,6 +3881,10 @@
             document.getElementById('adminEmail').textContent = userEmail || 'Admin';
             document.getElementById('navLinks').style.display = 'flex';
 
+            // Role-aware dashboard title
+            const dashTitle = document.getElementById('dashboardTitle');
+            if (dashTitle) dashTitle.textContent = isOwner ? 'Owner Console' : 'Admin Console';
+
             // Reflect permission level in the sidebar badge
             const rolePill = document.getElementById('sidebarRolePill');
             if (rolePill) {
@@ -3849,6 +3925,9 @@
                     document.getElementById('stripeFees').textContent = '-$' + fees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                     document.getElementById('refundTotal').textContent = '-$' + refunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                     document.getElementById('netRevenueSmall').textContent = '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+                    // Role-aware payout card (operator 85% / owner 15%)
+                    updatePayoutCard(net);
 
                     // Other stats
                     document.getElementById('totalPasses').textContent = (data.totalPasses || 0).toLocaleString();
