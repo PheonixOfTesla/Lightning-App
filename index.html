@@ -55,7 +55,8 @@
 
     <!-- Favicon - Lightning Bolt SVG -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%231a1a2e' width='100' height='100' rx='20'/%3E%3Cpath fill='%23ffd700' d='M55 10L20 50h20L30 90l45-50H55L65 10z'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
     <link rel="mask-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E" color="#ffdd00">
 
     <!-- Open Graph / Facebook -->
@@ -2129,6 +2130,106 @@
             .splash-title { font-size: 1.1rem; }
             .splash-enter { padding: 0.9rem 2rem; font-size: 0.85rem; }
             .splash-content { transform: translateY(-10vh); }
+        }
+
+        /* ===== iOS INSTALL OVERLAY ===== */
+        .ios-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.85);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .ios-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .ios-sheet {
+            background: #0d1526;
+            border-radius: 20px 20px 0 0;
+            padding: 20px 24px calc(env(safe-area-inset-bottom, 0px) + 28px);
+            width: 100%;
+            max-width: 520px;
+            transform: translateY(100%);
+            transition: transform 0.4s ease-out;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom: none;
+        }
+        .ios-overlay.active .ios-sheet {
+            transform: translateY(0);
+        }
+        .ios-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #ffdd00;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .ios-mark {
+            text-align: center;
+            margin: 12px 0 18px;
+        }
+        .ios-mark img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .ios-title {
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: #ffdd00;
+            margin-bottom: 24px;
+        }
+        .ios-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .ios-step {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 15px;
+            color: #ffffff;
+        }
+        .ios-step b {
+            color: #ffdd00;
+        }
+        .ios-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 221, 0, 0.4);
+            color: #ffdd00;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .ios-svg {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        .ios-footer {
+            text-align: center;
+            font-style: italic;
+            font-size: 13px;
+            color: #666;
+            margin-top: 24px;
         }
     </style>
 
@@ -12754,5 +12855,106 @@
     </script>
     <script src="/nav.js"></script>
     <script src="/js/lp-tracker.js" defer></script>
+
+    <!-- iOS Install Overlay -->
+    <div id="iosInstallOverlay" class="ios-overlay">
+        <div class="ios-sheet">
+            <button class="ios-close" id="iosInstallClose">Done</button>
+            <div class="ios-mark"><img src="/logo.png" alt="Lightning Pass"></div>
+            <div class="ios-title">Install Lightning Pass</div>
+            <div class="ios-steps">
+                <div class="ios-step">
+                    <span class="ios-num">1</span>
+                    <span>Tap the <b>navigation button</b></span>
+                    <svg class="ios-svg" viewBox="0 0 24 24" width="22" height="22"><circle cx="5" cy="12" r="2" fill="#00d4ff"/><circle cx="12" cy="12" r="2" fill="#00d4ff"/><circle cx="19" cy="12" r="2" fill="#00d4ff"/></svg>
+                </div>
+                <div class="ios-step">
+                    <span class="ios-num">2</span>
+                    <span>Tap <b>Share</b></span>
+                    <svg class="ios-svg" viewBox="0 0 24 24" width="22" height="22"><path fill="none" stroke="#00d4ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 10V20H16V10M12 3V15M12 3L8 7M12 3L16 7"/></svg>
+                </div>
+                <div class="ios-step">
+                    <span class="ios-num">3</span>
+                    <span>Tap <b>Add to Home Screen</b></span>
+                    <svg class="ios-svg" viewBox="0 0 24 24" width="22" height="22"><rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="#00d4ff" stroke-width="1.8"/><path stroke="#00d4ff" stroke-width="1.8" stroke-linecap="round" d="M12 8V16M8 12H16"/></svg>
+                </div>
+                <div class="ios-step">
+                    <span class="ios-num">4</span>
+                    <span>Tap <b>Add</b> in the top right</span>
+                </div>
+            </div>
+            <div class="ios-footer">Lightning Pass will appear on your home screen</div>
+        </div>
+    </div>
+
+    <!-- PWA Install Flow -->
+    <script>
+    (function() {
+        let deferredInstallPrompt = null;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+        // Capture beforeinstallprompt for Android/desktop
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            console.log('[PWA] Install prompt captured');
+        });
+
+        function showIOSInstallOverlay() {
+            const overlay = document.getElementById('iosInstallOverlay');
+            if (overlay) overlay.classList.add('active');
+        }
+
+        function hideIOSInstallOverlay() {
+            const overlay = document.getElementById('iosInstallOverlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        async function handleInstallClick() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            console.log('[PWA] Install outcome:', outcome);
+            deferredInstallPrompt = null;
+        }
+
+        // Handle ?install=1 param from landing page
+        function checkInstallIntent() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('install') !== '1') return;
+            if (isStandalone) return; // Already installed
+
+            // Clean up URL without reload
+            window.history.replaceState({}, '', window.location.pathname);
+
+            // Slight delay to let page settle
+            setTimeout(() => {
+                if (isIOS) {
+                    showIOSInstallOverlay();
+                } else if (deferredInstallPrompt) {
+                    handleInstallClick();
+                }
+            }, 300);
+        }
+
+        // Wire up overlay close button
+        document.addEventListener('DOMContentLoaded', () => {
+            const iosClose = document.getElementById('iosInstallClose');
+            if (iosClose) iosClose.onclick = hideIOSInstallOverlay;
+
+            const iosOverlay = document.getElementById('iosInstallOverlay');
+            if (iosOverlay) iosOverlay.onclick = (e) => { if (e.target === iosOverlay) hideIOSInstallOverlay(); };
+
+            // Check for install intent on load
+            checkInstallIntent();
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    })();
+    </script>
 </body>
 </html>
