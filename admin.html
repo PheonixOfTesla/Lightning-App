@@ -988,6 +988,7 @@
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
                     <span id="dashboardTitle">Admin Console</span>
+                    <span id="headerPermissionPill" class="role-pill admin" style="display:none; font-size:0.72rem; align-self:center;">Systems Operator</span>
                 </h1>
                 <div style="color: var(--gray);">
                     Welcome, <span id="adminEmail">Admin</span>
@@ -3970,9 +3971,15 @@
             document.getElementById('adminEmail').textContent = userEmail || 'Admin';
             document.getElementById('navLinks').style.display = 'flex';
 
-            // Role-aware dashboard title
+            // Role-aware dashboard title + permission descriptor
             const dashTitle = document.getElementById('dashboardTitle');
             if (dashTitle) dashTitle.textContent = isOwner ? 'Owner Console' : 'Admin Console';
+            const permPill = document.getElementById('headerPermissionPill');
+            if (permPill) {
+                permPill.textContent = isOwner ? 'Overseer of Admin · 15% override' : 'Systems Operator';
+                permPill.className = 'role-pill ' + (isOwner ? 'owner' : 'admin');
+                permPill.style.display = 'inline-flex';
+            }
 
             // Reflect permission level in the sidebar badge
             const rolePill = document.getElementById('sidebarRolePill');
