@@ -1722,7 +1722,7 @@
                 <!-- Pending Approvals Section -->
                 <div id="pendingVenuesSection" class="card" style="display: none; margin-bottom: 1rem; border-color: var(--lightning-yellow);">
                     <h3>Pending Venue Applications</h3>
-                    <div id="pendingVenuesList">
+                    <div id="venuesTabPendingList">
                         <p style="color: var(--gray); text-align: center; padding: 2rem;">Loading...</p>
                     </div>
                 </div>
@@ -5345,10 +5345,6 @@
         }
 
         // Keep old searchUsers for backwards compatibility
-        function searchUsers() {
-            loadUsers();
-        }
-
         async function loadDeals() {
             const loading = document.getElementById('dealsLoading');
             const table = document.getElementById('dealsTable');
@@ -5849,8 +5845,8 @@
                                 <p style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">${user.email}</p>
                             </div>
                             <div style="display: flex; gap: 0.5rem;">
-                                <button onclick="approveVenue('${user._id}')" style="padding: 0.5rem 1rem; background: var(--neon-green); color: #000; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Approve</button>
-                                <button onclick="rejectVenue('${user._id}')" style="padding: 0.5rem 1rem; background: var(--danger-red); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Reject</button>
+                                <button onclick="approveVenueUser('${user._id}')" style="padding: 0.5rem 1rem; background: var(--neon-green); color: #000; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Approve</button>
+                                <button onclick="rejectVenueUser('${user._id}')" style="padding: 0.5rem 1rem; background: var(--danger-red); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 600;">Reject</button>
                             </div>
                         </div>
                     `).join('');
@@ -5900,7 +5896,7 @@
             }
         }
 
-        async function approveVenue(userId) {
+        async function approveVenueUser(userId) {
             if (!confirm('Approve this venue application?')) return;
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/approve-venue`, {
@@ -5919,7 +5915,7 @@
             }
         }
 
-        async function rejectVenue(userId) {
+        async function rejectVenueUser(userId) {
             if (!confirm('Reject this venue application?')) return;
             try {
                 const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/${userId}/reject-venue`, {
@@ -6055,7 +6051,7 @@
         }
 
         async function loadPendingVenues() {
-            const container = document.getElementById('pendingVenuesList');
+            const container = document.getElementById('venuesTabPendingList');
             container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 1rem;">Loading...</p>';
 
             try {
