@@ -3,33 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="robots" content="noindex, nofollow">
     <title>Owner Console - Lightning Pass</title>
-    <!--
-      The Owner experience is served by the admin console (admin.html), which
-      renders as "Owner Console" for accounts holding the owner role. Owner is a
-      permission layer above admin, not a separate app, so /owner routes there
-      rather than duplicating the console. Query string (e.g. ?stripe=return) is
-      preserved so Stripe onboarding returns land correctly.
-    -->
-    <script>
-        (function () {
-            var target = '/admin' + (window.location.search || '') + (window.location.hash || '');
-            window.location.replace(target);
-        })();
-    </script>
-    <meta http-equiv="refresh" content="0; url=/admin">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23ffd700' d='M55 5L15 55h25L30 95l50-55H55L70 5z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        html, body { margin: 0; height: 100%; background: #0d1b2a; color: #fff;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        .wrap { height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; }
-        a { color: #ffdd00; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --pure-black:#0d1b2a; --card-black:#1b2838; --border-dark:#2d3748;
+            --lightning-yellow:#ffdd00; --electric-blue:#00d4ff; --electric-purple:#9d4edd;
+            --neon-green:#39ff14; --danger-red:#ff0044; --white:#fff; --gray:#888;
+        }
+        body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--pure-black); color:var(--white); line-height:1.6; min-height:100vh; }
+        a { color:inherit; text-decoration:none; }
+
+        nav { background:var(--pure-black); position:fixed; top:0; left:0; right:0; z-index:1000; padding:0.875rem 2rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .nav-container { max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+        .logo { font-size:1.25rem; font-weight:500; display:flex; align-items:center; gap:0.5rem; white-space:nowrap; }
+        .logo img { width:40px; height:40px; border-radius:50%; }
+        .nav-links { display:flex; gap:1.25rem; align-items:center; }
+        .nav-link { font-size:0.95rem; transition:color 0.2s; }
+        .nav-link:hover { color:var(--lightning-yellow); }
+        .nav-link.active { color:var(--lightning-yellow); font-weight:600; }
+        .btn-logout { padding:0.5rem 1.25rem; background:var(--lightning-yellow); color:var(--pure-black); border:none; border-radius:25px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:0.85rem; box-shadow:0 0 15px rgba(255,221,0,0.4); cursor:pointer; }
+
+        .main { padding:6rem 2rem 3rem; max-width:1200px; margin:0 auto; }
+        .head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+        .head h1 { font-size:2rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }
+        .card { background:var(--card-black); border:1px solid rgba(255,255,255,0.1); border-radius:1rem; padding:1.5rem; margin-bottom:1.5rem; }
+
+        .role-pill { display:inline-flex; align-items:center; gap:0.3rem; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.7rem; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; }
+        .role-pill.owner { background:var(--lightning-yellow); color:#000; box-shadow:0 0 12px rgba(255,221,0,0.35); }
+        .role-pill.admin { background:var(--electric-blue); color:#000; }
+
+        .finance-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-top:1rem; }
+        .finance-tile { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:0.85rem; padding:1.1rem 1.25rem; }
+        .ft-label { color:var(--gray); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
+        .ft-value { font-size:1.6rem; font-weight:800; margin-top:0.3rem; }
+        .access-banner { display:flex; align-items:center; gap:0.75rem; border-radius:0.75rem; padding:0.9rem 1.1rem; margin-top:0.25rem; font-size:0.9rem; background:rgba(57,255,20,0.07); border:1px solid rgba(57,255,20,0.22); color:var(--neon-green); }
+
+        .role-node { display:flex; gap:1rem; align-items:flex-start; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.1rem 1.3rem; margin-bottom:0.6rem; }
+        .role-node.tier-owner { border-color:rgba(255,221,0,0.4); }
+        .role-node.tier-admin { border-color:rgba(0,212,255,0.28); }
+        .role-node.tier-host { border-color:rgba(157,78,221,0.28); }
+        .rank { width:40px; height:40px; flex-shrink:0; border-radius:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:800; }
+        .tier-owner .rank { background:rgba(255,221,0,0.15); color:var(--lightning-yellow); }
+        .tier-admin .rank { background:rgba(0,212,255,0.15); color:var(--electric-blue); }
+        .tier-host .rank { background:rgba(157,78,221,0.15); color:var(--electric-purple); }
+        .role-title { font-size:1.05rem; font-weight:700; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+        .role-sub { color:var(--gray); font-size:0.85rem; margin-top:0.15rem; }
+        .role-people { margin-top:0.6rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
+        .role-chip { display:inline-flex; align-items:center; gap:0.35rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:0.25rem 0.6rem; border-radius:20px; font-size:0.8rem; }
+
+        table { width:100%; border-collapse:collapse; margin-top:0.5rem; }
+        th, td { text-align:left; padding:0.75rem 1rem; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.9rem; }
+        th { color:var(--gray); text-transform:uppercase; font-size:0.75rem; }
+
+        .btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.7rem 1.3rem; border-radius:0.6rem; border:none; cursor:pointer; font-weight:700; font-family:inherit; font-size:0.95rem; }
+        .btn-primary { background:var(--lightning-yellow); color:#000; }
+        .btn-secondary { background:transparent; border:1px solid var(--border-dark); color:var(--white); }
+        .btn-danger { background:var(--danger-red); color:#fff; }
+        .btn-row { display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; margin-top:1rem; }
+
+        .toast { position:fixed; bottom:2rem; right:2rem; background:var(--card-black); border:1px solid var(--lightning-yellow); border-radius:0.5rem; padding:1rem 1.5rem; z-index:9999; display:none; }
+        .toast.show { display:block; }
+        .gate { min-height:100vh; display:flex; align-items:center; justify-content:center; color:var(--gray); }
+        @media (max-width:768px){ .nav-links .nav-link{ display:none; } .main{ padding:5.5rem 1rem 2rem; } .head h1{ font-size:1.5rem; } }
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <div>Opening the Owner Console…</div>
-        <div style="color:#888; font-size:0.9rem;">If you are not redirected, <a href="/admin">continue to the console</a>.</div>
+    <div id="gate" class="gate">Verifying owner access…</div>
+
+    <div id="app" style="display:none;">
+        <nav>
+            <div class="nav-container">
+                <a href="/" class="logo"><img src="logo.png" alt="Lightning Pass"><span>Lightning Pass</span></a>
+                <div class="nav-links" id="navLinks">
+                    <a href="/" class="nav-link">Events</a>
+                    <span id="dashLinks" style="display:contents;"></span>
+                    <button class="btn-logout" onclick="ownerLogout()">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main">
+            <div class="head">
+                <h1>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--lightning-yellow)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    Owner Console
+                    <span class="role-pill owner">Overseer of Admin · 15% override</span>
+                </h1>
+                <div style="color:var(--gray);">Welcome, <span id="ownerEmail">Owner</span></div>
+            </div>
+
+            <div class="access-banner"><strong>Full finance access.</strong>&nbsp;You oversee the systems operator, control the platform Stripe account, and take 15% of all revenue.</div>
+
+            <!-- Finances -->
+            <div class="card" style="margin-top:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                    <h3 style="display:flex; align-items:center; gap:0.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Owner Finances
+                    </h3>
+                    <span id="ownerStripeStatus" class="role-chip" style="color:var(--gray);">Owner Stripe: not connected yet</span>
+                </div>
+                <div class="finance-grid">
+                    <div class="finance-tile"><div class="ft-label">Total</div><div class="ft-value" id="finTotal">$0</div><div style="color:var(--gray); font-size:0.72rem; margin-top:0.2rem;">All net revenue tracked</div></div>
+                    <div class="finance-tile"><div class="ft-label">Owner Override (15%)</div><div class="ft-value" style="color:var(--lightning-yellow);" id="finShare">$0</div></div>
+                    <div class="finance-tile"><div class="ft-label">Gross</div><div class="ft-value" id="finGross">$0</div></div>
+                    <div class="finance-tile"><div class="ft-label">Passes Sold</div><div class="ft-value" style="color:var(--electric-blue);" id="finPasses">0</div></div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="stripeConnectBtn" onclick="ownerConnectStripe()">Connect Stripe Account</button>
+                    <button class="btn btn-secondary" id="stripeManageBtn" style="display:none;" onclick="ownerOpenStripe()">Open Stripe Dashboard</button>
+                    <button class="btn btn-danger" id="stripeDisconnectBtn" style="display:none;" onclick="ownerDisconnectStripe()">Disconnect</button>
+                </div>
+                <p style="color:var(--gray); font-size:0.78rem; margin-top:0.6rem;">Connecting opens Stripe so you can sign in with the owner account. Disconnecting unlinks it from Lightning Pass; the Stripe account stays in your Stripe Dashboard.</p>
+            </div>
+
+            <!-- Ownership hierarchy -->
+            <div class="card">
+                <h3 style="margin-bottom:1rem;">Ownership &amp; Access</h3>
+                <div class="role-node tier-owner"><div class="rank">1</div><div style="flex:1; min-width:0;"><div class="role-title">Owner <span class="role-pill owner">Overseer</span></div><div class="role-sub">Top authority. Holds the platform Stripe account · 15% override · assigns the systems operator.</div><div class="role-people" id="ownerPeople"></div></div></div>
+                <div class="role-node tier-admin"><div class="rank">2</div><div style="flex:1; min-width:0;"><div class="role-title">Admin <span class="role-pill admin">Systems Operator</span> <span class="role-chip" style="color:var(--electric-blue);">Finances: read-only</span></div><div class="role-sub">Runs day-to-day operations. Assigns hosts. Cannot move money or alter Stripe.</div><div class="role-people" id="adminPeople"></div></div></div>
+                <div class="role-node tier-host"><div class="rank">3</div><div style="flex:1; min-width:0;"><div class="role-title">Hosts <span class="role-pill" style="background:rgba(157,78,221,0.2); color:var(--electric-purple);">Assigned by Admin</span></div><div class="role-sub">Event organizers with their own payout splits.</div><div class="role-people" id="hostPeople"></div></div></div>
+            </div>
+
+            <!-- Event breakdown -->
+            <div class="card">
+                <h3 style="margin-bottom:0.5rem;">Event Breakdown</h3>
+                <div id="eventBreakdown" style="overflow-x:auto;"><p style="color:var(--gray);">Loading…</p></div>
+            </div>
+
+            <div class="btn-row">
+                <a href="/admin" class="btn btn-secondary">Open Admin Console (operations)</a>
+            </div>
+        </main>
     </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const SHARE = 0.15;
+        let token = null;
+        const money = (n) => '$' + (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+        function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+        function ownerLogout(){ LPAuth.clearAuth(); window.location.href='/?login=true'; }
+
+        // ---- Owner-only gate ----
+        (function gate(){
+            const v = LPAuth.validateToken();
+            token = LPAuth.getToken();
+            if (!token || !v.valid) { window.location.href = '/?login=true' + (v.expired ? '&expired=true' : ''); return; }
+            const roles = LPAuth.getUserRoles();
+            if (!roles.includes('owner')) {
+                // Not the owner — this page is owner-only. Send admins to their console, others home.
+                window.location.href = roles.includes('admin') ? '/admin' : '/';
+                return;
+            }
+            document.getElementById('gate').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('ownerEmail').textContent = LPAuth.getUserEmail() || 'Owner';
+            buildHeader(roles);
+            loadFinances(); loadHierarchy(); loadEventBreakdown(); loadStripe();
+            // Returning from Stripe onboarding
+            const sp = new URLSearchParams(location.search).get('stripe');
+            if (sp === 'return') toast('Back from Stripe — checking account status…');
+        })();
+
+        // Build the role-type header (Owner active), matching the admin console
+        function buildHeader(roles){
+            const all = [
+                { role:'owner', label:'Owner', href:'/owner' },
+                { role:'admin', label:'Admin', href:'/admin' },
+                { role:'venue', label:'Venue', href:'/venue' },
+                { role:'host', label:'Host', href:'/host' },
+                { role:'partner', label:'Partner', href:'/partner-portal' },
+                { role:'dj', label:'DJ', href:'/dj' },
+                { role:'member', label:'Member', href:'/members' },
+            ];
+            const wrap = document.getElementById('dashLinks');
+            wrap.innerHTML = all.filter(d => roles.includes(d.role))
+                .map(d => `<a href="${d.href}" class="nav-link${d.role==='owner'?' active':''}">${d.label}</a>`).join('');
+        }
+
+        function authHeaders(){ return { 'Authorization': `Bearer ${token}` }; }
+
+        async function loadFinances(){
+            try{
+                const res = await fetch(`${API_BASE}/api/v1/analytics/system/overview`, { headers: authHeaders() });
+                const d = res.ok ? await res.json() : {};
+                const net = d.netRevenue || d.totalRevenue || 0;
+                document.getElementById('finTotal').textContent = money(net);
+                document.getElementById('finShare').textContent = money(net * SHARE);
+                document.getElementById('finGross').textContent = money(d.grossRevenue || 0);
+                document.getElementById('finPasses').textContent = (d.totalPasses || 0).toLocaleString();
+            }catch(e){ console.error('finances', e); }
+        }
+
+        async function loadHierarchy(){
+            try{
+                const res = await fetch(`${API_BASE}/api/v1/lightning/admin/users/list`, { headers: authHeaders() });
+                const d = await res.json(); const users = d.users || [];
+                const chip = (u)=>`<span class="role-chip">${esc(u.name || u.email)}</span>`;
+                const owners = users.filter(u => u.role==='owner' || (u.roles||[]).includes('owner'));
+                const admins = users.filter(u => (u.role==='admin' || (u.roles||[]).includes('admin')) && !(u.role==='owner' || (u.roles||[]).includes('owner')));
+                const hosts  = users.filter(u => (u.roles||[]).includes('host') && u.hostStatus==='approved');
+                const fill = (id,list,empty)=>{ const el=document.getElementById(id); el.innerHTML = list.length ? list.map(chip).join('') : `<span class="role-chip" style="color:var(--gray);">${empty}</span>`; };
+                fill('ownerPeople', owners, 'No owner');
+                fill('adminPeople', admins, 'No admins');
+                fill('hostPeople', hosts, 'No approved hosts');
+            }catch(e){ console.error('hierarchy', e); }
+        }
+
+        async function loadEventBreakdown(){
+            const box = document.getElementById('eventBreakdown');
+            try{
+                const res = await fetch(`${API_BASE}/api/v1/lightning/events`, { headers: authHeaders() });
+                const d = await res.json();
+                const events = (d.events || []).slice().sort((a,b)=>(b.revenue||0)-(a.revenue||0));
+                if(!events.length){ box.innerHTML = '<p style="color:var(--gray);">No events yet.</p>'; return; }
+                box.innerHTML = `<table><thead><tr><th>Event</th><th>Date</th><th>Sold</th><th>Revenue</th><th>Owner 15%</th></tr></thead><tbody>${
+                    events.map(ev=>{ const rev=ev.revenue||0; return `<tr><td><strong>${esc(ev.name||'Untitled')}</strong></td><td>${ev.date?new Date(ev.date).toLocaleDateString():'—'}</td><td>${ev.ticketsSold||0}</td><td>${money(rev)}</td><td style="color:var(--lightning-yellow);">${money(rev*SHARE)}</td></tr>`; }).join('')
+                }</tbody></table>`;
+            }catch(e){ console.error('events', e); box.innerHTML='<p style="color:var(--danger-red);">Failed to load event breakdown.</p>'; }
+        }
+
+        async function loadStripe(){
+            const chip=document.getElementById('ownerStripeStatus'), c=document.getElementById('stripeConnectBtn'), m=document.getElementById('stripeManageBtn'), x=document.getElementById('stripeDisconnectBtn');
+            try{
+                const res = await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/status`, { headers: authHeaders() });
+                const d = await res.json();
+                if(d.connected){
+                    const ready = d.payoutsEnabled && d.chargesEnabled;
+                    chip.textContent = ready ? 'Owner Stripe: connected' : 'Owner Stripe: onboarding incomplete';
+                    chip.style.color = ready ? 'var(--neon-green)' : 'var(--lightning-yellow)';
+                    c.textContent = ready ? 'Reconnect' : 'Finish Onboarding';
+                    m.style.display = ready ? '' : 'none';
+                    x.style.display = '';
+                } else {
+                    chip.textContent = 'Owner Stripe: not connected yet'; chip.style.color='var(--gray)';
+                    c.textContent = 'Connect Stripe Account'; m.style.display='none'; x.style.display='none';
+                }
+            }catch(e){ console.error('stripe status', e); }
+        }
+
+        async function ownerConnectStripe(){
+            const b=document.getElementById('stripeConnectBtn'); b.disabled=true; b.textContent='Opening Stripe…';
+            try{
+                const res = await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/connect`, { method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'} });
+                const d = await res.json();
+                if(res.ok && d.onboardingUrl){ window.location.href = d.onboardingUrl; }
+                else { toast(d.error || 'Could not start Stripe onboarding'); b.disabled=false; b.textContent='Connect Stripe Account'; }
+            }catch(e){ toast('Network error'); b.disabled=false; b.textContent='Connect Stripe Account'; }
+        }
+        async function ownerDisconnectStripe(){
+            if(!confirm('Disconnect the Stripe account from Lightning Pass? It stays in your Stripe Dashboard — this only unlinks it here.')) return;
+            try{ const res=await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/disconnect`, { method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'} });
+                const d=await res.json(); if(res.ok){ toast('Stripe account disconnected'); loadStripe(); } else toast(d.error||'Could not disconnect'); }
+            catch(e){ toast('Network error'); }
+        }
+        async function ownerOpenStripe(){
+            try{ const res=await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/login-link`, { method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'} });
+                const d=await res.json(); if(res.ok && d.url) window.open(d.url,'_blank'); else toast(d.error||'Could not open Stripe dashboard'); }
+            catch(e){ toast('Network error'); }
+        }
+    </script>
 </body>
 </html>
