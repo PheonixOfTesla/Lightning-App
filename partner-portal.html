@@ -493,11 +493,41 @@
             }
             .dashboard-header h1 { font-size: 1.5rem; }
         }
+            /* === Universal mobile header (centered logo + hamburger dropdown) === */
+        .mobile-nav-toggle { display: none; }
+        @media (max-width: 768px) {
+            .nav-container { position: relative; justify-content: center; }
+            .logo { margin: 0 auto; }
+            .hamburger { display: none !important; } /* superseded by .mobile-nav-toggle */
+            .mobile-nav-toggle {
+                display: flex; flex-direction: column; gap: 5px;
+                position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+                background: none; border: none; cursor: pointer; padding: 6px; z-index: 1001;
+            }
+            .mobile-nav-toggle span { display: block; width: 24px; height: 2px; background: #fff; border-radius: 2px; }
+            .nav-links {
+                display: none !important; position: absolute; top: 100%; left: 0; right: 0;
+                flex-direction: column; align-items: stretch; gap: 0.15rem;
+                background: var(--pure-black, #0d1b2a);
+                padding: 0.75rem 1rem 1rem; margin: 0;
+                border-top: 1px solid rgba(255,255,255,0.08);
+                box-shadow: 0 14px 28px rgba(0,0,0,0.45);
+            }
+            .nav-links.nav-open { display: flex !important; }
+            .nav-links .nav-link, .nav-links .dashboard-link {
+                display: block !important; width: 100%; text-align: left;
+                padding: 0.7rem 0.5rem; border-radius: 0.4rem; font-size: 1rem;
+            }
+            .nav-links .nav-link:hover, .nav-links .dashboard-link:hover { background: rgba(255,255,255,0.06); }
+            .nav-links .btn-logout { display: block !important; width: 100%; text-align: center; margin-top: 0.5rem; }
+            .nav-links .nav-divider { display: none; }
+        }
     </style>
 </head>
 <body>
     <nav>
         <div class="nav-container">
+                <button class="mobile-nav-toggle" aria-label="Toggle menu" onclick="document.getElementById('navLinks').classList.toggle('nav-open')"><span></span><span></span><span></span></button>
             <a href="/" class="logo">
                 <img src="logo.png" alt="Lightning Pass">
                 <span>Lightning Pass</span>
