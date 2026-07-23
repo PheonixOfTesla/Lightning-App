@@ -1396,6 +1396,22 @@
                             </select>
                         </div>
 
+                        <!-- Assign spotlight event to a venue and/or host (admin-controlled import) -->
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="flex: 1;">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Assign to Venue (optional)</label>
+                                <select id="spotlightVenueId" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                    <option value="">— None —</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="color: var(--gray); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Assign to Host (optional)</label>
+                                <select id="spotlightHostId" style="width: 100%; padding: 0.75rem; background: var(--card-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; color: var(--white);">
+                                    <option value="">— None —</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div style="display: flex; gap: 1rem;">
                             <button onclick="createSpotlightEvent()" style="flex: 1; padding: 0.75rem; background: var(--lightning-yellow); color: #000; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Create Spotlight Event</button>
                             <button onclick="setEventMode('list')" style="padding: 0.75rem 1.5rem; background: transparent; color: var(--gray); border: 1px solid var(--border-dark); border-radius: 0.5rem; cursor: pointer;">Cancel</button>
@@ -4299,6 +4315,32 @@
             document.getElementById('spotlightForm').style.display = mode === 'spotlight' ? 'block' : 'none';
             document.getElementById('sceneForm').style.display = mode === 'scene' ? 'block' : 'none';
             document.getElementById('eventCreateResult').style.display = 'none';
+
+            if (mode === 'spotlight') loadSpotlightAssignees();
+        }
+
+        // Populate the spotlight form's Venue + Host selectors so admin can assign
+        // a spotlight event to a venue and/or host on creation.
+        async function loadSpotlightAssignees() {
+            const venueSel = document.getElementById('spotlightVenueId');
+            const hostSel = document.getElementById('spotlightHostId');
+            if (!venueSel || !hostSel) return;
+            try {
+                const [venuesRes, usersRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/v1/lightning/admin/venues`, { headers: { 'Authorization': `Bearer ${adminToken}` } }),
+                    fetch(`${API_BASE}/api/v1/lightning/admin/users/list`, { headers: { 'Authorization': `Bearer ${adminToken}` } })
+                ]);
+                const venues = (await venuesRes.json()).venues || [];
+                const users = (await usersRes.json()).users || [];
+                const hosts = users.filter(u => (u.roles || []).includes('host') && u.hostStatus === 'approved');
+
+                const keepFirst = (sel) => { while (sel.options.length > 1) sel.remove(1); };
+                keepFirst(venueSel); keepFirst(hostSel);
+                venues.forEach(v => { const o = document.createElement('option'); o.value = v._id; o.textContent = v.name || v._id; venueSel.appendChild(o); });
+                hosts.forEach(h => { const o = document.createElement('option'); o.value = h._id; o.textContent = (h.hostDisplayName || h.name || h.email); hostSel.appendChild(o); });
+            } catch (e) {
+                console.error('Load spotlight assignees error:', e);
+            }
         }
 
         // Image upload functions
@@ -4462,6 +4504,8 @@
                 isRecurring,
                 eventType: 'club',
                 buttonType,
+                venueId: document.getElementById('spotlightVenueId')?.value || undefined,  // Optional venue assignment
+                hostId: document.getElementById('spotlightHostId')?.value || undefined,     // Optional host assignment
                 tickets: [{
                     ticketId: generateTicketId(),  // Unique identifier
                     type: 'general',
