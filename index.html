@@ -4289,11 +4289,14 @@
         function startMusic() {
             if (musicPlaying) return;
             initLoungeMusic();
-            loungeAudio.play().catch(e => console.log('Audio play failed:', e));
-            musicPlaying = true;
-            musicStarted = true;
-            const btn = document.getElementById('musicToggle');
-            if (btn) btn.classList.add('playing');
+            // Only mark playing on a successful play so a blocked autoplay can
+            // still start on the next user interaction.
+            loungeAudio.play().then(() => {
+                musicPlaying = true;
+                musicStarted = true;
+                const btn = document.getElementById('musicToggle');
+                if (btn) btn.classList.add('playing');
+            }).catch(e => console.log('Audio play failed:', e));
         }
 
         function stopMusic() {
@@ -4599,31 +4602,21 @@
         // Auto-play music when page loads (will work if browser allows)
         // Falls back to starting on first user interaction
         function attemptAutoplayMusic() {
+            // Music plays via the loungeAudio <audio> element (see startMusic).
+            // The legacy Web Audio context path was removed. Autoplay is usually
+            // blocked without a user gesture, so also arm a one-time interaction
+            // handler; startMusic only marks itself playing on a successful play.
             try {
-                createAudioContext();
-                if (audioCtx.state === 'running') {
+                const startOnInteraction = () => {
                     startMusic();
-                } else {
-                    // Browser blocked autoplay - start on first interaction
-                    const startOnInteraction = () => {
-                        if (!musicStarted) {
-                            startMusic();
-                        }
-                        document.removeEventListener('click', startOnInteraction);
-                        document.removeEventListener('touchstart', startOnInteraction);
-                    };
-                    document.addEventListener('click', startOnInteraction);
-                    document.addEventListener('touchstart', startOnInteraction, { passive: true });
-
-                    // Also try resuming the context
-                    audioCtx.resume().then(() => {
-                        if (!musicStarted && audioCtx.state === 'running') {
-                            startMusic();
-                        }
-                    }).catch(() => {});
-                }
-            } catch(e) {
-                console.log('Web Audio not supported:', e);
+                    document.removeEventListener('click', startOnInteraction);
+                    document.removeEventListener('touchstart', startOnInteraction);
+                };
+                document.addEventListener('click', startOnInteraction);
+                document.addEventListener('touchstart', startOnInteraction, { passive: true });
+                startMusic(); // best-effort immediate autoplay
+            } catch (e) {
+                console.log('Autoplay music skipped:', e.message);
             }
         }
 
