@@ -1062,7 +1062,7 @@
                 </div>
             </div>
 
-            <!-- Payout / Stripe Connect (role-aware). Operator = 85%, Owner override = 15% -->
+            <!-- Payout / Stripe Connect (role-aware). Operator = 80%, Owner override = 20% -->
             <div class="stat-card" id="payoutConnectCard" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; justify-content: space-between; border: 1px solid rgba(57,255,20,0.25);">
                 <div style="display: flex; gap: 1rem; align-items: center; min-width: 0;">
                     <div style="width: 48px; height: 48px; border-radius: 0.75rem; background: rgba(99,91,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -1070,12 +1070,13 @@
                     </div>
                     <div style="min-width: 0;">
                         <div style="font-weight: 700; font-size: 1.05rem;" id="payoutConnectTitle">Connect your Stripe account</div>
-                        <div style="color: var(--gray); font-size: 0.9rem;" id="payoutConnectDesc">As systems operator you receive 85% of total profit, paid to your connected Stripe account.</div>
+                        <div style="color: var(--gray); font-size: 0.9rem;" id="payoutConnectDesc">As systems operator you receive 80% of profit, paid to your connected Stripe account.</div>
+                        <div id="platformFeeControl" style="margin-top: 0.6rem; font-size: 0.85rem;"></div>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1.25rem;">
                     <div style="text-align: right;">
-                        <div style="color: var(--gray); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;" id="payoutShareLabel">Your share (85%)</div>
+                        <div style="color: var(--gray); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;" id="payoutShareLabel">Your share (80%)</div>
                         <div style="font-size: 1.5rem; font-weight: 800; color: var(--neon-green);" id="payoutShareValue">$0</div>
                     </div>
                     <button class="btn btn-primary" style="width: auto; padding: 0.7rem 1.4rem;" id="payoutConnectBtn" onclick="connectPayoutStripe()">Connect Stripe</button>
@@ -3034,7 +3035,7 @@
                         <div class="role-node tier-owner">
                             <div class="rank">1</div>
                             <div style="flex:1; min-width:0;">
-                                <div class="role-title">Owner <span class="role-pill owner">Overseer</span> <span class="role-pill owner" id="ownerShareBadge">15% of all revenue</span></div>
+                                <div class="role-title">Owner <span class="role-pill owner">Overseer</span> <span class="role-pill owner" id="ownerShareBadge">Revenue share</span></div>
                                 <div class="role-sub">Top-level overseer. Full finance control · holds main Lightning Stripe account · assigns the systems operator.</div>
                                 <div class="role-people" id="ownerPeople"><span class="role-chip">Loading…</span></div>
                             </div>
@@ -3077,7 +3078,7 @@
                             <div style="color:var(--gray); font-size:0.72rem; margin-top:0.2rem;">All net revenue tracked (no live Stripe balance yet)</div>
                         </div>
                         <div class="finance-tile">
-                            <div class="ft-label">Owner Override (15%)</div>
+                            <div class="ft-label" id="financeOwnerShareLabel">Owner Take</div>
                             <div class="ft-value" style="color:var(--lightning-yellow);" id="financeOwnerShare">$0</div>
                             <div style="color:var(--gray); font-size:0.72rem; margin-top:0.2rem;">Overseer cut of total revenue</div>
                         </div>
@@ -3577,8 +3578,49 @@
         let adminToken = null;
         let currentRefundPassId = null;
         let isOwner = false;  // Top-level overseer (owner role). Set in checkAuth.
-        const OWNER_REVENUE_SHARE = 0.15;  // Owner override of all revenue (mirrors backend default)
-        let operatorEarnings = 0;  // Operator's 85% accrued from their start date (0 until backend reports it)
+        // Revenue split: owner receives 100% until the operator links their payout
+        // account; after that the owner keeps the Lightning Pass fee % and the
+        // operator receives the remainder. The fee is owner-configurable (backend).
+        let platformFeePercent = 20;         // Lightning Pass fee = owner's cut %, fetched from backend
+        let operatorLinked = false;          // true once the operator connects their Stripe (backend TBD)
+        let operatorEarnings = 0;            // operator's share accrued from their start date (0 until linked)
+        function ownerOverrideRate() { return platformFeePercent / 100; }
+        function operatorRate() { return (100 - platformFeePercent) / 100; }
+        // The owner's effective take right now (100% until the operator links, else the fee %).
+        function ownerCurrentRate() { return operatorLinked ? ownerOverrideRate() : 1.0; }
+
+        // Fetch the configurable Lightning Pass fee (owner's cut %) and refresh displays.
+        async function loadPlatformFee() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/settings/platform-fee`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (res.ok) {
+                    const d = await res.json();
+                    if (Number.isFinite(d.platformFeePercent)) platformFeePercent = d.platformFeePercent;
+                }
+            } catch (e) { console.error('Load platform fee error:', e); }
+        }
+
+        // Owner-only: save a new Lightning Pass fee %.
+        async function savePlatformFee() {
+            const input = document.getElementById('platformFeeInput');
+            const pct = Number(input && input.value);
+            if (!Number.isFinite(pct) || pct < 0 || pct > 100) { showToast('Enter a fee between 0 and 100', 'error'); return; }
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/settings/platform-fee`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ platformFeePercent: pct })
+                });
+                const d = await res.json();
+                if (res.ok) {
+                    platformFeePercent = d.platformFeePercent;
+                    showToast(`Lightning Pass fee set to ${pct}% — operator receives ${100 - pct}%`, 'success');
+                    loadDashboardData();
+                } else showToast(d.error || 'Could not update fee', 'error');
+            } catch (e) { showToast('Network error updating fee', 'error'); }
+        }
 
         // ===== OWNER CODE GATE =====
         // Security gate for high-risk admin actions (MONEY-OUT, DESTRUCTIVE, SCALE)
@@ -3745,10 +3787,10 @@
             }
         }
 
-        // Stripe Connect for the current account's payout (operator 85% / owner 15%)
+        // Stripe Connect for the current account's payout (operator 80% / owner 20%)
         function connectPayoutStripe() {
             if (isOwner) return connectOwnerStripe();
-            showToast('Operator (85%) Stripe onboarding is coming soon', 'info');
+            showToast('Operator (80%) Stripe onboarding is coming soon', 'info');
         }
 
         // ===== Owner Stripe account management (owner-only) =====
@@ -3841,19 +3883,34 @@
             const shareValue = document.getElementById('payoutShareValue');
             if (!title) return;
             const money = (n) => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const fee = platformFeePercent;                 // owner's cut %
+            const opPct = 100 - fee;                          // operator's cut %
+            const feeCtl = document.getElementById('platformFeeControl');
             if (isOwner) {
                 title.textContent = 'Owner Stripe (platform account)';
-                desc.textContent = 'As owner you hold the main Lightning Stripe account and take a 15% override of total profit.';
-                shareLabel.textContent = 'Owner override (15%)';
-                shareValue.textContent = money(net * 0.15);
+                desc.textContent = operatorLinked
+                    ? `You hold the main Lightning Stripe account and take a ${fee}% fee of profit; the operator receives ${opPct}%.`
+                    : `You hold the main Lightning Stripe account and currently receive 100% of revenue until the operator links their Stripe (then ${fee}%).`;
+                shareLabel.textContent = operatorLinked ? `Owner fee (${fee}%)` : 'Owner take (100%)';
+                shareValue.textContent = money(net * ownerCurrentRate());
+                // Owner can edit the Lightning Pass fee %
+                if (feeCtl) feeCtl.innerHTML =
+                    `<span style="color:var(--gray);">Lightning Pass fee</span>
+                     <input id="platformFeeInput" type="number" min="0" max="100" step="1" value="${fee}"
+                            style="width:64px; margin:0 0.35rem; padding:0.3rem 0.5rem; background:var(--card-black); border:1px solid var(--border-dark); border-radius:0.4rem; color:var(--white);">%
+                     <button onclick="savePlatformFee()" class="btn btn-secondary" style="width:auto; padding:0.3rem 0.75rem; font-size:0.8rem; margin-left:0.4rem;">Save</button>
+                     <span style="color:var(--gray); margin-left:0.4rem;">operator gets ${opPct}%</span>`;
             } else {
                 title.textContent = 'Connect your Stripe account';
-                desc.textContent = 'As systems operator you receive 85% of profit earned from your start date forward, paid to your connected Stripe account.';
-                shareLabel.textContent = 'Your share (85%) so far';
-                // Operator starts at $0 and accrues only on revenue earned after they
-                // onboard — NOT 85% of revenue earned before them. Until the backend
-                // reports operator-since-start earnings, show the forward baseline of $0.
+                desc.textContent = `As systems operator you receive ${opPct}% of profit earned from the day you link your Stripe forward. Until then, the owner receives 100%.`;
+                shareLabel.textContent = `Your share (${opPct}%) so far`;
+                // Operator starts at $0 and accrues only on revenue earned after they link.
                 shareValue.textContent = money(operatorEarnings || 0);
+                // Admin sees the current fee read-only
+                if (feeCtl) feeCtl.innerHTML =
+                    `<span style="color:var(--gray);">Lightning Pass fee:</span>
+                     <strong style="color:var(--electric-blue);">${fee}%</strong>
+                     <span style="color:var(--gray);">· you receive ${opPct}%</span>`;
             }
         }
 
@@ -3861,6 +3918,7 @@
         // Roles & Access (owner-only)
         // ============================
         async function loadRolesAccess() {
+            await loadPlatformFee();  // ensure fee % is current for owner finance figures
             const fmt = (n) => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
             // Reflect current account's finance access in the banner
@@ -3869,14 +3927,14 @@
                 banner.style.display = 'flex';
                 if (isOwner) {
                     banner.className = 'access-banner full';
-                    banner.innerHTML = '<strong>Full finance access.</strong>&nbsp;You are the owner — you control Stripe, payouts, and the 15% override on all revenue.';
+                    banner.innerHTML = '<strong>Full finance access.</strong>&nbsp;You are the owner — you control Stripe and payouts; you receive 100% of revenue until the operator links their Stripe, then a 20% override.';
                 } else {
                     banner.className = 'access-banner readonly';
                     banner.innerHTML = '<strong>Read-only finances.</strong>&nbsp;As systems operator you can view Lightning finances but cannot move money or alter Stripe.';
                 }
             }
 
-            document.getElementById('ownerShareBadge').textContent = Math.round(OWNER_REVENUE_SHARE * 100) + '% of all revenue';
+            document.getElementById('ownerShareBadge').textContent = Math.round(ownerCurrentRate()*100) + '% of all revenue';
 
             // Owner Stripe connect/disconnect status
             loadOwnerStripeStatus();
@@ -3916,7 +3974,9 @@
                 const gross = d.grossRevenue || 0;
                 const net = d.netRevenue || d.totalRevenue || 0;
                 document.getElementById('financeTotal').textContent = fmt(net);
-                document.getElementById('financeOwnerShare').textContent = fmt(net * OWNER_REVENUE_SHARE);
+                document.getElementById('financeOwnerShare').textContent = fmt(net * ownerCurrentRate());
+                const ownerShareLbl = document.getElementById('financeOwnerShareLabel');
+                if (ownerShareLbl) ownerShareLbl.textContent = operatorLinked ? `Owner Fee (${platformFeePercent}%)` : 'Owner Take (100%)';
                 document.getElementById('financeGross').textContent = fmt(gross);
                 document.getElementById('financePasses').textContent = (d.totalPasses || 0).toLocaleString();
             } catch (e) {
@@ -3937,7 +3997,7 @@
                 } else {
                     breakdown.innerHTML = `
                         <table class="data-table">
-                            <thead><tr><th>Event</th><th>Date</th><th>Sold</th><th>Revenue</th><th>Owner 15%</th></tr></thead>
+                            <thead><tr><th>Event</th><th>Date</th><th>Sold</th><th>Revenue</th><th>Owner cut</th></tr></thead>
                             <tbody>
                                 ${events.map(ev => {
                                     const rev = ev.revenue || 0;
@@ -3946,7 +4006,7 @@
                                         <td>${ev.date ? new Date(ev.date).toLocaleDateString() : '—'}</td>
                                         <td>${ev.ticketsSold || 0}</td>
                                         <td>${fmt(rev)}</td>
-                                        <td style="color:var(--lightning-yellow);">${fmt(rev * OWNER_REVENUE_SHARE)}</td>
+                                        <td style="color:var(--lightning-yellow);">${fmt(rev * ownerCurrentRate())}</td>
                                     </tr>`;
                                 }).join('')}
                             </tbody>
@@ -4002,7 +4062,7 @@
             if (dashTitle) dashTitle.textContent = isOwner ? 'Owner Console' : 'Admin Console';
             const permPill = document.getElementById('headerPermissionPill');
             if (permPill) {
-                permPill.textContent = isOwner ? 'Overseer of Admin · 15% override' : 'Systems Operator';
+                permPill.textContent = isOwner ? 'Overseer of Admin · 20% override' : 'Systems Operator';
                 permPill.className = 'role-pill ' + (isOwner ? 'owner' : 'admin');
                 permPill.style.display = 'inline-flex';
             }
@@ -4034,6 +4094,7 @@
         }
 
         async function loadDashboardData() {
+            await loadPlatformFee();  // fetch the Lightning Pass fee before rendering payout figures
             // Load stats
             try {
                 const res = await fetch(`${API_BASE}/api/v1/analytics/system/overview`, {
@@ -4055,7 +4116,7 @@
                     document.getElementById('refundTotal').textContent = '-$' + refunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                     document.getElementById('netRevenueSmall').textContent = '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-                    // Role-aware payout card (operator 85% / owner 15%)
+                    // Role-aware payout card (operator 80% / owner 20%)
                     updatePayoutCard(net);
 
                     // Other stats
