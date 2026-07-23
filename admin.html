@@ -3074,9 +3074,12 @@
                         </div>
                     </div>
 
-                    <div id="ownerConnectStripe" style="margin-top:1rem;">
-                        <button class="btn btn-primary" style="width:auto; padding:0.6rem 1.25rem;" onclick="showToast('Stripe Connect for the owner account is not wired yet — coming soon', 'info')">Connect Owner to Stripe</button>
+                    <div id="ownerConnectStripe" style="margin-top:1rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
+                        <button class="btn btn-primary" style="width:auto; padding:0.6rem 1.25rem;" id="ownerStripeConnectBtn" onclick="connectOwnerStripe()">Connect Stripe Account</button>
+                        <button class="btn btn-secondary" style="width:auto; padding:0.6rem 1.25rem; display:none;" id="ownerStripeManageBtn" onclick="openOwnerStripeDashboard()">Open Stripe Dashboard</button>
+                        <button class="btn btn-danger" style="width:auto; padding:0.6rem 1.25rem; display:none;" id="ownerStripeDisconnectBtn" onclick="disconnectOwnerStripe()">Disconnect</button>
                     </div>
+                    <p style="color:var(--gray); font-size:0.78rem; margin-top:0.6rem;">Connecting opens Stripe so you can sign in with the owner account. Disconnecting unlinks it from Lightning Pass; the Stripe account itself stays in your Stripe Dashboard.</p>
 
                     <!-- Event revenue breakdown -->
                     <div style="margin-top:1.75rem;">
@@ -3723,7 +3726,90 @@
 
         // Stripe Connect for the current account's payout (operator 85% / owner 15%)
         function connectPayoutStripe() {
-            showToast('Stripe Connect onboarding is not wired to the backend yet — coming soon', 'info');
+            if (isOwner) return connectOwnerStripe();
+            showToast('Operator (85%) Stripe onboarding is coming soon', 'info');
+        }
+
+        // ===== Owner Stripe account management (owner-only) =====
+        async function connectOwnerStripe() {
+            const btn = document.getElementById('ownerStripeConnectBtn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Opening Stripe…'; }
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/connect`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok && data.onboardingUrl) {
+                    window.location.href = data.onboardingUrl;  // owner signs in at Stripe
+                } else {
+                    showToast(data.error || 'Could not start Stripe onboarding', 'error');
+                    if (btn) { btn.disabled = false; btn.textContent = 'Connect Stripe Account'; }
+                }
+            } catch (e) {
+                showToast('Network error connecting Stripe', 'error');
+                if (btn) { btn.disabled = false; btn.textContent = 'Connect Stripe Account'; }
+            }
+        }
+
+        async function disconnectOwnerStripe() {
+            if (!confirm('Disconnect the Stripe account from Lightning Pass? The Stripe account stays in your Stripe Dashboard — this only unlinks it here.')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/disconnect`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok) { showToast('Stripe account disconnected', 'success'); loadOwnerStripeStatus(); }
+                else showToast(data.error || 'Could not disconnect', 'error');
+            } catch (e) {
+                showToast('Network error disconnecting Stripe', 'error');
+            }
+        }
+
+        async function openOwnerStripeDashboard() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/login-link`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok && data.url) window.open(data.url, '_blank');
+                else showToast(data.error || 'Could not open Stripe dashboard', 'error');
+            } catch (e) {
+                showToast('Network error opening Stripe', 'error');
+            }
+        }
+
+        async function loadOwnerStripeStatus() {
+            if (!isOwner) return;
+            const chip = document.getElementById('ownerStripeStatus');
+            const connectBtn = document.getElementById('ownerStripeConnectBtn');
+            const manageBtn = document.getElementById('ownerStripeManageBtn');
+            const disconnectBtn = document.getElementById('ownerStripeDisconnectBtn');
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/lightning/owner/stripe/status`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const d = await res.json();
+                if (d.connected) {
+                    const ready = d.payoutsEnabled && d.chargesEnabled;
+                    if (chip) {
+                        chip.textContent = ready ? 'Owner Stripe: connected' : 'Owner Stripe: onboarding incomplete';
+                        chip.style.color = ready ? 'var(--neon-green)' : 'var(--lightning-yellow)';
+                    }
+                    if (connectBtn) { connectBtn.textContent = ready ? 'Reconnect' : 'Finish Onboarding'; connectBtn.disabled = false; }
+                    if (manageBtn) manageBtn.style.display = ready ? '' : 'none';
+                    if (disconnectBtn) disconnectBtn.style.display = '';
+                } else {
+                    if (chip) { chip.textContent = 'Owner Stripe: not connected yet'; chip.style.color = 'var(--gray)'; }
+                    if (connectBtn) { connectBtn.textContent = 'Connect Stripe Account'; connectBtn.disabled = false; }
+                    if (manageBtn) manageBtn.style.display = 'none';
+                    if (disconnectBtn) disconnectBtn.style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Owner Stripe status error:', e);
+            }
         }
 
         // Populate the role-aware payout / Stripe-connect card
@@ -3767,6 +3853,9 @@
             }
 
             document.getElementById('ownerShareBadge').textContent = Math.round(OWNER_REVENUE_SHARE * 100) + '% of all revenue';
+
+            // Owner Stripe connect/disconnect status
+            loadOwnerStripeStatus();
 
             // Populate the people in each tier from the users list
             try {
@@ -3902,6 +3991,13 @@
 
             buildRoleNav();
             loadDashboardData();
+
+            // Returning from Stripe onboarding — land on Roles & Access with fresh status
+            const stripeParam = new URLSearchParams(window.location.search).get('stripe');
+            if (isOwner && (stripeParam === 'return' || stripeParam === 'refresh')) {
+                switchTab('roles');
+                showToast(stripeParam === 'return' ? 'Back from Stripe — checking account status…' : 'Stripe onboarding needs another step', 'info');
+            }
         }
 
         async function loadDashboardData() {
