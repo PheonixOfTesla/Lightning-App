@@ -1757,8 +1757,10 @@
         // ===================== STOREFRONT / PUBLIC PAGE =====================
         let venueSlug = null;
 
+        // Venues get their own @handle (same format as hosts). The @handle resolves
+        // to the venue's own page; /v/:slug is the direct canonical URL.
         function venuePublicUrl() {
-            return venueSlug ? `${window.location.origin}/v/${venueSlug}` : null;
+            return venueSlug ? `${window.location.origin}/@${venueSlug}` : null;
         }
 
         function updateVenueStorefrontLink() {

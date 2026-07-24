@@ -763,7 +763,18 @@
                 const data = await response.json();
 
                 if (!response.ok || !data.success) {
-                    showError(data.error || 'Host not found');
+                    // Handles are shared across hosts and venues. If this isn't a host,
+                    // it may be a venue — send them to the venue's own page.
+                    try {
+                        const vres = await fetch(`${API_BASE}/api/v1/lightning/v/${hostSlug}`);
+                        const vdata = await vres.json();
+                        if (vres.ok && vdata.success) {
+                            const canonical = vdata.canonicalSlug || hostSlug;
+                            window.location.replace(`/v/${canonical}${eventSlug ? '/' + eventSlug : ''}`);
+                            return;
+                        }
+                    } catch (e) { /* fall through to error */ }
+                    showError(data.error || 'Not found');
                     return;
                 }
 
