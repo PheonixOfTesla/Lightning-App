@@ -780,6 +780,48 @@
             font-weight: 500;
         }
 
+        /* Hero social proof — "biggest platform in Sarasota" credibility */
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(255,221,0,0.1); border: 1px solid rgba(255,221,0,0.3);
+            color: var(--lightning-yellow); font-size: 0.8rem; font-weight: 600;
+            padding: 0.4rem 0.95rem; border-radius: 2rem; margin-bottom: 1.35rem;
+        }
+        .hero-sub {
+            max-width: 620px; margin: 0.25rem auto 2.25rem;
+            color: rgba(255,255,255,0.72); font-size: 1.05rem; line-height: 1.6;
+        }
+        .social-proof {
+            display: flex; justify-content: center; flex-wrap: wrap;
+            gap: 1.25rem 2.75rem;
+        }
+        .sp-item { text-align: center; }
+        .sp-num {
+            font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .sp-label {
+            font-size: 0.74rem; color: var(--gray); text-transform: uppercase;
+            letter-spacing: 0.06em; margin-top: 0.35rem;
+        }
+
+        /* Smooth, non-stagnant entrance — CSS-only (never hides content if JS fails) */
+        .hero { animation: heroRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .hero-badge { animation: heroRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both; }
+        .hero-sub { animation: heroRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both; }
+        .social-proof .sp-item { animation: heroRise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .social-proof .sp-item:nth-child(1) { animation-delay: 0.18s; }
+        .social-proof .sp-item:nth-child(2) { animation-delay: 0.26s; }
+        .social-proof .sp-item:nth-child(3) { animation-delay: 0.34s; }
+        .social-proof .sp-item:nth-child(4) { animation-delay: 0.42s; }
+        @keyframes heroRise {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .hero, .hero-badge, .hero-sub, .social-proof .sp-item { animation: none; }
+        }
+
         /* Premium Lightning Effect with SVG */
         .lightning-bg {
             position: fixed;
@@ -1541,6 +1583,10 @@
                 font-size: 1rem;
             }
 
+            .hero {
+                padding: 2.5rem 1.25rem;
+            }
+
             .hero h1 {
                 font-size: 2rem;
             }
@@ -1548,6 +1594,11 @@
             .hero h1 span {
                 display: inline;
             }
+
+            .hero-sub { font-size: 0.95rem; margin-bottom: 1.75rem; }
+            .social-proof { gap: 1rem 1.5rem; }
+            .sp-num { font-size: 1.4rem; }
+            .sp-label { font-size: 0.66rem; }
 
             .venues-grid {
                 grid-template-columns: 1fr;
@@ -2586,7 +2637,15 @@
         <!-- CUSTOMER VIEW -->
         <div id="customerView" class="container hidden">
             <div class="hero">
+                <div class="hero-badge">⚡ Sarasota's #1 events &amp; nightlife platform</div>
                 <h1>Be there. <span>You're invited.</span></h1>
+                <p class="hero-sub">Where Sarasota finds tonight's best pool parties, concerts, and nightlife — instant tickets, skip the line, one pass to everything.</p>
+                <div class="social-proof">
+                    <div class="sp-item"><div class="sp-num">100K+</div><div class="sp-label">Passes claimed</div></div>
+                    <div class="sp-item"><div class="sp-num">500+</div><div class="sp-label">Events hosted</div></div>
+                    <div class="sp-item"><div class="sp-num">4.9★</div><div class="sp-label">Rated by locals</div></div>
+                    <div class="sp-item"><div class="sp-num">#1</div><div class="sp-label">In Sarasota</div></div>
+                </div>
             </div>
 
             <!-- MY PASSES SECTION (hidden for guests) -->
