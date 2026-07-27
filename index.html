@@ -1582,21 +1582,22 @@
             }
 
             .hero {
-                padding: 2.5rem 1.25rem;
+                padding: 1.75rem 1.25rem 1.5rem;
+                margin-bottom: 1.5rem;
             }
 
             .hero h1 {
-                font-size: 2rem;
+                font-size: 1.85rem;
             }
 
             .hero h1 span {
                 display: inline;
             }
 
-            .hero-sub { font-size: 0.95rem; margin-bottom: 1.75rem; }
-            .social-proof { gap: 1rem 1.5rem; }
-            .sp-num { font-size: 1.4rem; }
-            .sp-label { font-size: 0.66rem; }
+            .hero-badge { font-size: 0.72rem; padding: 0.35rem 0.75rem; margin-bottom: 0.9rem; }
+            .hero-sub { font-size: 0.9rem; margin: 0.25rem auto 1.1rem; }
+            .social-proof { gap: 0.45rem; }
+            .sp-chip { font-size: 0.72rem; padding: 0.35rem 0.7rem; }
 
             .venues-grid {
                 grid-template-columns: 1fr;
@@ -2348,16 +2349,6 @@
     </div>
 
     <!-- Music Toggle Button -->
-    <button id="musicToggle" class="music-toggle" onclick="toggleMusic()" title="Toggle Music">
-        <div class="eq-bars">
-            <div class="eq-bar" style="height: 4px;"></div>
-            <div class="eq-bar" style="height: 4px;"></div>
-            <div class="eq-bar" style="height: 4px;"></div>
-            <div class="eq-bar" style="height: 4px;"></div>
-            <div class="eq-bar" style="height: 4px;"></div>
-        </div>
-    </button>
-
     <nav>
         <div class="nav-container">
             <a href="/" class="logo">
@@ -2637,11 +2628,10 @@
             <div class="hero">
                 <div class="hero-badge">⚡ Sarasota's #1 events &amp; nightlife platform</div>
                 <h1>Be there. <span>You're invited.</span></h1>
-                <p class="hero-sub">Where Sarasota finds tonight's best pool parties, concerts, and nightlife — instant tickets, skip the line, one pass to everything.</p>
+                <p class="hero-sub">Tonight's best pool parties, concerts, and nightlife — one pass, instant tickets.</p>
                 <div class="social-proof">
                     <span class="sp-chip">★ #1 in Sarasota</span>
                     <span class="sp-chip">Sold-out events</span>
-                    <span class="sp-chip">Top-ranked venues</span>
                     <span class="sp-chip">Skip the line</span>
                 </div>
             </div>
@@ -4445,6 +4435,7 @@
         }
 
         function startMusic() {
+            return; // Audio disabled — background music + toggle removed
             if (musicPlaying) return;
             initLoungeMusic();
             // Only mark playing on a successful play so a blocked autoplay can
