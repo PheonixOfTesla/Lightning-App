@@ -599,15 +599,6 @@
         <source src="/background-video.mp4" type="video/mp4">
     </video>
 
-    <audio id="bgMusic" loop preload="auto">
-        <source src="/background-music.mp3" type="audio/mpeg">
-    </audio>
-
-    <button class="music-btn" id="musicBtn" onclick="toggleMusic()">
-        <svg class="play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <svg class="pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-    </button>
-
     <div class="connection-status connecting" id="connectionStatus">
         <div class="status-dot"></div>
         <span id="statusText">Connecting...</span>
@@ -863,21 +854,6 @@
         }
 
         init();
-
-        // Music toggle
-        const music = document.getElementById('bgMusic');
-        const musicBtn = document.getElementById('musicBtn');
-        music.volume = 0.4;
-
-        function toggleMusic() {
-            if (music.paused) {
-                music.play();
-                musicBtn.classList.add('playing');
-            } else {
-                music.pause();
-                musicBtn.classList.remove('playing');
-            }
-        }
     </script>
 </body>
 </html>

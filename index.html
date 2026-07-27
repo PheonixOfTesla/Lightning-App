@@ -1942,84 +1942,6 @@
                 0 12px 24px rgba(0, 0, 0, 0.4);
         }
 
-        /* Music Toggle Button */
-        .music-toggle {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 9999;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            border: 2px solid var(--lightning-yellow);
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            color: var(--lightning-yellow);
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-        }
-
-        .music-toggle:hover {
-            background: var(--lightning-yellow);
-            color: var(--pure-black);
-            transform: scale(1.1);
-        }
-
-        .music-toggle.playing {
-            border-color: var(--lightning-yellow);
-            color: var(--lightning-yellow);
-            animation: musicPulse 1s ease-in-out infinite;
-        }
-
-        .music-toggle.playing:hover {
-            background: var(--lightning-yellow);
-            color: var(--pure-black);
-        }
-
-        @keyframes musicPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-
-        /* Equalizer bars animation inside button */
-        .eq-bars {
-            display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 20px;
-        }
-
-        .eq-bar {
-            width: 3px;
-            background: currentColor;
-            border-radius: 1px;
-            transition: height 0.1s ease;
-        }
-
-        .music-toggle.playing .eq-bar {
-            animation: eqBounce 0.6s ease-in-out infinite alternate;
-        }
-
-        .music-toggle.playing .eq-bar:nth-child(1) { animation-delay: 0s; }
-        .music-toggle.playing .eq-bar:nth-child(2) { animation-delay: 0.1s; }
-        .music-toggle.playing .eq-bar:nth-child(3) { animation-delay: 0.2s; }
-        .music-toggle.playing .eq-bar:nth-child(4) { animation-delay: 0.15s; }
-        .music-toggle.playing .eq-bar:nth-child(5) { animation-delay: 0.05s; }
-
-        @keyframes eqBounce {
-            0% { height: 4px; }
-            100% { height: 18px; }
-        }
-
-        .music-toggle:not(.playing) .eq-bar {
-            height: 4px !important;
-        }
-
         @media (max-width: 768px) {
             .landing-logo {
                 font-size: 5rem;
@@ -2043,12 +1965,6 @@
                 width: 100%;
             }
 
-            .music-toggle {
-                bottom: 1rem;
-                right: 1rem;
-                width: 48px;
-                height: 48px;
-            }
         }
         /* Splash Screen - REMOVED (direct to events) */
         /* Keeping minimal styles for legacy compatibility */
@@ -4376,21 +4292,6 @@
         }
 
         // ===== LANDING PAGE FUNCTIONS =====
-        function fadeOutMusic(callback) {
-            if (musicPlaying && musicGainNode) {
-                const fadeTime = 1.5; // seconds
-                musicGainNode.gain.setValueAtTime(musicGainNode.gain.value, audioCtx.currentTime);
-                musicGainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeTime);
-                setTimeout(() => {
-                    stopMusic();
-                    musicGainNode.gain.value = 0.35; // Reset for next time
-                    if (callback) callback();
-                }, fadeTime * 1000);
-            } else {
-                if (callback) callback();
-            }
-        }
-
         function goToLogin() {
             // Show login modal
             showLoginModal();
@@ -4420,49 +4321,6 @@
 
         function showSignupFromLanding() {
             goToSignup();
-        }
-
-        // ===== LOUNGE MUSIC PLAYER =====
-        let loungeAudio = null;
-        let musicPlaying = false;
-        let musicStarted = false;
-
-        function initLoungeMusic() {
-            if (loungeAudio) return;
-            loungeAudio = new Audio('lounge-loop.mp3');
-            loungeAudio.loop = true;
-            loungeAudio.volume = 0.15;
-        }
-
-        function startMusic() {
-            return; // Audio disabled — background music + toggle removed
-            if (musicPlaying) return;
-            initLoungeMusic();
-            // Only mark playing on a successful play so a blocked autoplay can
-            // still start on the next user interaction.
-            loungeAudio.play().then(() => {
-                musicPlaying = true;
-                musicStarted = true;
-                const btn = document.getElementById('musicToggle');
-                if (btn) btn.classList.add('playing');
-            }).catch(e => console.log('Audio play failed:', e));
-        }
-
-        function stopMusic() {
-            musicPlaying = false;
-            if (loungeAudio) {
-                loungeAudio.pause();
-            }
-            const btn = document.getElementById('musicToggle');
-            if (btn) btn.classList.remove('playing');
-        }
-
-        function toggleMusic() {
-            if (musicPlaying) {
-                stopMusic();
-            } else {
-                startMusic();
-            }
         }
 
         // ===== DISTANT STORM - ATMOSPHERIC LIGHTNING =====
@@ -4748,27 +4606,6 @@
             loadDailyDeals();
         }
 
-        // Auto-play music when page loads (will work if browser allows)
-        // Falls back to starting on first user interaction
-        function attemptAutoplayMusic() {
-            // Music plays via the loungeAudio <audio> element (see startMusic).
-            // The legacy Web Audio context path was removed. Autoplay is usually
-            // blocked without a user gesture, so also arm a one-time interaction
-            // handler; startMusic only marks itself playing on a successful play.
-            try {
-                const startOnInteraction = () => {
-                    startMusic();
-                    document.removeEventListener('click', startOnInteraction);
-                    document.removeEventListener('touchstart', startOnInteraction);
-                };
-                document.addEventListener('click', startOnInteraction);
-                document.addEventListener('touchstart', startOnInteraction, { passive: true });
-                startMusic(); // best-effort immediate autoplay
-            } catch (e) {
-                console.log('Autoplay music skipped:', e.message);
-            }
-        }
-
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
             const existingToken = localStorage.getItem('token');
@@ -4820,9 +4657,6 @@
             loadVenues();
             loadHomepageSpotlightEvents();
             loadDailyDeals();
-
-            // Attempt to start music (may require user interaction on mobile)
-            attemptAutoplayMusic();
 
             // ===== BULLETPROOF VIDEO LOOP =====
             const video = document.getElementById('video-background');
