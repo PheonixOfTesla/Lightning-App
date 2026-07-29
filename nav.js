@@ -72,7 +72,7 @@
         // Determine active page
         const isEvents = currentPath === '/' || currentPath.includes('browse');
         const isExperiences = currentPath.includes('experiences');
-        const isPartners = currentPath.includes('partners') && !currentPath.includes('partner-portal');
+        const isHost = currentPath === '/host' || currentPath.startsWith('/host/');
         const isCalendar = currentPath.includes('calendar');
         const isAbout = currentPath.includes('about');
 
@@ -82,7 +82,7 @@
                 <a href="${dashboardUrl}" class="nav-link">Dashboard</a>
                 <a href="/?browse=1" class="nav-link${isEvents ? ' active' : ''}">Events</a>
                 <a href="/experiences" class="nav-link${isExperiences ? ' active' : ''}">Experiences</a>
-                <a href="/partners" class="nav-link${isPartners ? ' active' : ''}">Partners</a>
+                <a href="/host" class="nav-link${isHost ? ' active' : ''}">Host</a>
                 <a href="/calendar" class="nav-link${isCalendar ? ' active' : ''}">Calendar</a>
                 <a href="/about" class="nav-link${isAbout ? ' active' : ''}">About</a>
                 <a href="#" class="btn btn-logout" onclick="logout(); return false;">LOGOUT</a>
@@ -92,7 +92,7 @@
                     <a href="${dashboardUrl}">Dashboard</a>
                     <a href="/?browse=1"${isEvents ? ' class="active"' : ''}>Events</a>
                     <a href="/experiences"${isExperiences ? ' class="active"' : ''}>Experiences</a>
-                    <a href="/partners"${isPartners ? ' class="active"' : ''}>Partners</a>
+                    <a href="/host"${isHost ? ' class="active"' : ''}>Host</a>
                     <a href="/calendar"${isCalendar ? ' class="active"' : ''}>Calendar</a>
                     <a href="/about"${isAbout ? ' class="active"' : ''}>About</a>
                     <a href="#" onclick="logout(); return false;" style="color: var(--lightning-yellow);">Logout</a>
@@ -102,7 +102,7 @@
             navLinks.innerHTML = `
                 <a href="/?browse=1" class="nav-link${isEvents ? ' active' : ''}">Events</a>
                 <a href="/experiences" class="nav-link${isExperiences ? ' active' : ''}">Experiences</a>
-                <a href="/partners" class="nav-link${isPartners ? ' active' : ''}">Partners</a>
+                <a href="/host" class="nav-link${isHost ? ' active' : ''}">Host</a>
                 <a href="/calendar" class="nav-link${isCalendar ? ' active' : ''}">Calendar</a>
                 <a href="/about" class="nav-link${isAbout ? ' active' : ''}">About</a>
                 <a href="#" class="btn btn-login" onclick="if(typeof LoginCenter!=='undefined'){LoginCenter.open();}else if(typeof showPassModal==='function'){showPassModal();}else{window.location.href='/';} return false;">LOGIN</a>
@@ -111,7 +111,7 @@
                 mobileMenu.innerHTML = `
                     <a href="/?browse=1"${isEvents ? ' class="active"' : ''}>Events</a>
                     <a href="/experiences"${isExperiences ? ' class="active"' : ''}>Experiences</a>
-                    <a href="/partners"${isPartners ? ' class="active"' : ''}>Partners</a>
+                    <a href="/host"${isHost ? ' class="active"' : ''}>Host</a>
                     <a href="/calendar"${isCalendar ? ' class="active"' : ''}>Calendar</a>
                     <a href="/about"${isAbout ? ' class="active"' : ''}>About</a>
                     <a href="#" onclick="if(typeof LoginCenter!=='undefined'){LoginCenter.open();}else if(typeof showPassModal==='function'){showPassModal();}else{window.location.href='/';} return false;">Login</a>
