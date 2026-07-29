@@ -1293,8 +1293,8 @@
                         <div id="pendingEventsList" style="display: grid; gap: 1rem;"></div>
                     </div>
 
-                    <!-- Pending Hosts Section -->
-                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-dark);">
+                    <!-- Pending Hosts Section (hidden: host access is instant, no approval required) -->
+                    <div style="display: none; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-dark);">
                         <h4 style="color: var(--electric-purple); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
@@ -2144,7 +2144,7 @@
                                 </label>
                             </div>
                             <div style="font-size: 0.7rem; color: var(--gray); margin-bottom: 0.75rem; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 0.25rem;">
-                                Members = member-only accounts (excludes venue/host/admin portals)
+                                Members = member-only accounts (excludes venue/admin portals; every account has host access by default)
                             </div>
                             <div style="background: var(--pure-black); border: 1px solid var(--border-dark); border-radius: 0.5rem; max-height: 250px; overflow-y: auto;">
                                 <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-dark); background: rgba(255,255,255,0.05);">
@@ -8644,7 +8644,8 @@
         }
 
         // Role-based filtering matching User Management tabs
-        // Members = users with 'member' role, EXCLUDING gated portal roles (venue/host/admin)
+        // Members = users with 'member' role, EXCLUDING gated portal roles (venue/admin)
+        // Every account has host access by default, so 'host' is not treated as a gated role here.
         // DJs/Partners = users with those specific roles
         // No Account = guest pass purchasers (isGuest)
         function filterBulkUsers() {
@@ -8660,10 +8661,11 @@
                 return roles && roles.includes(role);
             };
 
-            // Helper to check if user has any gated portal role (venue/host/admin)
+            // Helper to check if user has any gated portal role (venue/admin).
+            // 'host' is granted to every account on signup and is no longer treated as gated.
             const hasGatedRole = (user) => {
                 const roles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
-                return roles && (roles.includes('venue') || roles.includes('host') || roles.includes('admin'));
+                return roles && (roles.includes('venue') || roles.includes('admin'));
             };
 
             filteredUsers = allUsers.filter(user => {
@@ -8685,7 +8687,7 @@
                 if (user.isGuest) return false;
 
                 // Members: has 'member' role AND does NOT have gated portal roles
-                // This ensures venue owners, hosts, and admins don't get guest pass emails
+                // This ensures venue owners and admins don't get guest pass emails
                 if (showMembers && hasRole(user, 'member') && !hasGatedRole(user)) return true;
 
                 // DJs: has 'dj' role (may also be member, that's fine)

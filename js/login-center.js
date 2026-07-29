@@ -17,7 +17,7 @@ const LoginCenter = (function() {
         onClose: null     // Called when modal is closed
     };
 
-    let selectedRoles = ['member'];
+    let selectedRoles = ['member', 'host'];
     let loginUserEmail = '';
     let loginUserRoles = [];
 
@@ -59,10 +59,11 @@ const LoginCenter = (function() {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             <div style="flex: 1;"><span style="font-weight: 600;">Partner</span> <span style="font-size: 0.75rem; color: var(--gray);">Referral program</span></div>
                         </label>
-                        <label class="user-type-btn" data-type="host" onclick="LoginCenter.toggleRole(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
-                            <input type="checkbox" name="lcUserTypes" value="host" style="display: none;">
+                        <label class="user-type-btn" data-type="host" style="padding: 0.75rem 1rem; background: rgba(255,221,0,0.1); border: 2px solid #ffdd00; border-radius: 8px; color: white; cursor: default; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="checkbox" name="lcUserTypes" value="host" checked disabled style="display: none;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffdd00" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-                            <div style="flex: 1;"><span style="font-weight: 600;">Host</span> <span style="font-size: 0.75rem; color: #ffdd00;">Requires approval</span></div>
+                            <div style="flex: 1;"><span style="font-weight: 600;">Host</span> <span style="font-size: 0.75rem; color: #39ff14;">Instant &mdash; your own @host portal</span></div>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffdd00" stroke="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                         </label>
                         <label class="user-type-btn" data-type="venue" onclick="LoginCenter.toggleRole(this)" style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;">
                             <input type="checkbox" name="lcUserTypes" value="venue" style="display: none;">
@@ -166,7 +167,7 @@ const LoginCenter = (function() {
                     <div style="text-align: center; margin-bottom: 1rem;">
                         <span id="lcCreateTypeLabel" style="background: #ffdd00; color: #000; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;"></span>
                     </div>
-                    <div id="lcVenueNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid #ffdd00; border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; color: #ffdd00;">Venue/Host/Admin access requires approval. You'll be notified once approved.</div>
+                    <div id="lcVenueNotice" style="display: none; background: rgba(255,221,0,0.1); border: 1px solid #ffdd00; border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; color: #ffdd00;">Venue/Admin access requires approval. You'll be notified once approved. Your host portal is active immediately.</div>
                     <form class="pass-modal-form" onsubmit="LoginCenter.submitCreateAccount(event); return false;">
                         <input type="text" id="lcCreateFirstName" placeholder="First name" required>
                         <input type="text" id="lcCreateLastName" placeholder="Last name" required>
@@ -361,7 +362,7 @@ const LoginCenter = (function() {
         const checkbox = label.querySelector('input[type="checkbox"]');
         const type = label.dataset.type;
 
-        if (type === 'member') return;
+        if (type === 'member' || type === 'host') return;
 
         checkbox.checked = !checkbox.checked;
 
@@ -387,7 +388,7 @@ const LoginCenter = (function() {
         document.getElementById('lcCreateAccountForm').style.display = 'none';
         document.querySelector('#loginCenterModal .pass-modal-form-container').style.display = 'block';
         document.querySelector('#loginCenterModal .pass-modal-success').classList.remove('active');
-        selectedRoles = ['member'];
+        selectedRoles = ['member', 'host'];
         loginUserEmail = '';
         loginUserRoles = [];
         resetIdentifier = '';
@@ -397,7 +398,7 @@ const LoginCenter = (function() {
         // Reset role checkboxes
         document.querySelectorAll('#lcUserTypeSelect .user-type-btn').forEach(btn => {
             const type = btn.dataset.type;
-            if (type !== 'member') {
+            if (type !== 'member' && type !== 'host') {
                 btn.style.border = '1px solid var(--border-dark)';
                 btn.style.background = 'rgba(255,255,255,0.05)';
                 const checkbox = btn.querySelector('input[type="checkbox"]');
@@ -420,7 +421,7 @@ const LoginCenter = (function() {
 
         // Show venue notice if needed
         const venueNotice = document.getElementById('lcVenueNotice');
-        if (selectedRoles.includes('venue') || selectedRoles.includes('admin') || selectedRoles.includes('host')) {
+        if (selectedRoles.includes('venue') || selectedRoles.includes('admin')) {
             venueNotice.style.display = 'block';
         } else {
             venueNotice.style.display = 'none';
@@ -485,7 +486,6 @@ const LoginCenter = (function() {
             const pendingRoles = [];
             if (data.pendingRoles?.venue) pendingRoles.push('Venue');
             if (data.pendingRoles?.admin) pendingRoles.push('Admin');
-            if (data.pendingRoles?.host) pendingRoles.push('Host');
 
             if (pendingRoles.length > 0) {
                 pendingNotice.textContent = `Pending approval: ${pendingRoles.join(', ')}`;
@@ -866,7 +866,7 @@ const LoginCenter = (function() {
                 roles: selectedRoles,
                 venueStatus: selectedRoles.includes('venue') ? 'pending' : null,
                 adminStatus: selectedRoles.includes('admin') ? 'pending' : null,
-                hostStatus: selectedRoles.includes('host') ? 'pending' : null,
+                hostStatus: selectedRoles.includes('host') ? 'approved' : null,
                 partnerCode: partnerCode || null
             };
 
@@ -902,17 +902,16 @@ const LoginCenter = (function() {
 
                 // Show success message
                 const successEl = document.getElementById('lcSuccess');
-                if (selectedRoles.includes('venue') || selectedRoles.includes('admin') || selectedRoles.includes('host')) {
+                if (selectedRoles.includes('venue') || selectedRoles.includes('admin')) {
                     const pendingRoles = [];
                     if (selectedRoles.includes('admin')) pendingRoles.push('Admin');
                     if (selectedRoles.includes('venue')) pendingRoles.push('Venue');
-                    if (selectedRoles.includes('host')) pendingRoles.push('Host');
                     const pendingRole = pendingRoles.join(', ');
                     successEl.innerHTML = `
                         <div style="font-size: 60px; margin-bottom: 1rem;">&#9203;</div>
                         <h3 style="margin-bottom: 0.5rem; color: #ffdd00;">Account Created!</h3>
                         <p style="color: #ffdd00; margin-bottom: 1rem;">${pendingRole} access is pending approval</p>
-                        <p style="color: var(--gray); font-size: 0.9rem;">You can access member features right away.</p>
+                        <p style="color: var(--gray); font-size: 0.9rem;">Your member and host portals are active right now &mdash; start your spotlight.</p>
                         <button onclick="LoginCenter.onSuccessClick()" style="margin-top: 1.5rem; padding: 1rem 2rem; background: #ffdd00; color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">CONTINUE</button>
                     `;
                 }
