@@ -1,26 +1,81 @@
-# Lightning App
+<p align="center">
+  <img src="https://img.shields.io/badge/vanilla-JS-yellow.svg" alt="JavaScript">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/stripe-payments-blueviolet" alt="Stripe">
+  <img src="https://img.shields.io/badge/realtime-socket.io-black" alt="Socket.IO">
+</p>
 
-**Vanilla JS frontend for event ticketing with Stripe payments and real-time DJ queue.**
+<h1 align="center">⚡ Lightning App</h1>
 
-> **Strongest proof**: `Lightning-Sauce.js` — 10,000+ lines handling payment flows, Socket.IO updates, and multi-page state without a framework.
+<p align="center">
+  <strong>Vanilla JS event ticketing frontend with Stripe payments, DJ queue interface, and real-time updates.</strong>
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#pages">Pages</a> •
+  <a href="#setup">Setup</a>
+</p>
 
 ---
 
-## What's Real
+## Features
 
-| Feature | Status | Proof |
-|---------|--------|-------|
-| 3-step Stripe payment flow | Working | `Lightning-Sauce.js` |
-| DJ song request UI with live queue | Working | `dj.html`, `dj-display.html` |
-| QR code pass display | Working | Pass confirmation pages |
-| Socket.IO real-time updates | Working | Socket handlers in JS |
-| Guest checkout (no account required) | Working | Payment flow |
-| Mobile-responsive | Working | CSS media queries |
+### 🎫 Ticketing
+- **Venue Listing**: Browse events
+- **Stripe Checkout**: 3-step payment flow
+- **QR Pass**: Display ticket for door scan
+- **Guest Checkout**: No account required
 
-## What's Scaffolded
+### 🎧 DJ Requests
+- **Song Queue**: Request songs at live events
+- **Bolt Tiers**: Pay to skip the queue
+- **Live Display**: Real-time queue on venue screens
 
-- Mobile app (Capacitor): packages installed, no native code
-- Geofence validation: function exists, never called
+### 📡 Real-Time
+- **Socket.IO**: Live queue updates
+- **Instant Feedback**: See your position change
+- **Push Notifications**: Queue status alerts
+
+---
+
+## Pages
+
+| Page | Purpose |
+|------|---------|
+| `index.html` | Venue listing |
+| `pay.html` | Stripe checkout |
+| `receipt.html` | QR pass display |
+| `checkin.html` | Door scanner |
+| `dj.html` | Song request form |
+| `dj-display.html` | Live queue display |
+| `calendar.html` | Event calendar |
+
+---
+
+## Setup
+
+```bash
+# Clone
+git clone https://github.com/PheonixOfTesla/Lightning-App.git
+cd Lightning-App
+
+# Install (optional, for dev server)
+npm install
+
+# Configure
+# Update API_URL in Lightning-Sauce.js to point to your backend
+
+# Run locally
+npx serve .
+
+# Or deploy to Vercel
+vercel
+```
+
+### Backend Required
+
+This frontend connects to [lightning-pass](https://github.com/PheonixOfTesla/lightning-pass) backend.
 
 ---
 
@@ -30,29 +85,31 @@
 - **Payments**: Stripe Elements
 - **Real-time**: Socket.IO client
 - **Hosting**: Vercel
+- **Styling**: Custom CSS
 
 ---
 
-## Pages
+## File Structure
 
 ```
-index.html       # Venue listing + purchase
-dj.html          # Song request submission
-dj-display.html  # Live queue for venues
-calendar.html    # Events
-login.html       # Auth
-```
-
----
-
-## Run
-
-```bash
-npx serve .
-# or
-vercel
+├── index.html          # Venue listing
+├── pay.html            # Checkout flow
+├── receipt.html        # QR pass
+├── dj.html             # Song requests
+├── dj-display.html     # Queue display
+├── Lightning-Sauce.js  # Main logic (10k+ lines)
+├── styles.css          # Styling
+└── assets/             # Images, audio
 ```
 
 ---
 
-*Pairs with lightning-backend. Functional MVP.*
+## License
+
+MIT License
+
+---
+
+<p align="center">
+  <strong>Frontend for <a href="https://github.com/PheonixOfTesla/lightning-pass">Lightning Pass</a></strong>
+</p>
